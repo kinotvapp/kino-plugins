@@ -61,17 +61,39 @@ version of the same idea; read [how it is built](examples.md#reference-plugin) b
 
 ## Where the `sdk/` comes from { #get-the-sdk }
 
-The kit is not a package: it is the `sdk/` folder of the example plugins, and there is nothing to
-install. Get it in one of these ways:
+The **kit** is the `sdk/` folder inside the example plugins. Nothing to install with npm or anything
+else: they are `.mjs` files you run with Node 18 or newer. The easiest way to get it is to create
+your plugin from a template, so the kit is already inside.
 
-- Create your repository from the template
-  [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) ("Use this
-  template"); `sdk/` comes with it.
-- Or clone that repository anywhere and copy (or point at) its `sdk/` folder:
-  `node /path/to/sdk/run.mjs ./plugin.js ...` works from any folder.
+**Steps (recommended):**
 
-Do not fork the template to publish your plugin: forks are left out of Kino's community search
-([Get found](publish.md#get-found)).
+1. Open the template closest to what you want to build:
+    - [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): the
+      complete example (settings, user and password, downloads, live channels).
+    - [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive): the
+      simplest, for a site with search and videos.
+2. Top right, press the green **Use this template → Create a new repository** button. Name your
+   repository and keep it **public**.
+3. Download it to your computer and check the kit works:
+
+    ```
+    git clone https://github.com/<your-user>/<your-repository>.git
+    cd <your-repository>
+    node sdk/validate.mjs .
+    ```
+
+    If you see `✓ Kino would accept this plugin`, you are ready to start changing `plugin.js` and
+    `kino-plugin.json`.
+
+!!! warning "Use the template, not the Fork button"
+    **Use this template** creates a new, independent repository that is yours. **Fork** creates a
+    copy linked to the original, and Kino **does not show forks** in "De la comunidad"
+    ([Get found](publish.md#get-found)). If you fork, your plugin will never show up in the app's
+    search.
+
+**Already have your own repository?** Copy just the `sdk/` folder from either template into it (for
+example by downloading the ZIP from **Code → Download ZIP**). The commands are the same:
+`node sdk/validate.mjs .`, `node sdk/run.mjs …`.
 
 ## Next steps { #next }
 
