@@ -50,7 +50,7 @@ Reglas que no puedes romper (el detalle está en AGENTS.md):
 Trabaja paso a paso: primero explora la fuente con peticiones reales, luego escribe el manifiesto,
 luego cada función. Después de cada paso ejecuta `node sdk/validate.mjs .` y
 `node sdk/run.mjs . <función> …` y arregla todo lo que Kino descartaría. Graba fixtures con
---record y haz que `node --test` pase sin conexión. Termina con la lista de chequeo de AGENTS.md y
+--record y haz que `node --test test/plugin.test.mjs` pase sin conexión. Termina con la lista de chequeo de AGENTS.md y
 luego dime cómo publicarlo (topic kino-plugin) y qué tengo que probar a mano en la app Kino.
 ```
 

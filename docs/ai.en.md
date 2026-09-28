@@ -47,7 +47,7 @@ Rules you must not break (details in AGENTS.md):
 
 Work step by step: explore the source with real requests first, then write the manifest, then
 each function. After each step run `node sdk/validate.mjs .` and `node sdk/run.mjs . <function> …`
-and fix everything Kino would drop. Record fixtures with --record and make `node --test` pass
+and fix everything Kino would drop. Record fixtures with --record and make `node --test test/plugin.test.mjs` pass
 offline. Finish with the checklist of AGENTS.md, then tell me how to publish (topic kino-plugin)
 and what I must try by hand in the Kino app.
 ```

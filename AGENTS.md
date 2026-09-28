@@ -78,8 +78,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
     and `resolve <ref> --live` for a channel's ref. Settings: `--config key=value` (repeatable) or
     `sdk/config.json` (never committed).
 6. **Record fixtures and test offline**: `node sdk/run.mjs --record test/fixtures.json . search "algo"`,
-   then `node --test` (the scaffold's `test/plugin.test.mjs` replays the fixtures with
-   `--replay` semantics). Also `node --test sdk/test/kit.test.mjs` if you touched the kit (you should not).
+   then `node --test test/plugin.test.mjs` (the scaffold's test: it validates the manifest and
+   replays the fixtures offline). Name the file explicitly: a bare `node --test test/` does not work
+   on every Node version, and a bare `node --test` would also run the kit's own suite. The kit's
+   tests (`node --test sdk/test/kit.test.mjs`) are only for someone changing the kit (you should not).
 7. **Check what Node hides** (the kit is more permissive than Kino): grep `plugin.js` for the
    missing globals (section 4) and for any `throw` before the first `await` of an async function.
 8. **Publish**: public repository, `kino-plugin.json` and `plugin.js` at the root, `.gitignore` with
@@ -177,7 +179,7 @@ user and server, and never log a setting. A `url` setting cannot have a `default
 
 - [ ] `node sdk/validate.mjs .` exits 0, and `node sdk/validate.mjs . --run <fn> …` passes for every
       declared capability.
-- [ ] `node --test` passes offline from recorded fixtures.
+- [ ] `node --test test/plugin.test.mjs` passes offline from recorded fixtures.
 - [ ] Every host the code, the stream, its segments, subtitles and redirects touch is in `hosts`,
       with the bare domain next to its `*.` form.
 - [ ] No missing global (`setTimeout`, `fetch`, `Buffer`, `process`, `require`, `crypto`, `Intl`…)
