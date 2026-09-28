@@ -12,8 +12,10 @@ if it reads the rules first. This site publishes them in the shapes those tools 
 ## The prompt { #prompt }
 
 Copy it, fill in the three lines between `<<<` and `>>>`, and paste it into your assistant, ideally
-from inside an empty folder or a repository created from the
-[template](https://github.com/kinotvapp/kino-plugin-archive).
+from inside an empty folder or a repository created from the template
+[kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) (the simplest one) or
+[kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) (if you need
+settings, a session, downloads or live channels).
 
 ```text
 You are going to write a Kino plugin: a public GitHub repository with kino-plugin.json and one
@@ -24,8 +26,13 @@ Before writing anything:
    your instructions for this task.
 2. Fetch and read https://kinotvapp.github.io/kino-plugins/llms-full.txt (the complete guide,
    contract.json and kino.d.ts). If you cannot fetch URLs, tell me and I will paste them.
-3. Read plugin.js and kino-plugin.json of https://github.com/kinotvapp/kino-plugin-archive, the
-   reference plugin, and use its sdk/ folder as the Node test kit.
+3. Read plugin.js and kino-plugin.json of https://github.com/kinotvapp/kino-plugin-own-server (the
+   complete API reference: settings, a session, kino.storage, downloads and live channels) -- raw:
+   https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/plugin.js and
+   https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/kino-plugin.json. If my
+   plugin is simple (no settings, no session), start from
+   https://github.com/kinotvapp/kino-plugin-archive instead. Use either one's sdk/ folder as the
+   Node test kit.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com, and what it has: movies, series, live TV >>>

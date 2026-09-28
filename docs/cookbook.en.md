@@ -139,7 +139,11 @@ posters and stills may point at it. This is the published demo plugin **Tu servi
 reference server to run it against), which uses every apiVersion 3 feature a server of your own
 can: seasons, `download`, `audioTracks`, `live` items, a `kino.storage` TTL, `kino.rank`,
 `ids.tmdb`, and `channels` in all three shapes (channels with a `ref`, channels with an inline
-`stream`, and an M3U playlist with an XMLTV guide).
+`stream`, and an M3U playlist with an XMLTV guide). What follows is, line for line, its real
+[`kino-plugin.json`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/kino-plugin.json)
+and [`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js): it is
+the reference plugin for anything beyond the five basic capabilities (see
+[Example plugins](examples.md#reference-plugin)).
 
 ```json
 {

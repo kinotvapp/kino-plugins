@@ -25,10 +25,15 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
 3. The machine-readable contract: `contract.json` (every number and rule) and `kino.d.ts` (every
    shape and the whole `kino` API), at <https://kinotvapp.github.io/kino-plugins/reference/contract.json>
    and <https://kinotvapp.github.io/kino-plugins/reference/kino.d.ts>, and also in the template.
-4. The reference plugin's code: `plugin.js` in
-   [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive). For a source
-   the person hosts (Jellyfin, Emby, a NAS) or for live channels, also
-   [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server).
+4. The complete reference: `plugin.js` and `kino-plugin.json` in
+   [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) -- raw at
+   <https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/plugin.js> and
+   <https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/kino-plugin.json> -- use
+   nearly every apiVersion 2/3 feature a plugin can have: settings, a session, `kino.storage`,
+   downloads, `live` items and `channels`. Study it whenever the plugin needs settings, auth,
+   downloads or live channels. For a plain plugin with no settings or login, read
+   `plugin.js` in [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
+   instead, the simpler reference for the five basic capabilities.
 
 Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): the contract is different.
 
@@ -49,12 +54,16 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
 
 ## 3. Workflow
 
-1. **Start from the template, not a fork** (Kino's community search leaves forks out):
-    - `gh repo create my-plugin --public --template kinotvapp/kino-plugin-archive --clone`, or
-    - `git clone https://github.com/kinotvapp/kino-plugin-archive` somewhere else, then
-      `node kino-plugin-archive/sdk/init.mjs my-plugin --host example.com` and copy
-      `kino-plugin-archive/sdk/` and `kino-plugin-archive/contract.json` into `my-plugin/`
-      (the kit looks for `contract.json` next to `sdk/`). `init.mjs` never overwrites a file.
+1. **Start from the template, not a fork** (Kino's community search leaves forks out). Use
+   `kinotvapp/kino-plugin-archive` for a plain plugin (no settings, no login); use
+   `kinotvapp/kino-plugin-own-server` instead when the plugin needs settings, auth, downloads or
+   live channels:
+    - `gh repo create my-plugin --public --template kinotvapp/kino-plugin-archive --clone` (swap the
+      template name for `kinotvapp/kino-plugin-own-server` when that fits better), or
+    - `git clone https://github.com/kinotvapp/kino-plugin-archive` (or `-own-server`) somewhere
+      else, then `node kino-plugin-archive/sdk/init.mjs my-plugin --host example.com` and copy its
+      `sdk/` and `contract.json` into `my-plugin/` (the kit looks for `contract.json` next to
+      `sdk/`). `init.mjs` never overwrites a file.
 2. **Write `kino-plugin.json`**: a new `id` (`^[a-z0-9][a-z0-9-]{1,39}$`, never a reserved one, never
    changed after release), `name`, `version` `0.1.0`, the lowest `apiVersion`, `entry`, `hosts`,
    `capabilities`, `settings` if needed, `description` in Spanish.

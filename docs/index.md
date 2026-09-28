@@ -23,8 +23,10 @@ a él), y `kino.d.ts` declara toda la API `kino` para tu editor
 ## El camino de 5 minutos { #five-minutes }
 
 1. **Parte de la plantilla.** Crea tu repositorio desde
-   [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) ("Use this
-   template", o clónalo y copia `sdk/`). No le hagas *fork*: la búsqueda de la comunidad de Kino deja
+   [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) -- la más
+   simple -- o desde [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
+   si necesitas ajustes, sesión, descargas o canales en vivo ("Use this template" en cualquiera de
+   los dos, o clónalo y copia `sdk/`). No le hagas *fork*: la búsqueda de la comunidad de Kino deja
    los forks por fuera ([Hazte encontrar](publish.md#get-found)). O deja que el kit te escriba un
    esqueleto: `node sdk/init.mjs mi-plugin --host example.com`.
 2. **Declara lo que necesitas** en `kino-plugin.json`: un `id`, los `hosts` a los que vas a llamar y

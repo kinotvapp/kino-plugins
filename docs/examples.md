@@ -1,33 +1,35 @@
 # Plugins de ejemplo
 
-Dos plugins publicados, los dos públicos y los dos instalables en Kino. Arranca por el primero; lee el
-segundo cuando tu fuente sea un servidor de la persona, o cuando quieras ver funcionando de punta a
-punta todas las funciones de apiVersion 3.
+Dos plugins publicados, los dos públicos, los dos instalables en Kino y los dos usables como
+plantilla. Arranca por **Internet Archive** si quieres la plantilla más simple posible; arranca por
+**Tu servidor**, el demo completo de la API, cuando tu fuente sea un servidor de la persona o cuando
+quieras ver funcionando de punta a punta cada función de apiVersion 2 y 3.
 
 <div class="grid cards" markdown>
-
--   ![](assets/archive-icon.png){ .card-icon } **Internet Archive** · `kinotvapp/kino-plugin-archive`
-
-    ---
-
-    Películas de dominio público y televisión clásica de archive.org. **La plantilla de la que
-    partir**: un manifiesto, un archivo JavaScript, sin paso de compilación, apiVersion 1, las cinco
-    capacidades, más el kit `sdk/`, `GUIDE.md`, `contract.json` y `kino.d.ts`.
-
-    [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-archive/generate){ .md-button .md-button--primary }
-    [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-archive){ .md-button }
 
 -   ![](assets/own-server-icon.png){ .card-icon } **Tu servidor** · `kinotvapp/kino-plugin-own-server`
 
     ---
 
-    Un servidor multimedia en la casa (Jellyfin, Emby, un NAS…): la persona escribe su dirección, su
-    usuario y su contraseña. El demo de todo el SDK: apiVersion 3, `"hosts": []`, temporadas,
-    `download`, `audioTracks`, ítems `live`, `channels` en sus tres formas, un TTL de `kino.storage`,
-    `kino.rank`, `ids.tmdb`, y un servidor de referencia (`server.mjs`) para probarlo.
+    **El demo completo de la API.** Un servidor multimedia en la casa (Jellyfin, Emby, un NAS…): la
+    persona escribe su dirección, su usuario y su contraseña. apiVersion 3, `"hosts": []`, ajustes
+    `url`/`user`/`password`, sesión con `kino.storage`, un TTL de caché, `kino.rank`, `ids.tmdb`,
+    temporadas, `download`, `audioTracks`, ítems `live` y `channels` en sus tres formas, más un
+    servidor de referencia (`server.mjs`) para probarlo sin nada propio.
 
+    [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-own-server/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-own-server){ .md-button }
-    [:octicons-book-16: Su código, explicado](cookbook.md#own-server){ .md-button }
+
+-   ![](assets/archive-icon.png){ .card-icon } **Internet Archive** · `kinotvapp/kino-plugin-archive`
+
+    ---
+
+    Películas de dominio público y televisión clásica de archive.org. **La plantilla más simple de la
+    que partir**: un manifiesto, un archivo JavaScript, sin paso de compilación, apiVersion 1, las
+    cinco capacidades, más el kit `sdk/`, `GUIDE.md`, `contract.json` y `kino.d.ts`.
+
+    [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-archive/generate){ .md-button .md-button--primary }
+    [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-archive){ .md-button }
 
 </div>
 
@@ -41,8 +43,9 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
 
 ## El plugin de referencia { #reference-plugin }
 
-`kino-plugin.json` y `plugin.js` de
-[kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) son el plugin de
+Para lo básico -- `search`, `home`, `browse`, `episodes` y `resolve` sobre un sitio público, sin
+ajustes ni sesión -- la referencia es `kino-plugin.json` y `plugin.js` de
+[kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive), el plugin de
 Internet Archive, con las cinco capacidades. Se lee más o menos así:
 
 1. Declara `archive.org` **y** `*.archive.org`: una URL de descarga en `archive.org` redirige a un
@@ -71,13 +74,42 @@ Internet Archive, con las cinco capacidades. Se lee más o menos así:
 El `README.md` de ese repositorio dice lo que no hace (una colección se muestra como una sola
 película, los capítulos numerados 0 se descartan), así que no copies eso como si fuera lo esperado.
 
-## El demo de todo el SDK { #own-server-demo }
+Para todo lo demás que apiVersion 2 y 3 permiten -- ajustes, sesión, descargas, ítems `live`,
+`channels` -- la referencia es
+[kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): su
+[`kino-plugin.json`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/kino-plugin.json)
+y su [`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js) usan casi
+todo lo que existe, y su
+[`README.md`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/README.md) relaciona cada
+función con el título de su servidor de prueba que la ejercita:
+
+| Lo que muestra | Dónde en el código | Guía |
+| --- | --- | --- |
+| Ajustes `url`, `text`, `password`, `toggle` | `kino-plugin.json`: `settings` | [Ajustes](manifest.md#settings) |
+| `"hosts": []` y el servidor que escribe la persona | `kino-plugin.json`; `base()` | [Los servidores propios de la persona](manifest.md#own-servers) |
+| Login y un token guardado en `kino.storage` | `token()`, `api()` | [`kino.storage`](kino-api.md#storage) |
+| Una caché con `ttlMs` | `home()` | [`kino.storage`](kino-api.md#storage) |
+| Búsqueda por título sobre un backend que compara cualquier palabra | `search()`, `kino.rank.*` | [`kino.rank`](kino-api.md#rank) |
+| Paginación con cursor | `browse()` | [Paginación](contract.md#paging) |
+| Temporadas como títulos separados | `episodes()` | [Temporadas](contract.md#seasons) |
+| Descargas (`download`) | `kino-plugin.json`; `resolve()` devuelve un mp4 progresivo | [Descargas](manifest.md#downloads) |
+| Una pista de audio aparte (`audioTracks`) | `resolve()` | [Las reglas del `Stream`](contract.md#stream) |
+| `ids.tmdb` | `item()` | [`ids.tmdb`](contract.md#tmdb) |
+| Ítems `live` (apiVersion 2) | `item()`, `resolve()` | [Canales en vivo (apiVersion 2)](live-channels.md#live-items) |
+| `channels`: `ref`, `stream` en línea y una lista M3U con guía XMLTV | `liveCategories()`, `liveChannels()` | [Canales en la pestaña En vivo](live-channels.md#en-vivo-tab), [Tres recetas](live-channels.md#recipes) |
+| Una guía para canales propios | `guide()` | [Las funciones de canales](live-channels.md#live-contract) |
+| Errores tipados (`kino.error`) | `api()` | [Errores que la gente entiende](contract.md#errors) |
+
+El código completo, explicado línea por línea, está en el recetario:
+[El servidor propio de la persona](cookbook.md#own-server).
+
+## Instálalo y compruébalo { #own-server-demo }
 
 [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) trae un
-servidor de referencia sin dependencias (`node server.mjs [--port 8096] [--user ana] [--password s3cr3t]`)
-cuyo catálogo ejercita una función por título, para que puedas instalar el plugin en Kino y ver
-funcionar cada una. Su README relaciona cada función con el lugar de `plugin.js` y el título que la
-muestra; el código mismo está explicado en el recetario, [El servidor propio de la persona](cookbook.md#own-server).
+servidor de referencia sin dependencias
+(`node server.mjs [--port 8096] [--user ana] [--password s3cr3t]`) cuyo catálogo ejercita una función
+por título, así que puedes instalar el plugin en Kino y ver cada fila de la tabla de arriba
+funcionando, sin necesitar un servidor real.
 
 Tres poderes **no** están a propósito, porque un servidor en la casa nunca los necesita: DRM Widevine
 ([receta](cookbook.md#widevine)), un host declarado por `http` plano

@@ -143,7 +143,11 @@ Este es el plugin de demostración publicado **Tu servidor**
 servidor de referencia para probarlo), que usa todas las funciones de apiVersion 3 que puede usar un
 servidor propio: temporadas, `download`, `audioTracks`, ítems `live`, un TTL de `kino.storage`,
 `kino.rank`, `ids.tmdb`, y `channels` en sus tres formas (canales con `ref`, canales con `stream` en
-línea y una lista M3U con guía XMLTV).
+línea y una lista M3U con guía XMLTV). Lo que sigue es, línea por línea, su
+[`kino-plugin.json`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/kino-plugin.json)
+y su [`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js) reales:
+es el plugin de referencia para cualquier función más allá de las cinco capacidades básicas (mira
+[Plugins de ejemplo](examples.md#reference-plugin)).
 
 ```json
 {

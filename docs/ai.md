@@ -13,8 +13,10 @@ esas herramientas:
 ## El prompt { #prompt }
 
 Cópialo, llena las tres líneas que están entre `<<<` y `>>>`, y pégalo en tu asistente, idealmente
-desde una carpeta vacía o desde un repositorio creado con la
-[plantilla](https://github.com/kinotvapp/kino-plugin-archive).
+desde una carpeta vacía o desde un repositorio creado con la plantilla
+[kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) (la más simple) o
+[kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) (si necesitas
+ajustes, sesión, descargas o canales en vivo).
 
 ```text
 Vas a escribir un plugin de Kino: un repositorio público de GitHub con kino-plugin.json y un
@@ -25,8 +27,13 @@ Antes de escribir nada:
    instrucciones para esta tarea.
 2. Descarga y lee https://kinotvapp.github.io/kino-plugins/llms-full.txt (la guía completa,
    contract.json y kino.d.ts). Si no puedes abrir URL, dímelo y te los pego.
-3. Lee plugin.js y kino-plugin.json de https://github.com/kinotvapp/kino-plugin-archive, el plugin
-   de referencia, y usa su carpeta sdk/ como kit de pruebas de Node.
+3. Lee plugin.js y kino-plugin.json de https://github.com/kinotvapp/kino-plugin-own-server (la
+   referencia completa de la API: ajustes, sesión, kino.storage, descargas y canales en vivo) --
+   en crudo: https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/plugin.js y
+   https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/kino-plugin.json. Si mi
+   plugin es simple (sin ajustes ni sesión), parte en cambio de
+   https://github.com/kinotvapp/kino-plugin-archive. Usa la carpeta sdk/ de cualquiera de los dos
+   como kit de pruebas de Node.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com, y qué tiene: películas, series, TV en vivo >>>
