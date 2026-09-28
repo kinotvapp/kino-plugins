@@ -1,0 +1,261 @@
+# La API `kino`
+
+`kino` es un objeto global, congelado, que siempre está. Nada más del mundo exterior está.
+
+```js
+kino.apiVersion   // 3 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.appVersion   // the version of Kino, for example "1.42.0"
+kino.lang         // "es-CO"
+```
+
+(`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
+manifiesto; `kino.appVersion` es la versión de Kino.)
+
+Kino también pone los globales web que le faltan a QuickJS, escritos en JavaScript y congelados:
+`URL`, `URLSearchParams`, `atob`, `btoa`, `TextEncoder` y `TextDecoder` (solo UTF-8). Se comportan
+como los del navegador (comparados con Node sobre un corpus de casos), salvo que `URL` no convierte
+nombres de dominio internacionales a punycode.
+
+Toda la API está declarada en [`kino.d.ts`](reference/index.md) para tu editor.
+
+## `await kino.fetch(url, options?)` { #fetch }
+
+```js
+const r = await kino.fetch("https://archive.org/metadata/" + encodeURIComponent(id), {
+  method: "GET",              // GET (default), POST, PUT, PATCH, DELETE or HEAD
+  headers: { Accept: "application/json" },
+  body: "a=1&b=2",            // see "Bodies" below; sent only with POST, PUT and PATCH
+  redirect: "follow",         // or "manual": get the 3xx itself, with its Location header
+  cookies: true,              // false: neither send nor store cookies for this request
+  timeoutMs: 20000,           // default 15000, at most 30000
+});
+r.ok        // true for 200 to 299
+r.status    // the HTTP status
+r.url       // the final URL, after redirects
+r.headers   // { "content-type": "...", ... }: names in lowercase, repeated headers joined with ", "
+r.text()    // the body as a string (already downloaded)
+r.json()    // JSON.parse of the body
+r.base64()  // the body bytes as base64: for anything that is not text
+```
+
+Las opciones: `method` es `GET` (por defecto), `POST`, `PUT`, `PATCH`, `DELETE` o `HEAD`; `body` solo
+se envía con `POST`, `PUT` y `PATCH`; `redirect: "manual"` te entrega la respuesta 3xx misma, con su
+header `Location`; `cookies: false` ni envía ni guarda cookies en esa petición; `timeoutMs` es 15000
+por defecto y máximo 30000. La respuesta: `r.ok` es `true` de 200 a 299, `r.url` es la URL final
+después de las redirecciones, y `r.headers` tiene los nombres en minúsculas, con los headers repetidos
+unidos con `", "`.
+
+Kino le entrega a tu código el texto o los bytes de un cuerpo, según su `Content-Type`; la otra forma
+se convierte dentro del motor cuando la pides, y para un cuerpo de varios MB eso toma segundos del
+tiempo de tu llamada. Pide la forma que tiene el contenido.
+
+- **Cuerpos.** Un texto se envía tal cual (`text/plain` salvo que pongas `Content-Type`).
+  `{ json: value }` envía `JSON.stringify(value)` como `application/json`; `{ form: { a: 1 } }` envía
+  `application/x-www-form-urlencoded`; `{ base64: "…" }` envía esos bytes.
+- **Solo https, y solo tus hosts.** El host de la petición y de **cada salto de redirección** tiene
+  que coincidir con `hosts` (`*.x` coincide con los subdominios de `x`, no con `x`), o ser un servidor
+  que la persona escribió en tus ajustes, exactamente como lo escribió. Una petición a cualquier otra
+  cosa falla antes de salir del dispositivo. Una URL `http` en un host declarado también falla, salvo
+  que hayas declarado ese host `{ "host": "…", "insecureHttp": true }` (apiVersion 2,
+  [mira el manifiesto](manifest.md#insecure-host)). Una dirección IP o un nombre local (`localhost`,
+  `.local`, …) siempre se rechaza salvo que la persona lo haya escrito. Kino también rechaza un nombre
+  declarado que resuelve a una dirección dentro de la red de la persona (loopback, privada,
+  link-local, NAT de operador, multicast).
+- **Las redirecciones** (301, 302, 303, 307, 308) las sigue Kino, hasta 10 saltos; cada salto se
+  revisa y cuenta como una petición. Un 303, o un 301/302 después de un POST, se vuelve un GET sin
+  cuerpo. Con `redirect: "manual"` recibes la respuesta 3xx (un formulario de login suele responder
+  302 cuando sale bien).
+- **Una respuesta que no es 2xx no lanza error**: revisa `r.ok`. Todo lo demás que salga mal lanza un
+  error con un `code` que puedes revisar (`e.code === "timeout"`):
+
+| `e.code` | Cuándo |
+| --- | --- |
+| `host_not_allowed` | el host (o un salto de redirección) no es uno que declaraste o que escribió la persona, o es `http` en un host declarado que no está marcado `insecureHttp` |
+| `timeout` | no llegó una respuesta completa dentro de `timeoutMs` |
+| `network` | la conexión falló, o hubo demasiadas redirecciones |
+| `too_large` | la petición pasa del tope de tamaño, o un cuerpo de más de 5 MB |
+| `invalid_request` | una URL, método, `redirect` o `body` inválidos, o más peticiones de las que permite una llamada |
+
+- **Límites:** 15 s por petición por defecto (30 s como máximo), un cuerpo de máximo 5 MB
+  (decodificado con el charset de su `Content-Type`, UTF-8 por defecto), y máximo 60 peticiones en una
+  llamada a tu plugin, saltos de redirección incluidos.
+- **Los headers que pones** se envían tal cual, salvo `Host`, `Content-Length`, `Transfer-Encoding`,
+  `Connection` y `Cookie2`. Si no pones `User-Agent`, Kino envía `Kino/<version> (plugin <id>)`. Un
+  header `Content-Type` fija el tipo del cuerpo.
+- **Cookies:** cada plugin tiene su propio tarro de cookies. Kino guarda lo que ponen tus hosts
+  (`Set-Cookie` nunca le llega a tu código) y lo devuelve en las peticiones siguientes, con las reglas
+  de siempre (dominio, ruta, `Secure`, vencimiento). El tarro se guarda en el dispositivo, así que un
+  login sobrevive al sandbox y a que la app se reinicie; se borra cuando la persona cambia tus ajustes
+  o desinstala el plugin.
+
+## `kino.cookies` { #cookies }
+
+```js
+kino.cookies.get("https://site.example/", "session")  // the value, or null
+kino.cookies.clear()                                  // forget every cookie of this plugin
+```
+
+`get` devuelve el valor o `null`, y solo responde para URL a las que tu plugin puede llegar; `clear`
+olvida todas las cookies del plugin. Máximo 50 cookies por dominio y 64 KB en total.
+
+## `kino.crypto` { #crypto }
+
+Funciones síncronas para lo que hacen los sitios para esconder sus enlaces. Cada argumento de texto
+es texto en una codificación que tú escoges (`utf8`, `hex` o `base64`); los errores traen
+`code: "crypto_error"`.
+
+```js
+kino.crypto.hash("sha256", "hola")                        // hex by default
+kino.crypto.hmac("sha1", "key", "data", { outputEncoding: "base64" })
+kino.crypto.decrypt("aes-128-cbc", { key: "0123456789abcdef", iv: "abcdef9876543210", data: b64 })
+kino.crypto.encrypt("aes-256-gcm", { key: k, keyEncoding: "hex", iv: n, ivEncoding: "hex", data: "hola" })
+kino.crypto.pbkdf2("sha256", "password", "salt", 10000, 32)   // hex
+kino.crypto.randomBytes(16)                               // hex
+kino.crypto.uuid()
+```
+
+- `encrypt` recibe texto (`utf8`) y devuelve `base64`; `decrypt` recibe `base64` y devuelve texto.
+  Cambia cualquiera de los dos con `inputEncoding` / `outputEncoding`; las llaves, los IV y el `aad` de
+  GCM usan `keyEncoding`, `ivEncoding`, `aadEncoding` (por defecto `utf8`). `hash`, `pbkdf2` y
+  `randomBytes` devuelven `hex` por defecto.
+- CBC y ECB usan relleno PKCS#7 salvo que pases `padding: "none"`. GCM pega su etiqueta de 16 bytes al
+  final del texto cifrado, y la espera ahí para descifrar (como la mandan casi todos los sitios).
+- Un tamaño de llave equivocado, un relleno malo o una etiqueta GCM que no cuadra lanzan un error;
+  nunca devuelven basura en silencio.
+
+| Función | Algoritmos |
+| --- | --- |
+| `hash`, `hmac` | `md5`, `sha1`, `sha256`, `sha512` |
+| `encrypt`, `decrypt` | `aes-128-cbc`, `aes-192-cbc`, `aes-256-cbc`, `aes-128-ecb`, `aes-192-ecb`, `aes-256-ecb`, `aes-128-ctr`, `aes-192-ctr`, `aes-256-ctr`, `aes-128-gcm`, `aes-192-gcm`, `aes-256-gcm`, `des-ede3-cbc`, `des-ede3-ecb` |
+| `pbkdf2` | `sha1`, `sha256`, `sha512` |
+| codificaciones | `utf8`, `hex`, `base64` |
+
+## `kino.sleep(ms)` y `kino.error(code, message?)` { #sleep-error }
+
+`await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo
+cuenta dentro del límite de la llamada. `kino.error` arma los errores con tipo de
+[Errores que la gente entiende](contract.md#errors).
+
+## `kino.config` { #config }
+
+```js
+kino.config.get("server")   // a setting's value: a string, or true/false for a toggle
+kino.config.all()           // every setting that has a value, as an object
+```
+
+`get` devuelve el valor de un ajuste (un texto, o `true`/`false` en un `toggle`); `all` devuelve todos
+los ajustes que tienen valor, como un objeto. Solo lectura: los valores que guardó la persona, o el
+`default` de un ajuste que no tocó. Un ajuste sin valor y sin `default` es `undefined`.
+
+## `kino.html.select(html, css)` { #html }
+
+Analiza `html` y devuelve `[{ text, html, attrs }]` por cada elemento que cumple el selector CSS
+(la sintaxis de selectores de Jsoup): `text` es su texto, `html` su HTML interno, `attrs` un objeto
+con sus atributos. Solo se leen los primeros 2.000.000 caracteres de `html`, vuelven máximo 500
+elementos, y lanza un error si el texto y el HTML de las coincidencias juntos pasan de 5.242.880
+caracteres (5 MB). Un selector de más de 10.000 caracteres lanza
+`Error("selector CSS demasiado largo (más de 10000 caracteres)")`. **Solo existe dentro de Kino**: la
+versión del kit de Node lanza un error, así que prueba en la app todo lo que lo use.
+
+## `kino.storage` { #storage }
+
+```js
+kino.storage.get("key")                          // the string, or null
+kino.storage.set("key", "v")                     // values are converted to strings
+kino.storage.set("key", "v", { ttlMs: 3600000 }) // expires after that many milliseconds
+kino.storage.remove("key")
+kino.storage.keys()                              // every key, as an array (expired keys are already gone)
+```
+
+`get` devuelve el texto o `null`; `set` convierte los valores a texto; `keys()` devuelve todas las
+claves como arreglo (las vencidas ya no están). Es síncrono, privado de tu plugin, y sobrevive a los
+reinicios del sandbox y de la app. Máximo 256 KB en total (medido como el JSON de todas las claves y
+valores); pasarse lanza `Error("almacenamiento del plugin lleno (256 KB)")`. Se borra cuando la
+persona desinstala el plugin, y **no** se borra cuando cambia tus ajustes.
+
+El tercer argumento de `set` es opcional: déjalo por fuera para una entrada permanente, exactamente
+como antes de que existiera esta opción. Pasa `{ ttlMs }` para que la entrada venza -- después de esa
+cantidad de milisegundos `get` devuelve `null` y `keys()` ya no la lista, incluso después de reiniciar
+la app. `ttlMs` tiene que ser un número entero mayor que 0 y de máximo 2.592.000.000 (30 días);
+cualquier otra cosa lanza un error antes de tocar tu entrada, igual que ya pasa con un valor demasiado
+grande. Una entrada vencida nunca cuenta para el tope de 256 KB: se descarta la próxima vez que tu
+plugin lee o escribe en el almacenamiento. Ejemplo, una fila de Inicio guardada por una hora:
+
+```js
+export async function home() {
+  const cached = kino.storage.get("home-rows");
+  if (cached) return JSON.parse(cached);
+  const rows = await buildHomeRows();
+  kino.storage.set("home-rows", JSON.stringify(rows), { ttlMs: 60 * 60 * 1000 });
+  return rows;
+}
+```
+
+## `kino.log(...args)` { #log }
+
+También `console.log`, `console.info`, `console.warn` y `console.error`: todos van al log (etiqueta
+`KinoPlugin` en `adb logcat`), los objetos se escriben como JSON, y un mensaje se corta a los 2000
+caracteres. En el kit de Node van a stderr.
+
+## `kino.rank` { #rank }
+
+Para un backend de búsqueda que solo compara una bolsa suelta de palabras en común, no un título
+completo: si le preguntas por un título largo puede devolver veinte resultados sin relación que solo
+comparten una palabra común, con la coincidencia real enterrada en la página dos. Estas tres
+funciones puras hacen que un backend así se comporte como una búsqueda por título, sin tocar su
+propia forma de JSON.
+
+```js
+kino.rank.shortQuery(query)
+kino.rank.sortBySimilarity(items, query, getTitle?)
+kino.rank.filterRelevant(items, query, getTitle?)
+```
+
+- **`shortQuery(query)`** devuelve la CABEZA del título, hasta su primer `:`, `,`, `|`, raya corta
+  (en dash) o raya larga (em dash): pregúntale eso a tu backend en vez del título completo, para que
+  su propio orden tenga menos ruido. Una cabeza de una o dos letras ("El", "A") no identifica nada, así
+  que en ese caso vuelve el texto completo (sin espacios en los extremos); un `-` simple nunca es punto
+  de corte (partiría "Spider-Man"). Pruébalo primero con tu backend -- algunos funcionan peor con una
+  consulta corta, no mejor.
+- **`sortBySimilarity(items, query, getTitle?)`** reordena `items` para que primero queden los que
+  comparten más palabras con `query`; en los empates se conserva el orden del backend.
+- **`filterRelevant(items, query, getTitle?)`** descarta los ítems que solo comparten una palabra
+  suelta con `query`. Reordenar solo igual muestra una página llena de casi-aciertos cuando el título de
+  verdad no está en el backend; esto hace que un título ausente vuelva con 0 resultados.
+
+`query` es un título, o un arreglo con varias formas de uno que vale la pena probar juntas --
+`[query.q, query.originalTitle, ...query.altTitles]`, porque un backend puede conocer un título solo en
+un idioma. `getTitle` lee un título de uno de tus `items`; por defecto es `(item) => item.title`, y
+también puede devolver un arreglo, igual que `query`, cuando un ítem guarda el título en más de un
+campo o idioma (se combinan las palabras de todas las formas). La comparación ignora tildes y
+mayúsculas y las palabras de 1-2 letras (los "el", "de", "of" que hacen parecer iguales títulos que no
+tienen nada que ver); `filterRelevant` conserva un ítem cuando comparte al menos el 60% de las
+palabras distintivas de un título pedido.
+
+**Una entrada mala nunca lanza error.** A diferencia de `kino.fetch`/`kino.crypto`/`kino.sleep`, estas
+tres nunca lanzan un `kino.error` por un argumento mal formado: `items` que no es un arreglo responde
+`[]` en cualquiera de las dos funciones. Un ítem sin título utilizable -- `null`, `undefined`,
+`getTitle` que devuelve algo que no es un texto (o un arreglo sin ninguno), o `getTitle` que lanza un
+error -- se trata como "sin título" en vez de tumbar tu llamada: `filterRelevant` lo descarta como un
+casi-acierto más, y `sortBySimilarity` lo pone después de todos los que sí tienen título, en el orden
+de tu propia lista entre ellos.
+
+```js
+export async function search(query) {
+  const titles = [query.q, query.originalTitle, ...query.altTitles];
+  const r = await kino.fetch(BASE + "/search?q=" + encodeURIComponent(kino.rank.shortQuery(query.q)));
+  const found = r.json().results; // whatever shape your backend answers with
+  const relevant = kino.rank.filterRelevant(found, titles, (x) => x.name);
+  return kino.rank.sortBySimilarity(relevant, titles, (x) => x.name).map(toItem);
+}
+```
+
+Si tu backend ya ordena bien un título completo, sáltate `shortQuery` y usa solo
+`filterRelevant`/`sortBySimilarity` sobre lo que te da para `query.q` tal como se escribió.
+
+Dos cosas quedaron por fuera a propósito. Ninguna reintenta con el título completo: si la cabeza de
+`shortQuery` resulta ser una palabra común (p. ej. "Love, Death & Robots" -> "Love") y el backend no
+devuelve nada relevante, reintenta tú `search` con el título completo cuando la corta vuelva vacía. Y
+ninguna hace nada con números ni orden de temporadas: cómo escribe un backend "temporada 2" en sus
+títulos ("T2", "Temporada 2", …) es propio de ese backend, no algo que estas funciones puedan
+absorber.

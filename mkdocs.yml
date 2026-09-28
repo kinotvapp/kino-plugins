@@ -1,0 +1,134 @@
+site_name: Plugins de Kino
+site_description: Cómo escribir, probar y publicar un plugin de video para Kino.
+site_url: https://kinotvapp.github.io/kino-plugins/
+repo_url: https://github.com/kinotvapp/kino-plugins
+repo_name: kinotvapp/kino-plugins
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: es
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Modo claro
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - assets/extra.css
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: es
+          name: Español
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+          site_name: Kino plugins
+          site_description: How to write, test and publish a video plugin for Kino.
+          nav_translations:
+            Inicio: Home
+            Empezar: Get started
+            Primer plugin: A first plugin
+            Plugins de ejemplo: Example plugins
+            Crear un plugin con IA: Build a plugin with AI
+            Guía: Guide
+            Manifiesto: The manifest
+            Contrato: The contract
+            API kino: The kino API
+            Canales en vivo: Live channels
+            Límites y trampas del motor: Limits and engine quirks
+            Probar en local: Test it locally
+            Publicar: Publishing
+            Lo que ve la persona: What people see
+            Recetario: Cookbook
+            Referencia: Reference
+
+hooks:
+  - hooks/llms.py
+
+nav:
+  - Empezar:
+      - Inicio: index.md
+      - Primer plugin: first-plugin.md
+      - Plugins de ejemplo: examples.md
+      - Crear un plugin con IA: ai.md
+  - Guía:
+      - Manifiesto: manifest.md
+      - Contrato: contract.md
+      - API kino: kino-api.md
+      - Canales en vivo: live-channels.md
+      - Límites y trampas del motor: engine-limits.md
+      - Probar en local: test-locally.md
+      - Publicar: publish.md
+      - Lo que ve la persona: what-people-see.md
+      - Recetario: cookbook.md
+  - Referencia: reference/index.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - tables
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: false
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: [docs]
+      check_paths: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+validation:
+  omitted_files: warn
+  absolute_links: info
+  unrecognized_links: warn
+  anchors: warn
+
+not_in_nav: |
+  /llms.txt
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kinotvapp/kino-plugins
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/Kinoapptv

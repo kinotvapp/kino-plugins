@@ -1,0 +1,173 @@
+# The manifest
+
+`kino-plugin.json`, at most 16 KB:
+
+```json
+{
+  "id": "archive-org",
+  "name": "Internet Archive",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "entry": "plugin.js",
+  "description": "Películas de dominio público y televisión clásica de archive.org",
+  "author": "kinotvapp",
+  "homepage": "https://github.com/kinotvapp/kino-plugin-archive",
+  "hosts": ["archive.org", "*.archive.org"],
+  "capabilities": ["search", "home", "browse", "episodes", "resolve"],
+  "color": "#E0A030",
+  "icon": "icon.png"
+}
+```
+
+If a rule below is broken, Kino refuses to install the plugin and shows a message in Spanish that
+names the field.
+
+| Field | Rule |
+| --- | --- |
+| `id` | Required. `^[a-z0-9][a-z0-9-]{1,39}$` (2 to 40 lowercase letters, digits or hyphens, not starting with a hyphen). Not one of `magis`, `ditu`, `live`, `local`, `unknown`, `plugin`. It is the plugin's identity: never change it once people have installed it. |
+| `name` | Required. 1 to 40 characters. |
+| `version` | Required. `MAJOR.MINOR.PATCH` and nothing else (no `-beta`, no `+build`), each number up to 6 digits and without leading zeros. |
+| `apiVersion` | Required. `1`, `2` or `3`. A higher number than Kino supports is refused with "Este plugin necesita una versión más nueva de Kino". Declare `2` only if you use something that needs it (below); otherwise stay on `1` so your plugin also runs on older Kino builds. |
+| `entry` | Required. Relative path of the JavaScript file: letters, digits, `.`, `_`, `-` and `/` only, no `..`, at most 200 characters, ends in `.js`. The file is at most 1 MB. |
+| `hosts` | Required. 1 to 20 entries (from apiVersion 2 it may be empty, `[]`, when the plugin has a `url` setting: see [The person's own servers](#own-servers)); each a lowercase DNS name (`archive.org`), `*.` plus a DNS name (`*.archive.org`), or (apiVersion 2 only) an object `{ "host": "…", "insecureHttp": true }` (below). Host names only: no scheme, port or path. No bare `*`, no IP addresses, no `localhost`, nothing ending in `.local`, `.lan`, `.internal`, `.localhost` or `.home.arpa`, and at least one dot. **`*.x` covers subdomains only, not `x` itself**: if you need both, list both. |
+| `capabilities` | Required. A subset of `search`, `home`, `browse`, `episodes`, `resolve`, `download`, `drm`, `channels`. Must include `resolve` and at least one of `search` or `home`. `search`, `home`, `browse`, `episodes` and `resolve` must each be an exported function of the entry file, or the install fails with "El plugin no carga: le falta ...". `download` and `drm` need `apiVersion: 2` and are declarative flags instead — the app acts on them, not your code, so nothing extra to export; declaring one shows its consent line ("Puede descargar videos para verlos sin conexión" / "Reproduce video protegido (DRM)") and needs approval again on an update that adds it. `download` gives your titles offline downloads (see [Downloads](#downloads)); `drm` lets a `Stream` carry a Widevine license (see [A Widevine-protected stream](cookbook.md#widevine)). `channels` needs `apiVersion: 3` and the exports `liveCategories` and `liveChannels` (see [Channels in the En vivo tab](live-channels.md#en-vivo-tab)). |
+| `settings` | Optional. What the person fills in on your plugin's "Configurar" screen: see below. |
+| `permissions` | Optional. A list of names from the closed list in `contract.json`. **The list is empty in this version**: any name is refused with "permiso desconocido: …". It exists so a later version can add permissions (each one shown on the consent screen) without a new `apiVersion`. |
+| `color` | Optional `#RRGGBB`: the accent of your plugin's tab and chips. A neutral color by default. |
+| `icon` | Optional relative path to a square `.png`, at most 128 KB. An icon that is missing or too big is skipped without failing the install. |
+| `discoverable` | Optional `true` or `false` (default `true`), at every `apiVersion`. `false` keeps the plugin out of Kino's community search (see [Get found](publish.md#get-found)); people can still install it by typing its address. Any other value is refused with "El campo \"discoverable\" debe ser true o false". |
+| `description`, `author`, `homepage` | Optional strings. Trimmed and cut to 300, 60 and 200 characters. Kino shows the name, author, version and description when it asks the person to install. |
+
+Other keys are ignored. `hosts` does three jobs: it is what the person approves, it is the only set
+of sites `kino.fetch` can reach, and it is the set a `Stream`'s URLs must be on: the video, its
+subtitles, its `audioTracks` and a `drm` block's `licenseUrl` (besides the person's own server).
+
+One more field, `liveStreamHosts`, is read only with `"apiVersion": 3` and only for plugins with the
+`channels` capability: see [Channels from any server](live-channels.md#live-stream-hosts). Live
+items (apiVersion 2) and the En vivo tab (apiVersion 3) have their own page,
+[Live channels](live-channels.md).
+
+## Settings { #settings }
+
+`settings` is a list of at most 12 entries. Each one becomes a field on the plugin's "Configurar"
+screen (Ajustes ▸ Plugins), and your code reads its value with `kino.config.get(key)`:
+
+```json
+"settings": [
+  { "key": "server", "label": "Servidor", "type": "url", "required": true, "hint": "http://192.168.1.10:8096" },
+  { "key": "user", "label": "Usuario", "type": "text", "required": true },
+  { "key": "password", "label": "Contraseña", "type": "password", "required": true },
+  { "key": "quality", "label": "Calidad", "type": "select", "default": "hd",
+    "options": [{ "value": "hd", "label": "Alta" }, { "value": "sd", "label": "Normal" }] },
+  { "key": "subs", "label": "Subtítulos", "type": "toggle", "default": true }
+]
+```
+
+<!-- contract:settings:start -->
+| type | value | can be `required` | can have a `default` | longest value |
+| --- | --- | --- | --- | --- |
+| `text` | text | yes | yes | 500 characters |
+| `url` | text | yes | no (use `hint` for an example) | 2,048 characters |
+| `password` | text | yes | yes | 500 characters |
+| `toggle` | `true` / `false` | no (always has a value) | yes | — |
+| `select` | one of the `options` values | no (always has a value) | yes | — |
+<!-- contract:settings:end -->
+
+- `key` matches `^[a-z][a-zA-Z0-9_]{0,31}$` and is unique; `label` is 1 to 40 characters; `hint`
+  (the example under the field) at most 80.
+- `select` needs `options` (1 to 20, each a `value` and a `label` of at most 40 characters); its
+  `default` must be one of the values. A `toggle` default is `true` or `false`.
+- **A `url` setting has no `default`**: a server the person types becomes a host your plugin may
+  reach, so only the person can choose it. A manifest with a `default` on a `url` setting is
+  refused; put an example address in `hint` instead.
+- **A `required` setting with no value** stops every call to your plugin before it runs: the plugin
+  shows "Falta configurar", its Home rows are not asked for, and anything the person opens from it
+  says "Configura &lt;name&gt; en Ajustes ▸ Plugins" with a button to that screen.
+- **Passwords** are stored encrypted on the device. Your code can read them (it has to send them),
+  which is why the consent screen says "Este plugin usa tu usuario y contraseña". Kino never writes
+  any setting to its log; do not do it yourself.
+- **Changing any setting** closes your plugin's sandbox, deletes its cookies and its cached Home
+  rows, so the next call starts a new session with the new values. `kino.storage` is **not** cleared:
+  if you keep a token there, key it by the user and server it belongs to (the cookbook does).
+- Uninstalling deletes the settings, passwords included.
+
+## The person's own servers { #own-servers }
+
+A `url` setting is how a plugin talks to a server that is not on the internet: a media server at
+home, for instance. **The server the person types becomes one more host your plugin may reach**,
+exactly as typed: its scheme (`http` is allowed here, because home servers rarely have a
+certificate), host and port. Nothing else on that machine or network is allowed, redirects from it
+may only go to the same server or to your declared `hosts`, and your stream and image URLs may point
+at it. The consent screen warns "Se conectará a los servidores que escribas en su configuración", and
+Ajustes lists what each plugin reaches ("Se conectará a: …").
+
+A plugin whose **only** reach is that server (it never calls a site of its own) declares
+`"hosts": []` from `"apiVersion": 2`, as long as it has at least one `url` setting: the consent
+screen then lists no host at all, only the line about the servers the person types, and Ajustes says
+"Se conectará solo a los servidores que escribas en su configuración" until one is typed. An empty
+`hosts` with no `url` setting is refused (`El campo "hosts" solo puede estar vacío si el plugin
+tiene un ajuste de tipo "url"`), and on `"apiVersion": 1` it is refused as always. (Kino never lists
+a host under the reserved `.invalid` domain either, the placeholder older manifests used.)
+
+Only the scheme, host and port count: any path on that server is reachable, and
+`kino.config.get` returns the value as typed. Kino refuses, with a message under the field, a value
+that is not an `http`/`https` URL, or whose host is `localhost`, a loopback address (`127.0.0.1`,
+`::1`), a link-local one (`169.254.x.x`, `fe80::`) or `0.0.0.0`. Addresses in the person's own network (`192.168.x.x`,
+`10.x.x.x`, a `.local` name) are allowed: that is the point.
+
+## Declaring an insecure host (apiVersion 2) { #insecure-host }
+
+A `hosts` entry can also be an object, for a site of yours that has no certificate:
+
+```json
+"hosts": ["archive.org", { "host": "cdn.example.org", "insecureHttp": true }]
+```
+
+This needs `"apiVersion": 2`. `insecureHttp: true` is the only thing it can carry beyond `host`, and
+it marks the only *declared* hosts (not the person's own server, above) allowed over plain `http`:
+`kino.fetch`, a `Stream`'s `url`, its `subtitles`, its `audioTracks` and a `drm` block's `licenseUrl`
+all accept `http://cdn.example.org/…` once it is declared this way, and every redirect hop is judged
+by the same rule. Every other declared host stays https-only, `https` keeps working on the insecure
+one, and the host is matched exactly: `sub.cdn.example.org` is not covered. The same rules as a plain
+string still apply (public DNS name, no `*`, no IP, nothing private/LAN; a name that resolves into
+the person's own network is still refused) plus one more: **no `*.` wildcard** — an insecure host is
+named exactly. The consent screen shows it in red, "Conexión sin cifrar con cdn.example.org", and an
+update that newly marks a host this way waits for approval like a brand new host would. See
+[A site of yours without a certificate](cookbook.md#insecure-site).
+
+## Downloads (apiVersion 2) { #downloads }
+
+Declare `"download"` in `capabilities` (with `"apiVersion": 2`) and Kino offers your titles for
+offline viewing: "Descargar" on the info page and "Guardar en el dispositivo" in the library, on
+phones (Kino never downloads on a TV). Nothing extra to export. When the person saves a title, Kino
+calls your `resolve(ref)` when the download actually runs, exactly as playing would, and saves the
+`Stream` as **one file**, with your `headers` on the request, through the same host gate as the player
+(https on your `hosts` or the person's own server, every redirect hop checked, never the home
+network). Your `subtitles` are saved next to it. `audioTracks` are **not** saved: the offline copy has
+only the audio inside the video file, so a source that dubs through separate tracks is heard in its
+main audio when offline.
+
+What downloads, and what does not:
+
+- A progressive file (`mp4`, `mkv`, `webm`, `ts`, …) downloads. The saved file takes its extension
+  from your `mime` when you give one, else from the URL, else `mp4`; the player sniffs the bytes anyway.
+- An HLS or DASH manifest (`.m3u8`, `.mpd`, a `mime` such as `application/vnd.apple.mpegurl` or
+  `application/dash+xml`, or a response whose `Content-Type` or first bytes say so, whatever the URL
+  looks like) does **not**: the download ends as "Este video no se puede descargar", a final state
+  with no "Reintentar" (it would refuse the same way) that the person can only remove. A
+  DRM-protected stream or a live channel is refused the same way. There is no separate "resolve for
+  download" call: if your source offers both a manifest and a file, prefer the file, or accept that
+  those titles play but do not download.
+- The queue downloads one title at a time, so a `ref` may wait a while before `resolve` is called:
+  keep something stable in it and look the fresh link up inside `resolve` (as recommended in
+  [The contract](contract.md#id-and-ref)). A retry resumes the partial file even when your URL
+  changed. A `resolve` the queue makes that times out fails that download only: it does not count
+  toward the three timeouts in a row that switch your plugin off ("No responde"), which only calls
+  made for the person on screen do.
+- A plugin that is disabled, waiting for its settings, or uninstalled downloads nothing: its titles
+  show no download button, and a title already queued fails with "Este plugin ya no puede descargar
+  videos". Files already downloaded keep playing offline and stay removable in Descargas, whatever
+  happens to the plugin afterwards.
+
+Declaring `download` shows "Puede descargar videos para verlos sin conexión" on the consent sheet,
+and an update that newly declares it waits for the person's approval ([Publishing](publish.md#updates)).

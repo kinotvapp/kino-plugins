@@ -1,0 +1,37 @@
+# Kino plugins
+
+> How to write, test and publish a video-source plugin for Kino, an Android video app for phones and TVs. A plugin is a public GitHub repository with a JSON manifest (kino-plugin.json) and one JavaScript ES module (plugin.js) that Kino runs in a QuickJS sandbox; it exports async functions (search, home, browse, episodes, resolve, and liveCategories/liveChannels/guide for live TV) that return plain JSON Kino validates strictly. A Node kit (sdk/) runs and validates plugins locally.
+
+Everything a person reads in Kino is Spanish (Bogotá, tuteo). The guide exists in Spanish (default, site root) and English (/en/); the English pages are the ones below. For one-shot context, read llms-full.txt: every English page, AGENTS.md, contract.json and kino.d.ts in one file.
+
+## Start here
+
+- [AGENTS.md](https://kinotvapp.github.io/kino-plugins/AGENTS.md): instructions for AI assistants building a Kino plugin (workflow, hard rules with exact limits, checklist, common mistakes)
+- [llms-full.txt](https://kinotvapp.github.io/kino-plugins/llms-full.txt): the complete guide as one text file
+- [Home](https://kinotvapp.github.io/kino-plugins/en/): what a plugin is, how people install it, the 5-minute path
+- [A first plugin](https://kinotvapp.github.io/kino-plugins/en/first-plugin/): a two-file plugin and where the sdk/ kit comes from
+
+## Guide
+
+- [The manifest](https://kinotvapp.github.io/kino-plugins/en/manifest/): every field of kino-plugin.json, settings, the person's own servers, insecureHttp, downloads
+- [The contract](https://kinotvapp.github.io/kino-plugins/en/contract/): exported functions, arguments, returned shapes, validation rules, Stream rules, typed errors
+- [The kino API](https://kinotvapp.github.io/kino-plugins/en/kino-api/): kino.fetch, cookies, crypto, sleep, error, config, html.select, storage, log, rank
+- [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/): live items, the channels capability, M3U/XMLTV playlists, guide, liveStreamHosts, three recipes
+- [Limits and engine quirks](https://kinotvapp.github.io/kino-plugins/en/engine-limits/): every limit, sandbox lifecycle, missing globals in QuickJS, the unhandled-rejection trap
+- [Test it locally](https://kinotvapp.github.io/kino-plugins/en/test-locally/): sdk/run.mjs, sdk/validate.mjs, record/replay fixtures, live-channel commands, what Node does not reproduce
+- [Publishing](https://kinotvapp.github.io/kino-plugins/en/publish/): versions and approvals, and every requirement to appear in the community list (topic kino-plugin)
+- [What people see](https://kinotvapp.github.io/kino-plugins/en/what-people-see/): consent sheet, statuses, uninstalling
+- [Cookbook](https://kinotvapp.github.io/kino-plugins/en/cookbook/): HTML site with login, JSON API with token, the person's own server, Widevine, plain http
+
+## Reference
+
+- [contract.json](https://kinotvapp.github.io/kino-plugins/reference/contract.json): every number and rule the app enforces (machine-readable)
+- [kino.d.ts](https://kinotvapp.github.io/kino-plugins/reference/kino.d.ts): TypeScript declarations of the kino API and every shape
+- [Example plugins](https://kinotvapp.github.io/kino-plugins/en/examples/): the two published examples
+- [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive): the reference plugin and template, with the sdk/ kit
+- [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): a plugin for the person's own media server, demo of every apiVersion 3 feature
+
+## Optional
+
+- [Build a plugin with AI](https://kinotvapp.github.io/kino-plugins/en/ai/): a ready-to-paste prompt
+- [Markdown sources](https://github.com/kinotvapp/kino-plugins/tree/main/docs): the pages as Markdown (English: *.en.md, Spanish: *.md)
