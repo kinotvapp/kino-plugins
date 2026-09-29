@@ -52,7 +52,8 @@ Item       = { id: string, ref: string, title: string, kind: "movie" | "series" 
                lang?: string, quality?: string, originalTitle?: string,
                genres?: string[], rating?: number, runtimeMinutes?: number,
                ids?: { tmdb?: number, imdb?: string }, badges?: string[], adult?: boolean }
-Row        = { id: string, title: string, items: Item[], ref?: string }
+Row        = { id: string, title: string, items: Item[], ref?: string, genre?: Genre }
+Genre      = "peliculas" | "series" | "anime" | "infantil" | "documentales" | "deportes" | "noticias" | "musica" | "entretenimiento" | "otros"
 Page       = { items: Item[], next?: string }
 SeriesInfo = { title?: string, poster?: string, backdrop?: string, overview?: string,
                ids?: { tmdb?: number, imdb?: string }, genres?: string[], year?: string }
@@ -65,6 +66,8 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
                durationMs?: number, expiresInSeconds?: number,
                drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> } }
 ```
+
+**Genre (Categorías and the En vivo filter).** A Home `Row`, a live `LiveCategory` and a `playlist` may carry an optional `genre` from a closed list of ten ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino shows their Spanish names). It lets Kino line up categories from different plugins: the Categorías tab groups the browsable Home rows (those with a `ref`, when you declare `browse`) of every plugin by genre, and En vivo can narrow its categories by genre. A value outside the list is ignored, never an error, and without a `genre` Kino guesses from the title of the row or group ("Deportes", "Noticias Colombia", "Kids"…), so set it when your titles do not say it. On a `playlist` the genre is the default for the groups of the list (each group's own title is guessed first). Kino versions before this field ignore it.
 
 ### How the pieces connect { #pieces }
 

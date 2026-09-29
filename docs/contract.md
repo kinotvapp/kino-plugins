@@ -52,7 +52,8 @@ Item       = { id: string, ref: string, title: string, kind: "movie" | "series" 
                lang?: string, quality?: string, originalTitle?: string,
                genres?: string[], rating?: number, runtimeMinutes?: number,
                ids?: { tmdb?: number, imdb?: string }, badges?: string[], adult?: boolean }
-Row        = { id: string, title: string, items: Item[], ref?: string }
+Row        = { id: string, title: string, items: Item[], ref?: string, genre?: Genre }
+Genre      = "peliculas" | "series" | "anime" | "infantil" | "documentales" | "deportes" | "noticias" | "musica" | "entretenimiento" | "otros"
 Page       = { items: Item[], next?: string }
 SeriesInfo = { title?: string, poster?: string, backdrop?: string, overview?: string,
                ids?: { tmdb?: number, imdb?: string }, genres?: string[], year?: string }
@@ -65,6 +66,8 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
                durationMs?: number, expiresInSeconds?: number,
                drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> } }
 ```
+
+**Género (Categorías y el filtro de En vivo).** Una `Row` del Home, una `LiveCategory` de En vivo y una `playlist` pueden llevar un `genre` opcional de una lista cerrada de diez ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino muestra sus nombres en español). Sirve para que Kino alinee categorías de plugins distintos: la pestaña Categorías agrupa por género las filas del Home que se pueden explorar (las que tienen `ref`, si declaras `browse`) de todos los plugins, y En vivo puede acotar sus categorías por género. Un valor fuera de la lista se ignora, nunca es un error, y sin `genre` Kino lo adivina por el título de la fila o del grupo ("Deportes", "Noticias Colombia", "Kids"…), así que ponlo cuando tus títulos no lo digan. En una `playlist` el género es el de partida para los grupos de la lista (antes se intenta adivinar por el título de cada grupo). Las versiones de Kino anteriores a este campo lo ignoran.
 
 ### Cómo se conectan las piezas { #pieces }
 

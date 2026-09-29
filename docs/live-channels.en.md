@@ -126,9 +126,9 @@ more functions. Their arguments:
 They return:
 
 ```ts
-LiveCategory = { id: string, title: string, country?: string, adult?: boolean }
+LiveCategory = { id: string, title: string, country?: string, adult?: boolean, genre?: Genre }
 Playlist     = { playlist: { url: string, format: "m3u", headers?: Record<string, string>,
-                             streamHeaders?: Record<string, string>,
+                             streamHeaders?: Record<string, string>, genre?: Genre,
                              epg?: { url: string, format: "xmltv" }, refreshHours?: number,
                              hideGroups?: string[], resolve?: boolean } }
 LiveChannel  = { id: string, title: string, categoryId?: string, ref?: string, stream?: Stream,
