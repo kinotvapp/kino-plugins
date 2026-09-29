@@ -117,7 +117,7 @@ Lo que nunca permite:
 - subtítulos, pistas de audio y la `licenseUrl` de un bloque `drm`: siguen siendo solo tus `hosts`, y
   cada redirección que hagan se juzga igual;
 - películas y capítulos: un `Stream` que no es en vivo se revisa exactamente como antes;
-- imágenes: la regla de los pósters (https, nunca local) no cambia.
+- imágenes: la regla de los pósters (http o https, nunca local) no cambia.
 
 La hoja de consentimiento lo muestra en rojo, "Puede reproducir canales desde cualquier servidor que
 indique su lista", y una actualización que lo agregue por primera vez espera la aprobación de la

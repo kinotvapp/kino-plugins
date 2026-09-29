@@ -24,7 +24,7 @@ español que nombra el campo.
 
 | Campo | Regla |
 | --- | --- |
-| `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$` (de 2 a 40 letras minúsculas, dígitos o guiones, sin empezar por guion). No puede ser `magis`, `ditu`, `live`, `local`, `unknown` ni `plugin`. Es la identidad del plugin: nunca lo cambies cuando ya haya gente que lo instaló. |
+| `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$` (de 2 a 40 letras minúsculas, dígitos o guiones, sin empezar por guion). No puede ser `magis`, `ditu`, `live`, `local`, `unknown`, `plugin` ni `own`. Es la identidad del plugin: nunca lo cambies cuando ya haya gente que lo instaló. |
 | `name` | Obligatorio. De 1 a 40 caracteres. |
 | `version` | Obligatorio. `MAJOR.MINOR.PATCH` y nada más (sin `-beta`, sin `+build`), cada número de hasta 6 dígitos y sin ceros a la izquierda. |
 | `apiVersion` | Obligatorio. `1`, `2` o `3`. Un número más alto del que Kino soporta se rechaza con "Este plugin necesita una versión más nueva de Kino". Declara `2` solo si usas algo que lo necesite (abajo); si no, quédate en `1` para que tu plugin también corra en versiones viejas de Kino. |

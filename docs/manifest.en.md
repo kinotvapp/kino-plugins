@@ -24,7 +24,7 @@ names the field.
 
 | Field | Rule |
 | --- | --- |
-| `id` | Required. `^[a-z0-9][a-z0-9-]{1,39}$` (2 to 40 lowercase letters, digits or hyphens, not starting with a hyphen). Not one of `magis`, `ditu`, `live`, `local`, `unknown`, `plugin`. It is the plugin's identity: never change it once people have installed it. |
+| `id` | Required. `^[a-z0-9][a-z0-9-]{1,39}$` (2 to 40 lowercase letters, digits or hyphens, not starting with a hyphen). Not one of `magis`, `ditu`, `live`, `local`, `unknown`, `plugin`, `own`. It is the plugin's identity: never change it once people have installed it. |
 | `name` | Required. 1 to 40 characters. |
 | `version` | Required. `MAJOR.MINOR.PATCH` and nothing else (no `-beta`, no `+build`), each number up to 6 digits and without leading zeros. |
 | `apiVersion` | Required. `1`, `2` or `3`. A higher number than Kino supports is refused with "Este plugin necesita una versión más nueva de Kino". Declare `2` only if you use something that needs it (below); otherwise stay on `1` so your plugin also runs on older Kino builds. |

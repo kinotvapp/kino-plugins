@@ -175,7 +175,7 @@ The list drops, whatever the stars:
   everyone who installed the Internet Archive plugin: **always change the `id`**.
 - **Repeats.** The same repository listed twice, or two repositories with the same `id`: the first
   one (the one with more stars) wins.
-- **The ids Kino keeps for itself** (`magis`, `ditu`, `live`, `local`, `unknown`, `plugin`) make the
+- **The ids Kino keeps for itself** (`magis`, `ditu`, `live`, `local`, `unknown`, `plugin`, `own`) make the
   manifest invalid, so they never get this far.
 
 ### "Mi plugin no aparece": troubleshooting { #troubleshooting }

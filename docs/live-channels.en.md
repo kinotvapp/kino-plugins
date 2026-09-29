@@ -107,7 +107,7 @@ What it never allows:
 - subtitles, audio tracks and a `drm` block's `licenseUrl`: still your `hosts` only, and every
   redirect they make is judged the same way;
 - movies and episodes: a non-live `Stream` is checked exactly as before;
-- images: the poster rule (https, never local) does not change.
+- images: the poster rule (http or https, never local) does not change.
 
 The consent sheet shows it in red, "Puede reproducir canales desde cualquier servidor que indique su
 lista", and an update that newly adds it waits for the person's approval, like a new host.

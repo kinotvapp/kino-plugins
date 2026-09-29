@@ -184,7 +184,7 @@ La lista descarta, tenga las estrellas que tenga:
   instaló el plugin de Internet Archive: **cambia siempre el `id`**.
 - **Repetidos.** El mismo repositorio dos veces, o dos repositorios con el mismo `id`: gana el primero
   (el de más estrellas).
-- **Los ids que Kino se guarda para sí** (`magis`, `ditu`, `live`, `local`, `unknown`, `plugin`)
+- **Los ids que Kino se guarda para sí** (`magis`, `ditu`, `live`, `local`, `unknown`, `plugin`, `own`)
   vuelven inválido el manifiesto, así que nunca llegan hasta aquí.
 
 ### "Mi plugin no aparece": qué revisar { #troubleshooting }
