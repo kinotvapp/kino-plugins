@@ -50,7 +50,31 @@ Revisa que:
 ## Hazte encontrar: aparece en "De la comunidad" { #get-found }
 
 Kino lista los plugins de la comunidad buscando en GitHub repositorios públicos con el topic
-`kino-plugin` (los forks quedan por fuera). Para aparecer:
+`kino-plugin` (los forks quedan por fuera).
+
+> **Importante: sin el topic `kino-plugin`, Kino no encuentra tu plugin.** Es la única forma en que
+> la app descubre un plugin: un manifiesto perfecto, un repositorio público y mil estrellas no cambian
+> nada si el topic falta. Ponlo en **el repositorio que contiene `kino-plugin.json`** (un error común:
+> ponerlo en otro repositorio del mismo autor que solo guarda datos, como una lista `.m3u`).
+> Compruébalo en 10 segundos:
+>
+> ```
+> curl -s https://api.github.com/repos/OWNER/REPO | tr -d ' \n' | grep -o '"topics":\[[^]]*\]'
+> ```
+>
+> Tiene que salir `"kino-plugin"` dentro de `topics`. Un `"topics":[]` vacío significa que Kino todavía
+> no te ve.
+
+**Las descripciones.** En la tarjeta Kino muestra la `description` de tu **manifiesto** (hasta 300
+caracteres; si la dejas vacía, la tarjeta queda sin texto), así que escribe una. La descripción del
+repositorio en GitHub (About) no la lee la app y no afecta el descubrimiento, pero ponla también: es lo
+que ve la gente al abrir tu repositorio. Un solo comando hace las dos cosas del repositorio:
+
+```
+gh repo edit OWNER/REPO --add-topic kino-plugin --description "Qué hace tu plugin, en una línea"
+```
+
+Para aparecer:
 
 1. En la página de GitHub de tu repositorio, agrega el topic `kino-plugin` (About ▸ ⚙ ▸ Topics).
 2. Deja `kino-plugin.json` en la raíz del repositorio: Kino lo lee para mostrar el nombre, la
@@ -75,7 +99,7 @@ El resto de esta sección explica cada regla que aplica la app, con su valor exa
 | 1 | **Un repositorio público de GitHub** | La búsqueda se hace sin ninguna credencial, así que GitHub solo devuelve repositorios públicos. |
 | 2 | **Que no sea un fork** | La búsqueda pide `fork:false`, y además la app descarta cualquier resultado cuyo `fork` no sea `false`. Crea tu repositorio con "Use this template" o desde cero, nunca con "Fork". |
 | 3 | **Una dirección de repositorio simple** | El `html_url` del resultado tiene que ser exactamente `https://github.com/<owner>/<repo>` y el login del dueño tiene que coincidir con `<owner>`. `<owner>` cumple `^[A-Za-z0-9][A-Za-z0-9-]{0,38}$`; `<repo>` cumple `^[A-Za-z0-9._-]{1,100}$` y no es `.` ni `..`. Cualquier repositorio normal de GitHub pasa. |
-| 4 | **El topic `kino-plugin`** | Exactamente ese topic, puesto en el repositorio (About ▸ ⚙ ▸ Topics, o `gh repo edit owner/repo --add-topic kino-plugin`). |
+| 4 | **El topic `kino-plugin`** | **Obligatorio.** Exactamente ese topic, puesto en el repositorio que tiene el `kino-plugin.json` (About ▸ ⚙ ▸ Topics, o `gh repo edit owner/repo --add-topic kino-plugin`). Sin él la app nunca te ve, tengas lo que tengas. |
 | 5 | **`kino-plugin.json` en la raíz, en la rama por defecto** | La app lee `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` es la rama por defecto). Un manifiesto en una subcarpeta o solo en otra rama no se encuentra. |
 | 6 | **Máximo 16 KB** | Un manifiesto más grande (16.384 bytes) se descarta. |
 | 7 | **Un manifiesto válido** | El mismo analizador del instalador: todas las reglas de [el manifiesto](manifest.md). `node sdk/validate.mjs .` lo revisa con los mismos mensajes. (El descubrimiento solo lee el manifiesto; el archivo de entrada y sus exports se revisan cuando alguien instala.) |
@@ -167,7 +191,10 @@ La lista descarta, tenga las estrellas que tenga:
 
 1. **¿Está en la respuesta de GitHub?** Abre la URL de búsqueda de arriba en un navegador y busca tu
    `full_name` en `items`. Si no está:
-    - revisa que el topic sea exactamente `kino-plugin` en la página del repositorio;
+    - revisa que el topic sea exactamente `kino-plugin` en la página del repositorio, y que esté
+      puesto en **el mismo repositorio que tiene `kino-plugin.json`** (no en uno hermano);
+    - míralo desde la terminal: `curl -s https://api.github.com/repos/OWNER/REPO | tr -d ' \n' | grep -o '"topics":\[[^]]*\]'`
+      (si sale `"topics":[]`, todavía no lo tienes);
     - revisa que el repositorio sea público y no un fork (debajo del nombre de un fork dice "forked
       from …"; en ese caso crea un repositorio nuevo desde la plantilla);
     - espera: GitHub indexa un topic nuevo o un repositorio que se acaba de volver público a su propio

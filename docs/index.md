@@ -35,7 +35,7 @@ a él), y `kino.d.ts` declara toda la API `kino` para tu editor
    ([Contrato](contract.md), [API `kino`](kino-api.md)).
 4. **Revísalo como lo hace Kino:** `node sdk/validate.mjs .` y luego
    `node sdk/run.mjs . search "algo"` ([Probar en local](test-locally.md)).
-5. **Publícalo** como repositorio público con el topic `kino-plugin`, e instálalo en Kino desde
+5. **Publícalo** como repositorio público con el topic `kino-plugin` (obligatorio: sin él Kino no lo encuentra), e instálalo en Kino desde
    Ajustes > Plugins escribiendo `owner/repo` ([Publicar](publish.md)).
 
 ¿Usas un asistente de IA? Dale [el prompt listo](ai.md): lee toda esta guía desde `llms-full.txt` y

@@ -199,7 +199,9 @@ user and server, and never log a setting. A `url` setting cannot have a `default
 - [ ] `id`s are stable and match the pattern; `ref`s keep working when replayed later.
 - [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
 - [ ] `version` raised; `apiVersion` is the lowest that works.
-- [ ] Public repository, manifest at the root, topic `kino-plugin`, not a fork.
+- [ ] Public repository, manifest at the root, topic `kino-plugin` on THAT repository (mandatory: without it the
+      app never finds the plugin), not a fork. Manifest `description` written (the card shows it);
+      the GitHub About description is optional and not read by the app.
 - [ ] The person installed it in Kino and it searched, listed episodes and played.
 
 ## 6. Being discovered ("De la comunidad")
@@ -209,7 +211,10 @@ detail: [Publishing › Get found](https://kinotvapp.github.io/kino-plugins/en/p
 
 1. Public GitHub repository at `https://github.com/<owner>/<repo>` (owner `^[A-Za-z0-9][A-Za-z0-9-]{0,38}$`,
    repo `^[A-Za-z0-9._-]{1,100}$`), **not a fork** (use the template's "Use this template").
-2. Topic exactly `kino-plugin` (`gh repo edit owner/repo --add-topic kino-plugin`).
+2. Topic exactly `kino-plugin`, **mandatory**, on the repository that holds `kino-plugin.json`
+   (`gh repo edit owner/repo --add-topic kino-plugin`). Verify:
+   `curl -s https://api.github.com/repos/owner/repo | tr -d ' \n' | grep -o '"topics":\[[^]]*\]'` must list it. The card shows the
+   manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
    by the installer's rules, `apiVersion` not above the person's Kino (3 today), and not

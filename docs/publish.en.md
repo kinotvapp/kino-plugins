@@ -50,7 +50,30 @@ Check that:
 ## Get found: appear in "De la comunidad" { #get-found }
 
 Kino lists community plugins by searching GitHub for public repositories with the topic
-`kino-plugin` (forks are left out). To be listed:
+`kino-plugin` (forks are left out).
+
+> **Important: without the `kino-plugin` topic, Kino will not find your plugin.** It is the only way
+> the app discovers a plugin: a perfect manifest, a public repository and a thousand stars change
+> nothing if the topic is missing. Put it on **the repository that contains `kino-plugin.json`** (a
+> common mistake: adding it to another repository by the same author that only holds data, such as an
+> `.m3u` playlist). Check it in 10 seconds:
+>
+> ```
+> curl -s https://api.github.com/repos/OWNER/REPO | tr -d ' \n' | grep -o '"topics":\[[^]]*\]'
+> ```
+>
+> `"kino-plugin"` must appear inside `topics`. An empty `"topics":[]` means Kino cannot see you yet.
+
+**Descriptions.** On the card Kino shows the `description` of your **manifest** (up to 300 characters;
+leave it empty and the card has no text), so write one. The GitHub repository description (About) is
+not read by the app and does not affect discovery, but set it too: it is what people see when they open
+your repository. One command does both repository settings:
+
+```
+gh repo edit OWNER/REPO --add-topic kino-plugin --description "What your plugin does, in one line"
+```
+
+To be listed:
 
 1. On your repository's GitHub page, add the topic `kino-plugin` (About ▸ ⚙ ▸ Topics).
 2. Keep `kino-plugin.json` at the root of the repository: Kino reads it to show your plugin's name,
@@ -73,7 +96,7 @@ The rest of this section spells out every rule the app applies, with its exact v
 | 1 | **A public GitHub repository** | The search is made without any credentials, so GitHub only ever returns public repositories. |
 | 2 | **Not a fork** | The search asks `fork:false`, and the app also drops any result whose `fork` is not `false`. Create your repository with "Use this template" or from scratch, never with "Fork". |
 | 3 | **A plain repository address** | The result's `html_url` must be exactly `https://github.com/<owner>/<repo>` and its owner's login must match `<owner>`. `<owner>` matches `^[A-Za-z0-9][A-Za-z0-9-]{0,38}$`; `<repo>` matches `^[A-Za-z0-9._-]{1,100}$` and is not `.` or `..`. Every normal GitHub repository passes. |
-| 4 | **The topic `kino-plugin`** | Exactly that topic, set on the repository (About ▸ ⚙ ▸ Topics, or `gh repo edit owner/repo --add-topic kino-plugin`). |
+| 4 | **The topic `kino-plugin`** | **Mandatory.** Exactly that topic, set on the repository that holds `kino-plugin.json` (About ▸ ⚙ ▸ Topics, or `gh repo edit owner/repo --add-topic kino-plugin`). Without it the app never sees you, whatever else you have. |
 | 5 | **`kino-plugin.json` at the root, on the default branch** | The app reads `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` is the default branch). A manifest in a subfolder or only on another branch is not found. |
 | 6 | **At most 16 KB** | A bigger manifest (16,384 bytes) is dropped. |
 | 7 | **A valid manifest** | The same parser as the installer: every rule of [The manifest](manifest.md). `node sdk/validate.mjs .` checks it with the same messages. (Discovery reads only the manifest; the entry file and its exports are checked when someone installs.) |
@@ -159,7 +182,10 @@ The list drops, whatever the stars:
 
 1. **Is it in GitHub's answer?** Open the search URL above in a browser and look for your
    `full_name` in `items`. If it is not there:
-    - check the topic is exactly `kino-plugin` on the repository page;
+    - check the topic is exactly `kino-plugin` on the repository page, and that it is set on **the
+      same repository that holds `kino-plugin.json`** (not a sibling one);
+    - look from a terminal: `curl -s https://api.github.com/repos/OWNER/REPO | tr -d ' \n' | grep -o '"topics":\[[^]]*\]'`
+      (`"topics":[]` means you do not have it yet);
     - check the repository is public and not a fork (the page says "forked from …" under the name
       of a fork; create a new repository from the template instead);
     - wait: GitHub indexes a new topic or a newly public repository on its own schedule, usually

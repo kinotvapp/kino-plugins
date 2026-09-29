@@ -32,7 +32,7 @@ whole `kino` API for your editor (`/// <reference path="./kino.d.ts" />` at the 
    ([The contract](contract.md), [The `kino` API](kino-api.md)).
 4. **Check it the way Kino does:** `node sdk/validate.mjs .`, then
    `node sdk/run.mjs . search "algo"` ([Test it locally](test-locally.md)).
-5. **Publish** it as a public repository with the topic `kino-plugin`, and install it in Kino from
+5. **Publish** it as a public repository with the topic `kino-plugin` (mandatory: without it Kino cannot find it), and install it in Kino from
    Ajustes > Plugins by typing `owner/repo` ([Publishing](publish.md)).
 
 Using an AI assistant? Give it [the ready-made prompt](ai.md): it reads this whole guide from
