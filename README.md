@@ -31,3 +31,7 @@ one is missing. `hooks/llms.py` writes `llms-full.txt` and copies `AGENTS.md` to
 `scripts/sync-from-kino-light.sh` refreshes `contract.json`, `kino.d.ts` and the generated tables from
 Kino's repository and reports upstream guide changes to port. Pushing to `main` publishes the site
 with GitHub Actions.
+
+## License
+
+The documentation, the site tooling and the reference files in this repository are licensed under the [Apache License 2.0](LICENSE). Copyright 2026 kinotvapp.
