@@ -96,6 +96,7 @@ feature to the title of its test server that exercises it:
 | `ids.tmdb` | `item()` | [`ids.tmdb`](contract.md#tmdb) |
 | `live` items (apiVersion 2) | `item()`, `resolve()` | [Live channels (apiVersion 2)](live-channels.md#live-items) |
 | `channels`: a `ref`, an inline `stream`, and an M3U list with an XMLTV guide | `liveCategories()`, `liveChannels()` | [Channels in the En vivo tab](live-channels.md#en-vivo-tab), [Three recipes](live-channels.md#recipes) |
+| A User-Agent the channels insist on, typed in Configurar: `headers` on a Stream, `streamHeaders` on a playlist | `resolve()`, `liveChannels()`, `liveCategories()` | [Channels in the En vivo tab](live-channels.md#en-vivo-tab) |
 | A guide for its own channels | `guide()` | [The channel functions](live-channels.md#live-contract) |
 | Typed errors (`kino.error`) | `api()` | [Errors people understand](contract.md#errors) |
 

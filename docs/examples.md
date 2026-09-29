@@ -97,6 +97,7 @@ función con el título de su servidor de prueba que la ejercita:
 | `ids.tmdb` | `item()` | [`ids.tmdb`](contract.md#tmdb) |
 | Ítems `live` (apiVersion 2) | `item()`, `resolve()` | [Canales en vivo (apiVersion 2)](live-channels.md#live-items) |
 | `channels`: `ref`, `stream` en línea y una lista M3U con guía XMLTV | `liveCategories()`, `liveChannels()` | [Canales en la pestaña En vivo](live-channels.md#en-vivo-tab), [Tres recetas](live-channels.md#recipes) |
+| Un User-Agent que los canales exigen, escrito en Configurar: `headers` en un Stream, `streamHeaders` en una lista | `resolve()`, `liveChannels()`, `liveCategories()` | [Canales en la pestaña En vivo](live-channels.md#en-vivo-tab) |
 | Una guía para canales propios | `guide()` | [Las funciones de canales](live-channels.md#live-contract) |
 | Errores tipados (`kino.error`) | `api()` | [Errores que la gente entiende](contract.md#errors) |
 

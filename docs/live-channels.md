@@ -138,6 +138,7 @@ Devuelven:
 ```ts
 LiveCategory = { id: string, title: string, country?: string, adult?: boolean }
 Playlist     = { playlist: { url: string, format: "m3u", headers?: Record<string, string>,
+                             streamHeaders?: Record<string, string>,
                              epg?: { url: string, format: "xmltv" }, refreshHours?: number,
                              hideGroups?: string[], resolve?: boolean } }
 LiveChannel  = { id: string, title: string, categoryId?: string, ref?: string, stream?: Stream,
@@ -152,13 +153,21 @@ Un plugin puede dar sus canales de tres formas, y mezclarlas:
 2. **Un canal con `stream` en línea.** Un `Stream` revisado con las mismas reglas que la respuesta de
    `resolve()` ([Las reglas del `Stream`](contract.md#stream)); se reproduce sin llamar a tu plugin. Un
    canal cuyo `stream` se rechaza se descarta. Con `ref` y `stream` a la vez, se reproduce el stream y
-   el `ref` es solo el respaldo. Un canal sin ninguno de los dos se descarta.
+   el `ref` es solo el respaldo. Un canal sin ninguno de los dos se descarta. Algunos canales solo
+   responden a un reproductor conocido: dale al `Stream` unos `headers` con el `User-Agent` (o el `Referer`)
+   que exige, y el reproductor lo envía en cada petición de ese canal.
 3. **Una lista.** Pon entradas `{ playlist: { ... } }` junto a tus categorías en la respuesta de
    `liveCategories()` (o devuelve una sola). Kino descarga la lista M3U por su cuenta, y su guía XMLTV
    desde `epg.url`, y agrupa las entradas en categorías. Las dos URL tienen que ser `https` en uno de
    tus `hosts` (o `http` en uno declarado `insecureHttp`, o un servidor que escribió la persona),
    siempre: una lista en otro host se descarta, y un `epg` en otro host solo pierde la guía. Los
-   `headers` van con esas descargas. `refreshHours` va de 1 a 168 (por defecto 12); `hideGroups` lista
+   `headers` van con esas descargas. `streamHeaders` es lo que envía el **reproductor** en cada canal de la
+   lista, para los canales que solo responden a un `User-Agent` (o un `Referer`) conocido: se filtran igual
+   que los `headers` de un `Stream` y van aparte de `headers` a propósito, porque estos llevan las
+   credenciales de tu lista y van solo al host de la lista, nunca a los muchos hosts donde están los canales.
+   Un header que la propia entrada del M3U nombra (`#EXTVLCOPT:http-user-agent=...`) gana. Las versiones de
+   Kino anteriores a la que agregó `streamHeaders` ignoran el campo, así que la lista se reproduce sin él.
+   `refreshHours` va de 1 a 168 (por defecto 12); `hideGroups` lista
    títulos de grupo que no se muestran (sin importar mayúsculas, máximo 50). Con `resolve: true`, cada
    entrada se reproduce por tu `resolve(<entry url>)`, para listas cuyos enlaces necesitan un token
    fresco. Máximo 10 por respuesta.
