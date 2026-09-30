@@ -57,7 +57,8 @@ declares and the person approved on screen, plus the servers the person typed in
 settings (see [The manifest](manifest.md)).
 
 Kino loads exactly one JavaScript file, so there is nothing for an `import` to resolve to. If you
-use a build step or a library, bundle everything into that single file.
+use a build step or a library, bundle everything into that single file -- see
+[Splitting your code across files](engine-limits.md#splitting-files) for a worked example.
 
 **How people install it.** In Kino, Ajustes > Plugins, they type the address of your repository:
 

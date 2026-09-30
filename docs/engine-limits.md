@@ -80,6 +80,54 @@ literals, spread, `replaceAll`, `Array.prototype.at` y `flat`, `Object.fromEntri
   se cierra durante una llamada" arriba). Poner `name` en objetos normales, y `this.name = "MyError"`
   en una subclase de `Error`, funciona como siempre.
 
+## Dividir tu código en varios archivos { #splitting-files }
+
+Kino carga exactamente un archivo (el `entry` del manifest), y el motor no tiene `require` ni
+resolvedor de módulos, así que un `import` de `plugin.js` hacia un segundo archivo no tiene nada que
+resolver en el dispositivo. Eso no significa que tengas que escribir todo el plugin en un archivo —
+solo que el archivo que publicás tiene que ser el resultado terminado, en uno solo.
+
+Escribilo dividido, normal, y empaquetalo antes de publicar:
+
+```
+src/
+  scraper.js        un módulo auxiliar
+  plugin.js         el punto de entrada; importa de scraper.js
+kino-plugin.json
+package.json
+```
+
+```js
+// src/scraper.js
+export async function searchSite(query) {
+  const res = await kino.fetch(`https://site.example/api/search?q=${encodeURIComponent(query)}`);
+  return JSON.parse(res.text()).results.map((r) => ({ id: r.slug, title: r.title, poster: r.image }));
+}
+```
+
+```js
+// src/plugin.js -- este import está bien: corre a través del bundler, nunca en el dispositivo
+import { searchSite } from "./scraper.js";
+
+export async function search(query) {
+  return searchSite(query);
+}
+```
+
+Empaquetalo con [esbuild](https://esbuild.github.io/) (`npm i -D esbuild`), apuntando a módulo ES
+(Kino corre el archivo publicado como uno solo):
+
+```bash
+npx esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js
+```
+
+`plugin.js` en la raíz del repo es lo que sale de ese comando, con `src/scraper.js` incluido adentro
+y su `export async function search` intacto — ese es el archivo que nombra `entry` y el que Kino
+descarga. Agregalo como script de npm
+(`"build": "esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js"`) y correlo antes de
+cada prueba con `sdk/` o antes de publicar. Rollup y webpack funcionan igual; esbuild es el que
+necesita menos configuración para un plugin de este tamaño.
+
 ## La trampa: un rechazo que nadie está escuchando todavía { #rejection-trap }
 
 El motor aborta **toda la llamada** cuando una promesa se rechaza antes de que algo le haya puesto un

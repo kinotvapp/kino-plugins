@@ -79,6 +79,54 @@ literals, spread, `replaceAll`, `Array.prototype.at` and `flat`, `Object.fromEnt
   switched off (see "App closed during a call" above). Setting `name` on ordinary objects, and
   `this.name = "MyError"` in an `Error` subclass, work as usual.
 
+## Splitting your code across files { #splitting-files }
+
+Kino loads exactly one file (the manifest's `entry`), and the engine has no `require` and no
+module resolver, so an `import` from `plugin.js` to a second file has nothing to resolve against on
+the device. That does not mean you must write the whole plugin in one file -- just that the file you
+publish has to be the finished, single-file result.
+
+Write it split, normally, then bundle it before you publish:
+
+```
+src/
+  scraper.js        a helper module
+  plugin.js         the entry point; imports from scraper.js
+kino-plugin.json
+package.json
+```
+
+```js
+// src/scraper.js
+export async function searchSite(query) {
+  const res = await kino.fetch(`https://site.example/api/search?q=${encodeURIComponent(query)}`);
+  return JSON.parse(res.text()).results.map((r) => ({ id: r.slug, title: r.title, poster: r.image }));
+}
+```
+
+```js
+// src/plugin.js -- this import is fine: it runs through the bundler, never on the device
+import { searchSite } from "./scraper.js";
+
+export async function search(query) {
+  return searchSite(query);
+}
+```
+
+Bundle with [esbuild](https://esbuild.github.io/) (`npm i -D esbuild`), targeting ES module output
+(Kino runs the published file as one):
+
+```bash
+npx esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js
+```
+
+`plugin.js` at the repo root is what comes out of that command, with `src/scraper.js` inlined into
+it and its `export async function search` intact -- that is the file `entry` names and the one Kino
+fetches. Add it as an npm script
+(`"build": "esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js"`) and run it before
+every `sdk/` test or publish. Rollup and webpack work the same way; esbuild needs the least
+configuration for a plugin this size.
+
 ## The trap: a rejection nobody is listening to yet { #rejection-trap }
 
 The engine aborts the **whole call** when a promise is rejected before anything has a handler on it,

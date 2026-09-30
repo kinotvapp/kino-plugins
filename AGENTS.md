@@ -82,6 +82,12 @@ exact message Kino shows, never a summary.
 3. **Implement one named `export async function` per declared capability** (`search`, `home`,
    `browse`, `episodes`, `resolve`; `liveCategories` + `liveChannels` (+ optional `guide`) for
    `channels`). `download` and `drm` are declarative: nothing to export. Return plain JSON only.
+   Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
+   source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
+   than one file for its own sake, write it split (e.g. `src/plugin.js` importing from
+   `src/scraper.js`) and bundle it to a single `plugin.js` before validating or publishing:
+   `npx esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js`. `plugin.js` is always the
+   finished, single-file output — never hand-edit it if a `src/` exists.
 4. **Validate the manifest and exports**: `node sdk/validate.mjs .` must exit 0.
 5. **Run every function against the real source** and read what Kino would drop (stderr):
 
@@ -292,6 +298,8 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - Declaring `*.site.com` only, then failing on `site.com` (or the reverse after a redirect).
 - A CDN, a subtitle host or a license server missing from `hosts`: playback stops with an error.
 - Using `fetch`, `setTimeout` or `Buffer` because the Node kit ran fine.
+- Writing `plugin.js` with an `import`/`require` of a second local file: Kino only loads `entry`,
+  there is nothing for it to resolve on-device. Bundle to one file first (section 3, step 3).
 - Validating arguments with `throw` before the first `await` in a helper wrapped in `try`/`catch`.
 - Returning ids with `/`, `:` or spaces (dropped), or ids that change between calls (the library
   loses the title).

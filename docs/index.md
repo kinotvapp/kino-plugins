@@ -60,7 +60,8 @@ declara tu manifiesto y que la persona aprobó en pantalla, más los servidores 
 en los ajustes de tu plugin (mira [Manifiesto](manifest.md)).
 
 Kino carga exactamente un archivo JavaScript, así que no hay nada a lo que un `import` pueda
-resolverse. Si usas un paso de compilación o una librería, empaqueta todo en ese único archivo.
+resolverse. Si usas un paso de compilación o una librería, empaqueta todo en ese único archivo --
+mira [Dividir tu código en varios archivos](engine-limits.md#splitting-files) para un ejemplo completo.
 
 **Cómo lo instala la gente.** En Kino, Ajustes > Plugins, escriben la dirección de tu repositorio:
 
