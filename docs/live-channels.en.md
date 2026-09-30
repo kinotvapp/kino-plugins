@@ -39,6 +39,11 @@ What Kino does with a `live` item:
 - Its card wears an "EN VIVO" badge (Home, "Ver más", search, phone and TV), and tapping it goes
   **straight to the player**: no info page, nothing to read or pick. `resolve(ref)` gets the item's
   `ref`, exactly as for a movie.
+- In **search**, a `live` item is kept only when its name matches what was asked (most of the words
+  of 3 or more letters of the query, its `originalTitle` or one of its `altTitles`, like
+  [`kino.rank.filterRelevant`](kino-api.md#rank)). A channel plugin that answers every search with
+  its whole list when nothing matches sees those channels dropped; movies and series are never
+  judged this way.
 - The `Stream` plays as live: an HLS or DASH live manifest (`.m3u8`/`.mpd`) is what the player
   expects; a progressive file plays too but reads as a channel (no seek bar, no length). `headers`,
   `subtitles` and `expiresInSeconds` work as for any stream; `durationMs` and `audioTracks` are
@@ -106,7 +111,9 @@ What it never allows:
   still be on your `hosts` (or the person's server);
 - subtitles, audio tracks and a `drm` block's `licenseUrl`: still your `hosts` only, and every
   redirect they make is judged the same way;
-- movies and episodes: a non-live `Stream` is checked exactly as before;
+- movies and episodes: a non-live `Stream` is checked exactly as before (unless your plugin declares
+  [`streamHosts: "any"`](manifest.md#stream-hosts) or the person granted it the
+  [broad video permission](contract.md#broad-video));
 - images: the poster rule (http or https, never local) does not change.
 
 The consent sheet shows it in red, "Puede reproducir canales desde cualquier servidor que indique su

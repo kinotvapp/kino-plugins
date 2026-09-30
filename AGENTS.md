@@ -48,7 +48,8 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
 - **What it offers**: movies, series (with `episodes`), Home rows (`home`, and `browse` for "Ver más"),
   live channels (`live` items at apiVersion 2, or the En vivo tab with `channels` at apiVersion 3).
 - **The lowest `apiVersion` that works**: `1` unless you need `download`, `drm`, `insecureHttp`,
-  `"hosts": []`, or `live` items (`2`), or `channels`/`liveStreamHosts` (`3`).
+  `"hosts": []`, or `live` items (`2`), `channels`/`liveStreamHosts` (`3`), or a `list` setting,
+  `"streamHosts": "any"` or sealed `secrets` (`4`).
 - Whether the person has the right to use the source. Do not help circumvent DRM: the only DRM path
   is a Widevine license the source itself hands out (the `drm` capability).
 
@@ -94,12 +95,13 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
 7. **Check what Node hides** (the kit is more permissive than Kino): grep `plugin.js` for the
    missing globals (section 4) and for any `throw` before the first `await` of an async function.
 8. **Publish**: public repository, `kino-plugin.json` and `plugin.js` at the root, `.gitignore` with
-   `.kino-storage.json`, `.kino-cookies.json`, `sdk/config.json`; tag a release (`v1.0.0`);
+   `.kino-storage.json`, `.kino-cookies.json`, `.kino-secrets.json`, `sdk/config.json`; tag a release (`v1.0.0`);
    add the topic: `gh repo edit owner/repo --add-topic kino-plugin`. The person installs it from
    Kino, Ajustes > Plugins, typing `owner/repo`, and must try it in the app (search, episodes, play).
 9. **Updates**: raise `version` every time (an equal or lower version never reaches anyone). Adding
-   hosts, `permissions`, `download`, `drm`, `channels`, `liveStreamHosts` or an `insecureHttp` host
-   makes the update wait for the person's approval.
+   hosts, `permissions`, `download`, `drm`, `channels`, `liveStreamHosts`, `streamHosts`, an
+   `insecureHttp` host, or `secrets` to a plugin that had none makes the update wait for the person's
+   approval.
 
 ## 4. Hard rules (with the exact numbers)
 
@@ -109,19 +111,32 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   setting), over `https`, checked on **every redirect hop**. `*.example.com` does **not** cover
   `example.com`: list both. No IPs, no `localhost`, no `.local`/`.lan`/`.internal`/`.localhost`/`.home.arpa`,
   no bare `*`, no scheme/port/path in `hosts`. 1 to 20 entries (`[]` only from apiVersion 2 with a
-  `url` setting).
+  `url` setting). During `resolve` and `episodes` only, a fetch to an undeclared `https` host asks the
+  person (the call's clock stops meanwhile); everywhere else it just fails as `host_not_allowed`.
+  Never design around that question: declare every host.
+- Kino strips `Accept-Encoding` (and `Host`, `Content-Length`, `Transfer-Encoding`, `Connection`,
+  `Cookie2`) from your headers and always hands you decompressed bodies.
 - The `Stream` URL, subtitles, `audioTracks`, every HLS variant/segment/key, DASH `BaseURL`, and the
   `drm` `licenseUrl` must be on those same hosts. Images (`poster`, `backdrop`, `still`, `logo`) are
-  the only exception: any `https` URL, never an IP or local name.
+  the only exception: any `http` or `https` URL (a public IPv4 is fine), never a private address or local name.
 - Plain `http` only for a server the person typed, or a host declared
   `{ "host": "…", "insecureHttp": true }` (apiVersion 2, no wildcard; shown in red to the person).
 - `"liveStreamHosts": "any"` (apiVersion 3 + `channels`) frees only live channel streams, never
   `kino.fetch`, playlists, subtitles, licenses, movies or images.
+- `"streamHosts": "any"` (apiVersion 4) lets what the plugin plays be on any public host: for a movie
+  or episode the video, its manifest, redirects, `subtitles` and `audioTracks` (and its download);
+  for a channel the `liveStreamHosts` rule. Never `kino.fetch`, images or DRM licenses, never the
+  home network. Shown in red; prefer listing real domains. The person can grant the same rule
+  themselves ("Permitir video de cualquier servidor", the broad video permission).
+- `"fetchHosts"` exists only for plugins Kino converts from Nuvio scrapers; in a hand-written plugin
+  it does nothing. Do not use it.
 
 **The engine is QuickJS, not Node, not a browser.** Missing: `setTimeout`, `setInterval`,
 `setImmediate`, `queueMicrotask`, `Buffer`, `process`, `require`, `fetch`, `AbortController`,
 `structuredClone`, `performance`, `crypto`, `WeakRef`, `Intl`. Present: `URL` (no punycode),
-`URLSearchParams`, `atob`, `btoa`, `TextEncoder`, `TextDecoder` (UTF-8), `console`. Use
+`URLSearchParams`, `atob`, `btoa`, `TextEncoder`, `TextDecoder` (UTF-8), `console` (`URL` has the
+usual setters: `url.hostname = …` works). The extra globals Nuvio-converted scrapers get
+(`setTimeout`, `AbortController`, `crypto.subtle`, `require`…) are **not** available to your plugin. Use
 `kino.fetch`, `kino.sleep`, `kino.crypto`, `kino.storage`, `kino.html.select` (only in the app; the
 Node kit's version throws). No `import`: one file; bundle anything else into it. `localeCompare`
 and `toLocaleString` do not localize. No network calls at the module's top level (install loads it
@@ -133,7 +148,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; all fetches and sleeps count |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; all fetches and sleeps count (not the time the person spends answering a host question) |
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
@@ -146,11 +161,14 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
 | Live (apiVersion 3) | 200 categories; 500 channels/page, 10 pages/category; `guide` 50 channels, 24 h, 100 entries/channel; `number` 1..9999 |
-| Settings | 12; `text` 500, `url` 2,048, `password` 500 characters |
+| Settings | 12; `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields |
+| `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes |
 
 **Data rules that silently drop things**: an item `id` outside `^[A-Za-z0-9._~-]{1,128}$` (derive a
 slug); a repeated `id`; `adult: true`; a `series` without the `episodes` capability; a `live` item at
-apiVersion 1; an episode `number` 0; images not `https`. `id` must be stable across calls (library
+apiVersion 1; an episode `number` 0; images that are not `http`/`https` or point at a local
+address; in `search`, a `live` item whose name shares too few words with the query (so never
+answer a search with your whole channel list). `id` must be stable across calls (library
 and progress hang off it); `ref` may change but must keep working later (put a stable id in it and
 look fresh links up inside `resolve`). A `Stream` is all or nothing; `mime` must look like
 `video/mp4` or be omitted.
@@ -183,6 +201,13 @@ comments may be English.
 **Secrets**: never hardcode a password, token, API key or cookie in `plugin.js` or the repository;
 ask for it in a `settings` entry of type `password`, keep derived tokens in `kino.storage` keyed by
 user and server, and never log a setting. A `url` setting cannot have a `default` (use `hint`).
+A fixed key that belongs to the plugin's author (not the person) can be **sealed** instead:
+`node sdk/seal.mjs --repo owner/repo --name apiKey` prints `kino-sealed:v1:…` for the manifest's
+`"secrets"` (apiVersion 4); the code uses `kino.secret("apiKey")`, a marker Kino swaps for the
+value only inside `kino.fetch`, toward the manifest's `hosts` over https, and redacts from everything
+the code reads back. It is obfuscation, not secrecy; seals only open when the plugin is installed
+from its default branch (no `@ref`); the Node kit reads plain values from `.kino-secrets.json`
+(never commit it). Full rules: [Sealed secrets](https://kinotvapp.github.io/kino-plugins/en/manifest/#secrets).
 
 ## 5. Checklist before publishing
 
@@ -217,7 +242,7 @@ detail: [Publishing › Get found](https://kinotvapp.github.io/kino-plugins/en/p
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (3 today), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (4 today), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
    `own-server`), never `xuper`, never the template's `archive-org`; the same id installed from
@@ -255,3 +280,6 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - Keeping the template's `"id": "archive-org"`: install refused ("Ya hay un plugin con ese id") and
   hidden from the community list wherever the Internet Archive plugin is installed.
 - English or voseo in what the person reads.
+- Copying a browser's `Accept-Encoding` or `Host` header and expecting it to be sent.
+- Pasting a secret into `kino-plugin.json` or `plugin.js` instead of sealing it (author keys) or
+  asking for it in a `password` setting (the person's credentials); committing `.kino-secrets.json`.

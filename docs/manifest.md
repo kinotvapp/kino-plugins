@@ -27,9 +27,9 @@ español que nombra el campo.
 | `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$` (de 2 a 40 letras minúsculas, dígitos o guiones, sin empezar por guion). No puede ser `magis`, `ditu`, `live`, `local`, `unknown`, `plugin` ni `own`. Es la identidad del plugin: nunca lo cambies cuando ya haya gente que lo instaló. |
 | `name` | Obligatorio. De 1 a 40 caracteres. |
 | `version` | Obligatorio. `MAJOR.MINOR.PATCH` y nada más (sin `-beta`, sin `+build`), cada número de hasta 6 dígitos y sin ceros a la izquierda. |
-| `apiVersion` | Obligatorio. `1`, `2`, `3` o `4`. Un número más alto del que Kino soporta se rechaza con "Este plugin necesita una versión más nueva de Kino". Declara `2` solo si usas algo que lo necesite (abajo); si no, quédate en `1` para que tu plugin también corra en versiones viejas de Kino. |
+| `apiVersion` | Obligatorio. `1`, `2`, `3` o `4`. Un número más alto del que Kino soporta se rechaza con "Este plugin necesita una versión más nueva de Kino". Declara el número más bajo que tenga lo que usas, para que tu plugin también corra en versiones viejas de Kino: `2` para `download`, `drm`, `insecureHttp`, `"hosts": []` o ítems `live`; `3` para `channels`/`liveStreamHosts`; `4` para un ajuste `list`, `streamHosts` o `secrets`. |
 | `entry` | Obligatorio. Ruta relativa del archivo JavaScript: solo letras, dígitos, `.`, `_`, `-` y `/`, sin `..`, máximo 200 caracteres, termina en `.js`. El archivo pesa máximo 1 MB. |
-| `hosts` | Obligatorio. De 1 a 20 entradas (desde apiVersion 2 puede estar vacío, `[]`, cuando el plugin tiene un ajuste de tipo `url`: mira [Los servidores propios de la persona](#own-servers)); cada una es un nombre DNS en minúsculas (`archive.org`), `*.` más un nombre DNS (`*.archive.org`) o (solo apiVersion 2) un objeto `{ "host": "…", "insecureHttp": true }` (abajo). Solo nombres de host: sin esquema, puerto ni ruta. Nada de `*` solo, nada de direcciones IP, nada de `localhost`, nada que termine en `.local`, `.lan`, `.internal`, `.localhost` o `.home.arpa`, y por lo menos un punto. **`*.x` cubre solo los subdominios, no `x` mismo**: si necesitas los dos, pon los dos. |
+| `hosts` | Obligatorio. De 1 a 20 entradas (desde apiVersion 2 puede estar vacío, `[]`, cuando el plugin tiene un ajuste de tipo `url`: mira [Los servidores propios de la persona](#own-servers)); cada una es un nombre DNS en minúsculas (`archive.org`), `*.` más un nombre DNS (`*.archive.org`) o (solo apiVersion 2) un objeto `{ "host": "…", "insecureHttp": true }` (abajo). Solo nombres de host: sin esquema, puerto ni ruta. Nada de `*` solo, nada de direcciones IP, nada de `localhost`, nada que termine en `.local`, `.lan`, `.internal`, `.localhost` o `.home.arpa`, y por lo menos un punto. **`*.x` cubre solo los subdominios, no `x` mismo**: si necesitas los dos, pon los dos. El tope de 20 es para lo que declara el manifiesto; los hosts que la persona aprueba después, uno por uno, mientras tu plugin corre ([Un host que se te olvidó](contract.md#forgotten-host)) no tienen tope. |
 | `capabilities` | Obligatorio. Un subconjunto de `search`, `home`, `browse`, `episodes`, `resolve`, `download`, `drm`, `channels`. Debe incluir `resolve` y al menos uno de `search` o `home`. `search`, `home`, `browse`, `episodes` y `resolve` tienen que ser, cada una, una función exportada del archivo de entrada, o la instalación falla con "El plugin no carga: le falta ...". `download` y `drm` necesitan `apiVersion: 2` y son banderas declarativas — la app actúa sobre ellas, no tu código, así que no hay nada más que exportar; declarar una muestra su línea de consentimiento ("Puede descargar videos para verlos sin conexión" / "Reproduce video protegido (DRM)") y pide aprobación otra vez en una actualización que la agregue. `download` les da descargas sin conexión a tus títulos (mira [Descargas](#downloads)); `drm` le permite a un `Stream` llevar una licencia Widevine (mira [Un stream protegido con Widevine](cookbook.md#widevine)). `channels` necesita `apiVersion: 3` y los exports `liveCategories` y `liveChannels` (mira [Canales en la pestaña En vivo](live-channels.md#en-vivo-tab)). |
 | `settings` | Opcional. Lo que la persona llena en la pantalla "Configurar" de tu plugin: mira abajo. |
 | `permissions` | Opcional. Una lista de nombres de la lista cerrada de `contract.json`. **La lista está vacía en esta versión**: cualquier nombre se rechaza con "permiso desconocido: …". Existe para que una versión futura pueda agregar permisos (cada uno visible en la pantalla de consentimiento) sin un `apiVersion` nuevo. |
@@ -59,14 +59,90 @@ sueltos, que una entrada `*.xyz` nunca cubre). Con `"apiVersion": 4` un plugin p
 ```
 
 `"any"` es el único valor y no hace falta ninguna capacidad; un manifiesto más viejo ignora el campo.
-Deja que **lo que el plugin reproduce** (la `url` que devuelve `resolve`, sea una película, un
-episodio o un canal, y los manifiestos, segmentos y redirecciones que el reproductor sigue desde ella)
-esté en **cualquier host público**, por `http` o `https`. No cambia nada más: `kino.fetch`, las
-imágenes, los subtítulos, el audio aparte y los servidores de licencia DRM siguen en los `hosts` que
-declaraste, y las direcciones locales o privadas siguen rechazadas. La pantalla de consentimiento lo
-muestra en rojo ("Puede reproducir video desde cualquier servidor que indique"), y una actualización
-que lo agrega espera a que la persona apruebe de nuevo. Si puedes, lista los dominios reales: la gente
-confía más en una lista corta.
+Deja que **lo que el plugin reproduce** esté en **cualquier host público**, por `http` o `https`:
+
+- una película o un episodio: exactamente la regla del
+  [permiso amplio de video](contract.md#broad-video) -- la misma regla, pedida por ti de entrada en
+  vez de concedida por la persona. En el reproductor, la `url` que devuelve `resolve`, todo lo que
+  nombra su manifiesto, cada salto de redirección **y** los `subtitles` y `audioTracks` que
+  devuelves pueden estar en cualquier host público, y nunca se pregunta por un host de video. Una
+  [descarga](#downloads) de esa película o episodio sigue la misma regla;
+- un canal en vivo: la regla de [`liveStreamHosts: "any"`](live-channels.md#live-stream-hosts) (el
+  stream, su manifiesto y sus redirecciones; tus `subtitles` y `audioTracks` siguen en tus `hosts`).
+
+No cambia nada más: `kino.fetch` (y por tanto todo [secreto sellado](#secrets)), las imágenes y los
+servidores de licencia DRM siguen en los `hosts` que declaraste, y las direcciones locales o privadas
+(y los nombres públicos que resuelven dentro de la red de la casa) siguen rechazadas. La pantalla de
+consentimiento lo muestra en rojo ("Puede reproducir video desde cualquier servidor que indique"), y
+una actualización que lo agrega espera a que la persona apruebe de nuevo. Si puedes, lista los
+dominios reales: la gente confía más en una lista corta.
+
+!!! note "`fetchHosts` no es para ti"
+    Los plugins que Kino arma por su cuenta a partir de un scraper de Nuvio ([Scrapers de
+    Nuvio](nuvio.md)) llevan un campo más, `"fetchHosts": "any"`, que deja que su `kino.fetch` llegue
+    a cualquier servidor público. Kino lo respeta **solo** en esas instalaciones convertidas. En un
+    plugin que escribes tú, `"any"` se acepta y se ignora (la pantalla de consentimiento no lo muestra
+    y `kino.fetch` sigue en tus `hosts`), y cualquier otro valor se rechaza. Declara tus hosts.
+
+## Secretos sellados (apiVersion 4) { #secrets }
+
+Un plugin que trae una clave fija (un token de API metido en el cliente del propio sitio, un secreto
+por cliente que es del autor) puede sellarla en vez de escribirla en texto plano en el manifiesto:
+
+```
+node sdk/seal.mjs --repo owner/repo --name apiKey
+```
+
+(`owner/repo/ruta` para un plugin que vive en una subcarpeta.) `--repo` sigue las mismas reglas que
+la dirección desde la que la gente instala: se quitan un `/` final y un `.git`, pero una URL
+(`https://github.com/...`) y un `@ref` se rechazan en vez de adivinar. El valor se lee de un prompt
+oculto o por stdin -- nunca como argumento de la línea de comandos, que quedaría en el historial de la
+terminal. Debe tener de 1 a 4.096 bytes (UTF-8); la herramienta imprime una línea,
+`kino-sealed:v1:...`, para pegar en el manifiesto:
+
+```json
+"apiVersion": 4,
+"secrets": { "apiKey": "kino-sealed:v1:AbC123..." }
+```
+
+- Hasta 16 secretos; cada nombre cumple `^[A-Za-z][A-Za-z0-9_]{0,31}$`. `secrets` necesita
+  `"apiVersion": 4`; por debajo el campo se ignora (el plugin se instala sin secretos y `kino.secret`
+  lanza error con cualquier nombre), y un Kino demasiado viejo para apiVersion 4 rechaza toda la
+  instalación con "Este plugin necesita una versión más nueva de Kino".
+- Un sello queda atado al repositorio (y subcarpeta) que le pasaste a `seal.mjs`, en minúsculas,
+  **nunca a un ref**. Al instalar y en cada actualización, Kino abre cada sello una vez contra la
+  dirección desde la que la persona instala, solo para comprobar que es de ahí; cada ejecución del
+  plugin los vuelve a abrir, en memoria, solo para esa ejecución. Un sello hecho para otro
+  repositorio, ruta o nombre, o uno dañado, se rechaza con "Los datos sellados de este plugin no son
+  para este repositorio o están dañados"; una versión que no puede abrir sellos los rechaza con "Este
+  Kino no puede abrir datos sellados".
+- **Solo desde la rama principal, nunca con un `@ref` explícito.** GitHub sirve cualquier commit
+  alcanzable en la red de forks de un repositorio -- el de un fork o el de un pull request -- por la
+  dirección del repositorio padre, y no solo con un SHA evidente: un prefijo hexadecimal corto o un
+  ref de git-describe resuelven igual. Así, `owner/repo@<lo-que-sea>` puede ser el manifiesto de otra
+  persona, con sus propios `hosts`, mientras el sello sigue diciendo `owner/repo`. Un plugin con
+  secretos que se instala o actualiza con cualquier `@ref` explícito -- rama, etiqueta o commit -- se
+  rechaza con "Los datos sellados solo funcionan si instalas el plugin desde su rama principal, sin
+  @rama", y una ejecución desde una dirección así no recibe secretos.
+- Un sello confía en el *nombre* del repositorio: si su dueño cambia de nombre o se borra y otra
+  persona registra ese nombre, su repositorio abre tus sellos. Vuelve a sellar para el nombre nuevo, y
+  cambia el valor si el viejo valía la pena protegerlo.
+- Declarar cualquier secreto agrega "Usa datos sellados por su autor" a la hoja de consentimiento;
+  una actualización que trae secretos a un plugin que no tenía pide aprobación otra vez, igual que un
+  host nuevo. Agregar, cambiar o quitar un secreto en un plugin que ya declaraba alguno no la pide.
+
+**Qué protege y qué no.** Esto es ofuscación, no secreto: la clave privada que abre un sello va dentro
+de cada copia de Kino. Sellar un valor lo saca de tu manifiesto y del historial de tu repositorio; no
+impide que alguien desarme Kino y abra el sello por su cuenta, igual que no impide que el sitio al que
+llamas vea el valor en claro de su lado. No selles un valor que ya es público (una clave que ya está
+en el JavaScript del reproductor de ese sitio no gana nada sellada en el tuyo), y nunca selles las
+credenciales **de la persona**: esas van en un [ajuste](#settings) de tipo `password`.
+
+**Cómo se usa.** [`kino.secret(name)`](kino-api.md#secret) devuelve un marcador, no el valor; Kino
+cambia el marcador por el valor real solo dentro de `kino.fetch`, hacia los `hosts` de tu manifiesto
+por `https`, y tapa el valor en todo lo que vuelve a tu código. Las reglas completas (dónde se cambia
+el marcador, `kino.crypto`, el tapado) están en [La API kino](kino-api.md#secret); cómo probarlo con
+el kit de Node, en [Probar en local](test-locally.md#secrets).
 
 ## Ajustes { #settings }
 
@@ -180,8 +256,12 @@ sin conexión: "Descargar" en la página de información y "Guardar en el dispos
 en celulares (Kino nunca descarga en un televisor). No hay nada más que exportar. Cuando la persona
 guarda un título, Kino llama a tu `resolve(ref)` en el momento en que la descarga de verdad arranca,
 igual que al reproducir, y guarda el `Stream` como **un solo archivo**, con tus `headers` en la
-petición, por el mismo filtro de hosts que el reproductor (https en tus `hosts` o el servidor propio
-de la persona, cada salto de redirección revisado, nunca la red de la casa). Tus `subtitles` se
+petición, por el mismo filtro de hosts que el reproductor usa con ese stream: https en tus `hosts` o
+el servidor propio de la persona -- o cualquier host público cuando tu manifiesto tiene
+[`streamHosts: "any"`](#stream-hosts) o la persona le dio a tu plugin el
+[permiso amplio de video](contract.md#broad-video) --, cada salto de redirección revisado, nunca la
+red de la casa. Una descarga nunca pregunta por un host: uno por el que reproducir habría preguntado
+se rechaza. Tus `subtitles` se
 guardan al lado. Los `audioTracks` **no** se guardan: la copia sin conexión solo tiene el audio que va
 dentro del archivo de video, así que una fuente que dobla con pistas aparte se oye con su audio
 principal cuando está sin conexión.

@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1, 2 y 3)
+# El contrato (apiVersion 1 a 4)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -118,7 +118,7 @@ el resto sobrevive; lo que pasa de un tope se corta. Un `Stream` es todo o nada.
 
 | Qué | Reglas |
 | --- | --- |
-| Resultado de `search` | Máximo 100 ítems (un `Item[]` o una `Page`). |
+| Resultado de `search` | Máximo 100 ítems (un `Item[]` o una `Page`). Un ítem `live` cuyo nombre no tiene nada que ver con la búsqueda se descarta: se queda solo si su nombre lleva al menos el 60 % de las palabras de 3 o más letras de alguna forma de la búsqueda (lo que se escribió, `originalTitle` o uno de `altTitles`), sin importar tildes ni mayúsculas -- la regla de [`kino.rank.filterRelevant`](kino-api.md#rank). Las películas y series nunca se juzgan así (pueden llevar con razón otro título), y una búsqueda sin ninguna palabra así no descarta nada. Así que no respondas una búsqueda con toda tu lista de canales cuando nada coincide. |
 | Resultado de `browse` | Una `Page` de máximo 100 ítems. |
 | Resultado de `home` | Máximo 20 filas de máximo 60 ítems cada una. Una fila necesita un `id` único (mismo patrón que el id de un ítem) y un `title` no vacío; las filas sin ítems válidos se descartan. Kino las muestra después de sus propias filas, con el nombre de tu plugin, y las guarda 6 horas (las filas viejas se muestran mientras se actualizan; una respuesta sin filas válidas, o de más de 2 MB, no se guarda y se vuelve a pedir la próxima vez). Si `home()` falla no aportas filas y el Inicio no se bloquea. |
 | Resultado de `episodes` | Máximo 5000 capítulos. `number` es obligatorio y va de 1 a 99999 (un capítulo con número 0, como un especial, se descarta). `season` debería ir de 1 a 999; una temporada que falta o está fuera de rango se vuelve 1. `ref` es obligatorio. Una temporada y número repetidos se descartan. Sin `title`, Kino muestra "Capítulo N". |
@@ -158,7 +158,9 @@ tu respuesta de `Item`/`SeriesInfo`/`episodes`, o vacíos si los dejaste por fue
   `{ "host": "…", "insecureHttp": true }` (apiVersion 2, [mira el manifiesto](manifest.md#insecure-host)):
   ese host, exacto, acepta `http` para el stream, sus subtítulos, sus pistas de audio y su licencia.
   Un stream que rompe esto se rechaza completo; un subtítulo malo se descarta y el stream igual se
-  reproduce.
+  reproduce. Dos cosas aflojan esto para una película o un episodio: un manifiesto con
+  [`streamHosts: "any"`](manifest.md#stream-hosts) y el [permiso amplio de video](#broad-video) de la
+  persona; y por un host que se te olvidó se puede [preguntar](#forgotten-host) en vez de rechazarlo.
 - `mime` es opcional, con la forma `video/mp4` (cualquier otra cosa rechaza el stream). Cuando falta,
   el reproductor de Kino detecta HLS, DASH o un archivo simple por la URL y el contenido.
 - **Todo lo que el reproductor pide para el stream sigue las reglas de hosts de `kino.fetch`.** Eso
@@ -209,6 +211,47 @@ tu respuesta de `Item`/`SeriesInfo`/`episodes`, o vacíos si los dejaste por fue
   o el servidor propio de la persona), y `licenseHeaders` se filtran como los `headers` (máximo 20) y
   solo se envían con la petición de licencia. Las otras cinco claves se rechazan aunque estén junto a
   un bloque `drm` válido. Mira [Un stream protegido con Widevine](cookbook.md#widevine).
+
+### Por un host que se te olvidó se puede preguntar, una vez { #forgotten-host }
+
+Cuando la persona abre un título en el reproductor y lo único malo de tu `Stream` es que una URL (el
+video, su licencia, un subtítulo o una pista de audio) está en un host `https` que no declaraste, Kino
+le pregunta en el momento ("El video está en `<host>`, un servidor nuevo para este plugin.
+¿Permitir?"), el mismo diálogo que recibe un [`kino.fetch` a un host no declarado](kino-api.md#fetch).
+El reproductor también pregunta cuando se encuentra un host nuevo en plena reproducción (un
+manifiesto, un segmento, una redirección). "Permitir" agrega ese host a los hosts aprobados de tu
+plugin (no hay tope de cuántos puede aprobar una persona así; una actualización los conserva) y el
+video se reproduce; "Rechazar" (o Atrás) queda recordado para tu plugin -- el video falla como se
+describe arriba, un subtítulo o una pista de audio se descartan -- y nunca se vuelve a preguntar por
+ese host hasta que la persona elija "Olvidar rechazos de host". Nunca se pregunta por una dirección
+IP, un nombre local, `http` plano ni un stream roto de cualquier otra forma, y no se pregunta nada
+cuando nadie está mirando: una descarga falla en ese host. No te confíes: declara los hosts que usan
+tus streams.
+
+### El permiso amplio de video { #broad-video }
+
+Para una película o un episodio, esos diálogos de video, subtítulos y audio tienen una tercera opción,
+"Permitir video de cualquier servidor". Es un permiso que da la persona, visible y revocable en
+Ajustes ▸ Plugins ("Puede reproducir video desde cualquier servidor", "Quitar permiso de video
+amplio"); la única forma de que tú pidas la misma regla de entrada es
+[`streamHosts: "any"`](manifest.md#stream-hosts) (apiVersion 4), aprobado en la hoja de
+consentimiento. Una actualización o una reinstalación lo conservan; desinstalar lo quita.
+
+Mientras está activo, el `Stream` de tu película o episodio se revisa como el de un canal en vivo con
+[`liveStreamHosts: "any"`](live-channels.md#live-stream-hosts): su `url`, todo lo que nombra su
+manifiesto, cada salto de redirección **y** sus `subtitles` y `audioTracks` pueden estar en cualquier
+host público, por `http` o `https`, incluida una dirección IPv4 pública, y nunca más se pregunta por
+un host de video para tu plugin. Una [descarga](manifest.md#downloads) de una película o un episodio
+sigue la misma regla. Nunca cubre:
+
+- la red de la casa: direcciones privadas, de loopback, link-local y CGNAT, literales IPv6, nombres
+  locales y un nombre público que resuelve dentro de la LAN;
+- la `licenseUrl` de un bloque `drm` (sigue solo en tus hosts, con la pregunta de arriba);
+- `kino.fetch`: tu propio código sigue llegando solo a tus hosts y a los aprobados uno por uno;
+- los canales en vivo, que tienen su propia regla.
+
+Existe para fuentes cuyos servidores de video cambian de dominio en cada video o en plena
+reproducción; un plugin con un CDN fijo debería igual declararlo.
 
 ## Errores que la gente entiende { #errors }
 

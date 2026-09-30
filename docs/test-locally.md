@@ -3,7 +3,8 @@
 El kit de Node es la carpeta `sdk/` de los plugins de ejemplo ([de dónde sacarla](first-plugin.md#get-the-sdk)):
 `run.mjs` (ejecuta una función), `validate.mjs` (revisa un plugin como lo hace Kino), `init.mjs` (crea
 el esqueleto de uno nuevo), `kino-shim.mjs` (la API `kino` en Node), `contract.mjs` (las reglas,
-leídas de `contract.json`) y `guide-tables.mjs` (regenera las tablas de la guía). No hay nada que
+leídas de `contract.json`), `seal.mjs` (sella un [secreto](manifest.md#secrets) para tu manifiesto) y
+`guide-tables.mjs` (regenera las tablas de la guía). No hay nada que
 instalar. Necesita Node 18 o más nuevo (probado en 18.20, 20.11 y 24.14);
 `node --test sdk/test/kit.test.mjs` ejecuta sus propias pruebas.
 
@@ -37,11 +38,14 @@ tu manifiesto declara.
   (`season`, `episode`, `tmdbId` y `year` son `0` si no).
 - En el kit de Node, `kino.storage` es un archivo llamado `.kino-storage.json` y el tarro de cookies
   `.kino-cookies.json`, los dos al lado de tu manifiesto. Agrégalos a tu `.gitignore`. Bórralos para
-  empezar de cero.
+  empezar de cero. Un plugin con `secrets` también lee `.kino-secrets.json` de la misma carpeta
+  ([abajo](#secrets)). `node sdk/init.mjs` ya pone los tres en el `.gitignore` del esqueleto.
 - `node sdk/validate.mjs <folder>` revisa el manifiesto con todas las reglas de
   [el manifiesto](manifest.md) (los mismos mensajes en español que muestra la app) y que cada capacidad
   declarada esté exportada, e imprime las líneas extra de la hoja de consentimiento tal como las leerá
-  la persona (las rojas, un host `insecureHttp` o `"liveStreamHosts": "any"`, marcadas "(en rojo)");
+  la persona (las rojas, un host `insecureHttp`, `"liveStreamHosts": "any"` o `"streamHosts": "any"`,
+  marcadas "(en rojo)"; `secrets` agrega "Usa datos sellados por su autor", con una nota de que solo
+  la app puede comprobar para qué repositorio se sellaron);
   `--run <function> [argument]` además la ejecuta y lista lo que Kino descartaría. Con
   `--run liveCategories`, cada lista declarada también se descarga y se analiza: una que no se puede
   descargar o que da 0 canales es un problema, y se listan sus entradas descartadas. El código de
@@ -51,6 +55,22 @@ tu manifiesto declara.
 - Un stack trace nombra un `plugin.mjs` temporal: el runner carga una copia de tu archivo para que
   Node lo trate como módulo ES sin importar su versión ni lo que diga `package.json`. Los números de
   línea son los de tu `plugin.js`.
+
+## Secretos sellados (apiVersion 4) { #secrets }
+
+El kit nunca puede abrir un sello: no tiene la clave privada. Por eso lee los valores en claro
+directamente de `.kino-secrets.json` al lado de tu manifiesto (`{ "apiKey": "..." }`; déjalo fuera de
+git, como hace el `.gitignore` del esqueleto) y simula todas las reglas de
+[`kino.secret`](kino-api.md#secret): los marcadores, el cambio dentro de `kino.fetch`, la revisión de
+hosts del manifiesto por https en cada salto, las restricciones de `kino.crypto` y el tapado de lo que
+vuelve. `--record` tampoco escribe nunca el valor en claro en un archivo de fixtures: en su lugar va
+un marcador fijo, así que una grabación que subes a git nunca lleva un secreto, se reproduzca como se
+reproduzca después.
+
+Para hacer el sello: `node sdk/seal.mjs --repo owner/repo --name apiKey`, y escribe el valor en el
+prompt oculto (o pásalo por stdin). Sella para el repositorio desde el que la gente va a instalar, y
+prueba la versión sellada en la app instalada desde su rama principal, sin `@ref`
+([por qué](manifest.md#secrets)).
 
 ## Canales en vivo (apiVersion 3) { #live }
 
@@ -109,5 +129,8 @@ instala el plugin en la app y pruébalo ahí. Las diferencias:
   también hasta donde llega el análisis propio de Node, pero no se rechazan nombres que resuelven a
   direcciones privadas, los cuerpos siempre se leen como UTF-8, y el tiempo límite de 15 s cubre la
   espera de la respuesta pero no la descarga.
+- El kit nunca pregunta por un host: uno no declarado falla como `host_not_allowed` aunque sea
+  durante `resolve` o `episodes`, donde la app podría [preguntarle a la persona](kino-api.md#fetch).
+  Tampoco tiene el permiso amplio de video; `"streamHosts": "any"` sí lo aplica.
 - No se hacen cumplir los límites de tiempo por llamada, el límite de memoria ni los topes de tamaño
   de peticiones, respuestas y selectores.

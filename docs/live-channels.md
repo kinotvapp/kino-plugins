@@ -42,6 +42,11 @@ Lo que hace Kino con un ítem `live`:
 - Su tarjeta lleva la insignia "EN VIVO" (Inicio, "Ver más", búsqueda, celular y TV), y al tocarla va
   **directo al reproductor**: sin página de información, nada que leer ni escoger. `resolve(ref)`
   recibe el `ref` del ítem, igual que con una película.
+- En la **búsqueda**, un ítem `live` solo se queda si su nombre coincide con lo que se pidió (la
+  mayoría de las palabras de 3 o más letras de la búsqueda, de su `originalTitle` o de uno de sus
+  `altTitles`, como [`kino.rank.filterRelevant`](kino-api.md#rank)). A un plugin de canales que
+  responde cualquier búsqueda con toda su lista cuando nada coincide se le descartan esos canales; las
+  películas y series nunca se juzgan así.
 - El `Stream` se reproduce en vivo: lo que espera el reproductor es un manifiesto en vivo HLS o DASH
   (`.m3u8`/`.mpd`); un archivo progresivo también se reproduce, pero se ve como un canal (sin barra de
   avance, sin duración). `headers`, `subtitles` y `expiresInSeconds` funcionan como en cualquier
@@ -116,7 +121,9 @@ Lo que nunca permite:
   igual tienen que estar en tus `hosts` (o en el servidor de la persona);
 - subtítulos, pistas de audio y la `licenseUrl` de un bloque `drm`: siguen siendo solo tus `hosts`, y
   cada redirección que hagan se juzga igual;
-- películas y capítulos: un `Stream` que no es en vivo se revisa exactamente como antes;
+- películas y capítulos: un `Stream` que no es en vivo se revisa exactamente como antes (salvo que tu
+  plugin declare [`streamHosts: "any"`](manifest.md#stream-hosts) o la persona le haya dado el
+  [permiso amplio de video](contract.md#broad-video));
 - imágenes: la regla de los pósters (http o https, nunca local) no cambia.
 
 La hoja de consentimiento lo muestra en rojo, "Puede reproducir canales desde cualquier servidor que

@@ -6,7 +6,7 @@
 | --- | --- |
 | Manifiesto / archivo de entrada / ícono | 16 KB / 1 MB / 128 KB |
 | Memoria / pila, por plugin | 64 MB / 1 MB |
-| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una; `liveCategories`, `liveChannels`, `guide` 20 s cada una; cuentan todos tus fetch y sleep juntos |
+| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin convertido desde un scraper de Nuvio: 45 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
@@ -22,6 +22,7 @@
 | Ajustes | máximo 12; `text` 500, `url` 2.048, `password` 500 caracteres |
 | Mensajes de error | tu mensaje de `kino.error` se muestra como detalle, cortado a 200 caracteres |
 | `hosts` | de 1 a 20 entradas; desde apiVersion 2, ninguna (`[]`) cuando hay un ajuste `url` |
+| `secrets` (apiVersion 4) | máximo 16; los nombres cumplen `^[A-Za-z][A-Za-z0-9_]{0,31}$`; un valor tiene de 1 a 4.096 bytes |
 
 ## Cómo vive tu código { #lifecycle }
 
@@ -96,6 +97,12 @@ así que apréndete las reglas:
   a engancharse).
 - Si igual nadie ataja el error, no pasa nada grave: la llamada falla con ese error de todos modos, y
   un código de `kino.error` le llega bien a la persona.
+- **Los scrapers convertidos de Nuvio tienen un arreglo:** cuando Kino convierte un
+  [scraper de Nuvio](nuvio.md), reescribe los ayudantes async que emiten los empaquetadores
+  (`__async` de esbuild, `__awaiter` de TypeScript, `_asyncToGenerator` de Babel) para que el cuerpo
+  de una función transpilada arranque un tick después, y un `throw` antes de su primer `await` se
+  ataja normal. Una función `async` nativa (la tuya, o la de un scraper sin transpilar) igual necesita
+  el `await` antes de cualquier cosa que pueda lanzar error.
 
 Así que en una función auxiliar que quien la llama puede envolver en `try`/`catch`, haz primero el
 `await` y valida después:

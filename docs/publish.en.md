@@ -54,8 +54,13 @@ and [Every requirement, one by one](#discovery-requirements).
    different plugin for the people who installed it.
 
 The same approval applies to the other additions that need a line on the consent sheet: `channels`
-([Live channels](live-channels.md#en-vivo-tab)) and `"liveStreamHosts": "any"`
-([Channels from any server](live-channels.md#live-stream-hosts)).
+([Live channels](live-channels.md#en-vivo-tab)), `"liveStreamHosts": "any"`
+([Channels from any server](live-channels.md#live-stream-hosts)), `"streamHosts": "any"`
+([Playing from any server](manifest.md#stream-hosts)) and `secrets` in a plugin that had none
+([Sealed secrets](manifest.md#secrets); adding, changing or removing a secret after that asks
+nothing). Hosts the person approved while your plugin ran ([A host you forgot](contract.md#forgotten-host))
+and the broad video permission carry over to every update. A plugin with `secrets` only updates from
+its default branch, with no `@ref`.
 
 ## Before you publish { #checklist }
 

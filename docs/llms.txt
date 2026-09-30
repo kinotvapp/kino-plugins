@@ -13,15 +13,16 @@ Everything a person reads in Kino is Spanish (Bogotá, tuteo). The guide exists 
 
 ## Guide
 
-- [The manifest](https://kinotvapp.github.io/kino-plugins/en/manifest/): every field of kino-plugin.json, settings, the person's own servers, insecureHttp, downloads
-- [The contract](https://kinotvapp.github.io/kino-plugins/en/contract/): exported functions, arguments, returned shapes, validation rules, Stream rules, typed errors
-- [The kino API](https://kinotvapp.github.io/kino-plugins/en/kino-api/): kino.fetch, cookies, crypto, sleep, error, config, html.select, storage, log, rank
+- [The manifest](https://kinotvapp.github.io/kino-plugins/en/manifest/): every field of kino-plugin.json, settings (incl. list), streamHosts "any", sealed secrets (seal.mjs), the person's own servers, insecureHttp, downloads
+- [The contract](https://kinotvapp.github.io/kino-plugins/en/contract/): exported functions, arguments, returned shapes, validation rules, Stream rules, asking about a forgotten host, the broad video permission, typed errors
+- [The kino API](https://kinotvapp.github.io/kino-plugins/en/kino-api/): kino.fetch (host questions during resolve/episodes), cookies, kino.secret, crypto, sleep, error, config, html.select, storage, log, rank
 - [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/): live items, the channels capability, M3U/XMLTV playlists, guide, liveStreamHosts, three recipes
 - [Limits and engine quirks](https://kinotvapp.github.io/kino-plugins/en/engine-limits/): every limit, sandbox lifecycle, missing globals in QuickJS, the unhandled-rejection trap
 - [Test it locally](https://kinotvapp.github.io/kino-plugins/en/test-locally/): sdk/run.mjs, sdk/validate.mjs, record/replay fixtures, live-channel commands, what Node does not reproduce
 - [Publishing](https://kinotvapp.github.io/kino-plugins/en/publish/): versions and approvals, and every requirement to appear in the community list (topic kino-plugin)
-- [What people see](https://kinotvapp.github.io/kino-plugins/en/what-people-see/): consent sheet, statuses, uninstalling
+- [What people see](https://kinotvapp.github.io/kino-plugins/en/what-people-see/): consent sheet, host dialogs, player messages, statuses, uninstalling
 - [Cookbook](https://kinotvapp.github.io/kino-plugins/en/cookbook/): HTML site with login, JSON API with token, the person's own server, Widevine, plain http
+- [Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/): how Kino installs Nuvio scrapers by converting them, and the limits and globals only converted scrapers get (not for hand-written plugins)
 
 ## Reference
 

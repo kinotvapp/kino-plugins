@@ -25,8 +25,9 @@ apiVersion 2 and 3 feature working end to end.
     ---
 
     Public-domain films and classic TV from archive.org. **The simplest template to start from**:
-    one manifest, one JavaScript file, no build step, apiVersion 1, all five capabilities, plus the
-    `sdk/` kit, `GUIDE.md`, `contract.json` and `kino.d.ts`.
+    one manifest, one JavaScript file, no build step, all five capabilities plus `download`, and one
+    `list` setting for the person's own archive.org addresses (apiVersion 4), with the `sdk/` kit,
+    `GUIDE.md`, `contract.json` and `kino.d.ts`.
 
     [:octicons-repo-template-16: Use as template](https://github.com/kinotvapp/kino-plugin-archive/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: View on GitHub](https://github.com/kinotvapp/kino-plugin-archive){ .md-button }

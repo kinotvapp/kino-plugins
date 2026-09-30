@@ -25,8 +25,9 @@ quieras ver funcionando de punta a punta cada función de apiVersion 2 y 3.
     ---
 
     Películas de dominio público y televisión clásica de archive.org. **La plantilla más simple de la
-    que partir**: un manifiesto, un archivo JavaScript, sin paso de compilación, apiVersion 1, las
-    cinco capacidades, más el kit `sdk/`, `GUIDE.md`, `contract.json` y `kino.d.ts`.
+    que partir**: un manifiesto, un archivo JavaScript, sin paso de compilación, las cinco
+    capacidades más `download`, y un ajuste `list` para las direcciones de archive.org de la persona
+    (apiVersion 4), con el kit `sdk/`, `GUIDE.md`, `contract.json` y `kino.d.ts`.
 
     [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-archive/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-archive){ .md-button }

@@ -77,14 +77,15 @@ por eso el repositorio tiene que ser público.
 | Página | Qué tiene |
 | --- | --- |
 | [Primer plugin](first-plugin.md) | Dos archivos que buscan y reproducen, y cómo ejecutarlos |
-| [Manifiesto](manifest.md) | Cada campo y regla de `kino-plugin.json`, ajustes, los servidores propios de la persona, `insecureHttp`, descargas |
-| [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves y los errores que la gente entiende |
-| [API kino](kino-api.md) | `fetch`, cookies, crypto, sleep, config, HTML, storage, log, rank |
+| [Manifiesto](manifest.md) | Cada campo y regla de `kino-plugin.json`, ajustes, `streamHosts`, secretos sellados, los servidores propios de la persona, `insecureHttp`, descargas |
+| [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
+| [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |
 | [Publicar](publish.md) | Versiones, actualizaciones y aprobaciones, y cómo aparecer en "De la comunidad" |
-| [Lo que ve la persona](what-people-see.md) | La hoja de consentimiento, Configurar, estados, desactivar y desinstalar |
+| [Lo que ve la persona](what-people-see.md) | La hoja de consentimiento, los diálogos de host, los mensajes del reproductor, Configurar, estados, desactivar y desinstalar |
 | [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, Widevine, `http` plano |
+| [Scrapers de Nuvio](nuvio.md) | Cómo instala la gente los scrapers de Nuvio, qué arma la conversión y sus límites |
 | [Plugins de ejemplo](examples.md) | Los dos ejemplos publicados, y cómo está hecho el plugin de referencia |
 | [Referencia](reference/index.md) | `contract.json` y `kino.d.ts`, para leer o descargar |

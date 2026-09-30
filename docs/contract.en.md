@@ -1,4 +1,4 @@
-# The contract (apiVersion 1, 2 and 3)
+# The contract (apiVersion 1 to 4)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -117,7 +117,7 @@ all or nothing.
 
 | Thing | Rules |
 | --- | --- |
-| `search` result | At most 100 items (an `Item[]`, or a `Page`). |
+| `search` result | At most 100 items (an `Item[]`, or a `Page`). A `live` item whose name has nothing to do with the query is dropped: it stays only when its name carries at least 60% of the words of 3 or more letters of some form of the query (what was typed, `originalTitle` or one of `altTitles`), accents and case ignored -- the rule of [`kino.rank.filterRelevant`](kino-api.md#rank). Movies and series are never judged this way (they may rightly carry another title), and a query with no such word drops nothing. So don't answer a search with your whole channel list when nothing matches. |
 | `browse` result | A `Page` of at most 100 items. |
 | `home` result | At most 20 rows of at most 60 items each. A row needs a unique `id` (same pattern as an item id) and a non-blank `title`; rows with no valid items are dropped. Kino shows them after its own rows, labelled with your plugin's name, and caches them for 6 hours (stale rows show while it refreshes; an answer with no valid rows, or over 2 MB, is not cached and is asked again next time). If `home()` fails you contribute no rows and Home is not blocked. |
 | `episodes` result | At most 5000 episodes. `number` is required and from 1 to 99999 (an episode numbered 0, such as a special, is dropped). `season` should be from 1 to 999; a missing or out-of-range season becomes 1. `ref` is required. A repeated season and number is dropped. Without a `title`, Kino shows "Capítulo N". |
@@ -157,7 +157,10 @@ It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exac
   `{ "host": "…", "insecureHttp": true }` (apiVersion 2, [see the manifest](manifest.md#insecure-host)):
   that host, exactly, accepts `http` for the stream, its subtitles, its audio tracks and its
   license. A stream that breaks this is refused as a whole; a bad subtitle is dropped and the
-  stream still plays.
+  stream still plays. Two things relax this for a movie or an episode: a manifest with
+  [`streamHosts: "any"`](manifest.md#stream-hosts) and the person's
+  [broad video permission](#broad-video); and a host you forgot may be
+  [asked about](#forgotten-host) instead of refused.
 - `mime` is optional, of the form `video/mp4` (anything else refuses the stream). When it is missing
   Kino's player detects HLS, DASH or a plain file from the URL and the content.
 - **Everything the player fetches for the stream follows the `kino.fetch` host rules.** That covers the
@@ -203,6 +206,46 @@ It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exac
   `licenseHeaders` are filtered like `headers` (at most 20) and sent with the license request only.
   The other five keys are refused even next to a valid `drm` block. See
   [A Widevine-protected stream](cookbook.md#widevine).
+
+### A host you forgot may be asked about, once { #forgotten-host }
+
+When the person opens a title in the player and the only thing wrong with your `Stream` is that a URL
+(the video, its license, a subtitle or an audio track) is on an `https` host you did not declare,
+Kino asks them in the moment ("El video está en `<host>`, un servidor nuevo para este plugin.
+¿Permitir?"), the same dialog a [`kino.fetch` to an undeclared host](kino-api.md#fetch) gets. The
+player also asks when it meets a new host mid-playback (a manifest, a segment, a redirect).
+"Permitir" adds that host to your plugin's approved hosts (there is no cap on how many a person
+approves this way; an update keeps them) and the video plays; "Rechazar" (or Back) is remembered for
+your plugin -- the video fails as described above, a subtitle or audio track is dropped -- and that
+host is never asked about again until the person chooses "Olvidar rechazos de host". An IP address, a
+local name, plain `http` or a stream broken in any other way is never asked about, and nothing is
+asked when nobody is watching: a download fails on that host instead. Don't rely on it: declare the
+hosts your streams use.
+
+### The broad video permission { #broad-video }
+
+For a movie or an episode, those video, subtitle and audio dialogs have a third choice, "Permitir
+video de cualquier servidor". It is the person's own grant, shown and revocable in Ajustes ▸ Plugins
+("Puede reproducir video desde cualquier servidor", "Quitar permiso de video amplio"); the one way for
+you to ask for the same rule up front is [`streamHosts: "any"`](manifest.md#stream-hosts)
+(apiVersion 4), approved on the consent sheet. An update or a reinstall keeps it; uninstalling drops
+it.
+
+While it is on, your movie or episode `Stream` is checked the way a live channel's is under
+[`liveStreamHosts: "any"`](live-channels.md#live-stream-hosts): its `url`, everything its manifest
+names, every redirect hop, **and** its `subtitles` and `audioTracks` may be on any public host, over
+`http` or `https`, a public IPv4 address included, and no video host is ever asked about again for
+your plugin. A [download](manifest.md#downloads) of a movie or an episode follows the same rule. It
+never covers:
+
+- the home network: private, loopback, link-local and CGNAT addresses, IPv6 literals, local names,
+  and a public name that resolves into the LAN;
+- a `drm` block's `licenseUrl` (still your hosts only, asked about as above);
+- `kino.fetch`: your own code still reaches only your hosts and the ones approved one by one;
+- live channels, which have their own rule.
+
+It exists for sources whose hosters change domain per video or mid-playback; a plugin with a fixed
+CDN should still declare it.
 
 ## Errors people understand { #errors }
 

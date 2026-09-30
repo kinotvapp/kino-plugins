@@ -7,7 +7,7 @@
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack, per plugin | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s each; `liveCategories`, `liveChannels`, `guide` 20 s each; counting all your fetches and sleeps together |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s each (`resolve` of a plugin converted from a Nuvio scraper: 45 s); `liveCategories`, `liveChannels`, `guide` 20 s each; counting all your fetches and sleeps together, but not the time the person spends answering a host question for that call |
 | Loading the module (its top level) | 10 s |
 | Idle sandbox | closed after 5 minutes without calls |
 | Consecutive timeouts | 3 in a row and Kino disables the plugin ("No responde") |
@@ -23,6 +23,7 @@
 | Settings | at most 12; `text` 500, `url` 2,048, `password` 500 characters |
 | Error messages | your `kino.error` message is shown as a detail, cut at 200 characters |
 | `hosts` | 1 to 20 entries; from apiVersion 2, none (`[]`) when a `url` setting exists |
+| `secrets` (apiVersion 4) | at most 16; names match `^[A-Za-z][A-Za-z0-9_]{0,31}$`; a value is 1..4,096 bytes |
 <!-- contract:limits:end -->
 
 ## How your code lives { #lifecycle }
@@ -93,6 +94,11 @@ even if your code is inside `try`/`catch`. The Node kit cannot show you this, so
   in time).
 - If nobody catches the error anyway, it is harmless: the call fails with that error either way, and
   a `kino.error` code still reaches the person correctly.
+- **Nuvio-converted scrapers get a workaround:** when Kino converts a [Nuvio scraper](nuvio.md) it
+  rewrites the async helpers bundlers emit (esbuild's `__async`, TypeScript's `__awaiter`, Babel's
+  `_asyncToGenerator`) so a transpiled function's body starts one tick later, and a throw before its
+  first `await` is caught normally. A native `async` function (yours, or an untranspiled scraper's)
+  still needs the `await` before anything that can throw.
 
 So in a helper that a caller may wrap in `try`/`catch`, do the `await` first and validate afterwards:
 

@@ -3,7 +3,7 @@
 `kino` is a global object, frozen, always there. Nothing else from the outside world is.
 
 ```js
-kino.apiVersion   // 3 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 4 -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"
 ```
@@ -11,7 +11,9 @@ kino.lang         // "es-CO"
 Kino also provides the web globals QuickJS lacks, written in JavaScript and frozen: `URL`,
 `URLSearchParams`, `atob`, `btoa`, `TextEncoder` and `TextDecoder` (UTF-8 only). They behave like the
 browser's (checked against Node on a corpus of cases), except that `URL` does not convert
-international domain names to punycode.
+international domain names to punycode. A `URL` can be changed in place with the usual setters
+(`protocol`, `username`, `password`, `host`, `hostname`, `port`, `pathname`, `search`, `hash`,
+`href`), which, as in a browser, never throw: a value they cannot use leaves the URL as it was.
 
 The whole API is declared in [`kino.d.ts`](reference/index.md) for your editor.
 
@@ -52,6 +54,14 @@ seconds of your call's time. Ask for the form the content is.
 - **Redirects** (301, 302, 303, 307, 308) are followed by Kino, up to 10 hops; each hop is checked
   and counted as a request. A 303, or a 301/302 after a POST, turns into a GET without a body. With
   `redirect: "manual"` you get the 3xx answer instead (a login form usually answers 302 on success).
+- **A host you forgot may be asked about, during `resolve` and `episodes` only.** When one of those
+  calls fetches an `https` host you did not declare (a redirect hop included), Kino asks the person
+  ("Quiere conectarse por primera vez a `<host>`. ¿Permitir?"). Your call's time limit stops while
+  they decide, and the fetch goes on after "Permitir" (the host is then approved for good, with no
+  cap on how many); "Rechazar" or Back fails it as `host_not_allowed` and is remembered. The question
+  comes down unanswered, with nothing remembered, if your call ends first (it failed, timed out, or
+  the person left). `search`, `home`, `browse`, the live lists, a download and a call that is already
+  over never ask: the fetch just fails as `host_not_allowed`. Don't rely on it: declare your hosts.
 - **A non-2xx answer does not throw**: check `r.ok`. Everything else that goes wrong throws an error
   with a `code` you can test (`e.code === "timeout"`):
 
@@ -69,12 +79,16 @@ seconds of your call's time. Ask for the form the content is.
   charset of its `Content-Type`, UTF-8 by default), and at most 60 requests in one call to your
   plugin, redirect hops included.
 - **Headers you set** are sent as given, except `Host`, `Content-Length`, `Transfer-Encoding`,
-  `Connection` and `Cookie2`. Unless you set `User-Agent`, Kino sends `Kino/<version> (plugin <id>)`.
+  `Connection`, `Cookie2` and `Accept-Encoding` (Kino asks for gzip itself and always hands you the
+  body decompressed; a copied browser `Accept-Encoding` would get you compressed bytes instead). Unless you set `User-Agent`, Kino sends `Kino/<version> (plugin <id>)`.
   A `Content-Type` header sets the type of the body.
 - **Cookies:** each plugin has its own cookie jar. Kino stores what your hosts set (`Set-Cookie`
   never reaches your code) and sends it back on later requests, following the usual rules (domain,
   path, `Secure`, expiry). The jar is saved on the device, so a login survives the sandbox and the app
   restarting; it is deleted when the person changes your settings or uninstalls the plugin.
+- **A marker from [`kino.secret`](#secret)** in the URL, a header or the body is swapped for its real
+  value right before the request goes out, and that request is then held to a stricter rule than the
+  one above: only your manifest's `hosts`, over `https`, on every hop.
 
 ## `kino.cookies` { #cookies }
 
@@ -84,6 +98,53 @@ kino.cookies.clear()                                  // forget every cookie of 
 ```
 
 `get` only answers for URLs your plugin may reach. At most 50 cookies per domain and 64 KB in total.
+
+## `kino.secret(name)` (apiVersion 4) { #secret }
+
+```js
+const key = kino.secret("apiKey");   // a marker, not the value; any other name throws
+await kino.fetch(`https://api.example.org/v1/list?key=${key}`);
+```
+
+A placeholder for a value sealed in your manifest's [`secrets`](manifest.md#secrets) field. Carry the
+marker wherever you would carry the value. Kino opens each seal at most once per run and never lets
+your code see the plain value.
+
+**Where the marker becomes the value: only inside `kino.fetch`.** In the URL's path and query
+(percent-encoded, so the value can't split a segment or add a parameter), inside a JSON body
+(JSON-escaped), and as is in headers, a text body or a form field. A marker in the URL's scheme,
+userinfo, host, port or fragment is left as text: a value never becomes part of the host Kino
+connects to. A header whose value would carry a control character once the secret is in it is
+refused rather than sent.
+
+**Where that request may go: only a host your manifest's `hosts` lists, over `https`, on every
+redirect hop.** Never a host approved while the plugin runs, never a server the person typed into
+your settings, and neither `streamHosts: "any"` nor `liveStreamHosts: "any"` extends to it. A hop
+anywhere else fails as `host_not_allowed`: "este plugin no puede enviar datos sellados a `<host>`"
+for a host you did not declare, "... sin https a `<host>`" for plain `http` even on a declared one.
+
+**`kino.crypto`.** A marker may be the *entire* `key` of an AES `encrypt`/`decrypt` -- exactly one
+marker, nothing else in the string -- or part of a longer HMAC `key` or PBKDF2 `password`/`salt`. It
+is always refused, with "no se puede usar un dato sellado aquí", as `data`, `iv` or `aad`, as part of
+a longer cipher `key`, and as the key of a non-AES cipher (`des-ede3-*`). That is not an arbitrary
+line: a known `iv` or `aad` under a sealed key lets a cipher be turned into a way to compute the key
+back, and a key padded out with known bytes shrinks the search down to the unknown part alone. HMAC
+and PBKDF2 mix their whole input through a hash, so a known prefix or suffix never splits the secret
+back out.
+
+**Redaction.** Anything Kino hands back to your code that could carry a sealed value -- `r.text()`,
+`r.url`, header values, a text body's `r.base64()`, `kino.cookies.get`, an error message, a
+`kino.crypto` answer, and every `kino.log` line -- has the value swapped back for its marker first,
+whether or not this run has used the secret yet. The forms caught: raw, URL percent-encoding (strict,
+`+` for space and `%20` for space), JSON-escaped (including `\/` for `/` and `\uXXXX` for non-ASCII,
+in either hex case, as PHP and Python write them) and base64/base64url. A URL the server returns with
+the value inside comes back with the marker instead, so a `Stream` built from it won't play: markers
+are swapped only in `kino.fetch` requests, never in what your plugin returns to Kino. Not caught: a
+binary response (`r.base64()` of something that was never text), a response header's *name*, a
+lowercase `%xx` a server happens to echo, and a value the server transforms on purpose (hashed,
+reversed…). A `kino.crypto` error can still say how many bytes a sealed key was, or whether it was
+valid hex or base64 -- metadata, never the value. Prefer values of at least 8 bytes: a shorter one is
+still masked wherever it shows up inside unrelated text, which gets noisier the shorter it is.
 
 ## `kino.crypto` { #crypto }
 
@@ -106,6 +167,9 @@ kino.crypto.uuid()
 - CBC and ECB use PKCS#7 padding unless you pass `padding: "none"`. GCM appends its 16-byte tag to
   the ciphertext, and expects it there to decrypt (as most sites send it).
 - A wrong key size, a bad padding or a failed GCM tag throws; it never returns garbage silently.
+- A [`kino.secret`](#secret) marker is only accepted as the whole `key` of an AES
+  `encrypt`/`decrypt`, or as part of an HMAC `key` or `pbkdf2`'s `password`/`salt` -- never in
+  `data`, `iv` or `aad`, nor as a `des-ede3` key.
 
 <!-- contract:crypto:start -->
 | Function | Algorithms |

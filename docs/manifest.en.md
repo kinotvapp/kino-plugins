@@ -27,9 +27,9 @@ names the field.
 | `id` | Required. `^[a-z0-9][a-z0-9-]{1,39}$` (2 to 40 lowercase letters, digits or hyphens, not starting with a hyphen). Not one of `magis`, `ditu`, `live`, `local`, `unknown`, `plugin`, `own`. It is the plugin's identity: never change it once people have installed it. |
 | `name` | Required. 1 to 40 characters. |
 | `version` | Required. `MAJOR.MINOR.PATCH` and nothing else (no `-beta`, no `+build`), each number up to 6 digits and without leading zeros. |
-| `apiVersion` | Required. `1`, `2`, `3` or `4`. A higher number than Kino supports is refused with "Este plugin necesita una versión más nueva de Kino". Declare `2` only if you use something that needs it (below); otherwise stay on `1` so your plugin also runs on older Kino builds. |
+| `apiVersion` | Required. `1`, `2`, `3` or `4`. A higher number than Kino supports is refused with "Este plugin necesita una versión más nueva de Kino". Declare the lowest number that has what you use, so your plugin also runs on older Kino builds: `2` for `download`, `drm`, `insecureHttp`, `"hosts": []` or `live` items; `3` for `channels`/`liveStreamHosts`; `4` for a `list` setting, `streamHosts` or `secrets`. |
 | `entry` | Required. Relative path of the JavaScript file: letters, digits, `.`, `_`, `-` and `/` only, no `..`, at most 200 characters, ends in `.js`. The file is at most 1 MB. |
-| `hosts` | Required. 1 to 20 entries (from apiVersion 2 it may be empty, `[]`, when the plugin has a `url` setting: see [The person's own servers](#own-servers)); each a lowercase DNS name (`archive.org`), `*.` plus a DNS name (`*.archive.org`), or (apiVersion 2 only) an object `{ "host": "…", "insecureHttp": true }` (below). Host names only: no scheme, port or path. No bare `*`, no IP addresses, no `localhost`, nothing ending in `.local`, `.lan`, `.internal`, `.localhost` or `.home.arpa`, and at least one dot. **`*.x` covers subdomains only, not `x` itself**: if you need both, list both. |
+| `hosts` | Required. 1 to 20 entries (from apiVersion 2 it may be empty, `[]`, when the plugin has a `url` setting: see [The person's own servers](#own-servers)); each a lowercase DNS name (`archive.org`), `*.` plus a DNS name (`*.archive.org`), or (apiVersion 2 only) an object `{ "host": "…", "insecureHttp": true }` (below). Host names only: no scheme, port or path. No bare `*`, no IP addresses, no `localhost`, nothing ending in `.local`, `.lan`, `.internal`, `.localhost` or `.home.arpa`, and at least one dot. **`*.x` covers subdomains only, not `x` itself**: if you need both, list both. The 20 is what a manifest may declare; the hosts a person approves later, one by one, while your plugin runs ([A host you forgot](contract.md#forgotten-host)) have no cap. |
 | `capabilities` | Required. A subset of `search`, `home`, `browse`, `episodes`, `resolve`, `download`, `drm`, `channels`. Must include `resolve` and at least one of `search` or `home`. `search`, `home`, `browse`, `episodes` and `resolve` must each be an exported function of the entry file, or the install fails with "El plugin no carga: le falta ...". `download` and `drm` need `apiVersion: 2` and are declarative flags instead — the app acts on them, not your code, so nothing extra to export; declaring one shows its consent line ("Puede descargar videos para verlos sin conexión" / "Reproduce video protegido (DRM)") and needs approval again on an update that adds it. `download` gives your titles offline downloads (see [Downloads](#downloads)); `drm` lets a `Stream` carry a Widevine license (see [A Widevine-protected stream](cookbook.md#widevine)). `channels` needs `apiVersion: 3` and the exports `liveCategories` and `liveChannels` (see [Channels in the En vivo tab](live-channels.md#en-vivo-tab)). |
 | `settings` | Optional. What the person fills in on your plugin's "Configurar" screen: see below. |
 | `permissions` | Optional. A list of names from the closed list in `contract.json`. **The list is empty in this version**: any name is refused with "permiso desconocido: …". It exists so a later version can add permissions (each one shown on the consent screen) without a new `apiVersion`. |
@@ -58,13 +58,90 @@ TLDs, which a `*.xyz` entry can never cover). With `"apiVersion": 4` a plugin ma
 ```
 
 `"any"` is the only value and no capability is needed; an older manifest ignores the field. It lets
-**what the plugin plays** (the `url` `resolve` returns, for a movie, an episode or a channel, and
-the manifests, segments and redirects the player follows from it) be on **any public host**, over
-`http` or `https`. It changes nothing else: `kino.fetch`, images, subtitles, side audio and DRM
-license servers stay on your declared `hosts`, and local or private addresses are still refused.
-The consent screen shows it in red ("Puede reproducir video desde cualquier servidor que
-indique"), and an update that adds it waits for the person to approve again. Prefer listing the real
-domains when you can: people trust a narrow list more.
+**what the plugin plays** be on **any public host**, over `http` or `https`:
+
+- a movie or an episode: exactly the rule of the
+  [broad video permission](contract.md#broad-video) -- the same rule, asked for by you up front
+  instead of granted by the person. In the player, the `url` `resolve` returns, everything its
+  manifest names, every redirect hop, **and** the `subtitles` and `audioTracks` you return may be on
+  any public host, and no video host is ever asked about. A [download](#downloads) of that movie or
+  episode follows the same rule;
+- a live channel: the rule of [`liveStreamHosts: "any"`](live-channels.md#live-stream-hosts) (the
+  stream, its manifest and redirects; your `subtitles` and `audioTracks` stay on your `hosts`).
+
+It changes nothing else: `kino.fetch` (and so every [sealed secret](#secrets)), images and DRM
+license servers stay on your declared `hosts`, and local or private addresses (and public names that
+resolve into the home network) are still refused. The consent screen shows it in red ("Puede
+reproducir video desde cualquier servidor que indique"), and an update that adds it waits for the
+person to approve again. Prefer listing the real domains when you can: people trust a narrow list
+more.
+
+!!! note "`fetchHosts` is not for you"
+    Plugins that Kino builds itself from a Nuvio scraper ([Nuvio scrapers](nuvio.md)) carry one more
+    field, `"fetchHosts": "any"`, which lets their `kino.fetch` reach any public server. Kino honours
+    it **only** on those converted installs. In a plugin you write, `"any"` is accepted and ignored
+    (the consent screen does not show it and `kino.fetch` stays on your `hosts`), and any other value
+    is refused. Declare your hosts instead.
+
+## Sealed secrets (apiVersion 4) { #secrets }
+
+A plugin that ships a fixed key (an API token baked into a site's own client, a per-tenant secret its
+author owns) can seal it instead of writing it into the manifest as plain text:
+
+```
+node sdk/seal.mjs --repo owner/repo --name apiKey
+```
+
+(`owner/repo/path` for a plugin that lives in a subfolder.) `--repo` follows the same rules as the
+address people install from: a trailing `/` and a `.git` are dropped, but a URL
+(`https://github.com/...`) and an `@ref` are refused rather than guessed at. The value is read from a
+hidden prompt or piped on stdin -- never as a command-line argument, which would land in shell
+history. It must be 1 to 4,096 bytes (UTF-8); the tool prints one line, `kino-sealed:v1:...`, to paste
+into the manifest:
+
+```json
+"apiVersion": 4,
+"secrets": { "apiKey": "kino-sealed:v1:AbC123..." }
+```
+
+- Up to 16 secrets; each name matches `^[A-Za-z][A-Za-z0-9_]{0,31}$`. `secrets` needs
+  `"apiVersion": 4`; below that the field is ignored (the plugin installs with no secrets, and
+  `kino.secret` throws for every name), and a Kino too old for apiVersion 4 refuses the whole install
+  with "Este plugin necesita una versión más nueva de Kino".
+- A seal is bound to the repository (and subfolder) you passed `seal.mjs`, lowercased, **never to a
+  ref**. At install and at every update Kino opens each seal once against the address the person is
+  installing from, only to check it belongs there; each run of the plugin opens them again, in
+  memory, for that run alone. A seal made for a different repository, path or name, or one that was
+  corrupted, is refused with "Los datos sellados de este plugin no son para este repositorio o están
+  dañados"; a build that cannot open seals at all refuses with "Este Kino no puede abrir datos
+  sellados".
+- **Only from the default branch, never an explicit `@ref`.** GitHub serves any commit reachable in a
+  repository's fork network -- a fork's or a pull request's -- through the parent repository's own
+  address, and not only for an obvious SHA: a short hex prefix or a git-describe ref resolves the same
+  way. So `owner/repo@<anything>` can be someone else's manifest, with their own `hosts`, while the
+  seal still reads `owner/repo`. A plugin with secrets installed or updated with any explicit `@ref`
+  -- branch, tag, commit -- is refused with "Los datos sellados solo funcionan si instalas el plugin
+  desde su rama principal, sin @rama", and a run at such an address gets no secrets.
+- A seal trusts the repository's *name*: if its owner is renamed or deleted and someone else
+  registers that name, their repository opens your seals. Seal again for the new name, and rotate the
+  value if the old one was worth protecting.
+- Declaring any secret adds "Usa datos sellados por su autor" to the consent sheet; an update that
+  brings secrets to a plugin that had none asks again, exactly like a new host. Adding, changing or
+  removing a secret in a plugin that already declared some does not.
+
+**What this protects, and what it does not.** This is obfuscation, not secrecy: the private key that
+opens a seal ships inside every copy of Kino. Sealing a value keeps it out of your manifest and your
+repository's history; it does not stop someone from pulling Kino apart and opening the seal
+themselves, any more than it stops the site you call from seeing the plain value on its own end.
+Don't bother sealing a value that is already public (a key already sitting in that site's own player
+JavaScript gains nothing from being sealed in yours), and never seal **the person's** credentials:
+those belong in a `password` [setting](#settings).
+
+**Using it.** [`kino.secret(name)`](kino-api.md#secret) answers a marker, not the value; Kino swaps
+the marker for the real value only inside `kino.fetch`, toward your manifest's own `hosts` over
+`https`, and redacts the value from everything that comes back to your code. The full rules
+(where the marker is swapped, `kino.crypto`, redaction) are on [The `kino` API](kino-api.md#secret);
+testing with the Node kit is on [Test it locally](test-locally.md#secrets).
 
 ## Settings { #settings }
 
@@ -174,8 +251,11 @@ offline viewing: "Descargar" on the info page and "Guardar en el dispositivo" in
 phones (Kino never downloads on a TV). Nothing extra to export. When the person saves a title, Kino
 calls your `resolve(ref)` when the download actually runs, exactly as playing would, and saves the
 `Stream` as **one file**, with your `headers` on the request, through the same host gate as the player
-(https on your `hosts` or the person's own server, every redirect hop checked, never the home
-network). Your `subtitles` are saved next to it. `audioTracks` are **not** saved: the offline copy has
+for that stream: https on your `hosts` or the person's own server -- or any public host when your
+manifest has [`streamHosts: "any"`](#stream-hosts) or the person gave your plugin the
+[broad video permission](contract.md#broad-video) -- every redirect hop checked, never the home
+network. A download never asks about a host: one that playing would have asked about is refused.
+Your `subtitles` are saved next to it. `audioTracks` are **not** saved: the offline copy has
 only the audio inside the video file, so a source that dubs through separate tracks is heard in its
 main audio when offline.
 

@@ -74,14 +74,15 @@ which is why the repository has to be public.
 | Page | What is in it |
 | --- | --- |
 | [A first plugin](first-plugin.md) | Two files that search and play, and how to run them |
-| [The manifest](manifest.md) | Every field and rule of `kino-plugin.json`, settings, the person's own servers, `insecureHttp`, downloads |
-| [The contract](contract.md) | The functions you export, their arguments, what you return, and the errors people understand |
-| [The `kino` API](kino-api.md) | `fetch`, cookies, crypto, sleep, config, HTML, storage, log, rank |
+| [The manifest](manifest.md) | Every field and rule of `kino-plugin.json`, settings, `streamHosts`, sealed secrets, the person's own servers, `insecureHttp`, downloads |
+| [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
+| [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |
 | [Publishing](publish.md) | Releases, updates and approvals, and appearing in "De la comunidad" |
-| [What people see](what-people-see.md) | The consent sheet, Configurar, statuses, disabling and uninstalling |
+| [What people see](what-people-see.md) | The consent sheet, host dialogs, player messages, Configurar, statuses, disabling and uninstalling |
 | [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |
+| [Nuvio scrapers](nuvio.md) | How people install Nuvio scrapers, what the conversion builds, and its limits |
 | [Example plugins](examples.md) | The two published examples, and how the reference plugin is built |
 | [Reference](reference/index.md) | `contract.json` and `kino.d.ts`, to read or download |

@@ -3,7 +3,8 @@
 The Node kit is the `sdk/` folder of the example plugins ([where to get it](first-plugin.md#get-the-sdk)):
 `run.mjs` (run one function), `validate.mjs` (check a plugin the way Kino does), `init.mjs` (scaffold
 a new one), `kino-shim.mjs` (the `kino` API in Node), `contract.mjs` (the rules, read from
-`contract.json`) and `guide-tables.mjs` (regenerates the guide's tables). There is nothing to
+`contract.json`), `seal.mjs` (seals a [secret](manifest.md#secrets) for your manifest) and
+`guide-tables.mjs` (regenerates the guide's tables). There is nothing to
 install. It needs Node 18 or newer (checked on 18.20, 20.11 and 24.14); `node --test sdk/test/kit.test.mjs`
 runs its own tests.
 
@@ -36,11 +37,14 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
   (`season`, `episode`, `tmdbId` and `year` are `0` otherwise).
 - Under the Node kit `kino.storage` is a file named `.kino-storage.json` and the cookie jar
   `.kino-cookies.json`, both next to your manifest. Add them to your `.gitignore`. Delete them to
-  start from scratch.
+  start from scratch. A plugin with `secrets` also reads `.kino-secrets.json` from the same folder
+  ([below](#secrets)). `node sdk/init.mjs` already lists all three in the scaffold's `.gitignore`.
 - `node sdk/validate.mjs <folder>` checks the manifest with every rule of [the manifest](manifest.md)
   (the same Spanish messages the app shows) and that each declared capability is exported, and prints the
-  consent sheet's extra lines as the person will read them (the red ones, an `insecureHttp` host or
-  `"liveStreamHosts": "any"`, marked "(en rojo)");
+  consent sheet's extra lines as the person will read them (the red ones, an `insecureHttp` host,
+  `"liveStreamHosts": "any"` or `"streamHosts": "any"`, marked "(en rojo)"; `secrets` adds "Usa
+  datos sellados por su autor", with a note that only the app can check which repository they were
+  sealed for);
   `--run <function> [argument]` also runs it and lists what Kino would drop. With
   `--run liveCategories`, every declared playlist is downloaded and parsed too: one that cannot be
   downloaded or parses to 0 channels is a problem, and its discarded entries are listed. Exit code 0
@@ -50,6 +54,21 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
 - A stack trace names a temporary `plugin.mjs`: the runner loads a copy of your file so that Node
   treats it as an ES module whatever its version and `package.json` say. The line numbers are your
   `plugin.js`'s.
+
+## Sealed secrets (apiVersion 4) { #secrets }
+
+The kit can never open a seal: it has no private key. So it reads the plain values straight from
+`.kino-secrets.json` next to your manifest (`{ "apiKey": "..." }`; keep it out of git, as the
+scaffold's `.gitignore` does) and simulates every rule of [`kino.secret`](kino-api.md#secret): the
+markers, the substitution inside `kino.fetch`, the manifest-hosts-over-https check on every hop, the
+`kino.crypto` restrictions and the redaction of what comes back. `--record` never writes the plain
+value to a fixtures file either: a canonical placeholder stands in for it, so a committed recording
+never carries a secret however it is replayed later.
+
+To make the seal itself: `node sdk/seal.mjs --repo owner/repo --name apiKey`, then type the value at
+the hidden prompt (or pipe it on stdin). Seal for the repository people will install from, and test
+the sealed build in the app installed from its default branch, with no `@ref`
+([why](manifest.md#secrets)).
 
 ## Live channels (apiVersion 3) { #live }
 
@@ -105,5 +124,8 @@ differences:
   Node's own parsing goes, but there is no refusal of names that resolve to private addresses, bodies
   are always read as UTF-8, and the 15 s timeout covers the wait for the response but not the
   download.
+- The kit never asks about a host: an undeclared one fails as `host_not_allowed` even during
+  `resolve` or `episodes`, where the app could [ask the person](kino-api.md#fetch). It has no broad
+  video permission either; `"streamHosts": "any"` it does apply.
 - The per-call time limits, the memory limit and the size caps on requests, answers and selectors
   are not enforced.

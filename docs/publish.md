@@ -54,8 +54,13 @@ cuando la persona toca "Actualizar". Si aun así no aparece, mira
    la gente que lo instaló.
 
 La misma aprobación aplica a las otras adiciones que necesitan una línea en la hoja de
-consentimiento: `channels` ([Canales en vivo](live-channels.md#en-vivo-tab)) y
-`"liveStreamHosts": "any"` ([Canales desde cualquier servidor](live-channels.md#live-stream-hosts)).
+consentimiento: `channels` ([Canales en vivo](live-channels.md#en-vivo-tab)),
+`"liveStreamHosts": "any"` ([Canales desde cualquier servidor](live-channels.md#live-stream-hosts)),
+`"streamHosts": "any"` ([Reproducir desde cualquier servidor](manifest.md#stream-hosts)) y `secrets`
+en un plugin que no tenía ([Secretos sellados](manifest.md#secrets); agregar, cambiar o quitar un
+secreto después de eso no pregunta nada). Los hosts que la persona aprobó mientras tu plugin corría
+([Un host que se te olvidó](contract.md#forgotten-host)) y el permiso amplio de video se conservan en
+cada actualización. Un plugin con `secrets` solo se actualiza desde su rama principal, sin `@ref`.
 
 ## Antes de publicar { #checklist }
 
