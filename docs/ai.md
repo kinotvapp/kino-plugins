@@ -1,7 +1,9 @@
 # Crear un plugin con IA
 
-Un asistente de programación con IA (Claude Code, Cursor, Copilot, Codex, Aider…) puede escribirte
-un plugin de Kino si primero lee las reglas. Este sitio las publica en los formatos que mejor leen
+Un asistente de programación con IA (Claude Code, Codex, Gemini CLI, Cursor, GitHub Copilot, Aider…)
+puede escribirte un plugin de Kino si primero lee las reglas, **aunque tú no sepas programar**: tú
+dices qué fuente quieres y pruebas el resultado en Kino; el asistente escribe el código, lo prueba con
+el kit y te dice qué hacer en cada paso. Este sitio publica las reglas en los formatos que mejor leen
 esas herramientas:
 
 | Archivo | Qué es |
@@ -10,65 +12,172 @@ esas herramientas:
 | [`llms-full.txt`](https://kinotvapp.github.io/kino-plugins/llms-full.txt) | Toda esta guía en un solo archivo de texto (en inglés), más `AGENTS.md`, `contract.json` y `kino.d.ts`. Se genera con el sitio, así que siempre es la misma versión de estas páginas. |
 | [`llms.txt`](https://kinotvapp.github.io/kino-plugins/llms.txt) | El índice corto, en el formato [llms.txt](https://llmstxt.org/). |
 
+!!! tip "¿Quieres usar un scraper de Nuvio?"
+    No necesitas este prompt: Kino instala directamente los scrapers de un repositorio de Nuvio,
+    convirtiéndolos en el dispositivo. Mira [Scrapers de Nuvio](nuvio.md).
+
+## Antes de empezar { #before }
+
+Necesitas cinco cosas. Todas son gratis salvo, a veces, el asistente.
+
+1. **Una cuenta de GitHub** ([github.com/signup](https://github.com/signup)). Tu plugin vive en un
+   repositorio público de GitHub; de ahí lo instala Kino.
+2. **Node.js 18 o más nuevo** ([nodejs.org](https://nodejs.org/), la versión "LTS"). Es lo que corre
+   el kit de pruebas. Para comprobarlo, en una terminal: `node --version` tiene que responder `v18`
+   o un número mayor.
+3. **Git** ([git-scm.com](https://git-scm.com/downloads)), para bajar y subir el repositorio. Opcional
+   pero útil: [GitHub CLI](https://cli.github.com/) (`gh`), con el que el asistente puede crear el
+   repositorio y ponerle el topic por ti (la primera vez, `gh auth login`).
+4. **Un asistente que pueda usar la terminal**, es decir, que ejecute comandos y lea lo que
+   responden:
+    - en la terminal: Claude Code, Codex CLI, Gemini CLI, Aider;
+    - en un editor: Cursor, o VS Code con GitHub Copilot en modo agente.
+
+    **Cómo abrir una terminal:** en Windows, menú Inicio → escribe "Terminal" (o "PowerShell"); en
+    Mac, Cmd + Espacio → escribe "Terminal"; en Linux, Ctrl + Alt + T. Crea una carpeta vacía, entra
+    en ella y abre ahí el asistente.
+
+    Un chat en el navegador, sin terminal, también sirve, pero ahí te toca a ti copiar cada comando,
+    ejecutarlo y pegarle al chat lo que responda.
+5. **Kino en un celular o un televisor**, para probar el plugin de verdad antes de compartirlo.
+
+Y una cosa más: **el derecho a usar la fuente.** Un plugin solo puede llegar a lo que la persona
+igual podría ver; no le pidas a un asistente que se salte un muro de pago, un login ajeno o un DRM.
+
 ## El prompt { #prompt }
 
-Cópialo, llena las tres líneas que están entre `<<<` y `>>>`, y pégalo en tu asistente, idealmente
-desde una carpeta vacía o desde un repositorio creado con la plantilla
-[kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) (la más simple) o
-[kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) (si necesitas
-ajustes, sesión, descargas o canales en vivo).
+Cópialo (el botón de copiar está arriba a la derecha del bloque), cambia lo que está entre `<<<` y
+`>>>` y pégalo en tu asistente. Si no sabes qué poner en una línea, déjala como está: el asistente te
+lo va a preguntar.
 
 ```text
 Vas a escribir un plugin de Kino: un repositorio público de GitHub con kino-plugin.json y un
 módulo ES de JavaScript (plugin.js) que la app de video Kino ejecuta en un sandbox de QuickJS.
 
+Puede que yo no sepa programar. Explícame cada paso en español sencillo, ejecuta tú los comandos
+(antes dime cuál y para qué), pregúntame antes de cualquier cosa que no se pueda deshacer (borrar,
+publicar, subir a GitHub) y, cuando algo lo tenga que hacer yo en GitHub o en Kino, dame los clics
+exactos.
+
 Antes de escribir nada:
-1. Descarga y lee completo https://kinotvapp.github.io/kino-plugins/AGENTS.md y síguelo como tus
-   instrucciones para esta tarea.
-2. Descarga y lee https://kinotvapp.github.io/kino-plugins/llms-full.txt (la guía completa,
-   contract.json y kino.d.ts). Si no puedes abrir URL, dímelo y te los pego.
-3. Lee plugin.js y kino-plugin.json de https://github.com/kinotvapp/kino-plugin-own-server (la
-   referencia completa de la API: ajustes, sesión, kino.storage, descargas y canales en vivo) --
-   en crudo: https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/plugin.js y
-   https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/kino-plugin.json. Si mi
-   plugin es simple (sin ajustes ni sesión), parte en cambio de
-   https://github.com/kinotvapp/kino-plugin-archive. Usa la carpeta sdk/ de cualquiera de los dos
-   como kit de pruebas de Node.
+1. Lee completo https://kinotvapp.github.io/kino-plugins/AGENTS.md y síguelo como tus instrucciones.
+2. Lee https://kinotvapp.github.io/kino-plugins/llms-full.txt (la guía completa, contract.json y
+   kino.d.ts). Si no puedes abrir URL, dímelo y te los pego.
+3. Parte de una plantilla, con "Use this template" (nunca Fork): kinotvapp/kino-plugin-archive si mi
+   plugin es simple, kinotvapp/kino-plugin-own-server si necesita ajustes, sesión, descargas o canales
+   en vivo (su plugin.js y su kino-plugin.json son la referencia completa de la API). La carpeta sdk/
+   de la plantilla es el kit de pruebas de Node.
 
 Lo que quiero:
-- Fuente: <<< el sitio o la API, p. ej. https://example.com, y qué tiene: películas, series, TV en vivo >>>
-- Acceso: <<< ninguno / mi usuario y contraseña / una clave de API / la dirección de un servidor que escribo yo >>>
-- Nombre del plugin que se ve en Kino: <<< p. ej. "Mi fuente" >>>
+- Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
+- Contenido: <<< películas / series / anime / TV en vivo; idioma y país >>>
+- Acceso: <<< ninguno / mi usuario y contraseña del sitio / una clave de API mía (del desarrollador) que no quiero publicar / la dirección de un servidor que escribe cada persona >>>
+- Qué le pregunta Kino a la persona al configurarlo: <<< nada / su usuario y contraseña / su región / la dirección de su servidor >>>
+- Descargas para ver sin conexión: <<< sí / no >>>
+- Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
+- Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
-Reglas que no puedes romper (el detalle está en AGENTS.md):
-- Solo se llega a los hosts declarados en el manifiesto (incluidos cada host de redirección, CDN,
-  subtítulos y segmentos; *.x no cubre x). Nada de APIs de Node ni del navegador: nada de fetch,
-  setTimeout, Buffer, process, require, crypto, Intl; usa kino.fetch, kino.sleep, kino.crypto,
-  kino.storage.
-- Nunca lances un error antes del primer await en una función async (primero await, después valida).
-- Respeta los límites: search 15 s, las demás llamadas 20 s, 60 peticiones por llamada, cuerpos de
-  5 MB, 256 KB de storage, 100 ítems de búsqueda, 20 filas de Inicio de 60.
-- Usa kino.error("auth_required" | "not_found" | "geo_blocked" | "rate_limited" | "unavailable").
-- Todo lo que lee la persona va en español de Bogotá con tuteo, nunca voseo.
-- Nunca dejes contraseñas, tokens ni claves en el código: pídelos en un ajuste de tipo "password".
-- Usa el apiVersion más bajo que funcione, un id nuevo y mío (nunca "archive-org"), y un
-  repositorio creado desde la plantilla, no un fork.
+Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.md):
+- Declara en "hosts" cada host que conozcas: los de la API y los del video, subtítulos, audio,
+  segmentos y redirecciones (*.x no cubre x). Si falta uno, al abrir o reproducir un título Kino le
+  pregunta a la persona una sola vez; no cuentes con eso. Si el video sale de CDN que cambian, usa
+  "streamHosts": "any" (apiVersion 4; la persona lo aprueba al instalar). No uses "fetchHosts": solo
+  sirve en plugins convertidos desde Nuvio.
+- No es Node ni un navegador: no hay fetch, setTimeout, Buffer, process, require, crypto ni Intl;
+  usa kino.fetch, kino.sleep, kino.crypto, kino.storage. Sí hay URL, URLSearchParams, atob, btoa,
+  TextEncoder, TextDecoder y console. Un solo archivo, sin import.
+- Nunca lances un error antes del primer await de una función async (primero await, luego valida).
+- Límites: search 15 s y las demás llamadas 20 s; 60 peticiones por llamada; cuerpos de 5 MB;
+  256 KB de kino.storage; 100 resultados de búsqueda; Inicio con 20 filas de 60.
+- Errores para la persona: kino.error("auth_required" | "not_found" | "geo_blocked" |
+  "rate_limited" | "unavailable").
+- Todo lo que lee la persona, en español de Bogotá con tuteo, nunca voseo.
+- Nada secreto en el código ni en el repositorio. El usuario y la contraseña de cada persona van en
+  un ajuste de tipo "password". Una clave de API mía va sellada: "secrets" en el manifiesto, sellada
+  con `node sdk/seal.mjs --repo USUARIO/REPO --name nombre`, y en el código kino.secret("nombre")
+  (apiVersion 4).
+- Descargas: si la fuente lo permite, declara "download" (apiVersion 2). Se guardan películas y
+  capítulos en archivo normal (mp4, mkv…) o en HLS que no es en vivo; lo en vivo y lo que tiene DRM,
+  nunca.
+- apiVersion: el más bajo que funcione (4 solo para secrets, "streamHosts": "any" o un ajuste de tipo
+  "list"). Un id nuevo y mío (nunca "archive-org").
 
-Trabaja paso a paso: primero explora la fuente con peticiones reales, luego escribe el manifiesto,
-luego cada función. Después de cada paso ejecuta `node sdk/validate.mjs .` y
-`node sdk/run.mjs . <función> …` y arregla todo lo que Kino descartaría. Graba fixtures con
---record y haz que `node --test test/plugin.test.mjs` pase sin conexión. Termina con la lista de chequeo de AGENTS.md y
-luego dime cómo publicarlo (topic kino-plugin) y qué tengo que probar a mano en la app Kino.
+Trabaja paso a paso: primero explora la fuente con peticiones reales, luego el manifiesto, luego
+cada función. Después de cada paso corre `node sdk/validate.mjs .` y `node sdk/run.mjs . <función> …`
+y arregla todo lo que Kino descartaría. Graba fixtures con --record y haz que
+`node --test test/plugin.test.mjs` pase sin conexión. Termina con la lista de chequeo de AGENTS.md.
+
+Al final, llévame de la mano:
+1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y
+   una descripción en GitHub (About → ⚙ → Description y Topics → Save changes, o
+   `gh repo edit USUARIO/REPO --add-topic kino-plugin --description "…"`); y un "name" y una
+   "description" buenos, en español, en kino-plugin.json, porque eso es lo que la gente ve en Kino.
+2. Instalarlo en Kino: en el celular, menú ☰ → Plugins → botón +; en el televisor, Ajustes →
+   Plugins → Agregar. Escribir USUARIO/REPO → Agregar → leer la hoja → Instalar (y Configurar si
+   pide datos).
+3. Qué probar a mano en Kino y qué hacer si algo falla.
 ```
+
+## Un ejemplo lleno { #example }
+
+Así queda la parte "Lo que quiero" para una fuente pública y sencilla. Cópiala en lugar de la del
+prompt si quieres ensayar el camino completo antes de hacer el tuyo:
+
+```text
+Lo que quiero:
+- Fuente: https://archive.org, solo la colección de cine negro (https://archive.org/details/Film_Noir)
+- Contenido: películas; en inglés
+- Acceso: ninguno
+- Qué le pregunta Kino a la persona al configurarlo: nada
+- Descargas para ver sin conexión: sí
+- Nombre en Kino y una descripción corta: "Cine negro": "Películas clásicas de cine negro de archive.org, de dominio público. No pide cuenta."
+- Mi usuario de GitHub: mi-usuario
+```
+
+## Que Kino encuentre tu plugin { #listed }
+
+Instalarlo escribiendo la dirección funciona desde el primer momento. Para que además salga solo en
+Kino, en "De la comunidad" (Plugins → Recomendados), el repositorio tiene que:
+
+1. ser **público** y **no un fork** (créalo con "Use this template");
+2. tener `kino-plugin.json` en la raíz, válido para `node sdk/validate.mjs .`, con un `name` y una
+   `description` en español (es lo que muestra la tarjeta);
+3. tener el topic **`kino-plugin`** (About → ⚙ → Topics) y, mejor, una descripción en GitHub;
+4. estar entre los 30 con más estrellas del topic.
+
+Cada dispositivo busca de nuevo cada 12 horas, o al tocar "Actualizar". Los clics exactos y cómo
+comprobarlo: [Aparecer en Kino](listed.md).
+
+## Si algo falla { #troubleshooting }
+
+Pégale al asistente **el texto completo** que salió en la terminal (no un resumen) y dile qué
+esperabas. Algunos casos comunes:
+
+| Lo que ves | Qué hacer |
+| --- | --- |
+| `node: command not found`, "node no se reconoce…" | Node no está instalado, o abriste la terminal antes de instalarlo: instálalo y abre una terminal nueva. |
+| `✗ kino-plugin.json: …` | El manifiesto rompe una regla; el mensaje es el mismo que da Kino. Pídele al asistente que lo arregle según AGENTS.md. |
+| `[dropped by Kino] …` | Kino descartaría esos resultados. Pregúntale qué regla de [el contrato](contract.md) rompen, en vez de aceptar un parche a ciegas. |
+| `[host_not_allowed] …` | Un host que falta en `hosts`: que lo declare. |
+| `[timeout] …` | La fuente es lenta o hay demasiadas peticiones: que haga menos peticiones por llamada. |
+| Funciona en el kit pero falla en Kino | El kit de Node es más permisivo que la app ([lo que no reproduce](test-locally.md#differences)): globales que faltan, un `throw` antes del primer `await`, `kino.html.select`. Dale al asistente el mensaje exacto que muestra Kino (o una foto de la pantalla). |
+| Kino dice "Configura … en Ajustes ▸ Plugins" | El plugin necesita datos: toca el botón Configurar del mensaje, o ve a Plugins → Instalados → tu plugin → Configurar. |
+| No sale en "De la comunidad" | Revisa [Aparecer en Kino](listed.md). |
+
+**Registros de Kino** (para quien tenga un computador conectado al celular con `adb`):
+`adb logcat -s KinoPlugin` muestra lo que escribe el plugin con `kino.log`. Nunca pegues contraseñas
+ni claves en el chat.
 
 ## Consejos { #tips }
 
 - **Dale una terminal al asistente.** El kit solo ayuda si el asistente puede ejecutar
   `node sdk/validate.mjs .` y `node sdk/run.mjs …` y leer lo que imprimen.
 - **Pruébalo en la app.** El kit de Node es más permisivo que Kino
-  ([lo que no reproduce](test-locally.md#differences)): instala el plugin desde Ajustes > Plugins y
-  revisa que busque, liste capítulos y reproduzca antes de publicarlo.
+  ([lo que no reproduce](test-locally.md#differences)): instala el plugin y revisa que busque, liste
+  capítulos, reproduzca (y descargue, si lo declaraste) antes de compartirlo.
 - **Pide las razones.** Cuando el kit reporte un ítem descartado, pregúntale al asistente qué regla de
   [el contrato](contract.md) rompió, en vez de aceptar un parche.
+- **Sube la versión en cada cambio.** Kino solo instala una actualización si `version` es mayor
+  ([Publicar](publish.md#updates)).
 - **Ojo con los derechos.** Un plugin solo puede llegar a lo que la persona igual podría ver; no le
   pidas a un asistente que se salte un muro de pago, un login o un DRM.

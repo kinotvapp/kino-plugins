@@ -37,6 +37,8 @@ a él), y `kino.d.ts` declara toda la API `kino` para tu editor
    `node sdk/run.mjs . search "algo"` ([Probar en local](test-locally.md)).
 5. **Publícalo** como repositorio público con el topic `kino-plugin` (obligatorio: sin él Kino no lo encuentra), e instálalo en Kino desde
    Ajustes > Plugins escribiendo `owner/repo` ([Publicar](publish.md)).
+6. **Haz que Kino lo muestre solo** en "De la comunidad": topic, nombre y descripción, y cómo
+   comprobarlo, en [Aparecer en Kino](listed.md).
 
 ¿Usas un asistente de IA? Dale [el prompt listo](ai.md): lee toda esta guía desde `llms-full.txt` y
 sigue `AGENTS.md`.
@@ -83,6 +85,7 @@ por eso el repositorio tiene que ser público.
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |
+| [Aparecer en Kino](listed.md) | Los cinco pasos para salir en "De la comunidad", cuánto tarda y cómo comprobarlo |
 | [Publicar](publish.md) | Versiones, actualizaciones y aprobaciones, y cómo aparecer en "De la comunidad" |
 | [Lo que ve la persona](what-people-see.md) | La hoja de consentimiento, los diálogos de host, los mensajes del reproductor, Configurar, estados, desactivar y desinstalar |
 | [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, Widevine, `http` plano |

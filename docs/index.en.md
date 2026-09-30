@@ -34,6 +34,8 @@ whole `kino` API for your editor (`/// <reference path="./kino.d.ts" />` at the 
    `node sdk/run.mjs . search "algo"` ([Test it locally](test-locally.md)).
 5. **Publish** it as a public repository with the topic `kino-plugin` (mandatory: without it Kino cannot find it), and install it in Kino from
    Ajustes > Plugins by typing `owner/repo` ([Publishing](publish.md)).
+6. **Get Kino to show it by itself** in "De la comunidad": the topic, name and description, and how
+   to check it, in [Get listed in Kino](listed.md).
 
 Using an AI assistant? Give it [the ready-made prompt](ai.md): it reads this whole guide from
 `llms-full.txt` and follows `AGENTS.md`.
@@ -80,6 +82,7 @@ which is why the repository has to be public.
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |
+| [Get listed in Kino](listed.md) | The five steps to show in "De la comunidad", how long it takes and how to check it |
 | [Publishing](publish.md) | Releases, updates and approvals, and appearing in "De la comunidad" |
 | [What people see](what-people-see.md) | The consent sheet, host dialogs, player messages, Configurar, statuses, disabling and uninstalling |
 | [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |

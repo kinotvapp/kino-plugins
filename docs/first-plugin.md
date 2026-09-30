@@ -103,3 +103,5 @@ Download ZIP**). Los comandos son los mismos: `node sdk/validate.mjs .`, `node s
 - [Contrato](contract.md): las formas que devuelves y las reglas con las que Kino las revisa.
 - [Límites y trampas del motor](engine-limits.md): lee [la trampa del rechazo](engine-limits.md#rejection-trap)
   antes de escribir una función auxiliar.
+- [Aparecer en Kino](listed.md): cuando funcione, los cinco pasos para que la gente lo encuentre en la
+  app sin saber la dirección.

@@ -101,3 +101,5 @@ example by downloading the ZIP from **Code → Download ZIP**). The commands are
 - [The contract](contract.md): the shapes you return and the rules Kino checks them with.
 - [Limits and engine quirks](engine-limits.md): read [the rejection trap](engine-limits.md#rejection-trap)
   before you write a helper.
+- [Get listed in Kino](listed.md): once it works, the five steps for people to find it in the app
+  without knowing its address.

@@ -18,6 +18,8 @@ Un solo comando pone el topic y la descripción del repositorio:
 gh repo edit OWNER/REPO --add-topic kino-plugin --description "Qué hace tu plugin, en una línea"
 ```
 
+Paso a paso, con los clics exactos y cómo comprobarlo: [Aparecer en Kino](listed.md).
+
 Después espera: Kino actualiza la lista como máximo cada 12 horas por dispositivo, o al instante
 cuando la persona toca "Actualizar". Si aun así no aparece, mira
 [«Mi plugin no aparece»](#troubleshooting) y [Cada requisito, uno por uno](#discovery-requirements).
@@ -130,7 +132,7 @@ El resto de esta sección explica cada regla que aplica la app, con su valor exa
 | 5 | **`kino-plugin.json` en la raíz, en la rama por defecto** | La app lee `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` es la rama por defecto). Un manifiesto en una subcarpeta o solo en otra rama no se encuentra. |
 | 6 | **Máximo 16 KB** | Un manifiesto más grande (16.384 bytes) se descarta. |
 | 7 | **Un manifiesto válido** | El mismo analizador del instalador: todas las reglas de [el manifiesto](manifest.md). `node sdk/validate.mjs .` lo revisa con los mismos mensajes. (El descubrimiento solo lee el manifiesto; el archivo de entrada y sus exports se revisan cuando alguien instala.) |
-| 8 | **Un `apiVersion` que soporte el Kino de la persona** | Un manifiesto cuyo `apiVersion` es más alto del que soporta esa versión de la app es inválido para ella ("Este plugin necesita una versión más nueva de Kino"), así que no aparece en dispositivos con un Kino más viejo. Esta versión soporta hasta `3`. |
+| 8 | **Un `apiVersion` que soporte el Kino de la persona** | Un manifiesto cuyo `apiVersion` es más alto del que soporta esa versión de la app es inválido para ella ("Este plugin necesita una versión más nueva de Kino"), así que no aparece en dispositivos con un Kino más viejo. Esta versión soporta hasta `4`. |
 | 9 | **Que no diga `"discoverable": false`** | Déjalo por fuera o ponlo en `true`. Cualquier valor que no sea booleano vuelve inválido todo el manifiesto. |
 | 10 | **Un `id` que no sea de nadie más** | Mira [Por qué un plugin válido igual puede quedar oculto](#discovery-hidden). |
 | 11 | **Suficientes estrellas para estar entre los 30 primeros** | Mira [Cómo busca la app](#discovery-search). |

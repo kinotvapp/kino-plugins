@@ -52,6 +52,17 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `"streamHosts": "any"` or sealed `secrets` (`4`).
 - Whether the person has the right to use the source. Do not help circumvent DRM: the only DRM path
   is a Widevine license the source itself hands out (the `drm` capability).
+- **Offline downloads**: declare `download` (apiVersion 2) when the source allows saving titles.
+  Kino (phones only) saves a movie or episode that is a progressive file (`mp4`, `mkv`, `webm`,
+  `ts`…) or an HLS VOD stream (AES-128 keys fine); a live stream, DASH, SAMPLE-AES or any DRM never
+  downloads.
+- If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
+  ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
+
+**The person may not program.** Explain each step in plain Spanish, run the commands yourself (say
+which and why first), ask before anything irreversible (deleting files, pushing, publishing), and
+give exact clicks for what they must do on GitHub or in Kino. Ask for the full terminal output or the
+exact message Kino shows, never a summary.
 
 ## 3. Workflow
 
@@ -96,8 +107,13 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
    missing globals (section 4) and for any `throw` before the first `await` of an async function.
 8. **Publish**: public repository, `kino-plugin.json` and `plugin.js` at the root, `.gitignore` with
    `.kino-storage.json`, `.kino-cookies.json`, `.kino-secrets.json`, `sdk/config.json`; tag a release (`v1.0.0`);
-   add the topic: `gh repo edit owner/repo --add-topic kino-plugin`. The person installs it from
-   Kino, Ajustes > Plugins, typing `owner/repo`, and must try it in the app (search, episodes, play).
+   add the topic and a one-line GitHub description:
+   `gh repo edit owner/repo --add-topic kino-plugin --description "…"` (or, on the repo page,
+   About → ⚙ → Description + Topics → Save changes). Write a good Spanish `name` and `description` in
+   the manifest: that is what Kino's cards show (see section 6). The person installs it from Kino (on
+   a phone: menu ☰ → Plugins → the + button; on a TV: Ajustes → Plugins → Agregar), typing
+   `owner/repo` → Agregar → Instalar, and must try it in the app (search, episodes, play, and download
+   if declared).
 9. **Updates**: raise `version` every time (an equal or lower version never reaches anyone). Adding
    hosts, `permissions`, `download`, `drm`, `channels`, `liveStreamHosts`, `streamHosts`, an
    `insecureHttp` host, or `secrets` to a plugin that had none makes the update wait for the person's
@@ -113,7 +129,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   no bare `*`, no scheme/port/path in `hosts`. 1 to 20 entries (`[]` only from apiVersion 2 with a
   `url` setting). During `resolve` and `episodes` only, a fetch to an undeclared `https` host asks the
   person (the call's clock stops meanwhile); everywhere else it just fails as `host_not_allowed`.
-  Never design around that question: declare every host.
+  Likewise, when the person opens a title, an undeclared `https` host of the returned `Stream` (video,
+  subtitle, audio track, license) or one the player meets mid-playback is asked about once; a
+  download or anything in the background is never asked. Never design around those questions:
+  declare every host.
 - Kino strips `Accept-Encoding` (and `Host`, `Content-Length`, `Transfer-Encoding`, `Connection`,
   `Cookie2`) from your headers and always hands you decompressed bodies.
 - The `Stream` URL, subtitles, `audioTracks`, every HLS variant/segment/key, DASH `BaseURL`, and the
@@ -129,7 +148,8 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   home network. Shown in red; prefer listing real domains. The person can grant the same rule
   themselves ("Permitir video de cualquier servidor", the broad video permission).
 - `"fetchHosts"` exists only for plugins Kino converts from Nuvio scrapers; in a hand-written plugin
-  it does nothing. Do not use it.
+  it does nothing (`sdk/validate.mjs` warns "fetchHosts solo tiene efecto en plugins convertidos desde
+  Nuvio; en tu plugin se ignora"). Do not use it. From apiVersion 4 any value but `"any"` is refused.
 
 **The engine is QuickJS, not Node, not a browser.** Missing: `setTimeout`, `setInterval`,
 `setImmediate`, `queueMicrotask`, `Buffer`, `process`, `require`, `fetch`, `AbortController`,
@@ -231,8 +251,10 @@ from its default branch (no `@ref`); the Node kit reads plain values from `.kino
 
 ## 6. Being discovered ("De la comunidad")
 
-Kino lists community plugins itself; nobody approves them. Every rule, as the app applies it (full
-detail: [Publishing › Get found](https://kinotvapp.github.io/kino-plugins/en/publish/#get-found)):
+Kino lists community plugins itself; nobody approves them. The step-by-step for the person, with
+exact clicks and how to check it, is [Get listed in Kino](https://kinotvapp.github.io/kino-plugins/en/listed/).
+Every rule, as the app applies it (full detail:
+[Publishing › Get found](https://kinotvapp.github.io/kino-plugins/en/publish/#get-found)):
 
 1. Public GitHub repository at `https://github.com/<owner>/<repo>` (owner `^[A-Za-z0-9][A-Za-z0-9-]{0,38}$`,
    repo `^[A-Za-z0-9._-]{1,100}$`), **not a fork** (use the template's "Use this template").
@@ -258,6 +280,9 @@ detail: [Publishing › Get found](https://kinotvapp.github.io/kino-plugins/en/p
 7. If GitHub cannot answer, a backup list published by the Kino team is used; it is rebuilt from the
    same search, so nothing needs requesting.
 8. Nothing installs by itself: the person always sees the consent sheet ("Plugin no verificado…").
+9. Where to look in the app: Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), tab
+   "Recomendados", section "De la comunidad" with its "Actualizar" button; also the first-run "Elige
+   tus fuentes". On the web: <https://github.com/topics/kino-plugin>.
 
 To debug "it does not appear": open the search URL in a browser and find the repo in `items`; open
 the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualizar" after 60 s.

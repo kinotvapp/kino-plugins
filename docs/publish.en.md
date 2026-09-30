@@ -18,6 +18,8 @@ One command does the topic and the repository description:
 gh repo edit OWNER/REPO --add-topic kino-plugin --description "What your plugin does, in one line"
 ```
 
+Step by step, with the exact clicks and how to check it: [Get listed in Kino](listed.md).
+
 Then wait: Kino refreshes the list at most every 12 hours per device, or right away when the person
 taps "Actualizar". If it still does not appear, see [Why my plugin does not appear](#troubleshooting)
 and [Every requirement, one by one](#discovery-requirements).
@@ -127,7 +129,7 @@ The rest of this section spells out every rule the app applies, with its exact v
 | 5 | **`kino-plugin.json` at the root, on the default branch** | The app reads `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` is the default branch). A manifest in a subfolder or only on another branch is not found. |
 | 6 | **At most 16 KB** | A bigger manifest (16,384 bytes) is dropped. |
 | 7 | **A valid manifest** | The same parser as the installer: every rule of [The manifest](manifest.md). `node sdk/validate.mjs .` checks it with the same messages. (Discovery reads only the manifest; the entry file and its exports are checked when someone installs.) |
-| 8 | **An `apiVersion` the person's Kino supports** | A manifest whose `apiVersion` is higher than the build supports is invalid for that build ("Este plugin necesita una versión más nueva de Kino"), so it does not show on devices with an older Kino. This build supports up to `3`. |
+| 8 | **An `apiVersion` the person's Kino supports** | A manifest whose `apiVersion` is higher than the build supports is invalid for that build ("Este plugin necesita una versión más nueva de Kino"), so it does not show on devices with an older Kino. This build supports up to `4`. |
 | 9 | **Not `"discoverable": false`** | Leave it out or set `true`. Any value that is not a boolean makes the whole manifest invalid. |
 | 10 | **An `id` nobody else owns** | See [Why a valid plugin can still be hidden](#discovery-hidden). |
 | 11 | **Enough stars to be in the top 30** | See [How the app searches](#discovery-search). |
