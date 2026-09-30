@@ -1,5 +1,27 @@
 # Publicar tu plugin
 
+## Para aparecer en la app, dos cosas { #appear-in-the-app }
+
+La gente siempre puede instalar tu plugin escribiendo `usuario/repositorio`. Para que **aparezca solo**
+en Kino (Ajustes ▸ Plugins ▸ "De la comunidad", y en "Elige tus fuentes" la primera vez), necesitas:
+
+1. **El topic `kino-plugin` en el repositorio de GitHub.** Es la única forma en que la app descubre un
+   plugin. Ponlo en el repositorio que tiene `kino-plugin.json` (About ▸ ⚙ ▸ Topics), y mantén el
+   repositorio público y que no sea un fork.
+2. **Una `description` en `kino-plugin.json`** (hasta 300 caracteres). Es el texto de tu tarjeta en la
+   app; sin ella la tarjeta queda sin texto. (La descripción del repositorio de GitHub no la lee la
+   app, pero ponla también, para quien abra tu repositorio.)
+
+Un solo comando pone el topic y la descripción del repositorio:
+
+```
+gh repo edit OWNER/REPO --add-topic kino-plugin --description "Qué hace tu plugin, en una línea"
+```
+
+Después espera: Kino actualiza la lista como máximo cada 12 horas por dispositivo, o al instante
+cuando la persona toca "Actualizar". Si aun así no aparece, mira
+[«Mi plugin no aparece»](#troubleshooting) y [Cada requisito, uno por uno](#discovery-requirements).
+
 1. **Crea un repositorio público de GitHub** y pon `kino-plugin.json` y tu archivo de entrada (por
    ejemplo `plugin.js`) en la raíz, más un `icon.png` opcional y un `README.md`. Agrega
    `.kino-storage.json` al `.gitignore`. (Un plugin también puede vivir en una subcarpeta; la gente
