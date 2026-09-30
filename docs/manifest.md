@@ -27,7 +27,7 @@ español que nombra el campo.
 | `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$` (de 2 a 40 letras minúsculas, dígitos o guiones, sin empezar por guion). No puede ser `magis`, `ditu`, `live`, `local`, `unknown`, `plugin` ni `own`. Es la identidad del plugin: nunca lo cambies cuando ya haya gente que lo instaló. |
 | `name` | Obligatorio. De 1 a 40 caracteres. |
 | `version` | Obligatorio. `MAJOR.MINOR.PATCH` y nada más (sin `-beta`, sin `+build`), cada número de hasta 6 dígitos y sin ceros a la izquierda. |
-| `apiVersion` | Obligatorio. `1`, `2` o `3`. Un número más alto del que Kino soporta se rechaza con "Este plugin necesita una versión más nueva de Kino". Declara `2` solo si usas algo que lo necesite (abajo); si no, quédate en `1` para que tu plugin también corra en versiones viejas de Kino. |
+| `apiVersion` | Obligatorio. `1`, `2`, `3` o `4`. Un número más alto del que Kino soporta se rechaza con "Este plugin necesita una versión más nueva de Kino". Declara `2` solo si usas algo que lo necesite (abajo); si no, quédate en `1` para que tu plugin también corra en versiones viejas de Kino. |
 | `entry` | Obligatorio. Ruta relativa del archivo JavaScript: solo letras, dígitos, `.`, `_`, `-` y `/`, sin `..`, máximo 200 caracteres, termina en `.js`. El archivo pesa máximo 1 MB. |
 | `hosts` | Obligatorio. De 1 a 20 entradas (desde apiVersion 2 puede estar vacío, `[]`, cuando el plugin tiene un ajuste de tipo `url`: mira [Los servidores propios de la persona](#own-servers)); cada una es un nombre DNS en minúsculas (`archive.org`), `*.` más un nombre DNS (`*.archive.org`) o (solo apiVersion 2) un objeto `{ "host": "…", "insecureHttp": true }` (abajo). Solo nombres de host: sin esquema, puerto ni ruta. Nada de `*` solo, nada de direcciones IP, nada de `localhost`, nada que termine en `.local`, `.lan`, `.internal`, `.localhost` o `.home.arpa`, y por lo menos un punto. **`*.x` cubre solo los subdominios, no `x` mismo**: si necesitas los dos, pon los dos. |
 | `capabilities` | Obligatorio. Un subconjunto de `search`, `home`, `browse`, `episodes`, `resolve`, `download`, `drm`, `channels`. Debe incluir `resolve` y al menos uno de `search` o `home`. `search`, `home`, `browse`, `episodes` y `resolve` tienen que ser, cada una, una función exportada del archivo de entrada, o la instalación falla con "El plugin no carga: le falta ...". `download` y `drm` necesitan `apiVersion: 2` y son banderas declarativas — la app actúa sobre ellas, no tu código, así que no hay nada más que exportar; declarar una muestra su línea de consentimiento ("Puede descargar videos para verlos sin conexión" / "Reproduce video protegido (DRM)") y pide aprobación otra vez en una actualización que la agregue. `download` les da descargas sin conexión a tus títulos (mira [Descargas](#downloads)); `drm` le permite a un `Stream` llevar una licencia Widevine (mira [Un stream protegido con Widevine](cookbook.md#widevine)). `channels` necesita `apiVersion: 3` y los exports `liveCategories` y `liveChannels` (mira [Canales en la pestaña En vivo](live-channels.md#en-vivo-tab)). |
@@ -47,6 +47,26 @@ Hay un campo más, `liveStreamHosts`, que solo se lee con `"apiVersion": 3` y so
 capacidad `channels`: mira [Canales desde cualquier servidor](live-channels.md#live-stream-hosts).
 Los ítems en vivo (apiVersion 2) y la pestaña En vivo (apiVersion 3) tienen su propia página,
 [Canales en vivo](live-channels.md).
+
+## Reproducir desde cualquier servidor (`streamHosts`, apiVersion 4) { #stream-hosts }
+
+Algunas fuentes sirven el video desde CDNs cuyos dominios no puedes listar (cambian, o están en TLDs
+sueltos, que una entrada `*.xyz` nunca cubre). Con `"apiVersion": 4` un plugin puede agregar:
+
+```json
+"apiVersion": 4,
+"streamHosts": "any"
+```
+
+`"any"` es el único valor y no hace falta ninguna capacidad; un manifiesto más viejo ignora el campo.
+Deja que **lo que el plugin reproduce** (la `url` que devuelve `resolve`, sea una película, un
+episodio o un canal, y los manifiestos, segmentos y redirecciones que el reproductor sigue desde ella)
+esté en **cualquier host público**, por `http` o `https`. No cambia nada más: `kino.fetch`, las
+imágenes, los subtítulos, el audio aparte y los servidores de licencia DRM siguen en los `hosts` que
+declaraste, y las direcciones locales o privadas siguen rechazadas. La pantalla de consentimiento lo
+muestra en rojo ("Puede reproducir video desde cualquier servidor que indique"), y una actualización
+que lo agrega espera a que la persona apruebe de nuevo. Si puedes, lista los dominios reales: la gente
+confía más en una lista corta.
 
 ## Ajustes { #settings }
 
@@ -71,12 +91,26 @@ Los ítems en vivo (apiVersion 2) y la pestaña En vivo (apiVersion 3) tienen su
 | `password` | texto | sí | sí | 500 caracteres |
 | `toggle` | `true` / `false` | no (siempre tiene valor) | sí | — |
 | `select` | uno de los valores de `options` | no (siempre tiene valor) | sí | — |
+| `list` | una lista de entradas, cada una un objeto con los `fields` de la lista | sí | no | — |
 
 - `key` cumple `^[a-z][a-zA-Z0-9_]{0,31}$` y no se repite; `label` tiene de 1 a 40 caracteres; `hint`
   (el ejemplo que sale debajo del campo), máximo 80.
 - `select` necesita `options` (de 1 a 20, cada una con un `value` y un `label` de máximo 40
   caracteres); su `default` tiene que ser uno de los valores. El `default` de un `toggle` es `true` o
   `false`.
+- `list` (apiVersion 4) es una lista que la persona arma con un botón "Agregar": cada entrada es una
+  línea de texto con un botón "Editar", y el diálogo para agregar o editar muestra los `fields` de la
+  lista (de 1 a 4, cada uno con `key`, `label`, un `type` `text` o `url`, y opcionalmente `hint` y
+  `required`; sin `default`). `max` (de 1 a 50, 20 por defecto) limita las entradas.
+  `kino.config.get(key)` devuelve un arreglo de objetos `{ [field.key]: string }`, sin espacios
+  sobrantes y sin las entradas totalmente vacías; una lista vacía es `undefined`. Una lista `required`
+  necesita al menos una entrada. Los campos `url` de las entradas se vuelven hosts a los que tu plugin
+  puede llegar, igual que un ajuste `url` (así que `hosts` puede ser `[]`).
+  ```json
+  { "key": "sources", "label": "Direcciones", "type": "list", "max": 30,
+    "fields": [ { "key": "url", "label": "Dirección", "type": "url", "required": true },
+                { "key": "category", "label": "Categoría", "type": "text" } ] }
+  ```
 - **Un ajuste `url` no tiene `default`**: un servidor que escribe la persona se vuelve un host al que
   tu plugin puede llegar, así que solo la persona puede escogerlo. Un manifiesto con `default` en un
   ajuste `url` se rechaza; pon una dirección de ejemplo en `hint`.
