@@ -72,7 +72,7 @@ So the adapter works from TMDB:
 
 | What | Converted Nuvio scraper | Hand-written plugin |
 | --- | --- | --- |
-| `resolve` time | 45 s (the player counts the wait on screen) | 20 s |
+| `resolve` time | 75 s (the player counts the wait on screen) | 20 s |
 | `kino.fetch` requests per call | 250 | 60 |
 | Hosts `kino.fetch` may reach | any public host (`fetchHosts`) | `hosts`, typed servers, and hosts approved one by one |
 | Where the video may be | any public host (`streamHosts`) | `hosts`, unless `streamHosts` or the broad video permission |

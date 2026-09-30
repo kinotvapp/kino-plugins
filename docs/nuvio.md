@@ -77,7 +77,7 @@ de TMDB". Así que el adaptador trabaja desde TMDB:
 
 | Qué | Scraper de Nuvio convertido | Plugin escrito a mano |
 | --- | --- | --- |
-| Tiempo de `resolve` | 45 s (el reproductor muestra la espera en pantalla) | 20 s |
+| Tiempo de `resolve` | 75 s (el reproductor muestra la espera en pantalla) | 20 s |
 | Peticiones de `kino.fetch` por llamada | 250 | 60 |
 | Hosts a los que llega `kino.fetch` | cualquier host público (`fetchHosts`) | `hosts`, servidores escritos por la persona y hosts aprobados uno por uno |
 | Dónde puede estar el video | cualquier host público (`streamHosts`) | `hosts`, salvo `streamHosts` o el permiso amplio de video |

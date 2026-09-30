@@ -6,7 +6,7 @@
 | --- | --- |
 | Manifiesto / archivo de entrada / ícono | 16 KB / 1 MB / 128 KB |
 | Memoria / pila, por plugin | 64 MB / 1 MB |
-| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin convertido desde un scraper de Nuvio: 45 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
+| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin convertido desde un scraper de Nuvio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
