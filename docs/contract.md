@@ -173,8 +173,8 @@ tu respuesta de `Item`/`SeriesInfo`/`episodes`, o vacíos si los dejaste por fue
   necesita ese CDN en `hosts`.
 - Los `headers` se envían con cada una de esas peticiones del reproductor (el stream, los segmentos y
   llaves de su manifiesto, sus subtítulos y los saltos de redirección, todo en tus `hosts`) y, si
-  declaras `download`, con la petición que guarda el stream en el dispositivo — y en ninguna otra
-  parte. Máximo 20; los nombres son letras, dígitos y guiones; los valores tienen máximo 4096
+  declaras `download`, con cada petición que guarda el stream en el dispositivo (en HLS: las
+  playlists, la llave y cada segmento) — y en ninguna otra parte. Máximo 20; los nombres son letras, dígitos y guiones; los valores tienen máximo 4096
   caracteres sin saltos de línea; `Host`, `Content-Length`, `Transfer-Encoding` y `Connection` se
   ignoran.
 - `subtitles`: máximo 30, cada uno `{ lang, url, format? }`. `lang` es un código de idioma corto como

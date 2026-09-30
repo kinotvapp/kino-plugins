@@ -171,7 +171,8 @@ It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exac
   playback stops with an error, so a manifest that points at another CDN needs that CDN in `hosts`.
 - `headers` are sent with every one of those player requests (the stream, its manifest's segments and
   keys, its subtitles, and redirect hops, all on your `hosts`) and, if you declare `download`, with
-  the request that saves the stream to the device — and nowhere else. At most 20; names are letters, digits and
+  every request that saves the stream to the device (for HLS: the playlists, the key and every
+  segment) — and nowhere else. At most 20; names are letters, digits and
   hyphens; values are at most 4096 characters with no line breaks; `Host`, `Content-Length`,
   `Transfer-Encoding` and `Connection` are ignored.
 - `subtitles`: at most 30, each `{ lang, url, format? }`. `lang` is a short language code such as

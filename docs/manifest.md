@@ -255,7 +255,7 @@ Declara `"download"` en `capabilities` (con `"apiVersion": 2`) y Kino ofrece tus
 sin conexión: "Descargar" en la página de información y "Guardar en el dispositivo" en la biblioteca,
 en celulares (Kino nunca descarga en un televisor). No hay nada más que exportar. Cuando la persona
 guarda un título, Kino llama a tu `resolve(ref)` en el momento en que la descarga de verdad arranca,
-igual que al reproducir, y guarda el `Stream` como **un solo archivo**, con tus `headers` en la
+igual que al reproducir, y guarda el `Stream` como **un solo archivo**, con tus `headers` en cada
 petición, por el mismo filtro de hosts que el reproductor usa con ese stream: https en tus `hosts` o
 el servidor propio de la persona -- o cualquier host público cuando tu manifiesto tiene
 [`streamHosts: "any"`](#stream-hosts) o la persona le dio a tu plugin el
@@ -271,13 +271,20 @@ Qué se descarga y qué no:
 - Un archivo progresivo (`mp4`, `mkv`, `webm`, `ts`, …) se descarga. El archivo guardado toma su
   extensión de tu `mime` cuando lo das, si no de la URL, y si no `mp4`; el reproductor igual mira los
   bytes.
-- Un manifiesto HLS o DASH (`.m3u8`, `.mpd`, un `mime` como `application/vnd.apple.mpegurl` o
-  `application/dash+xml`, o una respuesta cuyo `Content-Type` o primeros bytes lo digan, sin importar
-  cómo se vea la URL) **no**: la descarga termina como "Este video no se puede descargar", un estado
-  final sin "Reintentar" (se negaría igual) que la persona solo puede quitar. Un stream con DRM o un
-  canal en vivo se rechazan igual. No hay una llamada aparte de "resolve para descargar": si tu fuente
-  ofrece un manifiesto y también un archivo, prefiere el archivo, o acepta que esos títulos se
-  reproducen pero no se descargan.
+- Un stream HLS bajo demanda (`.m3u8`, un `mime` `mpegurl`, o una respuesta que resulta ser una
+  playlist) también se descarga, guardado como un solo archivo: los segmentos MPEG-TS quedan en un
+  `.ts` y los fMP4 (`EXT-X-MAP`) en un `.mp4`. De una playlist maestra Kino toma la variante más alta
+  hasta 1080p cuyo audio va dentro del video; se manejan las llaves AES-128, los rangos de bytes y las
+  discontinuidades, y tus `headers` van en las playlists, la llave y cada segmento. Un reintento
+  retoma en el primer segmento que falta.
+- Lo que no se puede guardar termina como "Este video no se puede descargar", un estado final sin
+  "Reintentar" (se negaría igual) que la persona solo puede quitar: un manifiesto DASH o Smooth
+  (`.mpd`, `application/dash+xml`, …), una playlist HLS en vivo (sin `EXT-X-ENDLIST`), SAMPLE-AES o
+  cualquier llave DRM, una maestra en la que toda variante de video necesita una pista de audio aparte
+  (Kino no guarda un video mudo), un stream con DRM y un canal en vivo. Los subtítulos que vienen
+  dentro de la playlist no se guardan (tus `subtitles` sí). No hay una llamada aparte de "resolve
+  para descargar": si tu fuente ofrece DASH y también un archivo o HLS, prefiere esos, o acepta que
+  esos títulos se reproducen pero no se descargan.
 - La cola descarga un título a la vez, así que un `ref` puede esperar un rato antes de que se llame a
   `resolve`: guarda en él algo estable y busca el enlace fresco dentro de `resolve` (como se recomienda
   en [Contrato](contract.md#id-and-ref)). Un reintento retoma el archivo parcial aunque tu URL haya
