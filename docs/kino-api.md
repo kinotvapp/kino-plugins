@@ -63,18 +63,22 @@ tiempo de tu llamada. Pide la forma que tiene el contenido.
   [mira el manifiesto](manifest.md#insecure-host)). Una dirección IP o un nombre local (`localhost`,
   `.local`, …) siempre se rechaza salvo que la persona lo haya escrito. Kino también rechaza un nombre
   declarado que resuelve a una dirección dentro de la red de la persona (loopback, privada,
-  link-local, NAT de operador, multicast).
+  link-local, NAT de operador, multicast, y los prefijos IPv6 que llevan una de esas adentro), y
+  nunca manda tu tráfico por un proxy configurado en el dispositivo.
 - **Las redirecciones** (301, 302, 303, 307, 308) las sigue Kino, hasta 10 saltos; cada salto se
-  revisa y cuenta como una petición. Un 303, o un 301/302 después de un POST, se vuelve un GET sin
+  revisa y cuenta como una petición -- también cuenta un salto que Kino rechaza (o por el que le
+  pregunta a la persona). Un 303, o un 301/302 después de un POST, se vuelve un GET sin
   cuerpo. Con `redirect: "manual"` recibes la respuesta 3xx (un formulario de login suele responder
   302 cuando sale bien).
 - **Por un host que se te olvidó se puede preguntar, solo durante `resolve` y `episodes`.** Cuando
   una de esas llamadas pide un host `https` que no declaraste (incluido un salto de redirección),
   Kino le pregunta a la persona ("Quiere conectarse por primera vez a `<host>`. ¿Permitir?"). El
   reloj de tu llamada se detiene mientras decide, y la petición sigue después de "Permitir" (el host
-  queda aprobado para siempre, sin tope de cuántos); "Rechazar" o Atrás la hacen fallar como
-  `host_not_allowed` y queda recordado. La pregunta se quita sin respuesta, sin recordar nada, si tu
-  llamada termina antes (falló, se pasó del tiempo o la persona se fue). `search`, `home`, `browse`,
+  queda aprobado para siempre); "Rechazar" o Atrás la hacen fallar como `host_not_allowed` y queda
+  recordado. La pregunta se quita sin respuesta, sin recordar nada, si tu llamada termina antes
+  (falló, se pasó del tiempo o la persona se fue). Una llamada pregunta por máximo 3 hosts, y por
+  ninguno más una vez que la persona rechaza uno en ella: desde ahí, cualquier otro host no declarado
+  de esa llamada simplemente falla como `host_not_allowed`. `search`, `home`, `browse`,
   las listas en vivo, una descarga y una llamada que ya terminó nunca preguntan: la petición falla
   como `host_not_allowed`. No te confíes: declara tus hosts.
 - **Una respuesta que no es 2xx no lanza error**: revisa `r.ok`. Todo lo demás que salga mal lanza un
@@ -90,7 +94,9 @@ tiempo de tu llamada. Pide la forma que tiene el contenido.
 
 - **Límites:** 15 s por petición por defecto (30 s como máximo), un cuerpo de máximo 5 MB
   (decodificado con el charset de su `Content-Type`, UTF-8 por defecto), y máximo 60 peticiones en una
-  llamada a tu plugin, saltos de redirección incluidos.
+  llamada a tu plugin, incluidos los saltos de redirección y los rechazados (un plugin que Kino
+  convirtió desde un [scraper de Nuvio](nuvio.md) tiene 250). Máximo 6 de tus peticiones corren al
+  mismo tiempo; las demás esperan su turno.
 - **Los headers que pones** se envían tal cual, salvo `Host`, `Content-Length`, `Transfer-Encoding`,
   `Connection`, `Cookie2` y `Accept-Encoding` (Kino pide gzip por su cuenta y siempre te entrega el
   cuerpo descomprimido; un `Accept-Encoding` copiado de un navegador te traería bytes comprimidos). Si no pones `User-Agent`, Kino envía `Kino/<version> (plugin <id>)`. Un
@@ -123,7 +129,9 @@ await kino.fetch(`https://api.example.org/v1/list?key=${key}`);
 
 Un marcador de posición para un valor sellado en el campo [`secrets`](manifest.md#secrets) de tu
 manifiesto. Lleva el marcador a donde llevarías el valor. Kino abre cada sello como mucho una vez por
-ejecución y nunca deja que tu código vea el valor en claro.
+ejecución y nunca deja que tu código vea el valor en claro. Puedes llamarlo en el nivel superior de
+tu módulo (`const KEY = kino.secret("apiKey");`): la revisión que Kino corre al instalar también
+responde un marcador para cada nombre que declara tu manifiesto, así que la instalación pasa.
 
 **Dónde el marcador se vuelve el valor: solo dentro de `kino.fetch`.** En la ruta y la query de la URL
 (codificado con porcentajes, para que el valor no pueda partir un segmento ni agregar un parámetro),

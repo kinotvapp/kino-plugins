@@ -50,17 +50,19 @@ seconds of your call's time. Ask for the form the content is.
   URL on a declared host fails too, unless you declared that host `{ "host": "…", "insecureHttp": true }`
   (apiVersion 2, [see the manifest](manifest.md#insecure-host)). An IP address or a local name (`localhost`, `.local`, …) is always
   refused unless the person typed it. Kino also refuses a declared name that resolves to an address
-  inside the person's own network (loopback, private, link-local, carrier-grade NAT, multicast).
+  inside the person's own network (loopback, private, link-local, carrier-grade NAT, multicast, and
+  the IPv6 prefixes that embed one), and never sends your traffic through a proxy set on the device.
 - **Redirects** (301, 302, 303, 307, 308) are followed by Kino, up to 10 hops; each hop is checked
-  and counted as a request. A 303, or a 301/302 after a POST, turns into a GET without a body. With
+  and counted as a request -- a hop Kino refuses (or asks the person about) counts too. A 303, or a 301/302 after a POST, turns into a GET without a body. With
   `redirect: "manual"` you get the 3xx answer instead (a login form usually answers 302 on success).
 - **A host you forgot may be asked about, during `resolve` and `episodes` only.** When one of those
   calls fetches an `https` host you did not declare (a redirect hop included), Kino asks the person
   ("Quiere conectarse por primera vez a `<host>`. ¿Permitir?"). Your call's time limit stops while
-  they decide, and the fetch goes on after "Permitir" (the host is then approved for good, with no
-  cap on how many); "Rechazar" or Back fails it as `host_not_allowed` and is remembered. The question
-  comes down unanswered, with nothing remembered, if your call ends first (it failed, timed out, or
-  the person left). `search`, `home`, `browse`, the live lists, a download and a call that is already
+  they decide, and the fetch goes on after "Permitir" (the host is then approved for good);
+  "Rechazar" or Back fails it as `host_not_allowed` and is remembered. The question comes down
+  unanswered, with nothing remembered, if your call ends first (it failed, timed out, or the person
+  left). One call asks about at most 3 hosts, and nothing more once the person rejects one in it:
+  after that, every other undeclared host of that call just fails as `host_not_allowed`. `search`, `home`, `browse`, the live lists, a download and a call that is already
   over never ask: the fetch just fails as `host_not_allowed`. Don't rely on it: declare your hosts.
 - **A non-2xx answer does not throw**: check `r.ok`. Everything else that goes wrong throws an error
   with a `code` you can test (`e.code === "timeout"`):
@@ -77,7 +79,9 @@ seconds of your call's time. Ask for the form the content is.
 
 - **Limits:** 15 s per request by default (30 s at most), a body of at most 5 MB (decoded with the
   charset of its `Content-Type`, UTF-8 by default), and at most 60 requests in one call to your
-  plugin, redirect hops included.
+  plugin, redirect hops and refused hops included (a plugin Kino converted from a
+  [Nuvio scraper](nuvio.md) gets 250). At most 6 of your fetches run at the same time; the rest wait
+  their turn.
 - **Headers you set** are sent as given, except `Host`, `Content-Length`, `Transfer-Encoding`,
   `Connection`, `Cookie2` and `Accept-Encoding` (Kino asks for gzip itself and always hands you the
   body decompressed; a copied browser `Accept-Encoding` would get you compressed bytes instead). Unless you set `User-Agent`, Kino sends `Kino/<version> (plugin <id>)`.
@@ -108,7 +112,9 @@ await kino.fetch(`https://api.example.org/v1/list?key=${key}`);
 
 A placeholder for a value sealed in your manifest's [`secrets`](manifest.md#secrets) field. Carry the
 marker wherever you would carry the value. Kino opens each seal at most once per run and never lets
-your code see the plain value.
+your code see the plain value. You may call it at the top level of your module
+(`const KEY = kino.secret("apiKey");`): the check Kino runs while installing answers a marker for
+every name your manifest declares too, so the install goes through.
 
 **Where the marker becomes the value: only inside `kino.fetch`.** In the URL's path and query
 (percent-encoded, so the value can't split a segment or add a parameter), inside a JSON body

@@ -87,7 +87,8 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   usa kino.fetch, kino.sleep, kino.crypto, kino.storage. Sí hay URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder y console. Un solo archivo, sin import.
 - Nunca lances un error antes del primer await de una función async (primero await, luego valida).
-- Límites: search 15 s y las demás llamadas 20 s; 60 peticiones por llamada; cuerpos de 5 MB;
+- Límites: search 15 s y las demás llamadas 20 s; 60 peticiones por llamada (cada salto de
+  redirección cuenta, también los rechazados) y máximo 6 al mismo tiempo; cuerpos de 5 MB;
   256 KB de kino.storage; 100 resultados de búsqueda; Inicio con 20 filas de 60.
 - Errores para la persona: kino.error("auth_required" | "not_found" | "geo_blocked" |
   "rate_limited" | "unavailable").

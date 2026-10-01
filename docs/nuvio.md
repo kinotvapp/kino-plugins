@@ -34,7 +34,12 @@ original GPL-3.0").
 El JavaScript del scraper se conserva byte por byte, envuelto con una capa de compatibilidad y un
 pequeño adaptador, y se instala con un manifiesto generado:
 
-- `apiVersion` 4, `version` `1.0.0`, capacidades `search`, `episodes`, `resolve` y `download`.
+- `apiVersion` 4, `version` `1.<revisión del convertidor>.0` (hoy `1.2.0`, mira
+  [Actualizaciones](#updates)), capacidades `search`, `episodes`, `resolve` y `download`.
+- Los tipos que sirve el scraper salen de su `supportedTypes`, con las formas de escribirlos más
+  comunes unificadas: `movie`, `movies`, `film`, `films` son películas; `tv`, `series`, `show`,
+  `shows` son series; `anime` es anime (sin importar mayúsculas). Un scraper que declara
+  `["movie", "series"]` también sirve series.
 - `hosts`: se detectan solos en el código del scraper (y en una lista remota de dominios que nombre,
   si la tiene), siempre con `api.themoviedb.org` de primero. Un manifiesto admite máximo 20: si hay
   más, van primero las direcciones que parecen del propio sitio del scraper, y la descripción avisa
@@ -59,10 +64,15 @@ de TMDB". Así que el adaptador trabaja desde TMDB:
 
 - **Sin filas de Inicio.** El plugin aparece en los resultados de búsqueda, nunca como filas de
   Inicio.
-- **`search`** responde un ítem, para el id de TMDB que Kino está buscando (nada cuando Kino no tiene
-  id de TMDB), con el póster, el fondo, el año y la sinopsis de TMDB cuando TMDB responde a tiempo. Un
-  scraper solo responde por los tipos que declara su manifiesto: uno sin películas (o sin series) no
-  se ofrece como fuente para ellas.
+- **`search` con id de TMDB** responde un ítem, para el id de TMDB que Kino está buscando, con el
+  póster, el fondo, el año y la sinopsis de TMDB cuando TMDB responde a tiempo. Un scraper solo
+  responde por los tipos que declara su manifiesto: uno sin películas (o sin series) no se ofrece como
+  fuente para ellas.
+- **`search` sin id de TMDB** (una búsqueda escrita, por ejemplo en el televisor) le pregunta el
+  texto a la búsqueda de TMDB (`/search/multi`, o solo películas o solo series cuando es lo único que
+  sirve el scraper o Kino pidió una serie) y responde hasta 10 coincidencias, ordenadas por qué tan
+  parecido es su título a lo buscado y, si empatan, por popularidad en TMDB. El scraper no se llama
+  hasta que la persona escoge una. Si TMDB falla, la búsqueda no responde nada, en vez de un error.
 - **`episodes`** lista las temporadas y capítulos desde TMDB, sin la temporada 0 (especiales) y sin
   los capítulos que todavía no se han emitido.
 - **`resolve`** llama al `getStreams` del scraper exactamente como lo hace Nuvio, descarta los
@@ -96,15 +106,24 @@ Node, en lo que usan los scrapers), la API Web Crypto del navegador (`crypto.sub
 hace `require` de cualquier otra cosa falla con "Nuvio compat: require('…') was not bundled with this
 scraper".
 
+La clave de TMDB de Kino nunca se escribe en el código del plugin convertido: `TMDB_API_KEY` tiene
+una marca fija, y Kino pone la clave real en su lugar solo en peticiones `https` a
+`api.themoviedb.org` (el mismo mecanismo de [secretos sellados](manifest.md#secrets) que usan las
+claves de un plugin). Una petición que lleve la marca a cualquier otro lado se rechaza antes de salir,
+y la clave se borra de toda respuesta, error y log que el plugin vea.
+
 Todo eso existe **solo** dentro de un scraper convertido. Un plugin que escribes tú recibe el motor de
 Kino tal cual: ninguno de esos globales ([Límites y trampas del motor](engine-limits.md#not-node)). Lo
 mismo pasa con el arreglo de los ayudantes async de [la trampa del rechazo](engine-limits.md#rejection-trap).
 
 ## Actualizaciones { #updates }
 
-Un plugin convertido siempre dice versión `1.0.0`, así que Kino no compara versiones: "Buscar
-actualizaciones" (y la revisión en segundo plano) vuelve a hacer toda la conversión desde el
-repositorio y compara el código y el manifiesto que salen con los instalados. Un cambio que solo toca
+La versión de un plugin convertido es `1.<revisión del convertidor>.0`: solo cambia cuando cambia el
+convertidor de Kino (hoy `1.2.0`), porque los campos `version` de Nuvio no son confiables. Para
+encontrar actualizaciones Kino no compara versiones: "Buscar actualizaciones" (y la revisión en
+segundo plano) vuelve a hacer toda la conversión desde el repositorio y compara el código y el
+manifiesto que salen con los instalados, así que un cambio en el scraper se encuentra aunque la
+versión siga igual. Un cambio que solo toca
 el código se instala solo; uno que agrega hosts o un permiso espera la aprobación de la persona, como
 cualquier [actualización](publish.md#updates). Un plugin convertido por un Kino más viejo pide
 aprobación una vez por lo que agregan las conversiones nuevas (`fetchHosts`, descargas).

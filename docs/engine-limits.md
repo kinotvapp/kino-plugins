@@ -10,7 +10,7 @@
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
-| `kino.fetch` | solo https (o el servidor propio de la persona tal como lo escribió, o `http` en un host declarado `insecureHttp`); 15 s por defecto, 30 s máximo; cuerpo de la respuesta máximo 5 MB; la petición (URL, headers y cuerpo) máximo 1.048.576 caracteres; máximo 60 peticiones por llamada; máximo 10 redirecciones por petición |
+| `kino.fetch` | solo https (o el servidor propio de la persona tal como lo escribió, o `http` en un host declarado `insecureHttp`); 15 s por defecto, 30 s máximo; cuerpo de la respuesta máximo 5 MB; la petición (URL, headers y cuerpo) máximo 1.048.576 caracteres; máximo 60 peticiones por llamada, contando cada salto, también los rechazados (250 para un plugin convertido desde un scraper de Nuvio); máximo 6 peticiones al mismo tiempo; máximo 3 preguntas de host por llamada; máximo 10 redirecciones por petición |
 | Cookies | 50 por dominio, 64 KB en total por plugin |
 | `kino.storage` | 256 KB por plugin; el `ttlMs` opcional de una entrada va de 1 a 2.592.000.000 ms (30 días) |
 | `kino.sleep` | de 0 a 5.000 ms por llamada |
@@ -85,46 +85,47 @@ literals, spread, `replaceAll`, `Array.prototype.at` y `flat`, `Object.fromEntri
 Kino carga exactamente un archivo (el `entry` del manifest), y el motor no tiene `require` ni
 resolvedor de módulos, así que un `import` de `plugin.js` hacia un segundo archivo no tiene nada que
 resolver en el dispositivo. Eso no significa que tengas que escribir todo el plugin en un archivo —
-solo que el archivo que publicás tiene que ser el resultado terminado, en uno solo.
+solo que el archivo que publicas tiene que ser el resultado terminado, en uno solo.
 
-Escribilo dividido, normal, y empaquetalo antes de publicar:
+Escríbelo dividido, normal, y empaquétalo antes de publicar:
 
 ```
 src/
-  scraper.js        un módulo auxiliar
-  plugin.js         el punto de entrada; importa de scraper.js
+  animeav1.js       un módulo auxiliar
+  plugin.js         el punto de entrada; importa de animeav1.js
 kino-plugin.json
 package.json
 ```
 
 ```js
-// src/scraper.js
-export async function searchSite(query) {
-  const res = await kino.fetch(`https://site.example/api/search?q=${encodeURIComponent(query)}`);
-  return JSON.parse(res.text()).results.map((r) => ({ id: r.slug, title: r.title, poster: r.image }));
+// src/animeav1.js
+export async function searchAnimeAV1(query) {
+  const res = await kino.fetch(`https://animeav1.com/api/search?q=${encodeURIComponent(query.q)}`);
+  if (!res.ok) throw new Error("animeav1 respondió " + res.status);
+  return res.json().results.map((r) => ({ id: r.slug, ref: r.slug, title: r.title, kind: "series", poster: r.image }));
 }
 ```
 
 ```js
 // src/plugin.js -- este import está bien: corre a través del bundler, nunca en el dispositivo
-import { searchSite } from "./scraper.js";
+import { searchAnimeAV1 } from "./animeav1.js";
 
 export async function search(query) {
-  return searchSite(query);
+  return searchAnimeAV1(query);
 }
 ```
 
-Empaquetalo con [esbuild](https://esbuild.github.io/) (`npm i -D esbuild`), apuntando a módulo ES
+Empaquétalo con [esbuild](https://esbuild.github.io/) (`npm i -D esbuild`), apuntando a módulo ES
 (Kino corre el archivo publicado como uno solo):
 
 ```bash
 npx esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js
 ```
 
-`plugin.js` en la raíz del repo es lo que sale de ese comando, con `src/scraper.js` incluido adentro
+`plugin.js` en la raíz del repo es lo que sale de ese comando, con `src/animeav1.js` incluido adentro
 y su `export async function search` intacto — ese es el archivo que nombra `entry` y el que Kino
-descarga. Agregalo como script de npm
-(`"build": "esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js"`) y correlo antes de
+descarga. Agrégalo como script de npm
+(`"build": "esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js"`) y córrelo antes de
 cada prueba con `sdk/` o antes de publicar. Rollup y webpack funcionan igual; esbuild es el que
 necesita menos configuración para un plugin de este tamaño.
 

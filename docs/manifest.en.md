@@ -255,7 +255,10 @@ calls your `resolve(ref)` when the download actually runs, exactly as playing wo
 for that stream: https on your `hosts` or the person's own server -- or any public host when your
 manifest has [`streamHosts: "any"`](#stream-hosts) or the person gave your plugin the
 [broad video permission](contract.md#broad-video) -- every redirect hop checked, never the home
-network. A download never asks about a host: one that playing would have asked about is refused.
+network. A download never asks about a host. A server the gate refuses ends the download for good
+(no "Reintentar": it is not network trouble), with a sentence that names the server; when it is one
+that playing would have asked about, the sentence says to play the title once to approve it, and
+after that a new download works.
 Your `subtitles` are saved next to it. `audioTracks` are **not** saved: the offline copy has
 only the audio inside the video file, so a source that dubs through separate tracks is heard in its
 main audio when offline.
@@ -267,13 +270,21 @@ What downloads, and what does not:
 - An HLS VOD stream (`.m3u8`, an `mpegurl` `mime`, or a response that turns out to be a playlist)
   downloads too, saved as one file: MPEG-TS segments become a `.ts`, fMP4 ones (`EXT-X-MAP`) an
   `.mp4`. From a master playlist Kino takes the highest variant up to 1080p whose audio is inside the
-  video; AES-128 keys, byte ranges and discontinuities are handled, and your `headers` go on the
-  playlists, the key and every segment. A retry resumes at the first missing segment.
+  video; AES-128 keys and byte ranges are handled, and your `headers` go on the playlists, the key
+  and every segment. At an `EXT-X-DISCONTINUITY` the segments are kept as they are (the timestamps
+  restart there and the player follows; seeking right at the splice may land a little off), unless
+  the video or audio format changes at it (e.g. H.264 → HEVC, a track added or gone): that is
+  refused like below. Metadata streams (ID3, SCTE-35, private data) don't count as a change, and the
+  same formats arriving under other stream numbers (PIDs) after the splice are written back under the
+  first segment's ones, so the saved `.ts` plays to the end. A retry resumes at the first missing
+  segment when it gets the same content (same variant, same first bytes), even from another CDN;
+  different content starts over.
 - What cannot be saved ends as "Este video no se puede descargar", a final state with no
-  "Reintentar" (it would refuse the same way) that the person can only remove: a DASH or Smooth
-  manifest (`.mpd`, `application/dash+xml`, …), a live HLS playlist (no `EXT-X-ENDLIST`), SAMPLE-AES
-  or any DRM key, a master whose every video variant needs a separate audio rendition (Kino does not
-  save a silent video), a DRM-protected stream and a live channel. Subtitle renditions inside the
+  "Reintentar" (it would refuse the same way) that the person can only remove, and the partial file
+  is deleted: a DASH or Smooth manifest (`.mpd`, `application/dash+xml`, …), a live HLS playlist (no
+  `EXT-X-ENDLIST`), SAMPLE-AES or any DRM key, a key that is not 16 bytes or does not decrypt, an
+  empty segment (asked for 3 times first), a master whose every video variant needs a separate audio
+  rendition (Kino does not save a silent video), a DRM-protected stream and a live channel. Subtitle renditions inside the
   playlist are not saved (your `subtitles` are). There is no separate "resolve for download" call:
   if your source offers DASH and also a file or HLS, prefer those, or accept that those titles play
   but do not download.

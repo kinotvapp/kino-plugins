@@ -26,6 +26,10 @@
 | `secrets` (apiVersion 4) | at most 16; names match `^[A-Za-z][A-Za-z0-9_]{0,31}$`; a value is 1..4,096 bytes |
 <!-- contract:limits:end -->
 
+The 60 requests of `kino.fetch` count every hop, refused ones included (a plugin converted from a
+[Nuvio scraper](nuvio.md) gets 250); at most 6 of your fetches are in flight at once, and one call
+asks the person about at most 3 hosts ([details](kino-api.md#fetch)).
+
 ## How your code lives { #lifecycle }
 
 - **One call at a time.** Calls to the same plugin run one after another. The sandbox is reused
@@ -90,26 +94,27 @@ Write it split, normally, then bundle it before you publish:
 
 ```
 src/
-  scraper.js        a helper module
-  plugin.js         the entry point; imports from scraper.js
+  animeav1.js       a helper module
+  plugin.js         the entry point; imports from animeav1.js
 kino-plugin.json
 package.json
 ```
 
 ```js
-// src/scraper.js
-export async function searchSite(query) {
-  const res = await kino.fetch(`https://site.example/api/search?q=${encodeURIComponent(query)}`);
-  return JSON.parse(res.text()).results.map((r) => ({ id: r.slug, title: r.title, poster: r.image }));
+// src/animeav1.js
+export async function searchAnimeAV1(query) {
+  const res = await kino.fetch(`https://animeav1.com/api/search?q=${encodeURIComponent(query.q)}`);
+  if (!res.ok) throw new Error("animeav1 respondió " + res.status);
+  return res.json().results.map((r) => ({ id: r.slug, ref: r.slug, title: r.title, kind: "series", poster: r.image }));
 }
 ```
 
 ```js
 // src/plugin.js -- this import is fine: it runs through the bundler, never on the device
-import { searchSite } from "./scraper.js";
+import { searchAnimeAV1 } from "./animeav1.js";
 
 export async function search(query) {
-  return searchSite(query);
+  return searchAnimeAV1(query);
 }
 ```
 
@@ -120,7 +125,7 @@ Bundle with [esbuild](https://esbuild.github.io/) (`npm i -D esbuild`), targetin
 npx esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js
 ```
 
-`plugin.js` at the repo root is what comes out of that command, with `src/scraper.js` inlined into
+`plugin.js` at the repo root is what comes out of that command, with `src/animeav1.js` inlined into
 it and its `export async function search` intact -- that is the file `entry` names and the one Kino
 fetches. Add it as an npm script
 (`"build": "esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js"`) and run it before

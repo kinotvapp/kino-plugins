@@ -85,7 +85,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   use kino.fetch, kino.sleep, kino.crypto, kino.storage. URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder and console do exist. One file, no import.
 - Never throw before the first await of an async function (await first, validate after).
-- Limits: search 15 s and the other calls 20 s; 60 requests per call; 5 MB bodies; 256 KB of
+- Limits: search 15 s and the other calls 20 s; 60 requests per call (every redirect hop counts,
+  refused ones too) and at most 6 at once; 5 MB bodies; 256 KB of
   kino.storage; 100 search results; Home with 20 rows of 60.
 - Errors for the person: kino.error("auth_required" | "not_found" | "geo_blocked" |
   "rate_limited" | "unavailable").

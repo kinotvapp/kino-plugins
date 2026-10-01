@@ -261,8 +261,10 @@ petición, por el mismo filtro de hosts que el reproductor usa con ese stream: h
 el servidor propio de la persona -- o cualquier host público cuando tu manifiesto tiene
 [`streamHosts: "any"`](#stream-hosts) o la persona le dio a tu plugin el
 [permiso amplio de video](contract.md#broad-video) --, cada salto de redirección revisado, nunca la
-red de la casa. Una descarga nunca pregunta por un host: uno por el que reproducir habría preguntado
-se rechaza. Tus `subtitles` se
+red de la casa. Una descarga nunca pregunta por un host. Un servidor que el filtro rechaza termina la
+descarga para siempre (sin "Reintentar": no es un problema de red), con una frase que nombra el
+servidor; cuando es uno por el que reproducir habría preguntado, la frase dice que reproduzcas el
+título una vez para aprobarlo, y después una descarga nueva funciona. Tus `subtitles` se
 guardan al lado. Los `audioTracks` **no** se guardan: la copia sin conexión solo tiene el audio que va
 dentro del archivo de video, así que una fuente que dobla con pistas aparte se oye con su audio
 principal cuando está sin conexión.
@@ -275,13 +277,21 @@ Qué se descarga y qué no:
 - Un stream HLS bajo demanda (`.m3u8`, un `mime` `mpegurl`, o una respuesta que resulta ser una
   playlist) también se descarga, guardado como un solo archivo: los segmentos MPEG-TS quedan en un
   `.ts` y los fMP4 (`EXT-X-MAP`) en un `.mp4`. De una playlist maestra Kino toma la variante más alta
-  hasta 1080p cuyo audio va dentro del video; se manejan las llaves AES-128, los rangos de bytes y las
-  discontinuidades, y tus `headers` van en las playlists, la llave y cada segmento. Un reintento
-  retoma en el primer segmento que falta.
+  hasta 1080p cuyo audio va dentro del video; se manejan las llaves AES-128 y los rangos de bytes, y
+  tus `headers` van en las playlists, la llave y cada segmento. En un `EXT-X-DISCONTINUITY` los
+  segmentos se guardan tal cual (los tiempos arrancan de nuevo ahí y el reproductor los sigue; adelantar
+  justo en el empalme puede caer un poco corrido), salvo que ahí cambie el formato del video o del audio
+  (por ejemplo H.264 → HEVC, o una pista que aparece o desaparece): eso se rechaza como abajo. Las
+  pistas de metadatos (ID3, SCTE-35, datos privados) no cuentan como cambio, y los mismos formatos que
+  llegan con otros números de pista (PID) después del empalme se reescriben con los del primer
+  segmento, así que el `.ts` guardado se reproduce hasta el final. Un reintento retoma en el primer
+  segmento que falta cuando recibe el mismo contenido (la misma variante, los mismos primeros bytes),
+  aunque venga de otro CDN; un contenido distinto arranca de cero.
 - Lo que no se puede guardar termina como "Este video no se puede descargar", un estado final sin
-  "Reintentar" (se negaría igual) que la persona solo puede quitar: un manifiesto DASH o Smooth
-  (`.mpd`, `application/dash+xml`, …), una playlist HLS en vivo (sin `EXT-X-ENDLIST`), SAMPLE-AES o
-  cualquier llave DRM, una maestra en la que toda variante de video necesita una pista de audio aparte
+  "Reintentar" (se negaría igual) que la persona solo puede quitar, y el archivo parcial se borra: un
+  manifiesto DASH o Smooth (`.mpd`, `application/dash+xml`, …), una playlist HLS en vivo (sin
+  `EXT-X-ENDLIST`), SAMPLE-AES o cualquier llave DRM, una llave que no tiene 16 bytes o que no
+  descifra, un segmento vacío (pedido 3 veces antes), una maestra en la que toda variante de video necesita una pista de audio aparte
   (Kino no guarda un video mudo), un stream con DRM y un canal en vivo. Los subtítulos que vienen
   dentro de la playlist no se guardan (tus `subtitles` sí). No hay una llamada aparte de "resolve
   para descargar": si tu fuente ofrece DASH y también un archivo o HLS, prefiere esos, o acepta que

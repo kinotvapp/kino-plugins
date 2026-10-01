@@ -54,8 +54,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   is a Widevine license the source itself hands out (the `drm` capability).
 - **Offline downloads**: declare `download` (apiVersion 2) when the source allows saving titles.
   Kino (phones only) saves a movie or episode that is a progressive file (`mp4`, `mkv`, `webm`,
-  `ts`…) or an HLS VOD stream (AES-128 keys fine); a live stream, DASH, SAMPLE-AES or any DRM never
-  downloads.
+  `ts`…) or an HLS VOD stream (AES-128 keys fine; discontinuities kept unless the video/audio codecs
+  change at one, which is refused); a live stream, DASH, SAMPLE-AES or any DRM never downloads. A
+  download never asks about a host: a refused server ends it for good (the person plays the title
+  once to approve a server playback would ask about, then downloads again).
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
 
@@ -85,7 +87,7 @@ exact message Kino shows, never a summary.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
    than one file for its own sake, write it split (e.g. `src/plugin.js` importing from
-   `src/scraper.js`) and bundle it to a single `plugin.js` before validating or publishing:
+   `src/animeav1.js`) and bundle it to a single `plugin.js` before validating or publishing:
    `npx esbuild src/plugin.js --bundle --format=esm --outfile=plugin.js`. `plugin.js` is always the
    finished, single-file output — never hand-edit it if a `src/` exists.
 4. **Validate the manifest and exports**: `node sdk/validate.mjs .` must exit 0.
@@ -134,7 +136,10 @@ exact message Kino shows, never a summary.
   `example.com`: list both. No IPs, no `localhost`, no `.local`/`.lan`/`.internal`/`.localhost`/`.home.arpa`,
   no bare `*`, no scheme/port/path in `hosts`. 1 to 20 entries (`[]` only from apiVersion 2 with a
   `url` setting). During `resolve` and `episodes` only, a fetch to an undeclared `https` host asks the
-  person (the call's clock stops meanwhile); everywhere else it just fails as `host_not_allowed`.
+  person (the call's clock stops meanwhile) -- at most 3 hosts per call, and none after the person
+  rejects one; everywhere else it just fails as `host_not_allowed`. Declared names that resolve into
+  the home network (including IPv6 prefixes embedding such an address) are refused, and plugin
+  traffic never goes through a device proxy.
   Likewise, when the person opens a title, an undeclared `https` host of the returned `Stream` (video,
   subtitle, audio track, license) or one the player meets mid-playback is asked about once; a
   download or anything in the background is never asked. Never design around those questions:
@@ -178,7 +183,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
-| `kino.fetch` | 15 s default, 30 s max; body 5 MB; request 1,048,576 characters; 60 requests per call (redirects count); 10 redirects |
+| `kino.fetch` | 15 s default, 30 s max; body 5 MB; request 1,048,576 characters; 60 requests per call (every redirect hop counts, refused ones too); 6 in flight at once; 3 host questions per call; 10 redirects |
 | Cookies | 50 per domain, 64 KB total |
 | `kino.storage` | 256 KB; `ttlMs` 1..2,592,000,000 (30 days) |
 | `kino.sleep` | 0..5,000 ms |
@@ -229,7 +234,8 @@ ask for it in a `settings` entry of type `password`, keep derived tokens in `kin
 user and server, and never log a setting. A `url` setting cannot have a `default` (use `hint`).
 A fixed key that belongs to the plugin's author (not the person) can be **sealed** instead:
 `node sdk/seal.mjs --repo owner/repo --name apiKey` prints `kino-sealed:v1:…` for the manifest's
-`"secrets"` (apiVersion 4); the code uses `kino.secret("apiKey")`, a marker Kino swaps for the
+`"secrets"` (apiVersion 4); the code uses `kino.secret("apiKey")` (fine at module top level too),
+a marker Kino swaps for the
 value only inside `kino.fetch`, toward the manifest's `hosts` over https, and redacts from everything
 the code reads back. It is obfuscation, not secrecy; seals only open when the plugin is installed
 from its default branch (no `@ref`); the Node kit reads plain values from `.kino-secrets.json`

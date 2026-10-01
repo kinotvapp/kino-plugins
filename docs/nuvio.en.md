@@ -31,7 +31,11 @@ código original GPL-3.0").
 The scraper's own JavaScript is kept byte for byte, wrapped with a compatibility layer and a small
 adapter, and installed with a generated manifest:
 
-- `apiVersion` 4, `version` `1.0.0`, capabilities `search`, `episodes`, `resolve` and `download`.
+- `apiVersion` 4, `version` `1.<converter revision>.0` (today `1.2.0`, see [Updates](#updates)),
+  capabilities `search`, `episodes`, `resolve` and `download`.
+- The types the scraper serves come from its `supportedTypes`, with the usual spellings folded
+  together: `movie`, `movies`, `film`, `films` are movies; `tv`, `series`, `show`, `shows` are series;
+  `anime` is anime (any case). A scraper declaring `["movie", "series"]` serves series too.
 - `hosts`: detected automatically from the scraper's code (and from a remote domain list it names,
   when it has one), with `api.themoviedb.org` always first. A manifest caps them at 20: over that,
   the addresses that look like the scraper's own site go first, and the description warns "se
@@ -54,10 +58,14 @@ Nuvio scrapers have no catalogue and no text search: they only answer "streams f
 So the adapter works from TMDB:
 
 - **No Home rows.** The plugin shows up in search results, never as Home rows.
-- **`search`** answers one item, for the TMDB id Kino is looking for (nothing when Kino has no TMDB
-  id), with TMDB's poster, backdrop, year and synopsis when TMDB answers in time. A scraper answers
-  only for the types its manifest declares: one without movies (or without series) is not offered as
-  a source for them.
+- **`search` with a TMDB id** answers one item, for the TMDB id Kino is looking for, with TMDB's
+  poster, backdrop, year and synopsis when TMDB answers in time. A scraper answers only for the types
+  its manifest declares: one without movies (or without series) is not offered as a source for them.
+- **`search` without a TMDB id** (a typed search, e.g. on the TV) asks TMDB's own search for the
+  text instead (`/search/multi`, or only movies or only series when that is all the scraper serves or
+  Kino asked for a series) and answers up to 10 matches, ranked by how close their title is to the
+  query, ties by TMDB popularity. The scraper itself is not called until the person picks one. If TMDB
+  fails, the search answers nothing rather than an error.
 - **`episodes`** lists the seasons and episodes from TMDB, without season 0 (specials) and without
   episodes that have not aired yet.
 - **`resolve`** calls the scraper's `getStreams` exactly as Nuvio does, drops torrent-only results
@@ -90,15 +98,23 @@ scrapers use), the browser Web Crypto API (`crypto.subtle`, `crypto.getRandomVal
 `Buffer`, bundled only when the scraper's code needs them. A scraper that `require`s anything else
 fails with "Nuvio compat: require('…') was not bundled with this scraper".
 
+Kino's TMDB key is never written into the converted plugin's code: `TMDB_API_KEY` holds a fixed
+marker, and Kino puts the real key in its place only in `https` requests to `api.themoviedb.org`
+(the same [sealed-secret](manifest.md#secrets) mechanism a plugin's own keys use). A request that
+carries the marker anywhere else is refused before it leaves, and the key is blanked out of every
+answer, error and log the plugin sees.
+
 All of that exists **only** inside a converted scraper. A plugin you write gets the plain Kino
 engine: none of those globals ([Limits and engine quirks](engine-limits.md#not-node)). The same goes
 for the async-helper workaround of [the rejection trap](engine-limits.md#rejection-trap).
 
 ## Updates { #updates }
 
-A converted plugin always says version `1.0.0`, so Kino does not compare versions: "Buscar
-actualizaciones" (and the background check) re-runs the whole conversion from the repository and
-compares the resulting code and manifest with the installed ones. A change that only touches code
+A converted plugin's version is `1.<converter revision>.0`: it moves only when Kino's converter
+itself changes (today `1.2.0`), because Nuvio's own `version` fields are not reliable. To find
+updates Kino does not compare versions: "Buscar actualizaciones" (and the background check) re-runs
+the whole conversion from the repository and compares the resulting code and manifest with the
+installed ones, so a change in the scraper is found even though the version stays the same. A change that only touches code
 installs by itself; one that adds hosts or a permission waits for the person's approval, like any
 [update](publish.md#updates). A plugin converted by an older Kino asks for approval once for what
 newer conversions add (`fetchHosts`, downloads).
