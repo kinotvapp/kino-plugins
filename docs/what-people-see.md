@@ -40,8 +40,7 @@
   plugin (con tu `color`), al lado de las fuentes propias de la app; tus filas de `home` salen en
   Inicio después de las de la app; tus títulos se reproducen en el reproductor de Kino y aparecen en
   "Continuar viendo" y en la biblioteca. Los títulos de un plugin que declara `download` se pueden
-  guardar para verlos sin conexión ([Descargas](manifest.md#downloads)); Chromecast y DLNA no están
-  disponibles para títulos de plugins en esta versión. La tarjeta de un ítem `live` dice "EN VIVO" y se
+  guardar para verlos sin conexión ([Descargas](manifest.md#downloads)); los títulos de plugins se pueden enviar a una TV (Chromecast y DLNA, mira [Enviar a la TV](#cast) abajo). La tarjeta de un ítem `live` dice "EN VIVO" y se
   reproduce al tocarla, sin página de información; un canal nunca entra a "Continuar viendo" ni a la
   biblioteca ([Canales en vivo](live-channels.md#live-items)). Un plugin encontrado por el topic
   `kino-plugin` lleva la etiqueta "De la comunidad" en su tarjeta. En la búsqueda, un canal en vivo
@@ -58,3 +57,38 @@
   "Esto venía del plugin &lt;name&gt;, que ya no está instalado", e instalar el plugin otra vez los
   recupera. Esa es una razón más para mantener estable el manejo de `id` y `ref`. Los títulos ya
   descargados se siguen reproduciendo sin conexión y se pueden quitar en Descargas.
+
+- **Plugins firmados.** Un plugin firmado ([Plugins firmados](signed.md)) muestra la línea "Firmado
+  por su autor" en la hoja de consentimiento, una insignia "Firmado" en las tarjetas del catálogo y
+  de la comunidad ("Activo · Firmado" en una instalada), y "Clave del autor: ABCD-EF01-2345-6789" en
+  sus detalles (celular: Gestionar; TV: las acciones del plugin instalado). Kino 0.9.45 y posteriores.
+
+## Enviar a la TV (Chromecast y DLNA) { #cast }
+
+Los títulos de plugins se pueden enviar a una TV desde el reproductor. Nada en el manifiesto lo
+activa: Kino decide por cada stream según lo que devuelve tu `resolve` (`url`, `mime`, `headers`,
+`drm`):
+
+| Tu stream | Qué hace Kino |
+| --- | --- |
+| mp4/webm (u otro archivo progresivo) **sin `headers`**, en un host que tu plugin puede usar | La TV pide la URL ella misma; el celular no mueve bytes. |
+| HLS (`.m3u8`) **sin `headers`**, en un host que tu plugin puede usar | La TV pide la lista ella misma. |
+| Cualquier archivo o HLS **con `headers`** (Referer, cookies, tokens en headers) | Por el celular: él pide con tus headers y la TV solo ve una dirección local; las listas HLS se reescriben para que cada segmento y cada clave también pasen por el celular. |
+| DRM (Widevine o ClearKey), DASH, MPEG-TS progresivo, o un formato que nada permite identificar | No se envía: la persona lee "Este título no se puede enviar a la TV" (los protegidos: "Este título está protegido y no se puede enviar a la TV"). |
+
+Lo que ayuda a quien escribe plugins: devuelve un `mime` real (`video/mp4`,
+`application/vnd.apple.mpegurl`) o una URL que termine en la extensión correcta; Kino prueba los
+primeros bytes de un stream que nada describe (una lectura de 1 KB, 2 s), pero eso cuesta una
+petición. Prefiere enlaces que no necesiten `headers` (la ruta más liviana); cada host involucrado
+tiene que ser uno al que tu plugin puede llegar (declarado, escrito por la persona, o cubierto por un
+permiso "any"), por https. Mientras se envía, el celular se queda en silencio.
+
+## Plugins en los otros aparatos de la persona { #sync }
+
+Kino mantiene los plugins de una persona al día entre sus propios aparatos (por ejemplo celular y
+TV): una instalación, un encendido o apagado, una desinstalación, una aprobación o un ajuste guardado
+en un aparato se envía a los otros, y las contraseñas viajan cifradas de punta a punta. Nada cambia
+en tu plugin. Lo que hace el otro aparato: **instala tu plugin de nuevo desde la misma dirección**,
+en silencio cuando lo que descarga no pide nada más de lo que la persona aprobó en el primero; si una
+actualización agrega algo (un host, una capacidad), espera en "Plugins de tus otros aparatos" a que la
+persona la apruebe allá. Así que mantén tu repositorio público y tu dirección estable.

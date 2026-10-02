@@ -21,7 +21,7 @@
 | Canales en vivo (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 por página y 10 páginas por categoría; `guide` 50 canales y 24 h por llamada, 100 entradas por canal; `number` 1..9999 |
 | Ajustes | máximo 12; `text` 500, `url` 2.048, `password` 500 caracteres |
 | Mensajes de error | tu mensaje de `kino.error` se muestra como detalle, cortado a 200 caracteres |
-| `hosts` | de 1 a 20 entradas; desde apiVersion 2, ninguna (`[]`) cuando hay un ajuste `url` |
+| `hosts` | al menos 1 entrada, sin límite máximo desde Kino 0.9.45 (solo lo acota el manifiesto de 16 KB; Kino 0.9.44 y anteriores rechazan más de 20); desde apiVersion 2, ninguna (`[]`) cuando hay un ajuste `url` |
 | `secrets` (apiVersion 4) | máximo 16; los nombres cumplen `^[A-Za-z][A-Za-z0-9_]{0,31}$`; un valor tiene de 1 a 4.096 bytes |
 
 ## Cómo vive tu código { #lifecycle }

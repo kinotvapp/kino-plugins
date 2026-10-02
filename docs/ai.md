@@ -75,14 +75,19 @@ Lo que quiero:
 - Qué le pregunta Kino a la persona al configurarlo: <<< nada / su usuario y contraseña / su región / la dirección de su servidor >>>
 - Descargas para ver sin conexión: <<< sí / no >>>
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
+- Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
 Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.md):
 - Declara en "hosts" cada host que conozcas: los de la API y los del video, subtítulos, audio,
   segmentos y redirecciones (*.x no cubre x). Si falta uno, al abrir o reproducir un título Kino le
   pregunta a la persona una sola vez; no cuentes con eso. Si el video sale de CDN que cambian, usa
-  "streamHosts": "any" (apiVersion 4; la persona lo aprueba al instalar). No uses "fetchHosts": solo
-  sirve en plugins convertidos desde Nuvio.
+  "streamHosts": "any" (apiVersion 4; la persona lo aprueba al instalar); para canales en vivo,
+  "liveStreamHosts": "any" (apiVersion 3, necesita la capacidad "channels"). No uses "fetchHosts":
+  solo sirve en plugins convertidos desde Nuvio. Desde Kino 0.9.45 no hay un máximo de hosts; Kino
+  0.9.44 y anteriores rechazan más de 20, así que si declaras más de 20, avísame.
+- En kino-plugin.json escribe "entry": "plugin.js" e "icon": "icon.png", NUNCA "./plugin.js": Kino
+  0.9.45 y anteriores rechazan un "./" al principio y el plugin no se instala.
 - No es Node ni un navegador: no hay fetch, setTimeout, Buffer, process, require, crypto ni Intl;
   usa kino.fetch, kino.sleep, kino.crypto, kino.storage. Sí hay URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder y console. Un solo archivo, sin import.
@@ -97,16 +102,33 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   un ajuste de tipo "password". Una clave de API mía va sellada: "secrets" en el manifiesto, sellada
   con `node sdk/seal.mjs --repo USUARIO/REPO --name nombre`, y en el código kino.secret("nombre")
   (apiVersion 4).
-- Descargas: si la fuente lo permite, declara "download" (apiVersion 2). Se guardan películas y
-  capítulos en archivo normal (mp4, mkv…) o en HLS que no es en vivo; lo en vivo y lo que tiene DRM,
-  nunca.
-- apiVersion: el más bajo que funcione (4 solo para secrets, "streamHosts": "any" o un ajuste de tipo
-  "list"). Un id nuevo y mío (nunca "archive-org").
+- Las descargas son declarativas: si la fuente lo permite, agrega "download" a "capabilities"
+  (apiVersion 2) y no exportes nada extra; Kino llama a resolve él mismo cuando corre la descarga.
+  Se guardan películas y capítulos en archivo normal (mp4, mkv…) o en HLS que no es en vivo; lo en
+  vivo, DASH y lo que tiene DRM, nunca.
+- Firmar (solo si dije que sí): "apiVersion": 5 (necesita Kino 0.9.45+). Explícame con palabras
+  sencillas para qué sirve y guíame: `node sdk/seal.mjs --keygen` UNA sola vez (escribe
+  kino-author-key.pem), agrega `*.pem` al .gitignore ANTES de cualquier commit, y dime que guarde una
+  copia de la clave y que nunca la comparta (si se pierde, todos los que instalaron el plugin tienen
+  que desinstalarlo y reinstalarlo). Luego `node sdk/seal.mjs --sign --repo USUARIO/REPO` DESPUÉS del
+  último cambio en plugin.js o en "version" y otra vez después de cada cambio posterior; nunca subas
+  el .pem. Nunca imprimas el contenido de la clave en el chat.
+- apiVersion: el más bajo que funcione (3 para canales, 4 solo para secrets, "streamHosts": "any" o un
+  ajuste de tipo "list", 5 solo para un plugin firmado). Un id nuevo y mío (nunca "archive-org").
 
 Trabaja paso a paso: primero explora la fuente con peticiones reales, luego el manifiesto, luego
 cada función. Después de cada paso corre `node sdk/validate.mjs .` y `node sdk/run.mjs . <función> …`
 y arregla todo lo que Kino descartaría. Graba fixtures con --record y haz que
-`node --test test/plugin.test.mjs` pase sin conexión. Termina con la lista de chequeo de AGENTS.md.
+`node --test test/plugin.test.mjs` pase sin conexión. Termina con la lista de chequeo de AGENTS.md y,
+antes de entregarme el plugin, corre esta autocomprobación y dime el resultado de cada línea:
+- `node sdk/validate.mjs .` sale con 0 y sin problemas;
+- kino-plugin.json: "entry" e "icon" sin "./" al principio; "version" subida; el apiVersion es el más
+  bajo que funciona;
+- si se firma: "signature" está en kino-plugin.json, `validate.mjs` la verificó DESPUÉS de la última
+  edición, y ningún .pem está rastreado (el `.gitignore` tiene *.pem);
+- cada host (video, subtítulos, segmentos, redirecciones) está en "hosts" o cubierto por un campo "any";
+- para que lo encuentren: el repositorio es público y no es un fork, el topic kino-plugin está puesto,
+  y el manifiesto tiene un "name" y una "description" en español.
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y
@@ -149,6 +171,16 @@ Kino, en "De la comunidad" (Plugins → Recomendados), el repositorio tiene que:
 Cada dispositivo busca de nuevo cada 12 horas, o al tocar "Actualizar". Los clics exactos y cómo
 comprobarlo: [Aparecer en Kino](listed.md).
 
+## Plugins firmados { #signed }
+
+Si quieres que la gente sepa que cada actualización viene de ti, pide un [plugin firmado](signed.md)
+(`"apiVersion": 5`, Kino 0.9.45+): creas una clave una vez, el asistente firma `plugin.js` con ella
+después de cada cambio, y Kino comprueba la firma al instalar y en cada actualización. La clave
+privada se queda en tu computador: **nunca** debe llegar a GitHub (`*.pem` en el `.gitignore`), y
+conviene que hagas una copia de seguridad, porque si se pierde, todos los que instalaron el plugin
+tienen que desinstalarlo y reinstalarlo. Es opcional: un plugin sin firma funciona igual.
+[Lee la página completa](signed.md).
+
 ## Si algo falla { #troubleshooting }
 
 Pégale al asistente **el texto completo** que salió en la terminal (no un resumen) y dile qué
@@ -160,6 +192,8 @@ esperabas. Algunos casos comunes:
 | `✗ kino-plugin.json: …` | El manifiesto rompe una regla; el mensaje es el mismo que da Kino. Pídele al asistente que lo arregle según AGENTS.md. |
 | `[dropped by Kino] …` | Kino descartaría esos resultados. Pregúntale qué regla de [el contrato](contract.md) rompen, en vez de aceptar un parche a ciegas. |
 | `[host_not_allowed] …` | Un host que falta en `hosts`: que lo declare. |
+| `El campo "entry" debe ser una ruta relativa a un archivo .js` (Kino) o `Quita el "./" del campo "entry"` (kit) | `"entry"` (o `"icon"`) empieza con `./`. Escribe `"plugin.js"`: Kino 0.9.45 y anteriores rechazan el `./` ([por qué](manifest.md#entry-dot-slash)). |
+| `La firma del autor no es válida…` | El plugin está [firmado](signed.md) y `plugin.js` o `version` cambiaron después de firmar: corre otra vez `node sdk/seal.mjs --sign --repo owner/repo`. |
 | `[timeout] …` | La fuente es lenta o hay demasiadas peticiones: que haga menos peticiones por llamada. |
 | Funciona en el kit pero falla en Kino | El kit de Node es más permisivo que la app ([lo que no reproduce](test-locally.md#differences)): globales que faltan, un `throw` antes del primer `await`, `kino.html.select`. Dale al asistente el mensaje exacto que muestra Kino (o una foto de la pantalla). |
 | Kino dice "Configura … en Ajustes ▸ Plugins" | El plugin necesita datos: toca el botón Configurar del mensaje, o ve a Plugins → Instalados → tu plugin → Configurar. |

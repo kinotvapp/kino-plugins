@@ -10,7 +10,10 @@ quieres saber por qué un plugin convertido se porta distinto de uno escrito a m
 
 1. En Kino, Ajustes ▸ Plugins (en el televisor también se llega con el botón "Plugins" de Inicio),
    "Agregar plugin", y se escribe la dirección del repositorio, `owner/repo`, igual que para un
-   plugin de Kino.
+   plugin de Kino. La dirección pegada también puede ser una URL `github.com/owner/repo`, una
+   `/tree/<ref>/<carpeta>`, o una URL `raw.githubusercontent.com/owner/repo/<ref>/.../manifest.json`
+   (también `github.com/.../blob/...` o `/raw/...` hacia un archivo `.json`): Kino toma la carpeta
+   donde está ese archivo. Cualquier otro archivo se rechaza.
 2. Kino lee `manifest.json` en la raíz del repositorio. Si está en el formato propio de Nuvio (un
    objeto con un arreglo `scrapers`), la dirección es un repositorio de Nuvio; si no, Kino la trata
    como un plugin de Kino (`kino-plugin.json`). Si la rama principal tiene un `manifest.json` que no

@@ -69,6 +69,10 @@ cada actualización. Un plugin con `secrets` solo se actualiza desde su rama pri
 Revisa que:
 
 - `node sdk/validate.mjs . --run <function> ...` pase con cada capacidad que declaras;
+- `"entry"` (y `"icon"`) estén escritos **sin `./` al principio**: `"plugin.js"`, nunca `"./plugin.js"`.
+  Kino 0.9.45 y anteriores lo rechazan y el plugin no se instala ([por qué](manifest.md#entry-dot-slash));
+- si quieres que la gente sepa que es tuyo, [fírmalo](signed.md) (`apiVersion` 5, Kino 0.9.45+) y firma
+  otra vez después de cada cambio en `plugin.js` o `version`; la clave privada nunca se sube;
 - cada host con el que habla tu plugin (y cada host de stream y de subtítulos) esté en `hosts`,
   incluido el dominio pelado al lado de su forma `*.`;
 - no haya ningún `throw` antes del primer `await` en una función que quien la llama envuelve en
@@ -234,6 +238,9 @@ La lista descarta, tenga las estrellas que tenga:
 3. **¿Está el manifiesto?** Abre
    `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`. Un 404 significa que no
    está en la raíz de la rama por defecto.
+4. **¿`entry` empieza con `./`?** `"./plugin.js"` se instala en Kino 0.9.46 y posteriores pero falla en 0.9.45
+   y anteriores ("El campo \"entry\" debe ser una ruta relativa a un archivo .js"). Escribe `"plugin.js"`.
+   Lo mismo vale para `"icon"`.
 4. **¿El manifiesto es válido?** Ejecuta `node sdk/validate.mjs .` en el repositorio: código de salida
    0 y sin la línea "No aparecerá en la búsqueda de Kino". Revisa que pese máximo 16 KB.
 5. **¿Ese celular lo puede leer?** ¿El `apiVersion` es máximo el que soporta el Kino de la persona?

@@ -393,7 +393,7 @@ What Kino does with it, and what it does not:
   person reads "No se pudo abrir este video protegido" (after one more `resolve` if `expiresInSeconds`
   had passed, like any stream). A protected live channel reads the same at once on a device with no
   L3; its other license failures are cuts, re-resolved like any other (see [Live channels](live-channels.md#live-items)). A protected title is **never downloadable** ("Este video no se puede
-  descargar"), even with `download` declared, and cannot be sent to a Chromecast (no plugin title can).
+  descargar"), even with `download` declared, and cannot be sent to a TV either ([Sending to the TV](what-people-see.md#cast)).
 - The consent sheet adds "Reproduce video protegido (DRM)" when `drm` is declared, and an update that
   newly declares it waits for the person's approval ([Publishing](publish.md#updates)).
 

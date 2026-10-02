@@ -8,9 +8,12 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
 [English](https://kinotvapp.github.io/kino-plugins/en/) with the language switcher.
 
 - **Start from an example:** [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
-  (Internet Archive; the template, with the `sdk/` kit) and
-  [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) (your own
-  media server, and every apiVersion 3 feature).
+  (Internet Archive; the simplest starting template, with the `sdk/` kit) and
+  [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) ("Tu servidor",
+  the complete API demo: your own media server and every feature end to end).
+- **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
+  update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
+  for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 - **Building with an AI assistant?** Point it at [`AGENTS.md`](AGENTS.md), or at
   [`llms-full.txt`](https://kinotvapp.github.io/kino-plugins/llms-full.txt) (the whole guide in one
   file). The site has [a ready-to-paste prompt](https://kinotvapp.github.io/kino-plugins/ai/).

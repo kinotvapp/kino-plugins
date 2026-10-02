@@ -3,7 +3,7 @@
 The Node kit is the `sdk/` folder of the example plugins ([where to get it](first-plugin.md#get-the-sdk)):
 `run.mjs` (run one function), `validate.mjs` (check a plugin the way Kino does), `init.mjs` (scaffold
 a new one), `kino-shim.mjs` (the `kino` API in Node), `contract.mjs` (the rules, read from
-`contract.json`), `seal.mjs` (seals a [secret](manifest.md#secrets) for your manifest) and
+`contract.json`), `seal.mjs` (seals a [secret](manifest.md#secrets) for your manifest, and `--keygen`/`--sign` for a [signed plugin](signed.md)) and
 `guide-tables.mjs` (regenerates the guide's tables). There is nothing to
 install. It needs Node 18 or newer (checked on 18.20, 20.11 and 24.14); `node --test sdk/test/kit.test.mjs`
 runs its own tests.
@@ -69,6 +69,15 @@ To make the seal itself: `node sdk/seal.mjs --repo owner/repo --name apiKey`, th
 the hidden prompt (or pipe it on stdin). Seal for the repository people will install from, and test
 the sealed build in the app installed from its default branch, with no `@ref`
 ([why](manifest.md#secrets)).
+
+## Signed plugins (apiVersion 5) { #signing }
+
+`validate.mjs` checks a [signed plugin](signed.md) the way Kino does: the `signature` field's shape,
+the signature itself against your entry file (`--repo owner/repo[/folder]`, or the folder's GitHub
+`origin` when you omit it), that no `*.pem` is tracked by git, and it prints the author key's
+fingerprint and the consent line "Firmado por su autor". It also refuses `"entry": "./plugin.js"`
+(Kino 0.9.45 and older do not install it) and warns when `hosts` has more than 20 entries (Kino 0.9.44
+and older refuse that). Sign again after every change to the entry file or the `version`.
 
 ## Live channels (apiVersion 3) { #live }
 

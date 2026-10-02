@@ -3,7 +3,7 @@
 `kino` is a global object, frozen, always there. Nothing else from the outside world is.
 
 ```js
-kino.apiVersion   // 4 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 5 -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"
 ```

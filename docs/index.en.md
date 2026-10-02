@@ -10,8 +10,9 @@ You can write, run and test a plugin on your computer with Node before you ever 
 guide has everything you need: the file layout, the manifest, the contract your code must meet, the
 API Kino gives you, every limit, the quirks of the JavaScript engine, and how to publish.
 
-The reference plugin is [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
-(`kino-plugin.json` + `plugin.js`, an Internet Archive source), and its `sdk/` folder is the Node
+The complete API demo is [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
+("Tu servidor": every feature working end to end); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
+(Internet Archive) is the simplest starting template. Both carry the `sdk/` folder, the Node
 kit. Two more files describe the contract for machines (both on the [Reference](reference/index.md)
 page): `contract.json` holds every number and rule the app enforces (the tables in this guide are
 generated from it, and the app's tests pin its own constants to it), and `kino.d.ts` declares the
@@ -68,6 +69,11 @@ use a build step or a library, bundle everything into that single file -- see
 | `owner/repo/sub/dir` | a folder inside the repository |
 | `owner/repo@v1.2.0` | a branch, tag or commit (the name cannot contain `/`); also works with a folder |
 | `https://github.com/owner/repo` or `.../tree/<ref>/<path>` | the same, pasted from the browser |
+| `https://raw.githubusercontent.com/owner/repo/<ref>/<path>/kino-plugin.json` (or a `github.com/.../blob/<ref>/.../kino-plugin.json`, also `/raw/`) | the folder that `.json` file is in, at that ref; any other kind of file is refused |
+
+A `?query` or `#fragment` in a pasted URL is ignored. A ref that only comes from a pasted URL is not a
+pin: a plugin with [sealed secrets](manifest.md#secrets) pasted that way installs from the default
+branch.
 
 Kino downloads `kino-plugin.json`, your entry file and the icon from `raw.githubusercontent.com`,
 which is why the repository has to be public.
@@ -77,6 +83,8 @@ which is why the repository has to be public.
 | Page | What is in it |
 | --- | --- |
 | [A first plugin](first-plugin.md) | Two files that search and play, and how to run them |
+| [Signed plugins](signed.md) | **Sign your plugin with your own key** so people know every update is yours (apiVersion 5, Kino 0.9.45+) |
+| [What's new](changelog.md) | What changed for plugin authors, by Kino version |
 | [The manifest](manifest.md) | Every field and rule of `kino-plugin.json`, settings, `streamHosts`, sealed secrets, the person's own servers, `insecureHttp`, downloads |
 | [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |

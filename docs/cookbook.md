@@ -412,7 +412,7 @@ Lo que hace Kino con él, y lo que no:
   de una vez en un dispositivo sin L3; sus otras fallas de licencia son cortes, que se vuelven a
   resolver como cualquier otro (mira [Canales en vivo](live-channels.md#live-items)). Un título
   protegido **nunca se puede descargar** ("Este video no se puede descargar"), aunque se declare
-  `download`, y no se puede mandar a un Chromecast (ningún título de plugin se puede).
+  `download`, y tampoco se puede enviar a una TV ([Enviar a la TV](what-people-see.md#cast)).
 - La hoja de consentimiento agrega "Reproduce video protegido (DRM)" cuando se declara `drm`, y una
   actualización que lo declare por primera vez espera la aprobación de la persona
   ([Publicar](publish.md#updates)).

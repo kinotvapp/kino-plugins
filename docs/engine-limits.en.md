@@ -11,7 +11,7 @@
 | Loading the module (its top level) | 10 s |
 | Idle sandbox | closed after 5 minutes without calls |
 | Consecutive timeouts | 3 in a row and Kino disables the plugin ("No responde") |
-| `kino.fetch` | https only (or the person's own server as typed, or `http` on a host declared `insecureHttp`); 15 s default, 30 s maximum; response body at most 5 MB; the request (URL, headers and body) at most 1,048,576 characters; at most 60 requests per call; at most 10 redirects per request |
+| `kino.fetch` | https only (or the person's own server as typed, or `http` on a host declared `insecureHttp`); 15 s default, 30 s maximum; response body at most 5 MB; the request (URL, headers and body) at most 1,048,576 characters; at most 60 requests per call, every hop counted, refused ones included (250 for a plugin converted from a Nuvio scraper); at most 6 fetches in flight at once; at most 3 host questions per call; at most 10 redirects per request |
 | Cookies | 50 per domain, 64 KB in total per plugin |
 | `kino.storage` | 256 KB per plugin; an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
 | `kino.sleep` | 0 to 5,000 ms per call |
@@ -22,7 +22,7 @@
 | Live channels (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 per page and 10 pages per category; `guide` 50 channels and 24 h per call, 100 entries per channel; `number` 1..9999 |
 | Settings | at most 12; `text` 500, `url` 2,048, `password` 500 characters |
 | Error messages | your `kino.error` message is shown as a detail, cut at 200 characters |
-| `hosts` | 1 to 20 entries; from apiVersion 2, none (`[]`) when a `url` setting exists |
+| `hosts` | at least 1 entry, no upper limit from Kino 0.9.45 (only the manifest's 16 KB; Kino 0.9.44 and older refuse more than 20); from apiVersion 2, none (`[]`) when a `url` setting exists |
 | `secrets` (apiVersion 4) | at most 16; names match `^[A-Za-z][A-Za-z0-9_]{0,31}$`; a value is 1..4,096 bytes |
 <!-- contract:limits:end -->
 

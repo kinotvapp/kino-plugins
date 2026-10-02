@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 4)
+# El contrato (apiVersion 1 a 5)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:

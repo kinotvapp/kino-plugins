@@ -8,7 +8,10 @@ repository, or you want to know why a converted plugin behaves differently from 
 ## How people add them { #add }
 
 1. In Kino, Ajustes ▸ Plugins (on the TV, the "Plugins" button on Home also gets there), "Agregar
-   plugin", and type the repository's address, `owner/repo`, exactly as for a Kino plugin.
+   plugin", and type the repository's address, `owner/repo`, exactly as for a Kino plugin. The pasted
+   address can also be a `github.com/owner/repo` URL, a `/tree/<ref>/<folder>` one, or a
+   `raw.githubusercontent.com/owner/repo/<ref>/.../manifest.json` URL (also `github.com/.../blob/...`
+   or `/raw/...` to a `.json` file): Kino takes the folder that file is in. Any other file is refused.
 2. Kino reads `manifest.json` at the repository root. When it is Nuvio's own format (an object with
    a `scrapers` array) the address is a Nuvio repository; otherwise Kino treats it as a Kino plugin
    (`kino-plugin.json`). If the default branch has a `manifest.json` that is not in that format (some

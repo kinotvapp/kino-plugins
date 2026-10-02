@@ -69,6 +69,10 @@ its default branch, with no `@ref`.
 Check that:
 
 - `node sdk/validate.mjs . --run <function> ...` passes for every capability you declare;
+- `"entry"` (and `"icon"`) are written **without a leading `./`**: `"plugin.js"`, never `"./plugin.js"`.
+  Kino 0.9.45 and older refuse it and the plugin does not install ([why](manifest.md#entry-dot-slash));
+- if you want people to know it is yours, [sign it](signed.md) (`apiVersion` 5, Kino 0.9.45+) and sign
+  again after every change to `plugin.js` or `version`; the private key is never committed;
 - every host your plugin talks to (and every stream and subtitle host) is in `hosts`, including the
   bare domain next to its `*.` form;
 - there is no `throw` before the first `await` in a function that a caller wraps in `try`/`catch`
@@ -225,6 +229,9 @@ The list drops, whatever the stars:
 3. **Is the manifest there?** Open
    `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`. A 404 means it is not at
    the root of the default branch.
+4. **Does `entry` start with `./`?** `"./plugin.js"` installs on Kino 0.9.46 and later but fails on 0.9.45
+   and older ("El campo \"entry\" debe ser una ruta relativa a un archivo .js"). Write `"plugin.js"`.
+   The same goes for `"icon"`.
 4. **Is the manifest valid?** Run `node sdk/validate.mjs .` in the repository: exit code 0 and no
    "No aparecerá en la búsqueda de Kino" line. Check it is at most 16 KB.
 5. **Can that phone read it?** Is `apiVersion` at most what the person's Kino supports? Update Kino,

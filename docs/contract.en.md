@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 4)
+# The contract (apiVersion 1 to 5)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:

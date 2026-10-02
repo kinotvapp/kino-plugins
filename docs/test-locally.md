@@ -3,7 +3,7 @@
 El kit de Node es la carpeta `sdk/` de los plugins de ejemplo ([de dónde sacarla](first-plugin.md#get-the-sdk)):
 `run.mjs` (ejecuta una función), `validate.mjs` (revisa un plugin como lo hace Kino), `init.mjs` (crea
 el esqueleto de uno nuevo), `kino-shim.mjs` (la API `kino` en Node), `contract.mjs` (las reglas,
-leídas de `contract.json`), `seal.mjs` (sella un [secreto](manifest.md#secrets) para tu manifiesto) y
+leídas de `contract.json`), `seal.mjs` (sella un [secreto](manifest.md#secrets) para tu manifiesto, y con `--keygen`/`--sign` firma un [plugin firmado](signed.md)) y
 `guide-tables.mjs` (regenera las tablas de la guía). No hay nada que
 instalar. Necesita Node 18 o más nuevo (probado en 18.20, 20.11 y 24.14);
 `node --test sdk/test/kit.test.mjs` ejecuta sus propias pruebas.
@@ -71,6 +71,16 @@ Para hacer el sello: `node sdk/seal.mjs --repo owner/repo --name apiKey`, y escr
 prompt oculto (o pásalo por stdin). Sella para el repositorio desde el que la gente va a instalar, y
 prueba la versión sellada en la app instalada desde su rama principal, sin `@ref`
 ([por qué](manifest.md#secrets)).
+
+## Plugins firmados (apiVersion 5) { #signing }
+
+`validate.mjs` comprueba un [plugin firmado](signed.md) como lo hace Kino: la forma del campo
+`signature`, la firma misma contra tu archivo de entrada (`--repo owner/repo[/carpeta]`, o el `origin`
+de GitHub de la carpeta si lo omites), que ningún `*.pem` esté rastreado por git, e imprime la huella
+de la clave del autor y la línea de consentimiento "Firmado por su autor". También rechaza
+`"entry": "./plugin.js"` (Kino 0.9.45 y anteriores no lo instalan) y avisa cuando `hosts` tiene más de
+20 entradas (Kino 0.9.44 y anteriores lo rechazan). Firma otra vez después de cada cambio en el archivo
+de entrada o en la `version`.
 
 ## Canales en vivo (apiVersion 3) { #live }
 

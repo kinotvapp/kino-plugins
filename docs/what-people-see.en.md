@@ -35,7 +35,7 @@
   `color`), next to the app's own sources; your `home` rows appear on Home after the app's own; your
   titles play in Kino's player and appear in "Continuar viendo" and the library. Titles of a plugin
   that declares `download` can be saved for offline viewing ([Downloads](manifest.md#downloads));
-  Chromecast and DLNA are not available for plugin titles in this version. A `live` item's card
+  Plugin titles can be sent to a TV (Chromecast and DLNA, see [Sending to the TV](#cast) below). A `live` item's card
   says "EN VIVO" and plays on tap, with no info page; a channel never enters "Continuar viendo" or
   the library ([Live channels](live-channels.md#live-items)). A plugin found through the `kino-plugin`
   topic carries the label "De la comunidad" on its card. In search, a live channel whose name has
@@ -51,3 +51,36 @@
   progress: opening one says "Esto venía del plugin &lt;name&gt;, que ya no está instalado", and installing
   the plugin again restores them. That is one more reason to keep `id` and `ref` handling stable.
   Titles already downloaded keep playing offline and can be removed from Descargas.
+
+- **Signed plugins.** A signed plugin ([Signed plugins](signed.md)) shows the line "Firmado por su
+  autor" on the consent sheet, a "Firmado" pill on catalog and community cards ("Activo · Firmado" on
+  an installed one), and "Clave del autor: ABCD-EF01-2345-6789" in its details (phone: Gestionar; TV:
+  the installed plugin's actions). Kino 0.9.45 and later.
+
+## Sending to the TV (Chromecast and DLNA) { #cast }
+
+Plugin titles can be sent to a TV from the player. Nothing in the manifest turns it on: Kino decides
+per stream from what your `resolve` returns (`url`, `mime`, `headers`, `drm`):
+
+| Your stream | What Kino does |
+| --- | --- |
+| mp4/webm (or another progressive file) with **no `headers`**, on a host your plugin may use | The TV fetches the URL itself; the phone moves no bytes. |
+| HLS (`.m3u8`) with **no `headers`**, on a host your plugin may use | The TV fetches the playlist itself. |
+| Any file or HLS **with `headers`** (Referer, cookies, tokens in headers) | Through the phone: it fetches with your headers and the TV only sees a local address; HLS playlists are rewritten so every segment and key goes through the phone too. |
+| DRM (Widevine or ClearKey), DASH, progressive MPEG-TS, or a format nothing tells apart | Not sent: the person reads "Este título no se puede enviar a la TV" (protected ones: "Este título está protegido y no se puede enviar a la TV"). |
+
+What helps authors: return a real `mime` (`video/mp4`, `application/vnd.apple.mpegurl`) or a URL that
+ends in the right extension; Kino probes the first bytes of a stream nothing describes (a 1 KB ranged
+read, 2 s) but that costs a request. Prefer links that need no `headers` (the lightest route); every
+host involved must be one your plugin may reach (declared, typed, or covered by an "any" permission), over
+https. While casting, the phone itself stays silent.
+
+## Plugins on the person's other devices { #sync }
+
+Kino keeps a person's plugins in step between their own devices (for example phone and TV): an
+install, a switch on or off, an uninstall, an approval or a saved setting on one device is sent to
+the others, and passwords travel encrypted end to end. Nothing in your plugin changes. What the
+other device does: it installs **your plugin again from the same address**, silently when what it
+fetches asks for nothing more than the person approved on the first one; if an update adds something
+(a host, a capability), it waits in "Plugins de tus otros aparatos" for the person to approve it
+there. So keep your repository public and your address stable.

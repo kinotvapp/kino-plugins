@@ -172,7 +172,7 @@ Un plugin puede dar sus canales de tres formas, y mezclarlas:
    lista, para los canales que solo responden a un `User-Agent` (o un `Referer`) conocido: se filtran igual
    que los `headers` de un `Stream` y van aparte de `headers` a propósito, porque estos llevan las
    credenciales de tu lista y van solo al host de la lista, nunca a los muchos hosts donde están los canales.
-   Un header que la propia entrada del M3U nombra (`#EXTVLCOPT:http-user-agent=...`) gana. Las versiones de
+   Un header que la propia entrada del M3U nombra (`#EXTVLCOPT:http-user-agent=...`, `#EXTHTTP:{"User-Agent":"..."}`, un sufijo `url|User-Agent=...&Referer=...`, o los headers de stream de `#KODIPROP`) gana; solo se conservan `User-Agent`, `Referer`, `Origin` y `Cookie`, y un valor con un carácter de control se descarta. Las versiones de
    Kino anteriores a la que agregó `streamHeaders` ignoran el campo, así que la lista se reproduce sin él.
    `refreshHours` va de 1 a 168 (por defecto 12); `hideGroups` lista
    títulos de grupo que no se muestran (sin importar mayúsculas, máximo 50). Con `resolve: true`, cada

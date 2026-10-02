@@ -20,7 +20,9 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [The `kino` API](https://kinotvapp.github.io/kino-plugins/en/kino-api/),
    [Limits and engine quirks](https://kinotvapp.github.io/kino-plugins/en/engine-limits/),
    [Test it locally](https://kinotvapp.github.io/kino-plugins/en/test-locally/),
-   [Publishing](https://kinotvapp.github.io/kino-plugins/en/publish/), and for live TV
+   [Publishing](https://kinotvapp.github.io/kino-plugins/en/publish/),
+   [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/),
+   [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/), and for live TV
    [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/).
 3. The machine-readable contract: `contract.json` (every number and rule) and `kino.d.ts` (every
    shape and the whole `kino` API), at <https://kinotvapp.github.io/kino-plugins/reference/contract.json>
@@ -49,7 +51,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   live channels (`live` items at apiVersion 2, or the En vivo tab with `channels` at apiVersion 3).
 - **The lowest `apiVersion` that works**: `1` unless you need `download`, `drm`, `insecureHttp`,
   `"hosts": []`, or `live` items (`2`), `channels`/`liveStreamHosts` (`3`), or a `list` setting,
-  `"streamHosts": "any"` or sealed `secrets` (`4`).
+  `"streamHosts": "any"` or sealed `secrets` (`4`), or an author `signature` (`5`, Kino 0.9.45+).
+- **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
+  update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
+  what it is and that the key must be kept and backed up.
 - Whether the person has the right to use the source. Do not help circumvent DRM: the only DRM path
   is a Widevine license the source itself hands out (the `drm` capability).
 - **Offline downloads**: declare `download` (apiVersion 2) when the source allows saving titles.
@@ -134,8 +139,9 @@ exact message Kino shows, never a summary.
 - `kino.fetch` reaches only the manifest's `hosts` (and servers the person typed in a `url`
   setting), over `https`, checked on **every redirect hop**. `*.example.com` does **not** cover
   `example.com`: list both. No IPs, no `localhost`, no `.local`/`.lan`/`.internal`/`.localhost`/`.home.arpa`,
-  no bare `*`, no scheme/port/path in `hosts`. 1 to 20 entries (`[]` only from apiVersion 2 with a
-  `url` setting). During `resolve` and `episodes` only, a fetch to an undeclared `https` host asks the
+  no bare `*`, no scheme/port/path in `hosts`. At least 1 entry (`[]` only from apiVersion 2 with a
+  `url` setting) and **no maximum from Kino 0.9.45**; Kino 0.9.44 and older refuse more than 20 (the
+  kit warns "Más de 20 hosts: ..."), so with more than 20 hosts tell the person it needs 0.9.45+. During `resolve` and `episodes` only, a fetch to an undeclared `https` host asks the
   person (the call's clock stops meanwhile) -- at most 3 hosts per call, and none after the person
   rejects one; everywhere else it just fails as `host_not_allowed`. Declared names that resolve into
   the home network (including IPv6 prefixes embedding such an address) are refused, and plugin
@@ -151,6 +157,10 @@ exact message Kino shows, never a summary.
   the only exception: any `http` or `https` URL (a public IPv4 is fine), never a private address or local name.
 - Plain `http` only for a server the person typed, or a host declared
   `{ "host": "…", "insecureHttp": true }` (apiVersion 2, no wildcard; shown in red to the person).
+- **`"entry"` and `"icon"` never start with `./`.** Write `"plugin.js"`, not `"./plugin.js"`: Kino
+  0.9.45 and older refuse the `./` (`El campo "entry" debe ser una ruta relativa a un archivo .js`)
+  and the plugin does not install (an AI-generated plugin did exactly this and failed for about 35
+  installs). Kino 0.9.46 will tolerate it, but never rely on that. The kit's `validate.mjs` refuses it.
 - `"liveStreamHosts": "any"` (apiVersion 3 + `channels`) frees only live channel streams, never
   `kino.fetch`, playlists, subtitles, licenses, movies or images.
 - `"streamHosts": "any"` (apiVersion 4) lets what the plugin plays be on any public host: for a movie
@@ -241,6 +251,33 @@ the code reads back. It is obfuscation, not secrecy; seals only open when the pl
 from its default branch (no `@ref`); the Node kit reads plain values from `.kino-secrets.json`
 (never commit it). Full rules: [Sealed secrets](https://kinotvapp.github.io/kino-plugins/en/manifest/#secrets).
 
+**Downloads are declarative.** `"download"` in `capabilities` (apiVersion 2) is a flag the app acts
+on: export nothing extra, there is no separate "resolve for download" call (Kino calls your
+`resolve(ref)` when the queued download actually runs). Progressive files and non-live HLS save;
+DASH, live, SAMPLE-AES and DRM never do. Phones only.
+
+**Signing (apiVersion 5, Kino 0.9.45+, optional).** The author signs `plugin.js` with their own
+Ed25519 key; the manifest carries `"signature": { "authorKey": <64 hex>, "value": <128 hex> }`;
+Kino checks it at install and at every update (never at runtime), pins the key at the first install
+(trust on first use) and refuses an update signed with another key or no longer signed. People see
+"Firmado por su autor" and a "Firmado" badge. It does not hide the code. Full page:
+[Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). When the person wants it:
+
+1. Explain it in plain Spanish first. Then `node sdk/seal.mjs --keygen` **once** (writes
+   `kino-author-key.pem`; refuses to overwrite). Add `*.pem` to `.gitignore` **before any commit**
+   (the scaffold's `.gitignore` does not have it). Tell them to back the key up and never share it:
+   there is no recovery, and a new key makes every existing install refuse the update (they must
+   uninstall and reinstall). **Never put the key in the repository, the chat or a log.**
+2. Set `"apiVersion": 5`, then `node sdk/seal.mjs --sign --repo owner/repo[/folder]` **after the last
+   change** to `plugin.js` or `version`, and **again after every later change** (the signature covers
+   the exact entry file, repo, `id` and `version`).
+3. `node sdk/validate.mjs . --repo owner/repo` verifies it and fails if a `.pem` is tracked.
+4. If it says "La firma del autor no es válida…", the code, `id`, `version` or repo changed after
+   signing: sign again. If a person reports "firmada con otra clave de autor", the key changed.
+
+**Sending to the TV** needs nothing from the plugin; it casts best with a correct `mime` and no
+`headers` (see [What people see](https://kinotvapp.github.io/kino-plugins/en/what-people-see/#cast)).
+
 ## 5. Checklist before publishing
 
 - [ ] `node sdk/validate.mjs .` exits 0, and `node sdk/validate.mjs . --run <fn> …` passes for every
@@ -256,6 +293,10 @@ from its default branch (no `@ref`); the Node kit reads plain values from `.kino
 - [ ] `id`s are stable and match the pattern; `ref`s keep working when replayed later.
 - [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
 - [ ] `version` raised; `apiVersion` is the lowest that works.
+- [ ] `"entry"` and `"icon"` have **no leading `./`** (`"plugin.js"`).
+- [ ] If signed: `"apiVersion": 5`, `signature` present, `node sdk/validate.mjs . --repo owner/repo`
+      verified it after the last edit, `*.pem` in `.gitignore`, no `.pem` tracked, the person knows to
+      back the key up.
 - [ ] Public repository, manifest at the root, topic `kino-plugin` on THAT repository (mandatory: without it the
       app never finds the plugin), not a fork. Manifest `description` written (the card shows it);
       the GitHub About description is optional and not read by the app.
@@ -276,7 +317,7 @@ Every rule, as the app applies it (full detail:
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (4 today), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (5 today; a signed plugin needs Kino 0.9.45+), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
    `own-server`), never `xuper`, never the template's `archive-org`; the same id installed from
@@ -313,6 +354,9 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - Putting expiring links in `ref` instead of resolving them fresh in `resolve`.
 - Network calls at the top level of the module (install fails).
 - Forgetting to raise `version`, so the fix never reaches anyone.
+- Writing `"entry": "./plugin.js"` (or `"icon": "./icon.png"`): refused by Kino 0.9.45 and older.
+- Signing, then editing `plugin.js` or `version` without signing again; committing the `.pem`; making
+  a new key for an already published plugin (everyone must reinstall).
 - Declaring `apiVersion` 2 or 3 without needing it (older Kino builds cannot install it).
 - `kino.html.select` "failing" under Node: it only exists in the app; test that part in Kino.
 - Forking the template: forks never appear in "De la comunidad".

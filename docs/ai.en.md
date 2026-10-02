@@ -73,14 +73,19 @@ What I want:
 - What Kino asks the person when setting it up: <<< nothing / their username and password / their region / their server's address >>>
 - Offline downloads: <<< yes / no >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
+- Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 
 Rules you cannot break (the detail and exact numbers are in AGENTS.md):
 - Declare in "hosts" every host you know: the API's and the video's, subtitles', audio's, segments'
   and redirects' (*.x does not cover x). If one is missing, Kino asks the person once when a title
   is opened or played; do not rely on it. If the video comes from changing CDNs, use
-  "streamHosts": "any" (apiVersion 4; the person approves it at install). Do not use "fetchHosts": it
-  only works on plugins converted from Nuvio.
+  "streamHosts": "any" (apiVersion 4; the person approves it at install); for live channels,
+  "liveStreamHosts": "any" (apiVersion 3, needs the "channels" capability). Do not use "fetchHosts":
+  it only works on plugins converted from Nuvio. There is no maximum number of hosts from Kino
+  0.9.45; Kino 0.9.44 and older refuse more than 20, so if you declare more than 20, tell me.
+- In kino-plugin.json write "entry": "plugin.js" and "icon": "icon.png", NEVER "./plugin.js": Kino
+  0.9.45 and older refuse a leading "./" and the plugin does not install.
 - It is neither Node nor a browser: no fetch, setTimeout, Buffer, process, require, crypto or Intl;
   use kino.fetch, kino.sleep, kino.crypto, kino.storage. URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder and console do exist. One file, no import.
@@ -95,16 +100,33 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "password" setting. An API key of mine is sealed: "secrets" in the manifest, sealed with
   `node sdk/seal.mjs --repo USER/REPO --name name`, and kino.secret("name") in the code
   (apiVersion 4).
-- Downloads: if the source allows it, declare "download" (apiVersion 2). Movies and episodes are
-  saved from a plain file (mp4, mkv…) or from HLS that is not live; live channels and anything with
-  DRM, never.
-- apiVersion: the lowest that works (4 only for secrets, "streamHosts": "any" or a "list" setting).
-  A new id of my own (never "archive-org").
+- Downloads are declarative: if the source allows it, add "download" to "capabilities" (apiVersion
+  2) and export nothing extra; Kino calls resolve itself when the download runs. Movies and
+  episodes are saved from a plain file (mp4, mkv…) or from HLS that is not live; live channels,
+  DASH and anything with DRM, never.
+- Signing (only if I said yes): "apiVersion": 5 (needs Kino 0.9.45+). Tell me, in plain words, what
+  it is for, and walk me through it: `node sdk/seal.mjs --keygen` ONCE (it writes
+  kino-author-key.pem), add `*.pem` to .gitignore BEFORE any commit, and tell me to back the key up
+  and never share it (if it is lost, everyone who installed the plugin must uninstall and reinstall
+  it). Then `node sdk/seal.mjs --sign --repo USER/REPO` AFTER the last change to plugin.js or
+  "version" and again after every later change, never commit the .pem. Never print the key's
+  contents in the chat.
+- apiVersion: the lowest that works (3 for channels, 4 only for secrets, "streamHosts": "any" or a
+  "list" setting, 5 only for a signed plugin). A new id of my own (never "archive-org").
 
 Work step by step: first explore the source with real requests, then the manifest, then each
 function. After each step run `node sdk/validate.mjs .` and `node sdk/run.mjs . <function> …` and
 fix everything Kino would drop. Record fixtures with --record and make
-`node --test test/plugin.test.mjs` pass offline. Finish with the AGENTS.md checklist.
+`node --test test/plugin.test.mjs` pass offline. Finish with the AGENTS.md checklist, and before
+you hand the plugin over run this self-check and tell me the result of each line:
+- `node sdk/validate.mjs .` exits 0 with no problems;
+- kino-plugin.json: "entry" and "icon" have no leading "./"; "version" raised; apiVersion is the
+  lowest that works;
+- if signing: "signature" is in kino-plugin.json, `validate.mjs` verified it AFTER the last edit, and
+  no .pem is tracked (`.gitignore` has *.pem);
+- every host (video, subtitles, segments, redirects) is in "hosts" or covered by an "any" field;
+- for discovery: the repository is public and not a fork, the topic kino-plugin is set, and the
+  manifest has a Spanish "name" and "description".
 
 At the end, walk me through:
 1. Publishing it: a public repository (never a fork) with the files at the root; the topic
@@ -146,6 +168,15 @@ under "De la comunidad" (Plugins → Recomendados), the repository must:
 Each device searches again every 12 hours, or when "Actualizar" is tapped. The exact clicks and how
 to check it: [Get listed in Kino](listed.md).
 
+## Signed plugins { #signed }
+
+If you want people to know that every update comes from you, ask for a [signed plugin](signed.md)
+(`"apiVersion": 5`, Kino 0.9.45+): you make a key once, the assistant signs `plugin.js` with it
+after every change, and Kino checks the signature at install and at each update. The private key
+stays on your computer: it must **never** go to GitHub (`*.pem` in `.gitignore`), and you should back
+it up, because if it is lost, everyone who installed the plugin has to uninstall and reinstall it.
+It is optional: an unsigned plugin works the same. [Read the whole page](signed.md).
+
 ## If something fails { #troubleshooting }
 
 Paste **the full text** the terminal printed into the assistant (not a summary) and say what you
@@ -157,6 +188,8 @@ expected. Some common cases:
 | `✗ kino-plugin.json: …` | The manifest breaks a rule; the message is the one Kino gives. Ask the assistant to fix it following AGENTS.md. |
 | `[dropped by Kino] …` | Kino would drop those results. Ask which rule of [the contract](contract.md) they break, instead of accepting a blind patch. |
 | `[host_not_allowed] …` | A host missing from `hosts`: have it declared. |
+| `El campo "entry" debe ser una ruta relativa a un archivo .js` (Kino) or `Quita el "./" del campo "entry"` (kit) | `"entry"` (or `"icon"`) starts with `./`. Write `"plugin.js"`: Kino 0.9.45 and older refuse the `./` ([why](manifest.md#entry-dot-slash)). |
+| `La firma del autor no es válida…` | The plugin is [signed](signed.md) and `plugin.js` or `version` changed after signing: run `node sdk/seal.mjs --sign --repo owner/repo` again. |
 | `[timeout] …` | The source is slow or there are too many requests: have it make fewer requests per call. |
 | Works in the kit but fails in Kino | The Node kit is more permissive than the app ([what it does not reproduce](test-locally.md#differences)): missing globals, a `throw` before the first `await`, `kino.html.select`. Give the assistant the exact message Kino shows (or a photo of the screen). |
 | Kino says "Configura … en Ajustes ▸ Plugins" | The plugin needs data: tap the message's Configurar button, or go to Plugins → Instalados → your plugin → Configurar. |
