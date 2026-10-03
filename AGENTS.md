@@ -23,7 +23,13 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Publishing](https://kinotvapp.github.io/kino-plugins/en/publish/),
    [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/),
    [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/), and for live TV
-   [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/).
+   [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/). For apiVersion 6
+   features, the page of each one:
+   [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
+   [Signing every request](https://kinotvapp.github.io/kino-plugins/en/signed-streams/),
+   [Moving saved titles](https://kinotvapp.github.io/kino-plugins/en/migrate/),
+   [Section, categories and colors](https://kinotvapp.github.io/kino-plugins/en/section-theme/),
+   [Logs and telemetry](https://kinotvapp.github.io/kino-plugins/en/diagnostics/).
 3. The machine-readable contract: `contract.json` (every number and rule) and `kino.d.ts` (every
    shape and the whole `kino` API), at <https://kinotvapp.github.io/kino-plugins/reference/contract.json>
    and <https://kinotvapp.github.io/kino-plugins/reference/kino.d.ts>, and also in the template.
@@ -51,7 +57,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   live channels (`live` items at apiVersion 2, or the En vivo tab with `channels` at apiVersion 3).
 - **The lowest `apiVersion` that works**: `1` unless you need `download`, `drm`, `insecureHttp`,
   `"hosts": []`, or `live` items (`2`), `channels`/`liveStreamHosts` (`3`), or a `list` setting,
-  `"streamHosts": "any"` or sealed `secrets` (`4`), or an author `signature` (`5`, Kino 0.9.45+).
+  `"streamHosts": "any"` or sealed `secrets` (`4`), or an author `signature` (`5`, Kino 0.9.45+), or
+  anything in "apiVersion 6" in section 4 (`6`, **Kino 0.9.50+**; Kino 0.9.49 and older refuse the
+  whole plugin with "Este plugin necesita una versión más nueva de Kino"). `apiVersion` 6 = Kino
+  0.9.50: never declare 6 "just in case".
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -63,6 +72,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   change at one, which is refused); a live stream, DASH, SAMPLE-AES or any DRM never downloads. A
   download never asks about a host: a refused server ends it for good (the person plays the title
   once to approve a server playback would ask about, then downloads again).
+- **Optional apiVersion 6 extras to offer only when they fit**: a settings form with a status line and
+  action buttons (an account to link and a "Cerrar sesión"), a section of its own and Categorías
+  tiles, colors, `adult` marks for 18+ content, `telemetry` so its errors reach Kino's error tracker,
+  `migrate` when the plugin replaces an older one. Each has a cost (approval prompts, more code): ask.
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
 
@@ -89,7 +102,12 @@ exact message Kino shows, never a summary.
 3. **Implement one named `export async function` per declared capability** (`search`, `home`,
    `browse`, `episodes`, `resolve`; `liveCategories` + `liveChannels` (+ optional `guide`, and optional `liveSearch` for a
    catalog too big to list whole: `liveSearch({ query })` returns channels like a `liveChannels`
-   page, with the same `id`s; export it only if the source can really search) for `channels`). `download` and `drm` are declarative: nothing to export. Return plain JSON only.
+   page, with the same `id`s; export it only if the source can really search) for `channels`; `migrate`
+   for `migrate`). `download`, `drm` and `scopedSearch` are declarative: nothing to export. Other
+   exports are required by a manifest field, not a capability: `section` (by `"section"`),
+   `settingsStatus` (by a `status` setting), `action` (by an `action` setting), `sign` (by any stream
+   with `signing: "request"`); `categories` (needs `browse`) and `validateSettings` are optional.
+   Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
    than one file for its own sake, write it split (e.g. `src/plugin.js` importing from
@@ -111,7 +129,12 @@ exact message Kino shows, never a summary.
     For live channels: `node sdk/run.mjs . live categories`, `node sdk/run.mjs . live channels <categoryId>`,
     `node sdk/run.mjs . live guide <id,id>`, `node sdk/run.mjs . live search <query>` (for `liveSearch`), `node sdk/run.mjs live playlist <url|file> [--epg <url|file>]`,
     and `resolve <ref> --live` for a channel's ref. Settings: `--config key=value` (repeatable) or
-    `sdk/config.json` (never committed).
+    `sdk/config.json` (never committed). apiVersion 6: `node sdk/run.mjs . section [tab]`,
+    `. categories`, `. theme`, `. settingsStatus`, `. action <key>`, `. validateSettings '<json>'`,
+    `./plugin.js migrate '{"kind":"title","ref":"…"}'`, `--within '<ref>' ./plugin.js search "…"`,
+    `./plugin.js sign '{"url":…,"kind":"segment","ref":…,"context":…}'`,
+    `--retry conflict:1 ./plugin.js resolve '<ref>'`, and `node sdk/validate.mjs . --run liveSearch <q>`
+    for the 18+ marks. Lines marked `[dropped by Kino]` are what the app would drop.
 6. **Record fixtures and test offline**: `node sdk/run.mjs --record test/fixtures.json . search "algo"`,
    then `node --test test/plugin.test.mjs` (the scaffold's test: it validates the manifest and
    replays the fixtures offline). Name the file explicitly: a bare `node --test test/` does not work
@@ -138,9 +161,11 @@ exact message Kino shows, never a summary.
    updates from that same URL, and is never listed in "De la comunidad" (discovery only finds GitHub
    repositories with the topic). Recommend GitHub + topic unless the person has a reason not to.
 9. **Updates**: raise `version` every time (an equal or lower version never reaches anyone). Adding
-   hosts, `permissions`, `download`, `drm`, `channels`, `liveStreamHosts`, `streamHosts`, an
-   `insecureHttp` host, or `secrets` to a plugin that had none makes the update wait for the person's
-   approval.
+   hosts, `permissions`, `download`, `drm`, `channels`, `migrate`, `telemetry` (or `true` → `"verbose"`),
+   `liveStreamHosts`, `streamHosts`, an `insecureHttp` host, or `secrets` to a plugin that had none
+   makes the update wait for the person's approval. From Kino 0.9.50 updates are also checked at app
+   start (at most every 12 h), a badge counts the waiting ones, and a failed call of a plugin whose
+   update waits says "Hay una versión nueva de <name>: actualízala en Ajustes ▸ Plugins".
 
 ## 4. Hard rules (with the exact numbers)
 
@@ -199,7 +224,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; all fetches and sleeps count (not the time the person spends answering a host question) |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; all fetches and sleeps count (not the time the person spends answering a host question) |
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
@@ -208,16 +233,20 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.storage` | 256 KB; `ttlMs` 1..2,592,000,000 (30 days) |
 | `kino.sleep` | 0..5,000 ms |
 | `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024 |
-| Log message | 2,000 characters; for a recommended-catalog plugin, a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
+| Log message | 2,000 characters; for a recommended-catalog plugin or one with `"telemetry"` (apiVersion 6, person's switch on), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
 | Live (apiVersion 3) | 200 categories; 500 channels/page, 10 pages at first then 5 more per scroll, up to 10,000 channels (200 pages)/category; `liveSearch` keeps 100 channels, asked from 2 characters; `guide` 50 channels, 24 h, 100 entries/channel; `number` 1..9999 |
-| Settings | 12; `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields |
-| `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes |
+| Settings | 12 with a value, plus 16 `section`/`status`/`action` (apiVersion 6); `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields; `status` text 200, action `message` 300, `confirm` 120, `clearSettings` 12 keys |
+| `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes (1..8,192 at apiVersion 6); typed cipher keys 16/24/32 bytes (apiVersion 6) |
+| Stream (apiVersion 6) | `alternatives` 8 (any apiVersion); `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
+| Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
+| Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
 
 **Data rules that silently drop things**: an item `id` outside `^[A-Za-z0-9._~-]{1,128}$` (derive a
-slug); a repeated `id`; `adult: true`; a `series` without the `episodes` capability; a `live` item at
-apiVersion 1; an episode `number` 0; images that are not `http`/`https` or point at a local
+slug); a repeated `id`; `adult: true` below apiVersion 6 (from 6 it is kept behind the person's 18+
+code); a `series` without the `episodes` capability; a `live` item at apiVersion 1, or in a `home` row
+below apiVersion 6; an episode `number` 0; images that are not `http`/`https` or point at a local
 address; in `search`, a `live` item whose name shares too few words with the query (so never
 answer a search with your whole channel list). `id` must be stable across calls (library
 and progress hang off it); `ref` may change but must keep working later (put a stable id in it and
@@ -229,11 +258,25 @@ sentence, your detail (cut at 200 characters) goes to the log.
 
 | Code | The person sees |
 | --- | --- |
-| `auth_required` | "Configura {plugin} en Ajustes ▸ Plugins", with a button to Configurar |
+| `auth_required` | "Configura {plugin} en Ajustes ▸ Plugins" (from Kino 0.9.50 "… Ajustes ▸ {plugin}" when it has settings: its own tab), with a button to Configurar |
 | `not_found` | "No se encontró en {plugin}" |
 | `geo_blocked` | "Este contenido no está disponible en tu región" |
 | `rate_limited` | "{plugin} está limitando las peticiones; intenta en unos minutos" |
 | `unavailable` | "{plugin} no está disponible ahora" |
+
+**`userMessage` (apiVersion 6)**: `throw kino.error("not_found", "E100006", { userMessage: "Este capítulo
+ya no está disponible." })` shows "Mensaje de <plugin name>: <sentence>" **instead of** Kino's line,
+only for the five codes above and only if the sentence passes every safety rule; otherwise Kino's line
+shows and the sentence is dropped silently. The rules, in short: 1 to 160 characters of Spanish/Latin-1
+letters, digits and plain punctuation (no emoji, `@`, other scripts or invisible characters); at least
+two words; no URL, domain, `www` or "punto com"; fewer than 6 digits in all, no digit glued to a
+letter; never spells "Kino"; never asks for money, credentials, codes or contact (`pag…`, `recarg…`,
+`transfer…`, `contraseñ…`, `clave…`, `token…`, `tarjeta`, `PIN`, Nequi, Daviplata, WhatsApp, Telegram,
+SMS/verification codes); never contains a password the person typed or a sealed value. The plugin
+name itself must be plain (no `:`, no digit glued to a letter). **A plugin that uses `userMessage` to
+ask for money, credentials or contact outside Kino is removed from the catalog.** Build it where you
+throw, write it in Spanish, and never echo what the person typed. Full rules:
+[Your own sentence](https://kinotvapp.github.io/kino-plugins/en/contract/#user-message).
 
 `kino.fetch` does not throw on non-2xx (check `r.ok`); it throws with `e.code` one of
 `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request`. `kino.crypto` errors carry
@@ -285,6 +328,82 @@ Kino checks it at install and at every update (never at runtime), pins the key a
 4. If it says "La firma del autor no es válida…", the code, `id`, `version` or repo changed after
    signing: sign again. If a person reports "firmada con otra clave de autor", the key changed.
 
+**apiVersion 6 (Kino 0.9.50+): every widening, when to use it, its limits.** Declare `"apiVersion": 6`
+only when you use one of these.
+
+- **Typed / larger sealed secrets.** Values up to 8,192 bytes; a key for `kino.crypto` can be sealed as
+  `{ "seal": "kino-sealed:v1:…", "use": "cipher-key", "encoding": "hex"|"base64" }`
+  (`seal.mjs --use cipher-key --encoding hex`), 16/24/32 bytes, usable as the whole key of any cipher
+  (DES-EDE3 too) and **nothing else**: never HMAC/PBKDF2 input, never in `kino.fetch`. Use it when a
+  site's own player ships a fixed cipher key.
+- **`migrate`** (capability + export, needs approval): Kino asks it about saved library titles,
+  chapters and live favorites it can no longer open; answer what `search()` would return today, or
+  `null`. 10 s each; avoid fetching; never return a `plg1:` ref. Use it only when the plugin replaces
+  an older source or changes its ref format.
+- **Request-signed streams** (`signing: "request"` + export `sign`): only for an HLS origin that wants a
+  fresh signature on every playlist/segment request. `sign()` runs in a separate **signing lane**: only
+  `kino.crypto`, `kino.secret`, `kino.config`, `kino.html`, `kino.log`; no network, no storage, no
+  cookies, no sleep, no memory shared with the main runtime; 1.5 s per call; three failures stop the
+  video. Everything it needs travels in `signContext` (a string ≤ 4,096 chars, never a `kino.secret`
+  marker: call `kino.secret()` inside `sign`). No `drm`, no `audioTracks`, not downloadable, not for an
+  inline channel stream. `resolve(ref, { retry: { reason: "conflict"|"expired", attempt, status } })`
+  is called again on 409 or repeated 401/403 (3 tries). `alternateHosts` (≤ 6, same host rules as `url`)
+  are other hosts serving the same stream. Casting works through the phone, which must stay on the
+  same Wi-Fi. [Signing every request](https://kinotvapp.github.io/kino-plugins/en/signed-streams/).
+- **Settings form**: `section` (heading), `status` (needs export `settingsStatus()` → `{ key: text }`,
+  10 s) and `action` (needs export `action(key)` → `{ message?, refresh?, clearSettings? }`, 30 s,
+  optional `confirm`) hold no value; at most 16 on top of the 12 valued settings. `clearSettings`
+  empties up to 12 of the plugin's own optional valued settings (never `required` ones); use it for
+  "Cerrar sesión". Optional `validateSettings(values)` (20 s) returns `null` to accept, a text, or
+  `{ key: "message" }` to refuse. Every plugin with settings gets its own Ajustes tab; settings sync
+  between paired devices and arrive **without** `validateSettings`, so key any `kino.storage` session
+  by account and never store a device identity in a setting.
+- **`debug: true`**: on-screen error panels and a "Registro" page (last 200 events); logcat tag
+  `KinoPlugin/<id>` (and `KinoPlay` for playback metrics). Development only: **remove before
+  publishing** (`validate.mjs` warns).
+- **`telemetry: true | "verbose"`**: asks the person (consent line, and an update that adds it waits
+  for approval) to share the failed call's scrubbed `kino.log` lines with Kino's error tracker; the
+  person can switch it off per device. `"verbose"` adds playback metrics of a sample of good plays and
+  edge cases (60 events per run). `kino.log.report("myplugin:area", "code", "count=2")` flags a
+  degraded-but-working result (area: lowercase namespaced word with `_` or `:`, ≤ 24 chars; 1/hour per
+  area, 3 per run). Log codes and counts, never values from a response, never what the person typed.
+  [Logs and telemetry](https://kinotvapp.github.io/kino-plugins/en/diagnostics/).
+- **`section`** (`"section": { "label": "…" }` ≤ 20 chars + export `section({ tab })` →
+  `{ tabs?, tab, hero?, rows }`, 20 s): a section of its own (TV sidebar, max 3 plugins; phone chip strip,
+  max 8). **`categories()`** (needs `browse`, 20 s): up to 24 tiles in Categorías, each opening
+  `browse(ref, null)`. **`theme`**: up to five `#RRGGBB` colors (`accent`, `onAccent`, `background`,
+  `surface`, `highlight`); dark backgrounds only, contrast 3:1 / 4.5:1, nothing close to Kino's red
+  `#E50914`; a failing color falls back to Kino's (accent+onAccent as a pair); errors are always Kino's
+  red. Preview with `node sdk/run.mjs . theme`.
+- **`scopedSearch`** (capability, needs `search`): your `search` gets `query.within` (the browse `ref`
+  of a "Ver más" page) and answers inside that category; `null` means "let Kino filter". Kino gives up
+  on you after 6 s. Without it Kino filters the loaded titles itself.
+- **`adult: true`** on items, Categorías tiles, live categories and channels: kept and shown only while
+  the person's 18+ code is unlocked (Ajustes ▸ Adultos). Below apiVersion 6 they are dropped. With an
+  18+ live category, mark **every** `liveSearch` hit with `adult` or its `categoryId` (unmarked hits
+  count as 18+). Never try to detect or bypass the lock: always send the mark.
+- **Live channels in Home rows**: `kind: "live"` items now stay in `home` rows (a country's channels,
+  for example); below 6 they are dropped from Home.
+- **`kino.crypto` key pairs**: `generateKeyPair` (`ec` P-256/P-384, `ed25519`, `x25519`), `sign`,
+  `verify`, `importKey`, `deriveSharedSecret`; private keys are handles that live only in the sandbox
+  that made them (not in `sign()`'s lane), at most 64. For a player that proves itself by signing a
+  challenge. Map Node/WebCrypto calls with the table in
+  [The kino API](https://kinotvapp.github.io/kino-plugins/en/kino-api/#key-pairs).
+- **Any apiVersion**: `Stream.alternatives` (≤ 8 `{ url, mime?, headers? }`, other copies of the same
+  video, best first; Kino switches when one cannot decode or is gone; ignored with `drm`, `signing` and
+  for live).
+
+What Kino 0.9.50 does for every plugin, with no field: plays a plugin title on the paired TV through
+the TV's own copy of the plugin (keep `id` and refs identical across devices), checks followed series
+for new chapters through `episodes(ref)` (keep series refs stable), saves "Para ti" picks by `ref`,
+and treats a **signed** plugin installed from two repos with the same `id` and author key as one
+plugin across devices.
+
+**Community takedowns**: a community plugin can be removed from Kino's index on a claim
+(`community-blocklist.json` in `kinotvapp/kino-plugins`); installed copies keep working but stop
+updating. Do not build anything that infringes rights or harms people. See
+[Claims and plugin takedowns](https://kinotvapp.github.io/kino-plugins/en/claims/).
+
 **Sending to the TV** needs nothing from the plugin; it casts best with a correct `mime` and no
 `headers` (see [What people see](https://kinotvapp.github.io/kino-plugins/en/what-people-see/#cast)).
 
@@ -302,7 +421,12 @@ Kino checks it at install and at every update (never at runtime), pins the key a
       exported that the manifest does not declare is ever called.
 - [ ] `id`s are stable and match the pattern; `ref`s keep working when replayed later.
 - [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
-- [ ] `version` raised; `apiVersion` is the lowest that works.
+- [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
+      it needs Kino 0.9.50+).
+- [ ] No `"debug": true` left in the manifest. If `telemetry` is declared, the person agreed and
+      the logs hold codes and counts only.
+- [ ] Every `userMessage` passes the rules (Spanish, ≤ 160, no URL/digits/money/credentials/contact)
+      and `run.mjs` shows it; 18+ content carries `adult: true`.
 - [ ] `"entry"` and `"icon"` have **no leading `./`** (`"plugin.js"`).
 - [ ] If signed: `"apiVersion": 5`, `signature` present, `node sdk/validate.mjs . --repo owner/repo`
       verified it after the last edit, `*.pem` in `.gitignore`, no `.pem` tracked, the person knows to
@@ -327,10 +451,10 @@ Every rule, as the app applies it (full detail:
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (5 today; a signed plugin needs Kino 0.9.45+), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (6 from Kino 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
-   `own-server`), never `xuper`, never the template's `archive-org`; the same id installed from
+   `own-server`), never the template's `archive-org`; the same id installed from
    another repo hides it on that device.
 5. Stars: the app makes one unauthenticated request,
    `https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=50`,
@@ -341,10 +465,12 @@ Every rule, as the app applies it (full detail:
    `X-RateLimit-Reset` / 15 min (1 min to 24 h). GitHub indexes new topics on its own schedule;
    raw files are cached about 5 minutes.
 7. If GitHub cannot answer, a backup list published by the Kino team is used; it is rebuilt from the
-   same search, so nothing needs requesting.
+   same search, so nothing needs requesting. A repository in `community-blocklist.json` (a claim was
+   upheld) never shows, in either list.
 8. Nothing installs by itself: the person always sees the consent sheet ("Plugin no verificado…").
 9. Where to look in the app: Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), tab
-   "Recomendados", section "De la comunidad" with its "Actualizar" button; also the first-run "Elige
+   "Recomendados" (only Internet Archive and Tu servidor), section "De la comunidad" ("Plugins de la
+   comunidad — Kino no los revisa ni responde por su contenido.") with its "Actualizar" button; also the first-run "Elige
    tus fuentes". On the web: <https://github.com/topics/kino-plugin>.
 
 To debug "it does not appear": open the search URL in a browser and find the repo in `items`; open
@@ -367,7 +493,15 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - Writing `"entry": "./plugin.js"` (or `"icon": "./icon.png"`): refused by Kino 0.9.45 and older.
 - Signing, then editing `plugin.js` or `version` without signing again; committing the `.pem`; making
   a new key for an already published plugin (everyone must reinstall).
-- Declaring `apiVersion` 2 or 3 without needing it (older Kino builds cannot install it).
+- Declaring `apiVersion` 2 or 3 without needing it (older Kino builds cannot install it); declaring
+  6 for nothing (Kino 0.9.49 and older refuse it).
+- Publishing with `"debug": true`.
+- Calling `kino.fetch`, `kino.storage` or a private-key handle from `sign()`, or putting a
+  `kino.secret()` marker in `signContext`.
+- A `userMessage` with a URL, a phone number, "WhatsApp", "paga"/"recarga" or the person's own input:
+  dropped silently at best, the plugin removed at worst.
+- A `status` or `action` setting without exporting `settingsStatus` / `action`; `"section"` without
+  exporting `section` (install fails).
 - `kino.html.select` "failing" under Node: it only exists in the app; test that part in Kino.
 - Forking the template: forks never appear in "De la comunidad".
 - Keeping the template's `"id": "archive-org"`: install refused ("Ya hay un plugin con ese id") and

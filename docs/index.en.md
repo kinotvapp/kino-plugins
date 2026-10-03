@@ -123,6 +123,11 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
+| [The settings form](settings-form.md) | `section`, `status` and `action` settings, `clearSettings`, `validateSettings`, the own tab and syncing (apiVersion 6) |
+| [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |
+| [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |
+| [Section, categories and colors](section-theme.md) | `section`, `categories` and `theme` (apiVersion 6) |
+| [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |
 | [Get listed in Kino](listed.md) | The five steps to show in "De la comunidad", how long it takes and how to check it |
@@ -131,4 +136,5 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |
 | [Nuvio scrapers](nuvio.md) | How people install Nuvio scrapers, what the conversion builds, and its limits |
 | [Example plugins](examples.md) | The two published examples, and how the reference plugin is built |
+| [Claims and plugin takedowns](claims.md) | How to ask for a community plugin to leave the index, what Kino does and how to appeal |
 | [Reference](reference/index.md) | `contract.json` and `kino.d.ts`, to read or download |

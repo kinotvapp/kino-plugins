@@ -2,8 +2,8 @@
 
 Hay dos formas de darle televisión en vivo a Kino, y un plugin puede usar las dos:
 
-- **Ítems `live`** (apiVersion 2): canales mezclados en tus propias filas de Inicio, páginas de "Ver
-  más" y resultados de búsqueda, al lado de tus películas y series.
+- **Ítems `live`** (apiVersion 2): canales mezclados en tus páginas de "Ver más" y resultados de
+  búsqueda, al lado de tus películas y series, y desde apiVersion 6 también en tus filas de Inicio.
 - **La capacidad `channels`** (apiVersion 3): tus canales en la pestaña En vivo de Kino, la guía de
   TV, el cajón de canales y la fila "Canales en vivo" de Inicio, dados uno por uno o como una lista
   M3U con una guía XMLTV que Kino descarga y analiza por su cuenta.
@@ -12,9 +12,9 @@ Cómo probarlos con el kit de Node está en [Probar en local](test-locally.md#li
 
 ## Canales en vivo (apiVersion 2) { #live-items }
 
-Con `"apiVersion": 2` un ítem puede ser un canal en vivo: `kind: "live"`, en cualquier fila de
-`home`, página de `browse` o resultado de `search`, al lado de tus películas y series. No hay nada
-que declarar además de la versión.
+Con `"apiVersion": 2` un ítem puede ser un canal en vivo: `kind: "live"`, en una página de `browse` o
+un resultado de `search`, al lado de tus películas y series. No hay nada que declarar además de la
+versión. En una fila de `home` un canal se queda solo desde `"apiVersion": 6` ([abajo](#home-rows)).
 
 ```js
 export async function home() {
@@ -71,6 +71,15 @@ Límites: un ítem `live` de un plugin con `"apiVersion": 1` se descarta en sile
 uno. Un canal cuenta para los mismos tamaños de fila y de página que cualquier ítem. Estos canales
 aparecen en tus filas, con el nombre de tu plugin; para poner canales en la pestaña En vivo de Kino y
 en su fila "Canales en vivo", usa la capacidad `channels` de apiVersion 3 ([abajo](#en-vivo-tab)).
+
+### Canales en tus filas de Inicio (apiVersion 6) { #home-rows }
+
+Desde `"apiVersion": 6` (Kino 0.9.50) un ítem `kind: "live"` se queda en una fila de `home`: se ve como
+una tarjeta de canal con la insignia "En vivo" y se abre como un canal de En vivo. Una fila de canales
+en Inicio (por ejemplo, los canales de un país) es solo una fila de `home` cuyos ítems son
+`kind: "live"`. Por debajo de 6, Kino quita los canales del Inicio. Un canal `adult: true` sigue el mismo
+[candado +18](contract.md#adult) que cualquier entrada +18, y una fila que se queda sin nada que mostrar
+no se muestra.
 
 ## Canales en la pestaña En vivo (apiVersion 3) { #en-vivo-tab }
 
@@ -163,7 +172,8 @@ Un plugin puede dar sus canales de tres formas, y mezclarlas:
 2. **Un canal con `stream` en línea.** Un `Stream` revisado con las mismas reglas que la respuesta de
    `resolve()` ([Las reglas del `Stream`](contract.md#stream)); se reproduce sin llamar a tu plugin. Un
    canal cuyo `stream` se rechaza se descarta. Con `ref` y `stream` a la vez, se reproduce el stream y
-   el `ref` es solo el respaldo. Un canal sin ninguno de los dos se descarta. Algunos canales solo
+   el `ref` es solo el respaldo (pero un stream en línea [firmado por petición](signed-streams.md) se
+   deja de lado, y se reproduce el `ref`). Un canal sin ninguno de los dos se descarta. Algunos canales solo
    responden a un reproductor conocido: dale al `Stream` unos `headers` con el `User-Agent` (o el `Referer`)
    que exige, y el reproductor lo envía en cada petición de ese canal.
 3. **Una lista.** Pon entradas `{ playlist: { ... } }` junto a tus categorías en la respuesta de
@@ -205,8 +215,9 @@ Las reglas:
   `title` es obligatorio.
 - `country` es un código ISO 3166 de dos letras (`"CO"`), informativo; cualquier otra cosa se ignora.
   `number` va de 1 a 9999 (cualquier otra cosa cuenta como sin número); `logo` sigue las reglas de los
-  pósters; `categoryId` es opcional e informativo (un canal se lista bajo la categoría por la que se
-  le preguntó a `liveChannels`); uno que no es un id válido queda vacío.
+  pósters; `categoryId` es opcional e informativo en `liveChannels` (un canal se lista bajo la categoría
+  por la que se le preguntó a `liveChannels`); uno que no es un id válido queda vacío. En un resultado de
+  `liveSearch` es como Kino sabe si el resultado es +18 ([abajo](#live-search-adult)).
 - Kino pagina `liveChannels` hasta que `next` falta, se repite o no trae nada nuevo. El primer
   listado de una categoría pide máximo 10 páginas; si la última todavía trae `next`, Kino lo guarda y
   pide 5 páginas más cada vez que la persona se acerca al final de la lista desplazándose, hasta
@@ -225,13 +236,32 @@ Las reglas:
   `liveSearch`, solo se miran esas primeras páginas, nunca las siguientes. Su límite de tiempo es
   15 s y corre como una llamada de fondo: una búsqueda lenta nunca marca el plugin "No responde".
   Exporta `liveSearch` solo si de verdad puedes buscar: una respuesta vacía se toma como "no hay
-  nada", y Kino sigue diciendo que algunos canales no se cargaron.
+  nada", y Kino sigue diciendo que algunos canales no se cargaron. Un precalentamiento del canal
+  siguiente (Kino resolviendo por adelantado un vecino mientras uno se reproduce) nunca pide
+  `liveSearch`: solo mira tus listados, y el zapping mismo pregunta cuando hace falta.
+- <span id="live-search-adult"></span>**Marca cada resultado de `liveSearch`** (apiVersion 6, cuando
+  tienes una categoría +18): un resultado no nombra ningún listado, así que dale `adult: true`/
+  `adult: false`, o el `categoryId` de la categoría a la que pertenece. Un resultado con `adult: true` o
+  con el `categoryId` de una categoría +18 es +18; uno con el `categoryId` de una categoría normal, o con
+  `adult: false`, es normal. Un resultado sin ninguna de las dos cuenta como +18 en un plugin que tiene
+  alguna categoría +18, y, cuando tus categorías no se pueden leer (falló `liveCategories`), todo
+  resultado que no diga `adult: false` cuenta como +18. Mientras el código +18 está bloqueado, Kino deja
+  esos resultados por fuera de la búsqueda, no los abre y no los pone en "Recientes".
+  `node sdk/run.mjs <carpeta> live search <consulta>` y `sdk/validate.mjs --run liveSearch` marcan los
+  resultados igual y avisan de los que no traen ninguna marca.
 - Kino guarda tus categorías y canales 1 hora y tu guía 30 minutos.
 - `guide` es opcional. Kino conserva las entradas de los canales por los que preguntó, con `end`
   después de `start`, dentro de la ventana, máximo 100 por canal y una por hora de inicio. Una `guide`
   que falla o no está exportada simplemente no se vuelve a pedir durante 30 minutos: tus canales se
   siguen listando.
-- Una categoría o un canal con `adult: true` se descarta.
+- `adult: true` en una categoría o un canal: desde apiVersion 6 marca una entrada +18, que Kino muestra
+  solo mientras el código +18 de la persona está desbloqueado en ese aparato (Ajustes ▸ Adultos) y
+  vuelve a esconder cuando lo bloquea; por debajo de apiVersion 6 se descarta. Todo canal de una
+  categoría +18 cuenta como +18, y un canal +18 nunca entra a "Recientes". Mira
+  [Contenido +18](contract.md#adult).
+- Mientras se reproduce un canal, Kino puede resolver por adelantado el canal vecino para que el zapping
+  sea rápido (se cancela al salir). Eso es una llamada más a tu `resolve`: no la cuentes como una
+  reproducción.
 
 Un `liveSearch` para una API que sabe buscar sus canales por nombre:
 

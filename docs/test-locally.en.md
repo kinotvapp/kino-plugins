@@ -88,7 +88,7 @@ node sdk/run.mjs . live categories
 node sdk/run.mjs . live channels noticias
 node sdk/run.mjs . live channels noticias 2
 node sdk/run.mjs . live guide canal1,canal2
-node sdk/run.mjs . live search caracol
+node sdk/run.mjs . live search noticias
 node sdk/run.mjs live playlist https://iptv-org.github.io/iptv/countries/co.m3u
 node sdk/run.mjs live playlist ./lista.m3u --epg ./guia.xml.gz
 ```
@@ -118,6 +118,30 @@ node sdk/run.mjs live playlist ./lista.m3u --epg ./guia.xml.gz
 The kit reads lists and guides with `sdk/live-playlist.mjs`, a copy of the app's readers pinned to
 the same test files (`docs/plugins/fixtures/live` in Kino's repository): what it keeps is what Kino
 keeps.
+
+## What's new in apiVersion 6 { #api6 }
+
+```
+node sdk/run.mjs . section [tab]                  # needs "section" in the manifest
+node sdk/run.mjs . categories                     # needs the browse capability
+node sdk/run.mjs . theme                          # your colors, their contrast ratios and fallbacks
+node sdk/run.mjs . settingsStatus
+node sdk/run.mjs . action logout
+node sdk/run.mjs . validateSettings '{"email":"ana@x.co"}'
+node sdk/run.mjs --within '<ref>' ./plugin.js search "texto"   # scopedSearch
+node sdk/run.mjs ./plugin.js sign '{"url":"https://cdn.example/seg.ts","kind":"segment","ref":"<ref>","context":"<signContext>"}'
+node sdk/run.mjs --retry conflict:1 ./plugin.js resolve '<ref>'  # or conflict:1:409
+node sdk/validate.mjs . --run liveSearch noticias  # 18+ marks on liveSearch hits
+node sdk/run.mjs ./plugin.js migrate '{"kind":"title","ref":"<old ref>"}'
+```
+
+`run.mjs` shows what Kino would drop as `[dropped by Kino]` (`clearSettings`, `alternateHosts`), prints
+what the person would read for a [`userMessage`](contract.md#user-message) (or why it would not be
+shown), and `validate.mjs` warns about `debug` before publishing, about a `scopedSearch` that never reads
+`within` and about a plugin that uses `kino.crypto`'s key pairs without `"apiVersion": 6`. The pages:
+[The settings form](settings-form.md), [Signing every request](signed-streams.md),
+[Moving saved titles](migrate.md), [Section, categories and colors](section-theme.md),
+[Logs and telemetry](diagnostics.md).
 
 ## What the Node kit does not reproduce { #differences }
 

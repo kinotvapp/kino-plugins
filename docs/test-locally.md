@@ -91,7 +91,7 @@ node sdk/run.mjs . live categories
 node sdk/run.mjs . live channels noticias
 node sdk/run.mjs . live channels noticias 2
 node sdk/run.mjs . live guide canal1,canal2
-node sdk/run.mjs . live search caracol
+node sdk/run.mjs . live search noticias
 node sdk/run.mjs live playlist https://iptv-org.github.io/iptv/countries/co.m3u
 node sdk/run.mjs live playlist ./lista.m3u --epg ./guia.xml.gz
 ```
@@ -123,6 +123,30 @@ node sdk/run.mjs live playlist ./lista.m3u --epg ./guia.xml.gz
 El kit lee listas y guías con `sdk/live-playlist.mjs`, una copia de los lectores de la app amarrada a
 los mismos archivos de prueba (`docs/plugins/fixtures/live` en el repositorio de Kino): lo que
 conserva es lo que conserva Kino.
+
+## Lo nuevo de apiVersion 6 { #api6 }
+
+```
+node sdk/run.mjs . section [tab]                  # necesita "section" en el manifiesto
+node sdk/run.mjs . categories                     # necesita la capacidad browse
+node sdk/run.mjs . theme                          # tus colores, sus contrastes y sus respaldos
+node sdk/run.mjs . settingsStatus
+node sdk/run.mjs . action logout
+node sdk/run.mjs . validateSettings '{"email":"ana@x.co"}'
+node sdk/run.mjs --within '<ref>' ./plugin.js search "texto"   # scopedSearch
+node sdk/run.mjs ./plugin.js sign '{"url":"https://cdn.example/seg.ts","kind":"segment","ref":"<ref>","context":"<signContext>"}'
+node sdk/run.mjs --retry conflict:1 ./plugin.js resolve '<ref>'  # o conflict:1:409
+node sdk/validate.mjs . --run liveSearch noticias  # marca +18 de los resultados de liveSearch
+node sdk/run.mjs ./plugin.js migrate '{"kind":"title","ref":"<ref viejo>"}'
+```
+
+`run.mjs` muestra como `[dropped by Kino]` lo que Kino descartaría (`clearSettings`, `alternateHosts`),
+imprime lo que leería la persona con un [`userMessage`](contract.md#user-message) (o por qué no se
+mostraría), y `validate.mjs` avisa de `debug` antes de publicar, de un `scopedSearch` que nunca lee
+`within` y de un plugin que usa los pares de llaves de `kino.crypto` sin `"apiVersion": 6`. Las páginas:
+[Formulario de ajustes](settings-form.md), [Firma por petición](signed-streams.md),
+[Pasar lo guardado](migrate.md), [Sección, categorías y colores](section-theme.md),
+[Registro y telemetría](diagnostics.md).
 
 ## Lo que el kit de Node no reproduce { #differences }
 

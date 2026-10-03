@@ -94,7 +94,13 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   refused ones too) and at most 6 at once; 5 MB bodies; 256 KB of
   kino.storage; 100 search results; Home with 20 rows of 60.
 - Errors for the person: kino.error("auth_required" | "not_found" | "geo_blocked" |
-  "rate_limited" | "unavailable").
+  "rate_limited" | "unavailable"). With apiVersion 6 you may add a sentence of your own,
+  kino.error(code, detail, { userMessage: "…" }): in Spanish, at most 160 characters, no URL or
+  domain, no long numbers, never asking for money, passwords, codes or contact outside Kino, and never
+  echoing what the person typed (Kino shows it as "Mensaje de <plugin>: …" only if it passes all its
+  rules; a plugin that uses it to ask for money or data is removed).
+- 18+ content: mark it with adult: true (apiVersion 6; Kino shows it only with the 18+ code
+  unlocked). Never try to get around that lock.
 - Everything the person reads is in Spanish from Bogotá with tuteo, never voseo.
 - Nothing secret in the code or the repository. Each person's username and password go in a
   "password" setting. An API key of mine is sealed: "secrets" in the manifest, sealed with
@@ -112,7 +118,12 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "version" and again after every later change, never commit the .pem. Never print the key's
   contents in the chat.
 - apiVersion: the lowest that works (3 for channels, 4 only for secrets, "streamHosts": "any" or a
-  "list" setting, 5 only for a signed plugin). A new id of my own (never "archive-org").
+  "list" setting, 5 only for a signed plugin, 6 only if you use an apiVersion 6 feature: status lines
+  and buttons in the settings, a section of its own, colors, telemetry, migrate, request signing,
+  userMessage, adult, channels in Home rows; 6 needs Kino 0.9.50 or newer). A new id of my own (never
+  "archive-org").
+- "debug": true only while testing; remove it before publishing. "telemetry" only if I agree that the
+  plugin's errors reach Kino; log steps and counts, never what the person types.
 
 Work step by step: first explore the source with real requests, then the manifest, then each
 function. After each step run `node sdk/validate.mjs .` and `node sdk/run.mjs . <function> …` and
@@ -121,7 +132,7 @@ fix everything Kino would drop. Record fixtures with --record and make
 you hand the plugin over run this self-check and tell me the result of each line:
 - `node sdk/validate.mjs .` exits 0 with no problems;
 - kino-plugin.json: "entry" and "icon" have no leading "./"; "version" raised; apiVersion is the
-  lowest that works;
+  lowest that works; no "debug": true left;
 - if signing: "signature" is in kino-plugin.json, `validate.mjs` verified it AFTER the last edit, and
   no .pem is tracked (`.gitignore` has *.pem);
 - every host (video, subtitles, segments, redirects) is in "hosts" or covered by an "any" field;

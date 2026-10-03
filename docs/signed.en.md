@@ -2,7 +2,7 @@
 
 A **signed plugin** carries your signature: a mark that only you can make, because it comes from a
 private key that only you have. Kino checks that mark before it installs your plugin and on every
-update. Signing is **optional**, it needs **Kino 0.9.45 or newer** and **`"apiVersion": 5`**, and
+update. Signing is **optional**, it needs **Kino 0.9.45 or newer** and **`"apiVersion": 5` or higher** (6 works too, Kino 0.9.50), and
 it changes nothing for plugins that don't use it.
 
 !!! info "In one sentence"
@@ -114,6 +114,27 @@ The branch or tag is *not* part of it: a signed plugin installs from any branch 
 Kino checks the signature **when installing and updating**, never while the plugin runs, so it
 costs nothing at runtime. Kino 0.9.44 and older refuse an `apiVersion` 5 manifest ("Este plugin
 necesita una versión más nueva de Kino"). Below apiVersion 5 a `signature` field is ignored.
+
+### The same plugin at two addresses { #two-addresses }
+
+A plugin is normally known by the exact address it was installed from: the same `id` from another repo
+is another plugin (a second install of that `id` is refused with "Ya hay un plugin con ese id"). A
+signed plugin is the exception (Kino 0.9.50): when the person has your plugin from one repo on their
+phone and from another repo on their TV, both installs are **the same plugin** when they have the same
+`id` and both pinned the **same author key**. Then switching it on or off, the approved hosts, the
+settings and passwords (still sealed end to end, per setting), and an uninstall sync between those
+devices both ways, exactly as for one address. Each device keeps the address it installed from and
+keeps updating from it; nothing is moved.
+
+- An unsigned install on either side, or another key, keeps the exact-address rule: never merged, and
+  neither ever receives the other's settings or passwords.
+- Your manifest's own sealed `secrets` are bound to each repo and never travel between devices, so sign
+  and seal each repo's manifest for that repo.
+- If you publish the same plugin at two addresses (a move, a mirror), sign both with the same key.
+- In the recommended list, an entry that names your key (`"signed": true, "authorKey": "<64 hex>"`)
+  shows "Instalado" for someone who already has your plugin from your other repo; any other plugin with
+  that `id` installed here makes the entry say "Ya tienes otro plugin con ese id" ("No disponible",
+  nothing to install).
 
 ## Keeping your private key safe { #key }
 

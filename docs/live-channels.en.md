@@ -2,8 +2,8 @@
 
 There are two ways to give Kino live TV, and a plugin can do both:
 
-- **`live` items** (apiVersion 2): channels mixed into your own Home rows, "Ver más" pages and search
-  results, next to your movies and series.
+- **`live` items** (apiVersion 2): channels mixed into your "Ver más" pages and search results, next
+  to your movies and series, and from apiVersion 6 into your Home rows too.
 - **The `channels` capability** (apiVersion 3): your channels in Kino's own En vivo tab, TV guide,
   channel drawer and Home "Canales en vivo" row, given one by one or as an M3U playlist with an
   XMLTV guide that Kino downloads and parses itself.
@@ -12,8 +12,9 @@ Testing them with the Node kit is on [Test it locally](test-locally.md#live).
 
 ## Live channels (apiVersion 2) { #live-items }
 
-With `"apiVersion": 2` an item may be a live channel: `kind: "live"`, in any `home` row, `browse`
-page or `search` result, next to your movies and series. Nothing to declare beyond the version.
+With `"apiVersion": 2` an item may be a live channel: `kind: "live"`, in a `browse` page or `search`
+result, next to your movies and series. Nothing to declare beyond the version. In a `home` row a
+channel stays only from `"apiVersion": 6` ([below](#home-rows)).
 
 ```js
 export async function home() {
@@ -65,6 +66,14 @@ item (and a row left with no items disappears), so declare `2` before you return
 still counts against the same row and page sizes as any item. These channels appear in your rows,
 with your plugin's name; to put channels in Kino's En vivo tab and its "Canales en vivo" row, use
 the apiVersion 3 `channels` capability ([below](#en-vivo-tab)).
+
+### Channels in your Home rows (apiVersion 6) { #home-rows }
+
+From `"apiVersion": 6` (Kino 0.9.50) a `kind: "live"` item stays in a `home` row: it shows as a channel
+card with the "En vivo" badge and opens like a channel from En vivo. A row of channels on Home (say, a
+country's channels) is just a `home` row whose items are `kind: "live"`. Below 6 Kino drops channels
+from Home. An `adult: true` channel follows the same [18+ lock](contract.md#adult) as any 18+ entry, and
+a row left with nothing to show is not shown.
 
 ## Channels in the En vivo tab (apiVersion 3) { #en-vivo-tab }
 
@@ -151,7 +160,8 @@ A plugin can give its channels in three ways, and mix them:
    like a `live` item's, and its Stream plays as live.
 2. **A channel with an inline `stream`.** A `Stream` checked by the same rules as `resolve()`'s
    answer ([The `Stream` rules](contract.md#stream)); it plays with no call to your plugin. A channel whose `stream` is refused is dropped. With
-   both `ref` and `stream`, the stream plays and the `ref` is only the fallback. A channel with
+   both `ref` and `stream`, the stream plays and the `ref` is only the fallback (but a
+   [request-signed](signed-streams.md) inline stream is set aside, and the `ref` plays). A channel with
    neither is dropped. Some channels only answer a known player: give the `Stream` a `headers` with
    the `User-Agent` (or `Referer`) it insists on, and the player sends it with every request for that channel.
 3. **A playlist.** Put `{ playlist: { ... } }` entries next to your categories in the
@@ -189,8 +199,9 @@ The rules:
   entries and dropped. A repeated `id` in one answer is dropped. `title` is required.
 - `country` is an ISO 3166 two-letter code (`"CO"`), informational; anything else is ignored.
   `number` is 1 to 9999 (anything else counts as no number); `logo` follows the poster rules;
-  `categoryId` is optional and informational (a channel is listed under the category
-  `liveChannels` was asked for); one that is not a valid id becomes empty.
+  `categoryId` is optional and informational in `liveChannels` (a channel is listed under the
+  category `liveChannels` was asked for); one that is not a valid id becomes empty. In a `liveSearch`
+  hit it is how Kino knows whether the hit is 18+ ([below](#live-search-adult)).
 - Kino pages `liveChannels` until `next` is missing, repeats, or brings nothing new. A category's
   first listing asks at most 10 pages; when the last one still has a `next`, Kino keeps it and asks
   5 more pages each time the person scrolls near the end of the list, up to 10,000 channels (or 200
@@ -207,12 +218,28 @@ The rules:
   only those first pages are looked at, never the pages after them. Its time limit is 15 s and it
   runs as a background call: a slow search never marks the plugin "No responde". Export it only when
   you can really search: an empty answer is taken as "nothing found", and Kino keeps saying some
-  channels were not loaded.
+  channels were not loaded. A preheat of the next channel (Kino resolving a neighbour ahead while one
+  plays) never asks `liveSearch`: it looks only through your listings, and the zap itself asks when
+  needed.
+- <span id="live-search-adult"></span>**Mark every `liveSearch` hit** (apiVersion 6, when you have an
+  18+ category): a hit names no listing, so give it `adult: true`/`adult: false`, or the `categoryId`
+  of the category it belongs to. A hit with `adult: true` or the `categoryId` of an 18+ category is 18+;
+  one with the `categoryId` of a plain category, or `adult: false`, is plain. A hit with neither counts
+  as 18+ for a plugin that has any 18+ category, and, when your categories can't be read
+  (`liveCategories` failed), every hit not marked `adult: false` counts as 18+. While the 18+ code is
+  locked, Kino leaves those hits out of the search, does not open them and keeps them out of
+  "Recientes". `node sdk/run.mjs <plugin dir> live search <query>` and `sdk/validate.mjs --run
+  liveSearch` mark the hits the same way and warn about the ones that carry neither mark.
 - Kino caches your categories and channels for 1 hour and your guide for 30 minutes.
 - `guide` is optional. Kino keeps entries for the channels it asked for, with `end` after `start`,
   inside the window, at most 100 per channel and one per start time. A `guide` that fails or is not
   exported is simply not asked again for 30 minutes: your channels still list.
-- An `adult: true` category or channel is dropped.
+- `adult: true` on a category or a channel: from apiVersion 6 it marks an 18+ entry, shown only while
+  the person's 18+ code is unlocked on that device (Ajustes ▸ Adultos) and hidden again when they lock
+  it; below apiVersion 6 it is dropped. Every channel of an 18+ category counts as 18+, and an 18+
+  channel never enters "Recientes". See [18+ content](contract.md#adult).
+- While a channel plays, Kino may resolve the neighbouring channel ahead so zapping is quick (cancelled
+  when the person leaves). That is one more call to your `resolve`: don't count it as a play.
 
 A `liveSearch` for an API that can search its channels by name:
 

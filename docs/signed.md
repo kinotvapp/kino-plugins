@@ -2,7 +2,7 @@
 
 Un **plugin firmado** lleva tu firma: una marca que solo tú puedes hacer, porque sale de una clave
 privada que solo tú tienes. Kino comprueba esa marca antes de instalar tu plugin y en cada
-actualización. Firmar es **opcional**, necesita **Kino 0.9.45 o más nuevo** y **`"apiVersion": 5`**,
+actualización. Firmar es **opcional**, necesita **Kino 0.9.45 o más nuevo** y **`"apiVersion": 5` o más** (también sirve con 6, Kino 0.9.50),
 y no cambia nada para los plugins que no lo usan.
 
 !!! info "En una frase"
@@ -118,6 +118,28 @@ Kino comprueba la firma **al instalar y al actualizar**, nunca mientras el plugi
 cuesta nada en ejecución. Kino 0.9.44 y anteriores rechazan un manifiesto con `apiVersion` 5 ("Este
 plugin necesita una versión más nueva de Kino"). Por debajo de apiVersion 5 el campo `signature` se
 ignora.
+
+### El mismo plugin en dos direcciones { #two-addresses }
+
+Un plugin normalmente se conoce por la dirección exacta desde la que se instaló: el mismo `id` desde
+otro repositorio es otro plugin (una segunda instalación de ese `id` se rechaza con "Ya hay un plugin
+con ese id"). Un plugin firmado es la excepción (Kino 0.9.50): cuando la persona tiene tu plugin desde un
+repositorio en su celular y desde otro en su TV, las dos instalaciones son **el mismo plugin** si tienen
+el mismo `id` y las dos fijaron la **misma llave de autor**. Entonces encenderlo o apagarlo, los hosts
+aprobados, los ajustes y las contraseñas (selladas de punta a punta, por ajuste) y una desinstalación se
+sincronizan entre esos aparatos en los dos sentidos, igual que con una sola dirección. Cada aparato
+conserva la dirección desde la que instaló y se sigue actualizando desde ella; nada se mueve.
+
+- Una instalación sin firma en cualquiera de los dos lados, u otra llave, conserva la regla de la
+  dirección exacta: nunca se unen, y ninguna recibe los ajustes ni las contraseñas de la otra.
+- Los `secrets` sellados de tu manifiesto quedan atados a cada repositorio y nunca viajan entre
+  aparatos: firma y sella el manifiesto de cada repositorio para ese repositorio.
+- Si publicas el mismo plugin en dos direcciones (una mudanza, un espejo), firma las dos con la misma
+  llave.
+- En la lista de recomendados, una entrada que nombra tu llave (`"signed": true, "authorKey": "<64 hex>"`)
+  dice "Instalado" para quien ya tiene tu plugin desde tu otro repositorio; cualquier otro plugin con
+  ese `id` instalado ahí hace que la entrada diga "Ya tienes otro plugin con ese id" ("No disponible",
+  nada que instalar).
 
 ## Cuida tu clave privada { #key }
 

@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 5)
+# El contrato (apiVersion 1 a 6)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -14,6 +14,11 @@ export async function liveChannels({ categoryId, cursor }) { /* -> { items: Live
 export async function guide({ channelIds, from, to }) { /* -> GuideEntry[] */ }
 export async function liveSearch({ query }) { /* -> { items: LiveChannel[] } */ }
 ```
+
+Desde `"apiVersion": 6` (Kino 0.9.50) hay más exports opcionales, cada uno con su página:
+`sign` ([Firma por petición](signed-streams.md)), `migrate` ([Pasar lo guardado](migrate.md)),
+`section` y `categories` ([Sección, categorías y colores](section-theme.md)), y `settingsStatus`,
+`action` y `validateSettings` ([Formulario de ajustes](settings-form.md)).
 
 ([`kino.d.ts`](reference/index.md) tiene las mismas formas como declaraciones de TypeScript.)
 
@@ -38,12 +43,15 @@ Las funciones de canales en vivo (`liveCategories`, `liveChannels`, y las opcion
       pruébalos cuando `q` no encuentra nada en una fuente que nombra las cosas en otro idioma.
     - `cursor` es `null`, salvo cuando la persona pidió más resultados y tu página anterior dijo
       dónde seguir (mira `Page` abajo).
+    - `within` (apiVersion 6, solo en un plugin que declara `scopedSearch`) aparece cuando la persona
+      busca dentro de una de tus páginas "Ver más": mira [Buscar dentro de un "Ver más"](#scoped-search).
 - `home()` recibe `null`.
 - `browse(ref, cursor)` recibe el `ref` de una de tus filas de Inicio (o un `ref` que dio una página
   anterior), y `cursor` `null` para la primera página o el `next` de la página anterior.
 - `episodes(ref)` recibe el `ref` de un ítem `series`, tal como lo devolviste.
-- `resolve(ref)` recibe el `ref` de un ítem `movie`, el `ref` de un capítulo o (apiVersion 2) el
-  `ref` de un ítem `live`.
+- `resolve(ref, options)` recibe el `ref` de un ítem `movie`, el `ref` de un capítulo o (apiVersion 2) el
+  `ref` de un ítem `live`. `options` es `undefined` en una llamada normal; solo un plugin apiVersion 6
+  con un stream [firmado por petición](signed-streams.md#retry) lo recibe, como `{ retry }`.
 
 ## Lo que devuelves { #returns }
 
@@ -65,7 +73,9 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
                subtitles?: { lang: string, url: string, format?: "vtt" | "srt" }[],
                audioTracks?: { lang: string, url: string, label?: string }[],
                durationMs?: number, expiresInSeconds?: number,
-               drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> } }
+               drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> },
+               alternatives?: { url: string, mime?: string, headers?: Record<string, string> }[],
+               signing?: "request", signContext?: string, alternateHosts?: string[] }   // las tres últimas: apiVersion 6
 ```
 
 **Género (Categorías y el filtro de En vivo).** Una `Row` del Home, una `LiveCategory` de En vivo y una `playlist` pueden llevar un `genre` opcional de una lista cerrada de diez ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino muestra sus nombres en español). Sirve para que Kino alinee categorías de plugins distintos: la pestaña Categorías agrupa por género las filas del Home que se pueden explorar (las que tienen `ref`, si declaras `browse`) de todos los plugins, y En vivo puede acotar sus categorías por género. Un valor fuera de la lista se ignora, nunca es un error, y sin `genre` Kino lo adivina por el título de la fila o del grupo ("Deportes", "Noticias Colombia", "Kids"…), así que ponlo cuando tus títulos no lo digan. En una `playlist` el género es el de partida para los grupos de la lista (antes se intenta adivinar por el título de cada grupo). Las versiones de Kino anteriores a este campo lo ignoran.
@@ -101,6 +111,42 @@ consulta y `cursor: next`. Un `next` (y el `ref` de una fila) solo se conserva c
 `browse`; sin eso Kino los descarta con una línea en el log. Los cursores son opacos para Kino: un
 número de página, un desplazamiento, una URL, de máximo 2048 caracteres.
 
+### Buscar dentro de un "Ver más" (`scopedSearch`, apiVersion 6) { #scoped-search }
+
+Cada página "Ver más" (una fila de Inicio, una fila de tu [sección](section-theme.md), una de tus
+Categorías) tiene un campo de búsqueda arriba ("Buscar en esta categoría"). Para todos los plugins,
+Kino filtra por nombre los títulos que ya cargó esa página (sin importar tildes ni mayúsculas, cada
+palabra en cualquier parte del título); con menos de 24 coincidencias sigue cargando las páginas
+siguientes del mismo `ref` ("Buscando en más páginas…"), máximo 10 páginas o 300 títulos por ronda, y la
+persona puede pedir otra ronda. Una consulta nueva cancela la que está corriendo.
+
+Declara `"scopedSearch"` en `capabilities` (apiVersion 6, junto con `search`; no hay nada más que
+exportar ni línea de consentimiento) para responder tú esa búsqueda, por ejemplo con la búsqueda de tu
+backend restringida a esa categoría. Sin `search` el manifiesto se rechaza con "La capacidad
+\"scopedSearch\" necesita también \"search\"". Kino llama tu `search` con la consulta de siempre más
+`within`, el `ref` de browse de esa página tal como lo diste:
+
+```js
+export async function search(query) {
+  if (query.within) {
+    const category = categoryOf(query.within);      // tu propio ref
+    if (!category) return null;                      // "ahí no puedo buscar": Kino filtra la página él mismo
+    return searchCategory(category, query.q, query.cursor); // Item[] o Page, paginada por tu `next`
+  }
+  /* la búsqueda normal */
+}
+```
+
+Ahí `type` siempre es `"any"`, y `season`, `episode`, `tmdbId` y `year` son `0`. La respuesta se revisa
+como cualquier respuesta de búsqueda (los mismos topes, los títulos `adult` solo con el código +18
+desbloqueado), y el `next` de una `Page` la pagina mientras la persona baja. Kino vuelve a su propio
+filtro cuando respondes `null`, lanzas un error, o no has respondido a los 6 s (la página busca entonces
+en sus propios títulos y descarta tu respuesta tardía; tu llamada conserva el límite de 15 s de la
+búsqueda). Una falla llega al tablero de errores como cualquier llamada fallida, nunca con la consulta
+ni el `ref`; responder `null` no es una falla. `sdk/validate.mjs` avisa cuando declaras `scopedSearch` y
+tu archivo de entrada nunca lee `within`; pruébalo con
+`node sdk/run.mjs --within '<ref>' ./plugin.js search "texto"`.
+
 ### `id` es estable, `ref` puede cambiar { #id-and-ref }
 
 `id` es la identidad de un título: de él cuelgan la biblioteca de la persona, su progreso y
@@ -126,10 +172,10 @@ el resto sobrevive; lo que pasa de un tope se corta. Un `Stream` es todo o nada.
 | `seasons` (en el resultado de `episodes`) | Opcional; máximo 50. Cada una necesita un `id` (mismo patrón que el id de un ítem; uno repetido se descarta), un `ref` no vacío de máximo 4096 caracteres y un `title` no vacío (hasta 200 caracteres), o se descarta. `number` de 1 a 999 y `current` booleano; uno mal puesto se ignora, no la temporada. Lo que no sea una lista se ignora. |
 | `id` | `^[A-Za-z0-9._~-]{1,128}$`. Cualquier otra cosa descarta el ítem, así que si los ids de tu fuente tienen otros caracteres (espacios, `/`, `:`, `%`), deriva tú un id estable, como un slug. Los ids repetidos en una lista se descartan. |
 | `ref` | Un texto no vacío de máximo 4096 caracteres. |
-| `kind` | `"movie"`, `"series"` o (apiVersion 2) `"live"`. Un ítem `series` de un plugin que no declara `episodes` se descarta: nunca se podría abrir; un ítem `live` de un plugin apiVersion 1 también se descarta (mira [Canales en vivo](live-channels.md#live-items)). |
+| `kind` | `"movie"`, `"series"` o (apiVersion 2) `"live"`; un ítem `live` se queda en una fila de `home` solo desde apiVersion 6 (por debajo se quita del Inicio: mira [Canales en tus filas de Inicio](live-channels.md#home-rows)). Un ítem `series` de un plugin que no declara `episodes` se descarta: nunca se podría abrir; un ítem `live` de un plugin apiVersion 1 también se descarta (mira [Canales en vivo](live-channels.md#live-items)). |
 | Campos de texto | `title` es obligatorio y no vacío, hasta 200 caracteres. `overview` hasta 2000; `lang` y `quality` hasta 20 (por ejemplo `"es"`, `"1080p"`); `year` hasta 10 (se acepta un número y se convierte). El texto más largo se corta; el texto de `SeriesInfo` y `Episode` se corta igual (200 caracteres para títulos, 2000 para sinopsis). |
 | Campos extra del ítem | Todos opcionales; uno mal puesto se ignora, no el ítem. `genres` máximo 5, cada uno de máximo 30 caracteres; `badges` (se muestran como chips, p. ej. `"HD"`, `"Latino"`) máximo 3 de máximo 20; `rating` de 0 a 10; `runtimeMinutes` de 1 a 1000; `ids.tmdb` un entero positivo (Kino lo usa para emparejar tu título con TMDB, para volver a encontrarlo desde la búsqueda y para enriquecer su página de información -- mira abajo); `ids.imdb` cumple `^tt\d{5,10}$` (también enriquece la página de información de una película cuando no tienes `ids.tmdb`). El `airDate` de un capítulo es `YYYY-MM-DD`. |
-| `adult` | Un ítem con `adult: true` se descarta: Kino todavía no tiene un lugar detrás de su candado +18 para títulos de plugins. |
+| `adult` | Desde apiVersion 6, `adult: true` marca una entrada +18: Kino la muestra solo mientras el código +18 de la persona está desbloqueado en ese aparato (Ajustes ▸ Adultos), y la vuelve a esconder cuando lo bloquea; por debajo de apiVersion 6 se descarta. Aplica en Inicio, en la búsqueda, en "Ver más", en tu sección y en Categorías. Mira [Contenido +18](#adult). |
 | Imágenes | `poster`, `backdrop` y `still` tienen que ser URL `http` o `https` de máximo 2048 caracteres, o se ignoran (las versiones de Kino anteriores a la que aceptó `http` en imágenes ignoran las `http`). Las imágenes las carga Kino directamente y **no** se revisan contra `hosts` (son solo para mostrar), y Kino no envía tus headers ni tus cookies con ellas. Es la única excepción a la regla de hosts, con un límite: una imagen en la red local, en una dirección IP privada o reservada, o en un nombre local (`localhost`, `.local`, `.lan`, …) también se ignora, y también un nombre sin punto por `http` (`router`, `nas`), salvo que esté en un servidor que la persona escribió en tus ajustes. Una dirección IPv4 pública sirve. |
 
 ### `ids.tmdb` enriquece la página de información, no solo el emparejamiento { #tmdb }
@@ -201,6 +247,18 @@ tu respuesta de `Item`/`SeriesInfo`/`episodes`, o vacíos si los dejaste por fue
     };
     ```
 
+- `alternatives` (máximo 8, cada una `{ url, mime?, headers? }`): otras copias del mismo video, la mejor
+  primero. Cuando `url` no se puede reproducir en el aparato (un códec para el que no tiene decodificador,
+  un archivo roto o no soportado) o ya no está (404, 403), Kino pasa solo a la siguiente alternativa, en
+  el mismo punto, y solo muestra un error cuando no queda ninguna. Una red caída no es razón para
+  cambiar: eso se reintenta como siempre. Cada entrada se revisa exactamente como `url`, `mime` y
+  `headers`; una mala se descarta y las demás siguen contando. Comparten los `subtitles` y `audioTracks`
+  del stream. Se ignoran junto a `drm`, con `signing` (la conmutación de un stream firmado es
+  `alternateHosts`) y en un canal en vivo. Devuélvelas cuando tu fuente ofrece varios archivos de un
+  título (otros servidores, resoluciones, codificaciones): un aparato que no puede decodificar el
+  primero igual alcanza a verlo.
+- `signing`, `signContext` y `alternateHosts` (apiVersion 6): un stream HLS que necesita una firma
+  fresca en cada petición. Tienen su propia página: [Firma por petición](signed-streams.md).
 - `durationMs` es opcional, en milisegundos.
 - `expiresInSeconds` (de 30 a 86400) dice cuándo puede dejar de funcionar tu URL. Si la reproducción
   falla después de ese tiempo, Kino llama a `resolve` una vez más y sigue donde iba la persona.
@@ -266,7 +324,7 @@ if (r.status === 401) throw kino.error("auth_required", "la sesión venció");
 
 | Código de `kino.error` | Lo que ve la persona |
 | --- | --- |
-| `auth_required` | "Configura {plugin} en Ajustes ▸ Plugins", con un botón a su pantalla Configurar |
+| `auth_required` | "Configura {plugin} en Ajustes ▸ {plugin}" cuando tu plugin declara ajustes (tiene su propia pestaña en Ajustes); si no, "Configura {plugin} en Ajustes ▸ Plugins" ("Menú ▸ Plugins" en el celular), con un botón a su pantalla Configurar |
 | `not_found` | "No se encontró en {plugin}" |
 | `geo_blocked` | "Este contenido no está disponible en tu región" |
 | `rate_limited` | "{plugin} está limitando las peticiones; intenta en unos minutos" |
@@ -274,3 +332,94 @@ if (r.status === 401) throw kino.error("auth_required", "la sesión venció");
 
 Tu mensaje es un detalle para el log (cortado a 200 caracteres); la persona lee la frase de Kino. Un
 código desconocido se vuelve un error simple.
+
+### Tu propia frase para la persona (`userMessage`, apiVersion 6) { #user-message }
+
+Cuando la frase de Kino dice muy poco (un capítulo que retiraron, una cuenta que hay que vincular de
+nuevo), pasa tu propia frase para la persona como tercer argumento:
+
+```js
+throw kino.error("not_found", "E100006", { userMessage: "Este capítulo ya no está disponible." });
+throw kino.error("auth_required", "E100083", {
+  userMessage: "Tu cuenta se abrió en otro dispositivo. Vuelve a intentarlo, o vincúlala de nuevo.",
+});
+```
+
+Kino la muestra **en lugar de** su propia línea, siempre como "Mensaje de &lt;nombre de tu plugin&gt;:
+&lt;tu frase&gt;" ("Mensaje de Demo: Este capítulo ya no está disponible."), y solo cuando se cumple
+todo esto; si no, la persona lee la línea de Kino y tu frase no va a ninguna parte (tampoco al log; el
+detalle sí):
+
+- el nombre de tu plugin puede presentarla: solo los caracteres de abajo, sin `:`, sin un dígito
+  pegado a una letra, nada que deletree Kino (así que un plugin llamado `M3U` o `Cuevana3` siempre
+  muestra la línea de Kino; `Cuevana 3` sirve);
+- el código es uno de los cinco de la tabla (`timeout`, `network`, `host_not_allowed`, `crypto_error`
+  y los demás siempre los redacta Kino);
+- tiene de 1 a 160 caracteres sin los espacios de los extremos, hechos solo de las letras del latín
+  básico y Latin-1 (lo que escriben el español, el portugués y el inglés: á é í ó ú ü ñ ç ã õ â ê ô à
+  è…, pero no ø æ ð þ ß), los dígitos 0-9, el espacio normal y `` . , : ; ¿ ? ¡ ! ' ’ ‘ “ ” « » ( ) % - – — ▸ ``
+  (un `;` solo antes de un espacio): nada de otra escritura, letras parecidas, versalitas, saltos de
+  línea, tabuladores, otros espacios, caracteres invisibles, emojis ni `@`;
+- se lee como palabras normales: al menos dos palabras, sin URL, sin prefijo de error (`TypeError:`,
+  `[Tag]`), sin `undefined`/`null`/`NaN`, y no termina en `:` `,` `;` ni `-`;
+- menos de 6 dígitos en total, los separe lo que los separe (ningún teléfono ni número de cuenta, y por
+  eso tampoco una fecha completa con su año), y ningún dígito pegado a una letra (`en 5 minutos` sirve,
+  `5minutos` no);
+- ningún dominio: un punto pegado a una letra (`site.app`), un punto después de un espacio
+  (`site .app`), un punto seguido de una palabra en minúsculas de 2 a 6 letras (`site. app`), `www`, ni
+  `punto`/`dot` pegado o seguido de una terminación de dominio (`punto com`, `puntodev`; "a punto de
+  volver" y "en este punto es mejor" sirven: `es`, `la`, `me` y `to` no se leen como terminaciones);
+- nunca deletrea Kino: leída con `1`, `l`, `!`, `¡` como `i`, `0` como `o` y sin ningún carácter que no
+  sea letra, no contiene `kino` en ninguna parte (así que evita una palabra como "Kinoshita");
+- no pide credenciales, dinero ni contacto por fuera de Kino, leída palabra por palabra (una palabra
+  partida a propósito se lee entera: `N e q u i`, `Ne qui`, `con tra seña`, `What s app`, `pun to com`):
+  nada de `pag…` (pago, pagues, págalo; "página" sirve), `abon…`, `recarg…`, `transfer…`, `consign…`,
+  `deposit…`, `contraseñ…`, `passw…`, `clave…`, `credencial…`, `token…`, `tarjeta`, `PIN`, Nequi,
+  Daviplata, WhatsApp, Telegram, ni un `código` que llegó por SMS o que es de verificación
+  (`verification…`; "Verifica tu conexión" sirve): tus propios ajustes son el único lugar para eso
+  (`recarg…` también rechaza "Recarga la lista": di "Vuelve a cargar");
+- no contiene ninguna de las contraseñas que la persona escribió en tus ajustes (se compara con los
+  valores guardados de tu plugin; mientras no se pueden leer, la frase no se muestra), ni el valor de
+  ningún secreto sellado. Nunca repitas lo que la persona escribió, de ninguna forma.
+
+!!! danger "Un plugin que usa `userMessage` para pedir plata, credenciales o contacto se retira"
+    Un plugin que usa `userMessage` para pedirle a la gente dinero, credenciales o contacto por fuera
+    de Kino se quita del catálogo de plugins.
+
+Escríbela para la persona, en su idioma; Kino no la traduce. Ocupa exactamente el lugar de la línea de
+Kino, así que nunca cambia lo que hace la pantalla: `auth_required` conserva el botón a tu pantalla
+Configurar; `geo_blocked` muestra el diálogo "No se puede reproducir" del reproductor; los demás códigos
+muestran la línea de error de Kino (en un canal en vivo la persona sigue haciendo zapping). También es
+el motivo bajo la fila de Inicio de tu plugin y en los avisos de búsqueda. Tu formulario de ajustes y
+las páginas de tu sección la muestran para `not_found`, `unavailable` y `rate_limited`, y conservan su
+propio texto genérico para `auth_required` y `geo_blocked`. Una sola cosa le gana, sea cual sea el
+código: un host que la persona rechazó para esa llamada (sobre eso puede actuar). La frase cuenta solo
+para la llamada que construyó el error: créala donde lanzas, no una vez arriba en tu módulo. El kit de
+Node (`run.mjs`) imprime lo que leería la persona, o por qué no se muestra la frase. Las versiones de
+Kino anteriores a la 0.9.50 ignoran el tercer argumento y muestran su propia línea, así que pasarlo
+siempre es seguro.
+
+### Una actualización pendiente le gana al error { #pending-update }
+
+Si una versión nueva de tu plugin está esperando la aprobación de la persona (pide un host, un
+permiso o una capacidad nueva), una llamada fallida no muestra la frase de siempre sino "Hay una versión
+nueva de &lt;nombre&gt;: actualízala en Ajustes ▸ Plugins", para que la persona sepa qué hacer. Le siguen
+ganando un host rechazado, tu `userMessage` válido y `auth_required` (que conserva su botón). Mira
+[Actualizaciones](publish.md#updates).
+
+## Contenido +18 (`adult`, apiVersion 6) { #adult }
+
+Desde `"apiVersion": 6`, `adult: true` en un ítem, en una de tus [Categorías](section-theme.md#categories)
+o en una categoría o un canal en vivo marca una entrada +18. Kino la muestra solo mientras el código +18
+de la persona está desbloqueado en ese aparato (Ajustes ▸ Adultos) y la vuelve a esconder cuando lo
+bloquea. No hay nada que declarar en el manifiesto. Por debajo de apiVersion 6 una entrada `adult: true`
+se descarta, como antes.
+
+- Aplica en Inicio, la búsqueda, "Ver más", tu sección, Categorías y En vivo. Una fila o un grupo que
+  se queda solo con entradas +18 no se muestra mientras el código está bloqueado.
+- Todo canal de una categoría +18 cuenta como +18, y un canal +18 nunca entra a "Recientes".
+- Los resultados de `liveSearch` necesitan una marca: mira [Marca cada resultado de `liveSearch`](live-channels.md#live-search-adult).
+- Enviar un título +18 al TV emparejado pide que el TV también tenga el contenido +18 desbloqueado
+  ("Desbloquea el contenido 18+ en el TV para verlo allí").
+- Tu plugin no sabe si el código está desbloqueado ni puede saltarse el candado: siempre devuelve la
+  marca y Kino decide qué se ve.

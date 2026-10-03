@@ -7,7 +7,7 @@
   If your manifest has a `password` setting it adds "Este plugin usa tu usuario y contraseña"; a `url`
   setting adds "Se conectará a los servidores que escribas en su configuración". Declaring `download`
   adds "Puede descargar videos para verlos sin conexión", `drm` adds "Reproduce video protegido (DRM)",
-  `channels` adds "Agrega canales en vivo a la pestaña En vivo", `secrets` adds "Usa datos sellados por su autor", each `insecureHttp` host adds, in red, "Conexión sin cifrar con &lt;host&gt;", `liveStreamHosts: "any"` adds, in red, "Puede reproducir canales desde cualquier servidor que indique su lista", and `streamHosts: "any"` adds, in red, "Puede reproducir video desde cualquier servidor que indique". On an update, what is new carries a "nuevo" chip. Nothing of yours runs
+  `channels` adds "Agrega canales en vivo a la pestaña En vivo", `secrets` adds "Usa datos sellados por su autor", each `insecureHttp` host adds, in red, "Conexión sin cifrar con &lt;host&gt;", `liveStreamHosts: "any"` adds, in red, "Puede reproducir canales desde cualquier servidor que indique su lista", and `streamHosts: "any"` adds, in red, "Puede reproducir video desde cualquier servidor que indique". From apiVersion 6, `migrate` adds "Revisar lo que tienes guardado (biblioteca, historial, favoritos) para pasarlo a este plugin", `telemetry: true` adds "Comparte registros de errores con Kino para corregir fallas" and `telemetry: "verbose"` adds "Comparte registros detallados de reproducción y errores con Kino para corregir fallas". On an update, what is new carries a "nuevo" chip. Nothing of yours runs
   before they accept.
 - **A long host list folds.** With more than 3 hosts the sheet says "Se va a conectar con N
   servidores:", lists the first 3 (on an update, the new ones first) and "y N más (M nuevos)", with a
@@ -26,7 +26,8 @@
 - **When a stream can't play**, the player says why in Spanish, never the player's own English: for
   example "Este aparato no puede reproducir este formato de video (4K/HEVC)", "El servidor del video
   respondió con un error" or "No se pudo reproducir este video".
-- **Configurar.** A plugin with `settings` has a "Configurar" button in Ajustes ▸ Plugins. Until
+- **Configurar.** A plugin with `settings` has a "Configurar" button in Ajustes ▸ Plugins and, from
+  Kino 0.9.50, its own tab in Ajustes with the same form ([The settings form](settings-form.md)). Until
   every required setting has a value its status is "Falta configurar" and nothing of it runs.
 - **Ver más.** A Home row with a `ref` ends in a "Ver más" card, and a search page with a `next`
   shows "Ver más resultados de &lt;name&gt;": both open a grid that asks you for the next page as the
@@ -64,9 +65,10 @@ per stream from what your `resolve` returns (`url`, `mime`, `headers`, `drm`):
 
 | Your stream | What Kino does |
 | --- | --- |
-| mp4/webm (or another progressive file) with **no `headers`**, on a host your plugin may use | The TV fetches the URL itself; the phone moves no bytes. |
-| HLS (`.m3u8`) with **no `headers`**, on a host your plugin may use | The TV fetches the playlist itself. |
-| Any file or HLS **with `headers`** (Referer, cookies, tokens in headers) | Through the phone: it fetches with your headers and the TV only sees a local address; HLS playlists are rewritten so every segment and key goes through the phone too. |
+| mp4/webm (or another progressive file) with **no `headers`**, on a host your plugin may use | The TV fetches the URL itself; the phone moves no bytes. If the TV fails it, it is relayed through the phone. |
+| HLS (`.m3u8`) | Through the phone (a Chromecast needs CORS on it): playlists are rewritten so every segment and key goes through the phone. |
+| Any file **with `headers`** (Referer, cookies, tokens in headers) | Through the phone: it fetches with your headers and the TV only sees a local address. |
+| A [request-signed](signed-streams.md#cast) stream (Kino 0.9.50) | Through the phone, which calls `sign()` for every playlist and segment the TV asks for. |
 | DRM (Widevine or ClearKey), DASH, progressive MPEG-TS, or a format nothing tells apart | Not sent: the person reads "Este título no se puede enviar a la TV" (protected ones: "Este título está protegido y no se puede enviar a la TV"). |
 
 What helps authors: return a real `mime` (`video/mp4`, `application/vnd.apple.mpegurl`) or a URL that
@@ -74,6 +76,37 @@ ends in the right extension; Kino probes the first bytes of a stream nothing des
 read, 2 s) but that costs a request. Prefer links that need no `headers` (the lightest route); every
 host involved must be one your plugin may reach (declared, typed, or covered by an "any" permission), over
 https. While casting, the phone itself stays silent.
+
+## From Kino 0.9.50 { #v0950 }
+
+With nothing new in your manifest, except where said:
+
+- **Play on the TV from the phone.** With two paired devices, "Reproducir en el TV" works for a title
+  of any plugin: the TV opens it with **its own copy** of the plugin. If the TV can't, the phone says
+  why: "Instala el plugin &lt;name&gt; en el TV para verlo allí", "Activa …", "Configura …",
+  "Actualiza …", "Reinstala …", "En el TV hay otro plugin con ese nombre; instala el mismo desde su
+  repositorio", "Desbloquea el contenido 18+ en el TV para verlo allí" or, for a TV on an older Kino,
+  "Actualiza Kino en el TV para verlo allí". So keep your `id` and your refs the same on every device.
+- **New chapters of the series the person follows.** Kino checks now and then (at most every 6 hours)
+  the saved series of any usable plugin that declares `episodes`, calling your `episodes(ref)` with the
+  saved `ref`, and adds the missing chapters. A failure leaves that series alone and moves on to the
+  next. Keep your series refs stable.
+- **"Para ti".** A recommendation that comes from a plugin's catalog is saved by its `ref`: a movie as
+  a movie, a series with its first season (calling `episodes`).
+- **18+ content.** `adult: true` entries of an apiVersion 6 plugin show only with the 18+ code unlocked
+  ([18+ content](contract.md#adult)).
+- **Channels on Home.** An apiVersion 6 plugin can put channels in its Home rows
+  ([Channels in your Home rows](live-channels.md#home-rows)).
+- **A section of its own** in the TV sidebar or the phone's Inicio strip, and a group in Categorías,
+  for a plugin that declares `section` or exports `categories`
+  ([Section, categories and colors](section-theme.md)).
+- **Search inside a "Ver más" page.** Every "Ver más" page has "Buscar en esta categoría"
+  ([`scopedSearch`](contract.md#scoped-search)).
+- **Updates.** A badge on Ajustes ▸ Plugins counts the updates waiting for approval, and a failed call
+  of a plugin with a pending update says so ([Updates](publish.md#updates)).
+- **Community plugins.** The section carries the note "Plugins de la comunidad — Kino no los revisa ni
+  responde por su contenido.", and an installed plugin taken down from the index says "Retirado del
+  índice de la comunidad." ([Claims and plugin takedowns](claims.md)).
 
 ## Plugins on the person's other devices { #sync }
 

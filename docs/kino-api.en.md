@@ -132,7 +132,9 @@ for a host you did not declare, "... sin https a `<host>`" for plain `http` even
 **`kino.crypto`.** A marker may be the *entire* `key` of an AES `encrypt`/`decrypt` -- exactly one
 marker, nothing else in the string -- or part of a longer HMAC `key` or PBKDF2 `password`/`salt`. It
 is always refused, with "no se puede usar un dato sellado aquí", as `data`, `iv` or `aad`, as part of
-a longer cipher `key`, and as the key of a non-AES cipher (`des-ede3-*`). That is not an arbitrary
+a longer cipher `key`, and as the key of a non-AES cipher (`des-ede3-*`) -- except a
+[typed cipher key](manifest.md#typed-keys) (apiVersion 6), which is the whole key of any cipher,
+`des-ede3` included, and nothing else. That is not an arbitrary
 line: a known `iv` or `aad` under a sealed key lets a cipher be turned into a way to compute the key
 back, and a key padded out with known bytes shrinks the search down to the unknown part alone. HMAC
 and PBKDF2 mix their whole input through a hash, so a known prefix or suffix never splits the secret
@@ -175,7 +177,8 @@ kino.crypto.uuid()
 - A wrong key size, a bad padding or a failed GCM tag throws; it never returns garbage silently.
 - A [`kino.secret`](#secret) marker is only accepted as the whole `key` of an AES
   `encrypt`/`decrypt`, or as part of an HMAC `key` or `pbkdf2`'s `password`/`salt` -- never in
-  `data`, `iv` or `aad`, nor as a `des-ede3` key.
+  `data`, `iv` or `aad`, nor as a `des-ede3` key. A [typed cipher key](manifest.md#typed-keys)
+  (apiVersion 6) is the exception: the whole key of any cipher, `des-ede3` included, and nothing else.
 
 <!-- contract:crypto:start -->
 | Function | Algorithms |
@@ -184,13 +187,76 @@ kino.crypto.uuid()
 | `encrypt`, `decrypt` | `aes-128-cbc`, `aes-192-cbc`, `aes-256-cbc`, `aes-128-ecb`, `aes-192-ecb`, `aes-256-ecb`, `aes-128-ctr`, `aes-192-ctr`, `aes-256-ctr`, `aes-128-gcm`, `aes-192-gcm`, `aes-256-gcm`, `des-ede3-cbc`, `des-ede3-ecb` |
 | `pbkdf2` | `sha1`, `sha256`, `sha512` |
 | encodings | `utf8`, `hex`, `base64` |
+| `generateKeyPair` (apiVersion 6) | `ec`, `ed25519`, `x25519`; `ec` on `P-256`, `P-384`; at most 64 private keys alive per runtime (a new one drops the oldest) |
+| `sign`, `verify` (apiVersion 6) | ECDSA with `SHA-256`, `SHA-384` as `der` or `ieee-p1363`; Ed25519; a signature at most 512 bytes |
+| `importKey`, `deriveSharedSecret` (apiVersion 6) | public keys as `jwk`, `spki`, `raw`; ECDH (same curve) and X25519 |
 <!-- contract:crypto:end -->
 
-## `kino.sleep(ms)` and `kino.error(code, message?)` { #sleep-error }
+### Key pairs, signatures and key agreement (apiVersion 6) { #key-pairs }
+
+Some players prove they are a real player by signing a challenge: they make a key pair, sign what the
+server sends with the private key and send back the public key. `kino.crypto` does that with keys
+that never leave Kino:
+
+```js
+// Node:      const { privateKey, publicKey } = crypto.generateKeyPairSync("ec", { namedCurve: "P-256" });
+// WebCrypto: await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign"]);
+async function createAttest(challenge) {
+  const { privateKey, publicKey } = kino.crypto.generateKeyPair({ type: "ec", namedCurve: "P-256" });
+  // WebCrypto's ECDSA signature is r||s (64 bytes on P-256): format "ieee-p1363". Node's default is "der".
+  const signature = kino.crypto.sign({ key: privateKey, data: challenge, hash: "SHA-256", format: "ieee-p1363" });
+  return { publicKey: publicKey.jwk, signature };   // signature is base64; pass outputEncoding: "hex" for hex
+}
+```
+
+- `generateKeyPair({ type: "ec", namedCurve: "P-256" | "P-384" })`, `{ type: "ed25519" }` or
+  `{ type: "x25519" }` answers `{ privateKey, publicKey }`. `publicKey` is `{ type, namedCurve?, jwk,
+  spki, raw }`: the JWK object in WebCrypto's key order (`{ crv, kty, x, y }`, base64url), the DER
+  SubjectPublicKeyInfo as base64, and the raw key as base64 (`04||x||y` for `ec`, 32 bytes otherwise).
+- `privateKey` is a handle, `{ type, namedCurve?, handle }`: the key itself stays inside Kino. A handle
+  works only in the sandbox that made it: not in [`sign()`](signed-streams.md)'s signing lane, not after
+  the plugin restarts (it closes after a few idle minutes), never on another device, so make the key in
+  the call that uses it. At most 64 live at once; a new one drops the oldest. Private keys cannot be
+  imported or exported.
+- `sign({ key, data, encoding?, hash?, format?, outputEncoding? })` reads `data` as `utf8` unless you
+  say `hex` or `base64`, and answers base64. `ec`: `hash` `"SHA-256"` (default) or `"SHA-384"`, `format`
+  `"der"` (default) or `"ieee-p1363"` (64 bytes on P-256, 96 on P-384). `ed25519`: 64 bytes, no `hash`.
+- `verify({ key, data, signature, signatureEncoding?, hash?, format? })` answers `true`/`false`; a
+  malformed signature is `false`. `key` is a public key (yours, or a peer's from `importKey`), a bare
+  `{ jwk }`, or your own private key.
+- `importKey({ format: "jwk", key: jwkObject })`, `{ format: "spki", key: base64 }` or `{ format: "raw",
+  key: base64, type, namedCurve? }` answers a public key in the same shape; a point off its curve throws.
+- `deriveSharedSecret({ privateKey, publicKey })` is ECDH (both `ec` on the same curve: 32 bytes on
+  P-256, 48 on P-384) or X25519 (32 bytes), base64 by default. Hash it (or HKDF it with `hmac`) before
+  using it as a key.
+- No `kino.secret` marker is accepted anywhere in these five functions.
+
+| Node / WebCrypto | `kino.crypto` |
+| --- | --- |
+| `generateKeyPairSync("ec", { namedCurve: "P-256" })` / `subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, …)` | `generateKeyPair({ type: "ec", namedCurve: "P-256" })` |
+| `generateKeyPairSync("ed25519")` / `generateKeyPairSync("x25519")` | `generateKeyPair({ type: "ed25519" })` / `{ type: "x25519" }` |
+| `publicKey.export({ format: "jwk" })` / `subtle.exportKey("jwk", publicKey)` | `publicKey.jwk` |
+| `publicKey.export({ format: "der", type: "spki" }).toString("base64")` / `exportKey("spki", …)` | `publicKey.spki` |
+| `subtle.exportKey("raw", publicKey)` | `publicKey.raw` (base64) |
+| `crypto.sign("sha256", data, privateKey)` | `sign({ key: privateKey, data, hash: "SHA-256" })` (DER) |
+| `crypto.sign("sha256", data, { key, dsaEncoding: "ieee-p1363" })` / `subtle.sign({ name: "ECDSA", hash: "SHA-256" }, …)` | `sign({ key, data, hash: "SHA-256", format: "ieee-p1363" })` |
+| `crypto.sign(null, data, ed25519Key)` / `subtle.sign("Ed25519", …)` | `sign({ key, data })` |
+| `crypto.verify(…)` / `subtle.verify(…)` | `verify({ key: publicKey, data, signature, … })` |
+| `createPublicKey({ key: jwk, format: "jwk" })` / `subtle.importKey("jwk", …)` | `importKey({ format: "jwk", key: jwk })` |
+| `crypto.diffieHellman({ privateKey, publicKey })` / `subtle.deriveBits({ name: "ECDH" or "X25519", public }, …)` | `deriveSharedSecret({ privateKey, publicKey })` |
+
+Buffers become strings: pass `encoding`/`outputEncoding` (`hex` or `base64`) where Node takes or gives a
+Buffer. There is no `kino.crypto.generateKeyPairSync`: a Node or browser library calling it must be
+adapted to these calls. A plugin that uses them should declare `"apiVersion": 6`, so a Kino without
+them refuses to install it (`validate` says so).
+
+## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` waits 0 to 5000 ms (for a site that rate-limits you); the time counts
 inside the call's own limit. `kino.error` builds the typed errors of
-[Errors people understand](contract.md#errors).
+[Errors people understand](contract.md#errors); its optional `{ userMessage }` (apiVersion 6) is your
+own sentence for the person, shown under [its rules](contract.md#user-message) as "Mensaje de &lt;your
+plugin&gt;: …".
 
 ## `kino.config` { #config }
 
@@ -247,19 +313,29 @@ export async function home() {
 ## `kino.log(...args)` { #log }
 
 Also `console.log`, `console.info`, `console.warn` and `console.error`: they all go to the log
-(tag `KinoPlugin` in `adb logcat`), objects are written as JSON, and a message is cut at 2000
+(tag `KinoPlugin` in `adb logcat`; `KinoPlugin/<your id>` in a debug build of Kino, or in any build
+when your manifest says `"debug": true`), objects are written as JSON, and a message is cut at 2000
 characters. Under the Node kit they go to stderr.
 
-When a call of a plugin that comes from Kino's recommended catalog **fails** (it throws, times out,
-returns something unusable), the lines it logged during that call (the last 30, each cut at 300
+When a call of a plugin that comes from Kino's recommended catalog, or of one whose manifest says
+`"telemetry": true` (apiVersion 6) while the person leaves "Enviar registros de errores" on, **fails**
+(it throws, times out, returns something unusable, including `sign`, `settingsStatus`, `action` and
+`validateSettings`), the lines it logged during that call (the last 30, each cut at 300
 characters) travel with the failure report to the maintainers' error tracker as `plugin_log`, so a
 `kino.log("home: status", r.status)` before the throw is how you see why it failed on someone else's
-phone. Nothing is sent for a call that succeeds, and nothing for any other plugin (one installed from
-a repo that is not in the catalog, your own, a converted Nuvio scraper). Before it leaves the device
+phone. Each report is tagged with your plugin's id and version; at most one report per function and
+kind of failure an hour. Nothing is sent for a call that succeeds, and nothing for any other plugin
+(one installed from a repo that is not in the catalog and does not declare `telemetry`, a converted
+Nuvio scraper), nor when the person turns the switch off. Before it leaves the device
 every line has URLs, hostnames, IPs, e-mails, long ids, long hex/base64 runs, credential-shaped text,
 the person's setting values and the text of their search or title removed, and the whole is capped at
 2 KB (the newest lines win). Still: log what happened (a status, a step, a count), never what the
 person typed or a secret, and never a setting's value. Works on every `apiVersion`.
+
+**`kino.log.report(...args)`** (apiVersion 6, with `telemetry`) writes a line like `kino.log` and also
+tells the error tracker that your plugin served a **degraded** result even though the call worked: it
+fell back to a shared account, used a backup source, trimmed a list. The details (the area, the caps)
+are on [Logs and telemetry](diagnostics.md#report).
 
 ## `kino.rank` { #rank }
 

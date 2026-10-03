@@ -96,7 +96,13 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   redirección cuenta, también los rechazados) y máximo 6 al mismo tiempo; cuerpos de 5 MB;
   256 KB de kino.storage; 100 resultados de búsqueda; Inicio con 20 filas de 60.
 - Errores para la persona: kino.error("auth_required" | "not_found" | "geo_blocked" |
-  "rate_limited" | "unavailable").
+  "rate_limited" | "unavailable"). Con apiVersion 6 puedes agregar una frase propia,
+  kino.error(code, detalle, { userMessage: "…" }): en español, máximo 160 caracteres, sin URL ni
+  dominios, sin números largos, nunca pidiendo plata, contraseñas, códigos ni contacto por fuera de
+  Kino, y nunca repitiendo lo que escribió la persona (Kino la muestra como "Mensaje de <plugin>: …"
+  solo si pasa todas sus reglas; un plugin que la usa para pedir plata o datos se retira).
+- Contenido +18: márcalo con adult: true (apiVersion 6; Kino lo muestra solo con el código +18
+  desbloqueado). Nunca intentes saltarte ese candado.
 - Todo lo que lee la persona, en español de Bogotá con tuteo, nunca voseo.
 - Nada secreto en el código ni en el repositorio. El usuario y la contraseña de cada persona van en
   un ajuste de tipo "password". Una clave de API mía va sellada: "secrets" en el manifiesto, sellada
@@ -114,7 +120,12 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   último cambio en plugin.js o en "version" y otra vez después de cada cambio posterior; nunca subas
   el .pem. Nunca imprimas el contenido de la clave en el chat.
 - apiVersion: el más bajo que funcione (3 para canales, 4 solo para secrets, "streamHosts": "any" o un
-  ajuste de tipo "list", 5 solo para un plugin firmado). Un id nuevo y mío (nunca "archive-org").
+  ajuste de tipo "list", 5 solo para un plugin firmado, 6 solo si usas algo de apiVersion 6: estados y
+  botones en los ajustes, una sección propia, colores, telemetry, migrate, firma por petición,
+  userMessage, adult, canales en filas de Inicio; 6 necesita Kino 0.9.50 o más nuevo). Un id nuevo y
+  mío (nunca "archive-org").
+- "debug": true solo mientras pruebas; quítalo antes de publicar. "telemetry" solo si yo acepto que
+  los errores del plugin lleguen a Kino; registra pasos y conteos, nunca lo que escribe la persona.
 
 Trabaja paso a paso: primero explora la fuente con peticiones reales, luego el manifiesto, luego
 cada función. Después de cada paso corre `node sdk/validate.mjs .` y `node sdk/run.mjs . <función> …`
@@ -123,7 +134,7 @@ y arregla todo lo que Kino descartaría. Graba fixtures con --record y haz que
 antes de entregarme el plugin, corre esta autocomprobación y dime el resultado de cada línea:
 - `node sdk/validate.mjs .` sale con 0 y sin problemas;
 - kino-plugin.json: "entry" e "icon" sin "./" al principio; "version" subida; el apiVersion es el más
-  bajo que funciona;
+  bajo que funciona; no queda "debug": true;
 - si se firma: "signature" está en kino-plugin.json, `validate.mjs` la verificó DESPUÉS de la última
   edición, y ningún .pem está rastreado (el `.gitignore` tiene *.pem);
 - cada host (video, subtítulos, segmentos, redirecciones) está en "hosts" o cubierto por un campo "any";

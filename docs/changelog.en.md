@@ -3,7 +3,53 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Next Kino version (after 0.9.49, not released yet) { #next }
+## Kino 0.9.50: `apiVersion` 6 (not released yet) { #v0950 }
+
+<span id="next"></span>**`apiVersion` 6 = Kino 0.9.50.** The contract (`contract.json`) now says `maxApiVersion` 6 and
+`kino.apiVersion` reports 6. A manifest with `"apiVersion": 6` is refused by Kino 0.9.49 and older
+("Este plugin necesita una versión más nueva de Kino"), so declare 6 only if you use something on this
+list:
+
+- **Larger and typed sealed secrets**: up to 8,192 bytes, and typed cipher keys (`use: "cipher-key"`)
+  that also work for `des-ede3`. [The manifest](manifest.md#typed-keys).
+- **`migrate`**: move to your plugin what the person had saved and Kino can no longer open.
+  [Moving saved titles](migrate.md).
+- **Request-signed streams**: `signing: "request"`, `signContext`, the `sign` export,
+  `resolve(ref, { retry })` and `alternateHosts`. [Signing every request](signed-streams.md).
+- **The settings form**: the `section`, `status` and `action` types (up to 16, on top of the 12 valued
+  ones), `settingsStatus`, `action` with `clearSettings`, `validateSettings`, the plugin's own tab in
+  Ajustes and syncing across devices. [The settings form](settings-form.md).
+- **`debug`** and **`telemetry`** (`true` or `"verbose"`), `kino.log.report`, the Registro page, the
+  `KinoPlugin/<id>` and `KinoPlay` logcat tags, and playback metrics. [Logs and telemetry](diagnostics.md).
+- **`section`, `categories` and `theme`**: a section of your own, a group in Categorías and your
+  colors. [Section, categories and colors](section-theme.md).
+- **`scopedSearch`**: answer the search inside a "Ver más" page yourself. [The contract](contract.md#scoped-search).
+- **`kino.error(code, message, { userMessage })`**: your own sentence for the person, with safety
+  rules and attributed to your plugin. [The contract](contract.md#user-message).
+- **`adult: true` entries** behind the person's 18+ code (they used to be dropped).
+  [18+ content](contract.md#adult).
+- **Channels in your Home rows** (`kind: "live"` in `home`; they used to be dropped).
+  [Live channels](live-channels.md#home-rows).
+- **Key pairs in `kino.crypto`**: `generateKeyPair`, `sign`, `verify`, `importKey`,
+  `deriveSharedSecret`. [The kino API](kino-api.md#key-pairs).
+
+No new `apiVersion` (for any plugin):
+
+- **`alternatives`** on a `Stream`: up to 8 copies of the same video; Kino moves to the next when one
+  cannot play on the device. [The contract](contract.md#stream).
+- **Play on the TV from the phone**, **new chapters** of followed series and **"Para ti"** work for
+  titles of any plugin. [What people see](what-people-see.md#v0950).
+- **Updates**: a check when the app starts (at most every 12 h), a badge for pending ones, and a failed
+  call with a pending update says so. [Publishing](publish.md#updates).
+- **A signed plugin at two repositories** counts as the same plugin with the same `id` and key.
+  [Signed plugins](signed.md#two-addresses).
+- **Reserved ids**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys` (the list changed:
+  older versions reserve a few more, so if one says "El id … está reservado por Kino", pick another).
+- **Claims and takedowns of community plugins**: [`community-blocklist.json`](claims.md).
+- **Sending to the TV**: every HLS goes through the phone; a file without `headers` goes direct and,
+  if the TV fails it, through the phone. [Sending to the TV](what-people-see.md#cast).
+
+Also in this version (documented earlier on this page as "next version"):
 
 - **Install from a manifest URL.** People can paste the `https` URL of a `kino-plugin.json` on any
   public server, not only a GitHub `owner/repo`. Such a `url:` install reads `entry` and `icon` next to

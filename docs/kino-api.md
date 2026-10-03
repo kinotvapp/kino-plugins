@@ -151,7 +151,8 @@ enviar datos sellados a `<host>`" para un host que no declaraste, "... sin https
 exactamente un marcador, nada más en el texto -- o parte de una `key` más larga de HMAC o del
 `password`/`salt` de PBKDF2. Siempre se rechaza, con "no se puede usar un dato sellado aquí", como
 `data`, `iv` o `aad`, como parte de una `key` de cifrado más larga, y como llave de un cifrado que no
-es AES (`des-ede3-*`). No es una raya arbitraria: un `iv` o un `aad` conocidos bajo una llave sellada
+es AES (`des-ede3-*`) -- salvo una [llave de cifrado con tipo](manifest.md#typed-keys) (apiVersion 6),
+que sirve como llave completa de cualquier cifrado, `des-ede3` incluido, y de nada más. No es una raya arbitraria: un `iv` o un `aad` conocidos bajo una llave sellada
 permiten convertir un cifrado en una forma de calcular la llave de vuelta, y una llave rellenada con
 bytes conocidos reduce la búsqueda a la parte desconocida. HMAC y PBKDF2 pasan toda su entrada por un
 hash, así que un prefijo o sufijo conocido nunca separa el secreto.
@@ -198,7 +199,9 @@ kino.crypto.uuid()
   nunca devuelven basura en silencio.
 - Un marcador de [`kino.secret`](#secret) solo se acepta como la `key` completa de un
   `encrypt`/`decrypt` AES, o como parte de una `key` de HMAC o del `password`/`salt` de `pbkdf2` --
-  nunca en `data`, `iv` o `aad`, ni como llave `des-ede3`.
+  nunca en `data`, `iv` o `aad`, ni como llave `des-ede3`. Una [llave de cifrado con
+  tipo](manifest.md#typed-keys) (apiVersion 6) es la excepción: la llave completa de cualquier cifrado,
+  `des-ede3` incluido, y nada más.
 
 | Función | Algoritmos |
 | --- | --- |
@@ -206,12 +209,78 @@ kino.crypto.uuid()
 | `encrypt`, `decrypt` | `aes-128-cbc`, `aes-192-cbc`, `aes-256-cbc`, `aes-128-ecb`, `aes-192-ecb`, `aes-256-ecb`, `aes-128-ctr`, `aes-192-ctr`, `aes-256-ctr`, `aes-128-gcm`, `aes-192-gcm`, `aes-256-gcm`, `des-ede3-cbc`, `des-ede3-ecb` |
 | `pbkdf2` | `sha1`, `sha256`, `sha512` |
 | codificaciones | `utf8`, `hex`, `base64` |
+| `generateKeyPair` (apiVersion 6) | `ec`, `ed25519`, `x25519`; `ec` en `P-256`, `P-384`; máximo 64 llaves privadas vivas por runtime (una nueva descarta la más vieja) |
+| `sign`, `verify` (apiVersion 6) | ECDSA con `SHA-256`, `SHA-384` como `der` o `ieee-p1363`; Ed25519; una firma de máximo 512 bytes |
+| `importKey`, `deriveSharedSecret` (apiVersion 6) | llaves públicas como `jwk`, `spki`, `raw`; ECDH (misma curva) y X25519 |
 
-## `kino.sleep(ms)` y `kino.error(code, message?)` { #sleep-error }
+### Pares de llaves, firmas y acuerdo de llaves (apiVersion 6) { #key-pairs }
+
+Algunos reproductores demuestran que son un reproductor de verdad firmando un reto: crean un par de
+llaves, firman lo que manda el servidor con la llave privada y devuelven la llave pública.
+`kino.crypto` lo hace con llaves que nunca salen de Kino:
+
+```js
+// Node:      const { privateKey, publicKey } = crypto.generateKeyPairSync("ec", { namedCurve: "P-256" });
+// WebCrypto: await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign"]);
+async function createAttest(challenge) {
+  const { privateKey, publicKey } = kino.crypto.generateKeyPair({ type: "ec", namedCurve: "P-256" });
+  // La firma ECDSA de WebCrypto es r||s (64 bytes en P-256): format "ieee-p1363". La de Node es "der".
+  const signature = kino.crypto.sign({ key: privateKey, data: challenge, hash: "SHA-256", format: "ieee-p1363" });
+  return { publicKey: publicKey.jwk, signature };   // signature en base64; outputEncoding: "hex" para hex
+}
+```
+
+- `generateKeyPair({ type: "ec", namedCurve: "P-256" | "P-384" })`, `{ type: "ed25519" }` o
+  `{ type: "x25519" }` responde `{ privateKey, publicKey }`. `publicKey` es `{ type, namedCurve?, jwk,
+  spki, raw }`: el objeto JWK en el orden de llaves de WebCrypto (`{ crv, kty, x, y }`, base64url), el
+  SubjectPublicKeyInfo DER en base64, y la llave cruda en base64 (`04||x||y` para `ec`, 32 bytes en los
+  demás).
+- `privateKey` es un manejador, `{ type, namedCurve?, handle }`: la llave misma se queda dentro de Kino.
+  Un manejador sirve solo en el sandbox que lo creó: no en el carril de firma de
+  [`sign()`](signed-streams.md), no después de que el plugin se reinicia (se cierra tras unos minutos sin
+  uso), nunca en otro aparato; así que crea la llave en la llamada que la usa. Máximo 64 vivas a la vez;
+  una nueva descarta la más vieja. Las llaves privadas no se pueden importar ni exportar.
+- `sign({ key, data, encoding?, hash?, format?, outputEncoding? })` lee `data` como `utf8` salvo que
+  digas `hex` o `base64`, y responde en base64. `ec`: `hash` `"SHA-256"` (por defecto) o `"SHA-384"`,
+  `format` `"der"` (por defecto) o `"ieee-p1363"` (64 bytes en P-256, 96 en P-384). `ed25519`: 64 bytes,
+  sin `hash`.
+- `verify({ key, data, signature, signatureEncoding?, hash?, format? })` responde `true`/`false`; una
+  firma mal formada es `false`. `key` es una llave pública (la tuya, o la de otro desde `importKey`), un
+  `{ jwk }` suelto, o tu propia llave privada.
+- `importKey({ format: "jwk", key: objetoJwk })`, `{ format: "spki", key: base64 }` o `{ format: "raw",
+  key: base64, type, namedCurve? }` responde una llave pública con la misma forma; un punto fuera de su
+  curva lanza un error.
+- `deriveSharedSecret({ privateKey, publicKey })` es ECDH (las dos `ec` en la misma curva: 32 bytes en
+  P-256, 48 en P-384) o X25519 (32 bytes), en base64 por defecto. Pásalo por un hash (o un HKDF con
+  `hmac`) antes de usarlo como llave.
+- Ninguna de estas cinco funciones acepta un marcador de `kino.secret`.
+
+| Node / WebCrypto | `kino.crypto` |
+| --- | --- |
+| `generateKeyPairSync("ec", { namedCurve: "P-256" })` / `subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, …)` | `generateKeyPair({ type: "ec", namedCurve: "P-256" })` |
+| `generateKeyPairSync("ed25519")` / `generateKeyPairSync("x25519")` | `generateKeyPair({ type: "ed25519" })` / `{ type: "x25519" }` |
+| `publicKey.export({ format: "jwk" })` / `subtle.exportKey("jwk", publicKey)` | `publicKey.jwk` |
+| `publicKey.export({ format: "der", type: "spki" }).toString("base64")` / `exportKey("spki", …)` | `publicKey.spki` |
+| `subtle.exportKey("raw", publicKey)` | `publicKey.raw` (base64) |
+| `crypto.sign("sha256", data, privateKey)` | `sign({ key: privateKey, data, hash: "SHA-256" })` (DER) |
+| `crypto.sign("sha256", data, { key, dsaEncoding: "ieee-p1363" })` / `subtle.sign({ name: "ECDSA", hash: "SHA-256" }, …)` | `sign({ key, data, hash: "SHA-256", format: "ieee-p1363" })` |
+| `crypto.sign(null, data, ed25519Key)` / `subtle.sign("Ed25519", …)` | `sign({ key, data })` |
+| `crypto.verify(…)` / `subtle.verify(…)` | `verify({ key: publicKey, data, signature, … })` |
+| `createPublicKey({ key: jwk, format: "jwk" })` / `subtle.importKey("jwk", …)` | `importKey({ format: "jwk", key: jwk })` |
+| `crypto.diffieHellman({ privateKey, publicKey })` / `subtle.deriveBits({ name: "ECDH" o "X25519", public }, …)` | `deriveSharedSecret({ privateKey, publicKey })` |
+
+Los Buffers se vuelven textos: pasa `encoding`/`outputEncoding` (`hex` o `base64`) donde Node recibe o
+entrega un Buffer. No existe `kino.crypto.generateKeyPairSync`: una librería de Node o de navegador que lo
+llame hay que adaptarla a estas llamadas. Un plugin que las usa debe declarar `"apiVersion": 6`, para
+que un Kino sin ellas se niegue a instalarlo (`validate` lo dice).
+
+## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo
 cuenta dentro del límite de la llamada. `kino.error` arma los errores con tipo de
-[Errores que la gente entiende](contract.md#errors).
+[Errores que la gente entiende](contract.md#errors); su `{ userMessage }` opcional (apiVersion 6) es tu
+propia frase para la persona, que se muestra bajo [sus reglas](contract.md#user-message) como
+"Mensaje de &lt;tu plugin&gt;: …".
 
 ## `kino.config` { #config }
 
@@ -271,21 +340,31 @@ export async function home() {
 ## `kino.log(...args)` { #log }
 
 También `console.log`, `console.info`, `console.warn` y `console.error`: todos van al log (etiqueta
-`KinoPlugin` en `adb logcat`), los objetos se escriben como JSON, y un mensaje se corta a los 2000
+`KinoPlugin` en `adb logcat`; `KinoPlugin/<tu id>` en una compilación de depuración de Kino, o en
+cualquier compilación cuando tu manifiesto dice `"debug": true`), los objetos se escriben como JSON, y un mensaje se corta a los 2000
 caracteres. En el kit de Node van a stderr.
 
-Cuando una llamada de un plugin que viene del catálogo recomendado de Kino **falla** (lanza un error,
-se pasa del tiempo, devuelve algo inservible), las líneas que registró durante esa llamada (las
+Cuando una llamada de un plugin que viene del catálogo recomendado de Kino, o de uno cuyo manifiesto
+dice `"telemetry": true` (apiVersion 6) mientras la persona deja encendido "Enviar registros de errores",
+**falla** (lanza un error, se pasa del tiempo, devuelve algo inservible, incluidos `sign`,
+`settingsStatus`, `action` y `validateSettings`), las líneas que registró durante esa llamada (las
 últimas 30, cada una cortada a 300 caracteres) viajan con el reporte de la falla al registro de
 errores de quienes mantienen Kino como `plugin_log`; así que un `kino.log("home: status", r.status)`
-antes del `throw` es como ves por qué falló en el celular de otra persona. No se envía nada de una
-llamada que sale bien, ni de ningún otro plugin (uno instalado desde un repositorio que no está en el
-catálogo, el tuyo, un scraper de Nuvio convertido). Antes de salir del aparato, a cada línea se le
+antes del `throw` es como ves por qué falló en el celular de otra persona. Cada reporte va marcado con
+el id y la versión de tu plugin; máximo un reporte por función y tipo de falla por hora. No se envía
+nada de una llamada que sale bien, ni de ningún otro plugin (uno instalado desde un repositorio que no
+está en el catálogo y no declara `telemetry`, un scraper de Nuvio convertido), ni cuando la persona
+apaga el interruptor. Antes de salir del aparato, a cada línea se le
 quitan URL, nombres de host, IP, correos, ids largos, tiras largas de hex/base64, texto con forma de
 credencial, los valores de los ajustes de la persona y el texto de su búsqueda o del título, y el
 total se limita a 2 KB (ganan las líneas más nuevas). Aun así: registra lo que pasó (un estado, un
 paso, un conteo), nunca lo que la persona escribió ni un secreto, y nunca el valor de un ajuste.
 Funciona en cualquier `apiVersion`.
+
+**`kino.log.report(...args)`** (apiVersion 6, con `telemetry`) escribe una línea como `kino.log` y
+además le avisa al registro de errores que tu plugin entregó un resultado **degradado**, aunque la
+llamada funcionó: usó una cuenta compartida de respaldo, una fuente de reserva, recortó una lista. Los
+detalles (el área, los topes) están en [Registro y telemetría](diagnostics.md#report).
 
 ## `kino.rank` { #rank }
 

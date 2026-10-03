@@ -30,10 +30,10 @@ five steps and you are in.
 - Check it with the kit: `node sdk/validate.mjs .` must end in `✓ Kino would accept this plugin` and
   **without** the line "No aparecerá en la búsqueda de Kino" (printed when the manifest says
   `"discoverable": false`).
-- An `apiVersion` newer than the person's Kino hides it from them. Kino goes up to `4` today; use the
+- An `apiVersion` newer than the person's Kino hides it from them. Kino 0.9.50 goes up to `6` (0.9.45 to 0.9.49, up to `5`); use the
   lowest that works for you and older Kino builds see it too.
 - An `id` of your own: never the template's `archive-org`, a recommended plugin's
-  (`internet-archive`, `own-server`), or `xuper`. With someone else's id your plugin is hidden
+  (`internet-archive`, `own-server`). With someone else's id your plugin is hidden
   ([why](publish.md#discovery-hidden)).
 
 ### 3. A good name and description, in the manifest { #name-description }

@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1, 2, 3, 4 and 5; apiVersion 5 only adds the manifest's signature). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 6; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -18,6 +18,12 @@ interface KinoSearchQuery {
   /** Other known titles, at most 5, each at most 200 characters. */
   altTitles: string[];
   cursor: string | null;
+  /**
+   * apiVersion 6, capability "scopedSearch": the browse `ref` of the "Ver más" page the person searches inside (a Home
+   * row, a section row, a category), exactly as you gave it; absent on a plain search. Return null when you cannot
+   * search there: Kino then filters the page's loaded titles itself.
+   */
+  within?: string;
 }
 
 interface KinoItem {
@@ -50,7 +56,7 @@ interface KinoItem {
   quality?: string;
   /** At most 3, each at most 20 characters; shown as chips. */
   badges?: string[];
-  /** true: never shown (no plugin section behind the 18+ lock exists yet). */
+  /** apiVersion 6: true = an 18+ entry, shown only while the person's 18+ code is unlocked on that device (Ajustes ▸ Adultos). Below apiVersion 6 it is dropped. */
   adult?: boolean;
 }
 
@@ -62,6 +68,11 @@ type KinoGenre =
 interface KinoRow {
   id: string;
   title: string;
+  /**
+   * Items of kind "live" (channels) stay in a Home row from apiVersion 6, as channel cards with the "En vivo" badge
+   * that open like a channel from En vivo (a 18+ one only while the person's code is unlocked); below 6 they are
+   * dropped from Home. A row left with nothing to show is not shown.
+   */
   items: KinoItem[];
   ref?: string;
   /**
@@ -167,6 +178,35 @@ interface KinoStream {
    * them): plain, unencrypted files only.
    */
   drm?: { type: "widevine"; licenseUrl: string; licenseHeaders?: Record<string, string> };
+  /**
+   * apiVersion 6: `"request"` makes Kino sign every playlist and segment request of this stream with your
+   * `sign()` export, right before sending it, through a local proxy. HLS only (an HLS `mime` or a `.m3u8`
+   * path); never with `drm` or `audioTracks`; not on an inline `liveChannels` stream (use `resolve()`).
+   */
+  signing?: "request";
+  /**
+   * apiVersion 6, with `signing`: up to 4096 characters `sign()` gets back as `context` (it can't read kino.storage).
+   * Never a `kino.secret()` marker (refused): a marker only works in the runtime that made it, so call
+   * `kino.secret()` inside `sign()` itself.
+   */
+  signContext?: string;
+  /**
+   * apiVersion 6, with `signing`: other hosts serving this same stream at the same path and scheme, up
+   * to 6, each `"host"` or `"host:port"` (no scheme, no path, no IPv6). Kino tries the playlist on each
+   * (3 rounds, the one that served last first) and moves a segment, key or map to another one when its
+   * own fails 3 times. `sign()` always gets the URL of the host being asked, so pick that host's token
+   * from `context`. Each entry meets the same host rule as `url` (declared hosts, or any public host
+   * under `liveStreamHosts: "any"`); one that fails it, repeats `url`'s host or another entry, or comes
+   * after the sixth is dropped. Not an array of strings: the stream is refused. Ignored without `signing`.
+   */
+  alternateHosts?: string[];
+  /**
+   * Other copies of the same video, best first, at most 8: when `url` cannot play on the device (a codec it lacks, a broken
+   * file) or is gone, Kino moves on to the next one by itself, at the same spot, before showing any error. Each is checked
+   * exactly like `url`, `mime` and `headers`; a bad entry is dropped. They share this stream's subtitles and audio tracks.
+   * Ignored next to `drm`, with `signing` (use `alternateHosts`) and for a live channel.
+   */
+  alternatives?: { url: string; mime?: string; headers?: Record<string, string> }[];
 }
 
 /** apiVersion 3, capability "channels": a section of the En vivo tab. */
@@ -182,6 +222,8 @@ interface KinoLiveCategory {
    * the list is ignored. Kino versions before this field ignore it.
    */
   genre?: KinoGenre;
+  /** apiVersion 6: true = an 18+ entry, shown only while the person's 18+ code is unlocked on that device (Ajustes ▸ Adultos). Below apiVersion 6 it is dropped. Every channel listed in it is 18+ too. */
+  adult?: boolean;
 }
 
 /**
@@ -222,12 +264,22 @@ interface KinoLiveChannel {
   title: string;
   ref?: string;
   stream?: KinoStream;
-  /** Informational: the channel is listed under the category it was asked for. Not a valid id = empty. */
+  /**
+   * In liveChannels, informational: the channel is listed under the category it was asked for. Not a valid id = empty.
+   * In a liveSearch hit (apiVersion 6), the category it belongs to: one of your 18+ categories makes it 18+, a plain one
+   * makes it plain. A hit with neither `categoryId` nor `adult` counts as 18+ when you have any 18+ category.
+   */
   categoryId?: string;
   /** https image, like a poster. */
   logo?: string;
   /** 1..9999. */
   number?: number;
+  /**
+   * apiVersion 6: true = an 18+ entry, shown only while the person's 18+ code is unlocked on that device (Ajustes ▸ Adultos).
+   * Below apiVersion 6 it is dropped. On a liveSearch hit, `false` says it is plain (needed when your categories can't be
+   * read and it carries no `categoryId`): mark every hit with `adult` or `categoryId`.
+   */
+  adult?: boolean;
 }
 
 interface KinoLiveChannelPage {
@@ -245,13 +297,65 @@ interface KinoGuideEntry {
   description?: string;
 }
 
+/** apiVersion 6, capability "migrate": one value Kino stored and can no longer open. */
+type KinoMigrateInput =
+  | { kind: "title"; ref: string }
+  | { kind: "chapter"; ref: string; season: number | null; episode: number | null }
+  | { kind: "live"; provider: string; code: string };
+
+/** Your answer: the same id/ref you would return from search() today. `ref` never starts with "plg1:". */
+type KinoMigrateAnswer =
+  | { kind: "movie" | "series"; id: string; ref: string }
+  | { kind: "episode"; ref: string; season?: number; number: number }
+  | { kind: "live"; code: string };
+
+/** apiVersion 6, with `"section": { "label" }` in the manifest: your own section (TV sidebar, chip atop Inicio on the phone). */
+interface KinoSectionAnswer {
+  /** At most 8; each `id` matches the item id pattern, each `label` at most 24 characters. */
+  tabs?: { id: string; label: string }[];
+  /** The tab this answer is for; an unknown or missing one reads as the first tab. */
+  tab?: string;
+  /** A banner above the rows: `title` as an item title, `text` at most 300 characters, `image` http or https (the Images rule). */
+  hero?: { title: string; image?: string; text?: string };
+  /** The same shape and limits as `home`. */
+  rows: KinoRow[];
+}
+
+/** apiVersion 6, optional, needs the `browse` capability: a tile of your Categorías group; it opens `browse(ref, null)`. */
+interface KinoCategory {
+  /** The item id pattern. */
+  id: string;
+  /** At most 40 characters. */
+  title: string;
+  /** http or https image (the Images rule), same rules as a poster. */
+  art?: string;
+  /** At most 4096 characters. */
+  ref: string;
+  /** apiVersion 6: true = an 18+ entry, shown only while the person's 18+ code is unlocked on that device (Ajustes ▸ Adultos). Below apiVersion 6 it is dropped. */
+  adult?: boolean;
+}
+
 /** Your module's exports. `resolve` is required, and at least one of `search`/`home`. */
 interface KinoPlugin {
-  search?(query: KinoSearchQuery): Promise<KinoItem[] | KinoPage>;
+  /** apiVersion 6, capability "migrate". Return null for anything that is not yours. 10 s per call. */
+  migrate?(input: KinoMigrateInput): Promise<KinoMigrateAnswer | null>;
+  /** apiVersion 6, required when the manifest declares `section`. `tab` is null the first time. 20 s per call. */
+  section?(arg: { tab: string | null }): Promise<KinoSectionAnswer>;
+  /** apiVersion 6, optional, needs `browse`: up to 24 tiles in Categorías, in your order. 20 s per call. */
+  categories?(arg: null): Promise<KinoCategory[]>;
+  /** With `query.within` (capability "scopedSearch", apiVersion 6): null = "can't search inside this page". 15 s per call. */
+  search?(query: KinoSearchQuery): Promise<KinoItem[] | KinoPage | null>;
   home?(): Promise<KinoRow[]>;
   browse?(ref: string, cursor: string | null): Promise<KinoPage>;
   episodes?(ref: string): Promise<KinoEpisodes>;
-  resolve(ref: string): Promise<KinoStream>;
+  /** `options.retry` (apiVersion 6) only when Kino resolves again after the origin refused your stream. `attempt` is 1 to 3; `status` is the origin's HTTP status when Kino heard one. */
+  resolve(ref: string, options?: { retry?: { reason: "conflict" | "expired"; attempt: number; status?: 401 | 403 | 409 } }): Promise<KinoStream>;
+  /**
+   * apiVersion 6, needed when a stream says `signing: "request"`: headers for one request, computed with
+   * kino.crypto / kino.secret only. kino.fetch answers host_not_allowed; kino.storage, kino.cookies and
+   * kino.sleep fail with not_allowed. 1.5 s limit.
+   */
+  sign?(request: { url: string; kind: "playlist" | "segment"; ref: string; context: string }): Promise<{ headers: Record<string, string> }>;
   /** apiVersion 3, capability "channels" (required with it). At most 200 categories. */
   liveCategories?(): Promise<Array<KinoLiveCategory | KinoPlaylist> | KinoPlaylist>;
   /**
@@ -262,10 +366,22 @@ interface KinoPlugin {
   /**
    * apiVersion 3, optional with "channels": channels whose name matches `query`, listed or not (the
    * En vivo search, while some of your channels were never listed). At most 100 kept; `next` ignored.
+   * apiVersion 6 with an 18+ category: give every hit `adult` or `categoryId`; an unmarked hit counts as 18+.
    */
   liveSearch?(arg: { query: string }): Promise<KinoLiveChannelPage | KinoLiveChannel[]>;
   /** apiVersion 3, optional with "channels". At most 50 channels and a 24 h window per call. */
   guide?(arg: { channelIds: string[]; from: number; to: number }): Promise<KinoGuideEntry[]>;
+  /** apiVersion 6: required when a setting has `type: "status"`. One text per status setting key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. */
+  settingsStatus?(): Promise<Record<string, string>>;
+  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; `refresh: true` asks settingsStatus() again. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. */
+  action?(key: string): Promise<{ message?: string; refresh?: boolean; clearSettings?: string[] } | null | void>;
+  /**
+   * apiVersion 6, optional: checks the values BEFORE Kino saves them (20 s). `null` accepts; `{ key: "mensaje" }`
+   * refuses with the message under that field (a key that is not one of your valued settings refuses too, as a
+   * general message); a text refuses with that text. If it throws, times out or answers anything else, nothing is
+   * saved and the person may "Guardar sin comprobar".
+   */
+  validateSettings?(values: Record<string, string | boolean | Array<Record<string, string>>>): Promise<Record<string, string> | string | null>;
 }
 
 // ---------- the kino API ----------
@@ -273,11 +389,40 @@ interface KinoPlugin {
 type KinoErrorCode = "auth_required" | "not_found" | "geo_blocked" | "rate_limited" | "unavailable";
 type KinoFetchErrorCode = "host_not_allowed" | "timeout" | "network" | "too_large" | "invalid_request";
 type KinoEncoding = "utf8" | "hex" | "base64";
+type KinoKeyType = "ec" | "ed25519" | "x25519";
+/** A public key as a JWK, in WebCrypto's key order: EC `{ crv, kty: "EC", x, y }`, OKP `{ crv: "Ed25519" | "X25519", kty: "OKP", x }` (base64url, no padding). */
+interface KinoJwk { readonly crv: string; readonly kty: "EC" | "OKP"; readonly x: string; readonly y?: string }
+/** apiVersion 6: a handle to a private key that lives only inside Kino, in this runtime. */
+interface KinoPrivateKey { readonly type: KinoKeyType; readonly namedCurve?: "P-256" | "P-384"; readonly handle: string }
+/** apiVersion 6: `spki` is DER as base64; `raw` is base64 (an uncompressed point 04||x||y for ec, 32 bytes otherwise). */
+interface KinoPublicKey { readonly type: KinoKeyType; readonly namedCurve?: "P-256" | "P-384"; readonly jwk: KinoJwk; readonly spki: string; readonly raw: string }
 
 interface KinoError extends Error {
   /** `KinoError_<code>` (e.g. `KinoError_not_found`). */
   readonly name: string;
   readonly code: KinoErrorCode | KinoFetchErrorCode | "crypto_error" | "unknown";
+  /** The sentence you passed as `{ userMessage }`, cut at 161 characters; absent when you passed none. */
+  readonly userMessage?: string;
+}
+
+interface KinoErrorOptions {
+  /**
+   * Your own sentence for the person, shown INSTEAD of Kino's line for the code as "Mensaje de <plugin>: <sentence>",
+   * only when: your plugin's name has no ":", no digit glued to a letter, spells no Kino and uses only the characters
+   * below; the code is one of
+   * the five `KinoErrorCode`s; it is 1..160 characters once trimmed, made only of Basic Latin and Latin-1 letters
+   * (á é í ó ú ü ñ ç ã õ…, not ø æ ð þ ß), digits 0-9, the plain space and . , : ; ¿ ? ¡ ! ' ’ ‘ “ ” « » ( ) % - – — ▸
+   * (; only before a space); it reads as
+   * plain words (two or more, no URL, no "TypeError:" prefix, no undefined/null/NaN, not ending in : , ; -); fewer than
+   * 6 digits in all and none glued to a letter; no domain (site.app, site .app, site. app, www, punto/dot + com, app…);
+   * no "kino" once 1 l ! ¡ read as
+   * i, 0 as o and non-letters dropped; no credential, money or contact stem (pag…, abon…, recarg…, transfer…,
+   * contraseñ…, passw…, clave…, token…, tarjeta, PIN, Nequi, Daviplata, WhatsApp, Telegram, SMS/verification code);
+   * and none of the person's passwords or a sealed value. Otherwise Kino's line stays. A host the person refused still
+   * wins, whatever the code. It counts only for the call that built the error. Older Kino builds ignore it. Plugins
+   * that use it to ask for money, credentials or contact outside Kino are removed from the catalog.
+   */
+  userMessage?: string;
 }
 
 interface KinoFetchOptions {
@@ -343,17 +488,25 @@ declare namespace kino {
   /** Only to the manifest's hosts over https (http only on a host declared `insecureHttp`), or to the person's own server as typed. Never throws for a non-2xx status. */
   function fetch(url: string, options?: KinoFetchOptions): Promise<KinoResponse>;
 
-  /** `throw kino.error("not_found", "…")`: the app words the message; yours is a detail of at most 200 characters. */
-  function error(code: KinoErrorCode, message?: string): KinoError;
+  /**
+   * `throw kino.error("not_found", "…")`: the app words the message; yours is a detail of at most 200 characters.
+   * `throw kino.error("not_found", "…", { userMessage: "Este capítulo ya no está disponible." })`: your own sentence
+   * for the person, shown instead of Kino's line when it is safe (see `KinoErrorOptions`).
+   */
+  function error(code: KinoErrorCode, message?: string, options?: KinoErrorOptions): KinoError;
 
   /** 0..5000 ms, counts inside the call's own timeout. */
   function sleep(ms: number): Promise<void>;
 
-  /** apiVersion 4: a marker for a secret the manifest's `secrets` declares (throws for any other name). Kino swaps it for the value in `kino.fetch`, toward the manifest's own hosts only; your code never sees the value. */
+  /** apiVersion 4: a marker for a secret the manifest's `secrets` declares (throws for any other name). Kino swaps it for the value in `kino.fetch`, toward the manifest's own hosts only; your code never sees the value. apiVersion 6: a secret declared `{ seal, use: "cipher-key", encoding }` is accepted as the whole `key` of any `kino.crypto.encrypt`/`decrypt` (des-ede3 included), read with the manifest's encoding; it is refused everywhere else, including `kino.fetch`. */
   function secret(name: string): string;
 
-  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a recommended-catalog plugin fails, the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
+  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a recommended-catalog plugin, or of one whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) with the person's "Enviar registros de errores" on, fails (sign and the settings exports included), the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
   function log(...args: unknown[]): void;
+  namespace log {
+    /** apiVersion 6, with `"telemetry": true`: a log line that also tells Kino's error tracker your plugin served a degraded result (a fallback account, a backup source). The line's first word is its area (`[a-z0-9_:]`, with a `_` or `:`, up to 24 characters; anything else is filed as "other"); at most one report per area an hour and 3 per plugin per session, scrubbed like any line. Without telemetry (or switched off) it is only a log line. With `"telemetry": "verbose"` a plugin's playback metrics, live/cast problems and edge cases also reach the board (see the README). In a debug build, or with `"debug": true`, every line is in logcat under `KinoPlugin/<id>` and Kino's playback lines under `KinoPlay`. */
+    function report(...args: unknown[]): void;
+  }
 
   namespace html {
     /** Jsoup CSS selectors; at most 500 matches. Only inside Kino. */
@@ -404,6 +557,24 @@ declare namespace kino {
     function randomBytes(n: number, outputEncoding?: KinoEncoding): string;
     /** A random (v4) UUID. */
     function uuid(): string;
+    /**
+     * apiVersion 6: a new key pair. The private key stays inside Kino: you get a handle that works only in this
+     * runtime (not in sign()'s signing lane, not after the plugin restarts) and is gone when it closes; at most 64
+     * live at once (a new one drops the oldest). Node's generateKeyPairSync / WebCrypto's generateKey map here.
+     */
+    function generateKeyPair(options: { type: "ec"; namedCurve: "P-256" | "P-384" } | { type: "ed25519" } | { type: "x25519" }): { readonly privateKey: KinoPrivateKey; readonly publicKey: KinoPublicKey };
+    /** apiVersion 6: a peer's public key (jwk object, spki base64, or raw base64 with `type` and, for ec, `namedCurve`). Private keys cannot be imported. */
+    function importKey(options: { format: "jwk"; key: KinoJwk } | { format: "spki"; key: string } | { format: "raw"; key: string; type: KinoKeyType; namedCurve?: "P-256" | "P-384" }): KinoPublicKey;
+    /**
+     * apiVersion 6: signs `data` (read with `encoding`, default utf8) with your private key; base64 by default.
+     * ec: `hash` "SHA-256" (default) or "SHA-384"; `format` "der" (default, Node's crypto.sign) or "ieee-p1363"
+     * (r||s, 64 bytes on P-256, 96 on P-384: WebCrypto's). ed25519: 64 bytes, no `hash`. x25519 does not sign.
+     */
+    function sign(options: { key: KinoPrivateKey | string; data: string; encoding?: KinoEncoding; hash?: "SHA-256" | "SHA-384"; format?: "der" | "ieee-p1363"; outputEncoding?: "base64" | "hex" }): string;
+    /** apiVersion 6: true when `signature` (base64 by default) is valid for `data`; a malformed signature is false. `key`: a public key, a `{ jwk }`, or your own private key. */
+    function verify(options: { key: KinoPublicKey | { jwk: KinoJwk } | KinoPrivateKey | string; data: string; encoding?: KinoEncoding; signature: string; signatureEncoding?: KinoEncoding; hash?: "SHA-256" | "SHA-384"; format?: "der" | "ieee-p1363" }): boolean;
+    /** apiVersion 6: ECDH (ec, same curve) or X25519: the shared secret, base64 by default (32 bytes; 48 on P-384). */
+    function deriveSharedSecret(options: { privateKey: KinoPrivateKey | string; publicKey: KinoPublicKey | { jwk: KinoJwk }; outputEncoding?: "base64" | "hex" }): string;
   }
 
   namespace rank {

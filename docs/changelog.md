@@ -3,7 +3,55 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Próxima versión de Kino (después de la 0.9.49, aún sin publicar) { #next }
+## Kino 0.9.50: `apiVersion` 6 (aún sin publicar) { #v0950 }
+
+<span id="next"></span>**`apiVersion` 6 = Kino 0.9.50.** El contrato (`contract.json`) dice ahora `maxApiVersion` 6 y
+`kino.apiVersion` reporta 6. Un manifiesto con `"apiVersion": 6` se rechaza en Kino 0.9.49 y anteriores
+("Este plugin necesita una versión más nueva de Kino"), así que declara 6 solo si usas algo de esta
+lista:
+
+- **Secretos sellados más grandes y con tipo**: hasta 8.192 bytes, y llaves de cifrado con tipo
+  (`use: "cipher-key"`) que sirven también para `des-ede3`. [Manifiesto](manifest.md#typed-keys).
+- **`migrate`**: pasar a tu plugin lo que la persona tenía guardado y Kino ya no puede abrir.
+  [Pasar lo guardado](migrate.md).
+- **Streams firmados por petición**: `signing: "request"`, `signContext`, el export `sign`,
+  `resolve(ref, { retry })` y `alternateHosts`. [Firma por petición](signed-streams.md).
+- **El formulario de ajustes**: tipos `section`, `status` y `action` (hasta 16, además de los 12 con
+  valor), `settingsStatus`, `action` con `clearSettings`, `validateSettings`, la pestaña propia en
+  Ajustes y la sincronización entre aparatos. [Formulario de ajustes](settings-form.md).
+- **`debug`** y **`telemetry`** (`true` o `"verbose"`), `kino.log.report`, la página Registro, las
+  etiquetas de logcat `KinoPlugin/<id>` y `KinoPlay`, y las métricas de reproducción.
+  [Registro y telemetría](diagnostics.md).
+- **`section`, `categories` y `theme`**: una sección propia, un grupo en Categorías y tus colores.
+  [Sección, categorías y colores](section-theme.md).
+- **`scopedSearch`**: responder tú la búsqueda dentro de un "Ver más". [Contrato](contract.md#scoped-search).
+- **`kino.error(code, message, { userMessage })`**: tu propia frase para la persona, con reglas de
+  seguridad y atribuida a tu plugin. [Contrato](contract.md#user-message).
+- **Entradas `adult: true`** detrás del código +18 de la persona (antes se descartaban).
+  [Contenido +18](contract.md#adult).
+- **Canales en tus filas de Inicio** (`kind: "live"` en `home`; antes se quitaban).
+  [Canales en vivo](live-channels.md#home-rows).
+- **Pares de llaves en `kino.crypto`**: `generateKeyPair`, `sign`, `verify`, `importKey`,
+  `deriveSharedSecret`. [API kino](kino-api.md#key-pairs).
+
+Sin `apiVersion` nuevo (sirve para cualquier plugin):
+
+- **`alternatives`** en un `Stream`: hasta 8 copias del mismo video; Kino pasa a la siguiente cuando una
+  no se puede reproducir en el aparato. [Contrato](contract.md#stream).
+- **Reproducir en el TV desde el celular**, **capítulos nuevos** de las series seguidas y **"Para ti"**
+  funcionan para títulos de cualquier plugin. [Lo que ve la persona](what-people-see.md#v0950).
+- **Actualizaciones**: revisión al abrir la app (máximo cada 12 h), insignia de pendientes, y una llamada
+  fallida con una actualización pendiente lo dice. [Publicar](publish.md#updates).
+- **Un plugin firmado en dos repositorios** cuenta como el mismo con el mismo `id` y la misma llave.
+  [Plugins firmados](signed.md#two-addresses).
+- **Ids reservados**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys` (la lista cambió:
+  las versiones anteriores reservan algunos más, así que si una dice "El id … está reservado por Kino",
+  escoge otro).
+- **Reclamos y retiro de plugins de la comunidad**: [`community-blocklist.json`](claims.md).
+- **Enviar a la TV**: todo HLS pasa por el celular; un archivo sin `headers` va directo y, si la TV no
+  puede, por el celular. [Enviar a la TV](what-people-see.md#cast).
+
+También en esta versión (ya documentado antes en esta página como "próxima versión"):
 
 - **Instalar desde la URL del manifiesto.** La gente puede pegar la URL `https` de un
   `kino-plugin.json` en cualquier servidor público, no solo un `owner/repo` de GitHub. Una instalación

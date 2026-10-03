@@ -1,0 +1,33 @@
+name: "Reclamo / retiro de plugin"
+description: "Pide que un plugin de la comunidad salga del índice de Kino (derechos infringidos, plugin dañino, a pedido del autor) o pide revisar un retiro."
+title: "Reclamo: owner/repositorio"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kino es un reproductor: no aloja, no vende ni distribuye contenido. La lista de plugins de la comunidad es un índice automático de repositorios públicos de terceros que usan la etiqueta kino-plugin; Kino no los revisa ni responde por su contenido.
+
+        Este issue es público: no pongas datos personales que no quieras publicar. Lo retiramos del índice en un plazo máximo de 5 días hábiles y dejamos constancia en el historial de `community-blocklist.json`. Más información: https://kinotvapp.github.io/kino-plugins/claims/
+  - type: input
+    id: repo
+    attributes:
+      label: "Repositorio"
+      description: "El plugin, como owner/nombre (por ejemplo usuario/kino-plugin-ejemplo)."
+      placeholder: "owner/nombre"
+    validations:
+      required: true
+  - type: textarea
+    id: motivo
+    attributes:
+      label: "Motivo"
+      description: "Qué derecho infringe, por qué es dañino, o (si eres el autor) por qué pides el retiro o la revisión de un retiro."
+    validations:
+      required: true
+  - type: input
+    id: prueba
+    attributes:
+      label: "Enlace a la prueba"
+      description: "Dónde se ve lo que reclamas (una URL)."
+      placeholder: "https://"
+    validations:
+      required: true

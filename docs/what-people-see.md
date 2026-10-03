@@ -11,7 +11,10 @@
   `insecureHttp` agrega, en rojo, "Conexión sin cifrar con &lt;host&gt;", y `liveStreamHosts: "any"`
   agrega, en rojo, "Puede reproducir canales desde cualquier servidor que indique su lista",
   `streamHosts: "any"` agrega, en rojo, "Puede reproducir video desde cualquier servidor que indique",
-  y `secrets` agrega "Usa datos sellados por su autor". En una actualización, lo nuevo lleva un chip
+  y `secrets` agrega "Usa datos sellados por su autor". Desde apiVersion 6, `migrate` agrega "Revisar lo
+  que tienes guardado (biblioteca, historial, favoritos) para pasarlo a este plugin", `telemetry: true`
+  agrega "Comparte registros de errores con Kino para corregir fallas" y `telemetry: "verbose"` agrega
+  "Comparte registros detallados de reproducción y errores con Kino para corregir fallas". En una actualización, lo nuevo lleva un chip
   "nuevo". Nada tuyo corre antes de que acepten.
 - **Una lista larga de hosts se pliega.** Con más de 3 hosts la hoja dice "Se va a conectar con N
   servidores:", lista los 3 primeros (en una actualización, primero los nuevos) y "y N más (M
@@ -31,8 +34,10 @@
 - **Cuando un stream no se puede reproducir**, el reproductor dice por qué en español, nunca con el
   inglés del propio reproductor: por ejemplo "Este aparato no puede reproducir este formato de video
   (4K/HEVC)", "El servidor del video respondió con un error" o "No se pudo reproducir este video".
-- **Configurar.** Un plugin con `settings` tiene un botón "Configurar" en Ajustes ▸ Plugins. Mientras
-  algún ajuste obligatorio no tenga valor, su estado es "Falta configurar" y nada de él corre.
+- **Configurar.** Un plugin con `settings` tiene un botón "Configurar" en Ajustes ▸ Plugins y, desde
+  Kino 0.9.50, su propia pestaña en Ajustes con el mismo formulario ([Formulario de
+  ajustes](settings-form.md)). Mientras algún ajuste obligatorio no tenga valor, su estado es "Falta
+  configurar" y nada de él corre.
 - **Ver más.** Una fila de Inicio con `ref` termina en una tarjeta "Ver más", y una página de búsqueda
   con `next` muestra "Ver más resultados de &lt;name&gt;": las dos abren una cuadrícula que te pide la
   página siguiente a medida que la persona baja.
@@ -71,9 +76,10 @@ activa: Kino decide por cada stream según lo que devuelve tu `resolve` (`url`, 
 
 | Tu stream | Qué hace Kino |
 | --- | --- |
-| mp4/webm (u otro archivo progresivo) **sin `headers`**, en un host que tu plugin puede usar | La TV pide la URL ella misma; el celular no mueve bytes. |
-| HLS (`.m3u8`) **sin `headers`**, en un host que tu plugin puede usar | La TV pide la lista ella misma. |
-| Cualquier archivo o HLS **con `headers`** (Referer, cookies, tokens en headers) | Por el celular: él pide con tus headers y la TV solo ve una dirección local; las listas HLS se reescriben para que cada segmento y cada clave también pasen por el celular. |
+| mp4/webm (u otro archivo progresivo) **sin `headers`**, en un host que tu plugin puede usar | La TV pide la URL ella misma; el celular no mueve bytes. Si la TV no puede con ella, se pasa por el celular. |
+| HLS (`.m3u8`) | Por el celular (un Chromecast necesita CORS en él): las listas se reescriben para que cada segmento y cada clave pasen por el celular. |
+| Cualquier archivo **con `headers`** (Referer, cookies, tokens en headers) | Por el celular: él pide con tus headers y la TV solo ve una dirección local. |
+| Un stream [firmado por petición](signed-streams.md#cast) (Kino 0.9.50) | Por el celular, que llama `sign()` para cada playlist y segmento que pide la TV. |
 | DRM (Widevine o ClearKey), DASH, MPEG-TS progresivo, o un formato que nada permite identificar | No se envía: la persona lee "Este título no se puede enviar a la TV" (los protegidos: "Este título está protegido y no se puede enviar a la TV"). |
 
 Lo que ayuda a quien escribe plugins: devuelve un `mime` real (`video/mp4`,
@@ -82,6 +88,39 @@ primeros bytes de un stream que nada describe (una lectura de 1 KB, 2 s), pero e
 petición. Prefiere enlaces que no necesiten `headers` (la ruta más liviana); cada host involucrado
 tiene que ser uno al que tu plugin puede llegar (declarado, escrito por la persona, o cubierto por un
 permiso "any"), por https. Mientras se envía, el celular se queda en silencio.
+
+## Desde Kino 0.9.50 { #v0950 }
+
+Sin nada nuevo en tu manifiesto, salvo donde se dice:
+
+- **Reproducir en el TV desde el celular.** Con dos aparatos emparejados, "Reproducir en el TV" funciona
+  para un título de cualquier plugin: el TV lo abre con **su propia copia** del plugin. Si el TV no
+  puede, el celular dice por qué: "Instala el plugin &lt;nombre&gt; en el TV para verlo allí", "Activa
+  …", "Configura …", "Actualiza …", "Reinstala …", "En el TV hay otro plugin con ese nombre; instala el
+  mismo desde su repositorio", "Desbloquea el contenido 18+ en el TV para verlo allí" o, con un TV que
+  tiene una versión de Kino más vieja, "Actualiza Kino en el TV para verlo allí". Por eso conviene que
+  tu `id` y tus refs sean los mismos en todos los aparatos.
+- **Capítulos nuevos de las series que la persona sigue.** Kino revisa de vez en cuando (máximo cada
+  6 horas) las series guardadas de cualquier plugin utilizable que declare `episodes`, llamando a tu
+  `episodes(ref)` con el `ref` guardado, y agrega los capítulos que faltan. Una falla deja esa serie
+  igual y sigue con la siguiente. Mantén tus refs de series estables.
+- **"Para ti".** Una recomendación que viene del catálogo de un plugin se guarda por su `ref`: una
+  película como película, una serie con su primera temporada (llamando a `episodes`).
+- **Contenido +18.** Las entradas `adult: true` de un plugin apiVersion 6 se ven solo con el código +18
+  desbloqueado ([Contenido +18](contract.md#adult)).
+- **Canales en Inicio.** Un plugin apiVersion 6 puede poner canales en sus filas de Inicio
+  ([Canales en tus filas de Inicio](live-channels.md#home-rows)).
+- **Una sección propia** en la barra lateral del TV o en la franja de Inicio del celular, y un grupo en
+  Categorías, para un plugin que declare `section` o exporte `categories`
+  ([Sección, categorías y colores](section-theme.md)).
+- **Buscar dentro de un "Ver más".** Toda página "Ver más" tiene "Buscar en esta categoría"
+  ([`scopedSearch`](contract.md#scoped-search)).
+- **Actualizaciones.** Una insignia en Ajustes ▸ Plugins cuenta las actualizaciones que esperan
+  aprobación, y una llamada fallida de un plugin con una actualización pendiente lo dice
+  ([Actualizaciones](publish.md#updates)).
+- **Plugins de la comunidad.** La sección lleva la nota "Plugins de la comunidad — Kino no los revisa ni
+  responde por su contenido.", y un plugin instalado que fue retirado del índice dice "Retirado del
+  índice de la comunidad." ([Reclamos y retiro de plugins](claims.md)).
 
 ## Plugins en los otros aparatos de la persona { #sync }
 

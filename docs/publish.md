@@ -43,7 +43,8 @@ cuando la persona toca "Actualizar". Si aun así no aparece, mira
 4. <span id="updates"></span>**Para sacar una actualización, sube `version`** (un `MAJOR.MINOR.PATCH`
    estrictamente mayor; un número igual o menor se toma como "ya está al día", así que un arreglo sin
    subir la versión nunca le llega a nadie). Kino busca actualizaciones máximo una vez al día por
-   plugin, y cuando la persona toca "Buscar actualización".
+   plugin, y cuando la persona toca "Buscar actualización". Desde Kino 0.9.50 también revisa todos los
+   plugins instalados al abrir la app (máximo una vez cada 12 horas).
     - Si la versión nueva no agrega nada a `hosts`, `permissions`, `download`, `drm` ni un host
       `insecureHttp`, y necesita un `apiVersion` soportado, se instala en silencio.
     - Si `hosts` o `permissions` crecen, o el manifiesto declara por primera vez `download`, `drm`, o
@@ -54,6 +55,20 @@ cuando la persona toca "Actualizar". Si aun así no aparece, mira
       "Falta configurar" hasta que la persona lo llene.
     - Si la versión nueva necesita un `apiVersion` más alto del que soporta la app, la revisión dice
       "Este plugin necesita una versión más nueva de Kino" y la versión instalada sigue funcionando.
+    - Mientras una actualización espera la aprobación, la entrada Plugins de Ajustes muestra una
+      insignia con cuántas esperan (celular y TV), y una llamada fallida de ese plugin dice "Hay una
+      versión nueva de &lt;nombre&gt;: actualízala en Ajustes ▸ Plugins" en vez del error de siempre
+      (le siguen ganando un host rechazado, tu [`userMessage`](contract.md#user-message) y
+      `auth_required`). Kino nunca aprueba por la persona en esa revisión.
+    - **Después de una actualización de Kino**, el primer arranque revisa de una vez cada plugin que
+      estaba instalado y encendido. En esta versión (un interruptor de compilación que Kino apagará
+      después), las actualizaciones que esperan aprobación se instalan entonces **sin preguntar**, una
+      sola vez, y solo cuando se leen desde la dirección de instalación del propio plugin; un aviso de
+      una sola vez, "Se actualizaron tus plugins", lista cada plugin y lo que puede hacer ahora (por
+      ejemplo "Envía registros de errores a Kino"), con accesos a su pestaña en Ajustes, a desactivarlo
+      y a desinstalarlo. Con el interruptor apagado, una hoja de una sola vez, "Hay actualizaciones de
+      tus plugins", ofrece "Actualizar todos" y muestra cada hoja de consentimiento por turnos. Las
+      actualizaciones siguientes de tu plugin siguen las reglas de arriba.
 5. **Dale tiempo.** GitHub sirve los archivos raw con un caché de unos cinco minutos (medido:
    `cache-control: max-age=300`), así que un cambio que acabas de subir puede tardar eso en verse en
    una instalación o en una búsqueda de actualización.
@@ -65,8 +80,9 @@ cuando la persona toca "Actualizar". Si aun así no aparece, mira
 La misma aprobación aplica a las otras adiciones que necesitan una línea en la hoja de
 consentimiento: `channels` ([Canales en vivo](live-channels.md#en-vivo-tab)),
 `"liveStreamHosts": "any"` ([Canales desde cualquier servidor](live-channels.md#live-stream-hosts)),
-`"streamHosts": "any"` ([Reproducir desde cualquier servidor](manifest.md#stream-hosts)) y `secrets`
-en un plugin que no tenía ([Secretos sellados](manifest.md#secrets); agregar, cambiar o quitar un
+`"streamHosts": "any"` ([Reproducir desde cualquier servidor](manifest.md#stream-hosts)), `migrate`
+([Pasar lo guardado](migrate.md)), `telemetry` o un paso de `true` a `"verbose"`
+([Registro y telemetría](diagnostics.md#telemetry)) y `secrets` en un plugin que no tenía ([Secretos sellados](manifest.md#secrets); agregar, cambiar o quitar un
 secreto después de eso no pregunta nada). Los hosts que la persona aprobó mientras tu plugin corría
 ([Un host que se te olvidó](contract.md#forgotten-host)) y el permiso amplio de video se conservan en
 cada actualización. Un plugin con `secrets` solo se actualiza desde su rama principal, sin `@ref`.
@@ -160,7 +176,7 @@ El resto de esta sección explica cada regla que aplica la app, con su valor exa
 | 5 | **`kino-plugin.json` en la raíz, en la rama por defecto** | La app lee `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` es la rama por defecto). Un manifiesto en una subcarpeta o solo en otra rama no se encuentra. |
 | 6 | **Máximo 16 KB** | Un manifiesto más grande (16.384 bytes) se descarta. |
 | 7 | **Un manifiesto válido** | El mismo analizador del instalador: todas las reglas de [el manifiesto](manifest.md). `node sdk/validate.mjs .` lo revisa con los mismos mensajes. (El descubrimiento solo lee el manifiesto; el archivo de entrada y sus exports se revisan cuando alguien instala.) |
-| 8 | **Un `apiVersion` que soporte el Kino de la persona** | Un manifiesto cuyo `apiVersion` es más alto del que soporta esa versión de la app es inválido para ella ("Este plugin necesita una versión más nueva de Kino"), así que no aparece en dispositivos con un Kino más viejo. Esta versión soporta hasta `4`. |
+| 8 | **Un `apiVersion` que soporte el Kino de la persona** | Un manifiesto cuyo `apiVersion` es más alto del que soporta esa versión de la app es inválido para ella ("Este plugin necesita una versión más nueva de Kino"), así que no aparece en dispositivos con un Kino más viejo. Kino 0.9.50 soporta hasta `6`; de 0.9.45 a 0.9.49, hasta `5`. |
 | 9 | **Que no diga `"discoverable": false`** | Déjalo por fuera o ponlo en `true`. Cualquier valor que no sea booleano vuelve inválido todo el manifiesto. |
 | 10 | **Un `id` que no sea de nadie más** | Mira [Por qué un plugin válido igual puede quedar oculto](#discovery-hidden). |
 | 11 | **Suficientes estrellas para estar entre los 30 primeros** | Mira [Cómo busca la app](#discovery-search). |
@@ -232,8 +248,7 @@ La lista descarta, tenga las estrellas que tenga:
 
 - **Un repositorio que ya es recomendado.** Sale en "Recomendados", nunca dos veces.
 - **Un id impostor.** Un plugin cuyo `id` de manifiesto es el de un plugin recomendado de **otro**
-  repositorio, o uno reservado (`xuper`, que pertenece a su repositorio oficial), se descarta, para
-  que nunca pueda tapar al de verdad. Hoy los ids recomendados son `internet-archive` y `own-server`;
+  repositorio se descarta, para que nunca pueda tapar al de verdad. Hoy los ids recomendados son `internet-archive` y `own-server`;
   la lista puede crecer, así que escoge un id que sea claramente tuyo.
 - **Un id ya instalado desde otro repositorio.** Su instalación se rechazaría ("Ya hay un plugin con
   ese id"), así que no se ofrece. Esto es por dispositivo: solo lo oculta donde ese otro plugin está
@@ -241,7 +256,10 @@ La lista descarta, tenga las estrellas que tenga:
   instaló el plugin de Internet Archive: **cambia siempre el `id`**.
 - **Repetidos.** El mismo repositorio dos veces, o dos repositorios con el mismo `id`: gana el primero
   (el de más estrellas).
-- **Los ids que Kino se guarda para sí** (`magis`, `live`, `local`, `unknown`, `plugin`, `own`; las versiones anteriores también `ditu`)
+- **Un repositorio retirado del índice.** Los repositorios de
+  [`community-blocklist.json`](claims.md) nunca salen en "De la comunidad" ni en la lista de respaldo
+  ([Reclamos y retiro de plugins](claims.md)).
+- **Los ids que Kino se guarda para sí** (`live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`; las versiones anteriores reservan algunos más)
   vuelven inválido el manifiesto, así que nunca llegan hasta aquí.
 
 ### "Mi plugin no aparece": qué revisar { #troubleshooting }
@@ -269,7 +287,7 @@ La lista descarta, tenga las estrellas que tenga:
    0 y sin la línea "No aparecerá en la búsqueda de Kino". Revisa que pese máximo 16 KB.
 5. **¿Ese celular lo puede leer?** ¿El `apiVersion` es máximo el que soporta el Kino de la persona?
    Actualiza Kino, o baja el `apiVersion` si no necesitas sus funciones.
-6. **¿El `id` es tuyo?** Que no sea el de un plugin recomendado, ni `xuper`, ni el de un plugin ya
+6. **¿El `id` es tuyo?** Que no sea el de un plugin recomendado, ni el de un plugin ya
    instalado en ese dispositivo desde otro repositorio (ni `archive-org` de la plantilla).
 7. **¿Ya es recomendado?** Entonces está en "Recomendados", no en "De la comunidad".
 8. **¿La copia del dispositivo está vieja?** La lista se actualiza máximo cada 12 horas; toca

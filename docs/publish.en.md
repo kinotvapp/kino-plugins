@@ -43,7 +43,8 @@ and [Every requirement, one by one](#discovery-requirements).
 4. <span id="updates"></span>**To ship an update, raise `version`** (a strictly higher `MAJOR.MINOR.PATCH`; an unchanged or
    lower number is treated as "already up to date", so a fix without a version bump never reaches
    anyone). Kino checks for updates at most once a day per plugin, and when the person taps
-   "Buscar actualización".
+   "Buscar actualización". From Kino 0.9.50 it also checks every installed plugin when the app starts
+   (at most once every 12 hours).
     - If the new version does not add anything to `hosts`, `permissions`, `download`, `drm` or an
       `insecureHttp` host, and needs a supported `apiVersion`, it is installed silently.
     - If `hosts` or `permissions` grow, or the manifest newly declares `download`, `drm`, or marks an
@@ -54,6 +55,19 @@ and [Every requirement, one by one](#discovery-requirements).
       configurar" until the person fills it in.
     - If the new version needs a higher `apiVersion` than the app supports, the check reports "Este
       plugin necesita una versión más nueva de Kino" and the installed version keeps working.
+    - While an update waits for approval, the Plugins entry in Ajustes shows a badge with how many wait
+      (phone and TV), and a failed call of that plugin says "Hay una versión nueva de &lt;name&gt;:
+      actualízala en Ajustes ▸ Plugins" instead of the usual error (a refused host, your
+      [`userMessage`](contract.md#user-message) and `auth_required` still win over it). Kino never
+      approves on the person's behalf in that check.
+    - **After a Kino update**, the first start checks every plugin that was installed and enabled
+      before it, right away. In this release (a build switch Kino will turn off later) the updates that
+      wait for approval are then installed **without asking**, once, and only when read from the
+      plugin's own install address; a one-time notice "Se actualizaron tus plugins" lists each plugin
+      and what it may do now (for example "Envía registros de errores a Kino"), with shortcuts to its
+      tab in Ajustes, to disable it and to uninstall it. With the switch off, a one-time sheet "Hay
+      actualizaciones de tus plugins" offers "Actualizar todos" and shows each consent sheet in turn.
+      Later updates of your plugin follow the rules above.
 5. **Give it time.** GitHub serves raw files with a cache of about five minutes (measured:
    `cache-control: max-age=300`), so a change you just pushed can take that long to be visible to an
    install or an update check.
@@ -65,7 +79,9 @@ and [Every requirement, one by one](#discovery-requirements).
 The same approval applies to the other additions that need a line on the consent sheet: `channels`
 ([Live channels](live-channels.md#en-vivo-tab)), `"liveStreamHosts": "any"`
 ([Channels from any server](live-channels.md#live-stream-hosts)), `"streamHosts": "any"`
-([Playing from any server](manifest.md#stream-hosts)) and `secrets` in a plugin that had none
+([Playing from any server](manifest.md#stream-hosts)), `migrate` ([Moving saved titles](migrate.md)),
+`telemetry` or a move from `true` to `"verbose"` ([Logs and telemetry](diagnostics.md#telemetry)) and
+`secrets` in a plugin that had none
 ([Sealed secrets](manifest.md#secrets); adding, changing or removing a secret after that asks
 nothing). Hosts the person approved while your plugin ran ([A host you forgot](contract.md#forgotten-host))
 and the broad video permission carry over to every update. A plugin with `secrets` only updates from
@@ -155,7 +171,7 @@ The rest of this section spells out every rule the app applies, with its exact v
 | 5 | **`kino-plugin.json` at the root, on the default branch** | The app reads `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` is the default branch). A manifest in a subfolder or only on another branch is not found. |
 | 6 | **At most 16 KB** | A bigger manifest (16,384 bytes) is dropped. |
 | 7 | **A valid manifest** | The same parser as the installer: every rule of [The manifest](manifest.md). `node sdk/validate.mjs .` checks it with the same messages. (Discovery reads only the manifest; the entry file and its exports are checked when someone installs.) |
-| 8 | **An `apiVersion` the person's Kino supports** | A manifest whose `apiVersion` is higher than the build supports is invalid for that build ("Este plugin necesita una versión más nueva de Kino"), so it does not show on devices with an older Kino. This build supports up to `4`. |
+| 8 | **An `apiVersion` the person's Kino supports** | A manifest whose `apiVersion` is higher than the build supports is invalid for that build ("Este plugin necesita una versión más nueva de Kino"), so it does not show on devices with an older Kino. Kino 0.9.50 supports up to `6`; 0.9.45 to 0.9.49, up to `5`. |
 | 9 | **Not `"discoverable": false`** | Leave it out or set `true`. Any value that is not a boolean makes the whole manifest invalid. |
 | 10 | **An `id` nobody else owns** | See [Why a valid plugin can still be hidden](#discovery-hidden). |
 | 11 | **Enough stars to be in the top 30** | See [How the app searches](#discovery-search). |
@@ -221,8 +237,7 @@ The list drops, whatever the stars:
 
 - **A repository that is already recommended.** It shows under "Recomendados" instead, never twice.
 - **An impostor id.** A plugin whose manifest `id` belongs to a recommended plugin from **another**
-  repository, or to a reserved one (`xuper`, owned by its official repository), is dropped, so it can
-  never hide the real one. Today the recommended ids are `internet-archive` and `own-server`; the list
+  repository is dropped, so it can never hide the real one. Today the recommended ids are `internet-archive` and `own-server`; the list
   can grow, so pick an id that is clearly yours.
 - **An id already installed from another repository.** Its install would be refused ("Ya hay un
   plugin con ese id"), so it is not offered. This is per device: it hides only where that other
@@ -230,7 +245,10 @@ The list drops, whatever the stars:
   everyone who installed the Internet Archive plugin: **always change the `id`**.
 - **Repeats.** The same repository listed twice, or two repositories with the same `id`: the first
   one (the one with more stars) wins.
-- **The ids Kino keeps for itself** (`magis`, `live`, `local`, `unknown`, `plugin`, `own`; older versions also `ditu`) make the
+- **A repository taken down from the index.** The repositories in
+  [`community-blocklist.json`](claims.md) never show in "De la comunidad" nor in the fallback list
+  ([Claims and plugin takedowns](claims.md)).
+- **The ids Kino keeps for itself** (`live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`; older versions reserve a few more) make the
   manifest invalid, so they never get this far.
 
 ### "Mi plugin no aparece": troubleshooting { #troubleshooting }
@@ -258,7 +276,7 @@ The list drops, whatever the stars:
    "No aparecerá en la búsqueda de Kino" line. Check it is at most 16 KB.
 5. **Can that phone read it?** Is `apiVersion` at most what the person's Kino supports? Update Kino,
    or lower the `apiVersion` if you do not need its features.
-6. **Is the `id` yours?** Not a recommended plugin's id, not `xuper`, not the id of a plugin already
+6. **Is the `id` yours?** Not a recommended plugin's id, not the id of a plugin already
    installed on that device from another repository (not `archive-org` from the template).
 7. **Is it already recommended?** Then it is under "Recomendados", not "De la comunidad".
 8. **Is the device's copy old?** The list refreshes at most every 12 hours; tap "Actualizar" (wait

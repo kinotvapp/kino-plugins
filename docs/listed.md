@@ -31,10 +31,10 @@ abajo. Si cumples los cinco pasos, apareces.
 - Revísalo con el kit: `node sdk/validate.mjs .` tiene que terminar en
   `✓ Kino would accept this plugin` y **sin** la línea "No aparecerá en la búsqueda de Kino" (esa línea
   sale cuando el manifiesto dice `"discoverable": false`).
-- Un `apiVersion` más nuevo que el Kino de la persona la deja sin verlo. Hoy Kino llega hasta `4`; usa
+- Un `apiVersion` más nuevo que el Kino de la persona la deja sin verlo. Kino 0.9.50 llega hasta `6` (0.9.45 a 0.9.49, hasta `5`); usa
   el más bajo que te sirva y llegarás también a los Kino viejos.
 - Un `id` tuyo: nunca el `archive-org` de la plantilla, ni el de un plugin recomendado
-  (`internet-archive`, `own-server`), ni `xuper`. Con un id ajeno tu plugin queda oculto
+  (`internet-archive`, `own-server`). Con un id ajeno tu plugin queda oculto
   ([por qué](publish.md#discovery-hidden)).
 
 ### 3. Un buen nombre y una buena descripción, en el manifiesto { #name-description }

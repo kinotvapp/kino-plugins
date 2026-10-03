@@ -24,19 +24,23 @@ names the field.
 
 | Field | Rule |
 | --- | --- |
-| `id` | Required. `^[a-z0-9][a-z0-9-]{1,39}$` (2 to 40 lowercase letters, digits or hyphens, not starting with a hyphen). Not one of `magis`, `live`, `local`, `unknown`, `plugin`, `own` (older Kino versions also reserve `ditu`: avoid it). It is the plugin's identity: never change it once people have installed it. |
+| `id` | Required. `^[a-z0-9][a-z0-9-]{1,39}$` (2 to 40 lowercase letters, digits or hyphens, not starting with a hyphen). Not one of `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys` (Kino's own names; older versions reserve a few more: if one says "El id … está reservado por Kino", pick another). It is the plugin's identity: never change it once people have installed it. |
 | `name` | Required. 1 to 40 characters. |
 | `version` | Required. `MAJOR.MINOR.PATCH` and nothing else (no `-beta`, no `+build`), each number up to 6 digits and without leading zeros. |
-| `apiVersion` | Required. `1`, `2`, `3`, `4` or `5`. A higher number than Kino supports is refused with "Este plugin necesita una versión más nueva de Kino". Declare the lowest number that has what you use, so your plugin also runs on older Kino builds: `2` for `download`, `drm`, `insecureHttp`, `"hosts": []` or `live` items; `3` for `channels`/`liveStreamHosts`; `4` for a `list` setting, `streamHosts` or `secrets`; `5` only for a [signed plugin](signed.md) (Kino 0.9.45+). |
+| `apiVersion` | Required. `1` to `6`. A higher number than Kino supports is refused with "Este plugin necesita una versión más nueva de Kino". Declare the lowest number that has what you use, so your plugin also runs on older Kino builds: `2` for `download`, `drm`, `insecureHttp`, `"hosts": []` or `live` items; `3` for `channels`/`liveStreamHosts`; `4` for a `list` setting, `streamHosts` or `secrets`; `5` only for a [signed plugin](signed.md) (Kino 0.9.45+); `6` (Kino 0.9.50+) for anything on the [apiVersion 6 list](changelog.md#v0950): typed or larger sealed secrets, `migrate`, `scopedSearch`, request-signed streams, the settings form's `section`/`status`/`action`, `debug`, `telemetry`, `section`, `categories`, `theme`, `userMessage`, `adult` entries, channels in Home rows and `kino.crypto`'s key-pair calls. |
 | `entry` | Required. Relative path of the JavaScript file: letters, digits, `.`, `_`, `-` and `/` only, no `..`, at most 200 characters, ends in `.js`. The file is at most 1 MB. **Write `"plugin.js"`, never `"./plugin.js"`**: Kino 0.9.45 and older refuse a leading `./` (see the warning [below](#entry-dot-slash)). |
-| `signature` | Optional, apiVersion 5 only: `{ "authorKey": "<64 hex>", "value": "<128 hex>" }`, written by `node sdk/seal.mjs --sign`: your signature over the entry file. Needs Kino 0.9.45+. See [Signed plugins](signed.md). Below apiVersion 5 it is ignored. <a id="signature"></a> |
+| `signature` | Optional, from apiVersion 5: `{ "authorKey": "<64 hex>", "value": "<128 hex>" }`, written by `node sdk/seal.mjs --sign`: your signature over the entry file. Needs Kino 0.9.45+. See [Signed plugins](signed.md). Below apiVersion 5 it is ignored. <a id="signature"></a> |
 | `hosts` | Required. at least 1 entry, with no upper limit from Kino 0.9.45 (only the manifest's 16 KB bounds it). Kino 0.9.44 and older refuse more than 20, so with more than 20 hosts the kit warns "Más de 20 hosts: Kino 0.9.44 o anterior rechaza este plugin; necesita Kino 0.9.45 o superior". From apiVersion 2 it may be empty, `[]`, when the plugin has a `url` setting: see [The person's own servers](#own-servers)); each a lowercase DNS name (`archive.org`), `*.` plus a DNS name (`*.archive.org`), or (apiVersion 2 only) an object `{ "host": "…", "insecureHttp": true }` (below). Host names only: no scheme, port or path. No bare `*`, no IP addresses, no `localhost`, nothing ending in `.local`, `.lan`, `.internal`, `.localhost` or `.home.arpa`, and at least one dot. **`*.x` covers subdomains only, not `x` itself**: if you need both, list both. The hosts a person approves later, one by one, while your plugin runs ([A host you forgot](contract.md#forgotten-host)) are not counted against the manifest. |
-| `capabilities` | Required. A subset of `search`, `home`, `browse`, `episodes`, `resolve`, `download`, `drm`, `channels`. Must include `resolve` and at least one of `search` or `home`. `search`, `home`, `browse`, `episodes` and `resolve` must each be an exported function of the entry file, or the install fails with "El plugin no carga: le falta ...". `download` and `drm` need `apiVersion: 2` and are declarative flags instead — the app acts on them, not your code, so nothing extra to export; declaring one shows its consent line ("Puede descargar videos para verlos sin conexión" / "Reproduce video protegido (DRM)") and needs approval again on an update that adds it. `download` gives your titles offline downloads (see [Downloads](#downloads)); `drm` lets a `Stream` carry a Widevine license (see [A Widevine-protected stream](cookbook.md#widevine)). `channels` needs `apiVersion: 3` and the exports `liveCategories` and `liveChannels` (see [Channels in the En vivo tab](live-channels.md#en-vivo-tab)). |
+| `capabilities` | Required. A subset of `search`, `home`, `browse`, `episodes`, `resolve`, `download`, `drm`, `channels`, `migrate`, `scopedSearch`. Must include `resolve` and at least one of `search` or `home`. `search`, `home`, `browse`, `episodes` and `resolve` must each be an exported function of the entry file, or the install fails with "El plugin no carga: le falta ...". `download` and `drm` need `apiVersion: 2` and are declarative flags instead — the app acts on them, not your code, so nothing extra to export; declaring one shows its consent line ("Puede descargar videos para verlos sin conexión" / "Reproduce video protegido (DRM)") and needs approval again on an update that adds it. `download` gives your titles offline downloads (see [Downloads](#downloads)); `drm` lets a `Stream` carry a Widevine license (see [A Widevine-protected stream](cookbook.md#widevine)). `channels` needs `apiVersion: 3` and the exports `liveCategories` and `liveChannels` (see [Channels in the En vivo tab](live-channels.md#en-vivo-tab)). `migrate` needs `apiVersion: 6` and the export `migrate`; declaring it shows "Revisar lo que tienes guardado (biblioteca, historial, favoritos) para pasarlo a este plugin" and needs approval again on an update that adds it (see [Moving saved titles](migrate.md)). `scopedSearch` needs `apiVersion: 6` and `search` (refused otherwise with "La capacidad \"scopedSearch\" necesita también \"search\""); it exports nothing of its own: your `search` gets `within` when the person searches inside a "Ver más" page (see [Searching inside a "Ver más" page](contract.md#scoped-search)). |
 | `settings` | Optional. What the person fills in on your plugin's "Configurar" screen: see below. |
 | `permissions` | Optional. A list of names from the closed list in `contract.json`. **The list is empty in this version**: any name is refused with "permiso desconocido: …". It exists so a later version can add permissions (each one shown on the consent screen) without a new `apiVersion`. |
 | `color` | Optional `#RRGGBB`: the accent of your plugin's tab and chips. A neutral color by default. |
 | `icon` | Optional relative path to a square `.png`, at most 128 KB. An icon that is missing or too big is skipped without failing the install. |
 | `discoverable` | Optional `true` or `false` (default `true`), at every `apiVersion`. `false` keeps the plugin out of Kino's community search (see [Get found](publish.md#get-found)); people can still install it by typing its address. Any other value is refused with "El campo \"discoverable\" debe ser true o false". |
+| `debug` | Optional `true` or `false` (default `false`), from `apiVersion` 6; ignored below. A development aid: while it is `true`, every failed call of your plugin shows a panel on screen and your plugin's tab in Ajustes gets a "Registro" page. Remove it before publishing (`validate.mjs` reminds you). See [Logs and telemetry](diagnostics.md#debug). Any other value is refused with "El campo \"debug\" debe ser true o false". |
+| `telemetry` | Optional `true`, `false` or `"verbose"` (default `false`), from `apiVersion` 6; ignored below. Asks to share your plugin's diagnostic lines with Kino's error tracker when a call fails, whatever repository the plugin comes from, and turns on `kino.log.report`. It shows on the consent sheet, the person can turn it off on each device, and an update that newly declares it waits for their approval. See [Logs and telemetry](diagnostics.md#telemetry). Any other value is refused with "El campo \"telemetry\" debe ser true, false o \"verbose\"". |
+| `section` | Optional `{ "label": "…" }` (1 to 20 characters), from `apiVersion` 6; ignored below. Gives your plugin its own section and requires the `section` export: see [Section, categories and colors](section-theme.md). |
+| `theme` | Optional object, from `apiVersion` 6; ignored below. Up to five `#RRGGBB` colors: `accent`, `onAccent`, `background`, `surface`, `highlight`; any other key is refused with "El campo \"theme\" tiene un color desconocido". The manifest only checks the format; the readability guardrails run when Kino uses the colors ([Your colors](section-theme.md#theme)). |
 | `fetchHosts` | Not for your plugin: Kino writes `"fetchHosts": "any"` into the manifests it makes when it converts a Nuvio scraper, and honors it **only** on those (after the person approves it in red), so a converted scraper's `kino.fetch` may reach any public host (see [Nuvio scrapers](nuvio.md)). On a plugin written by hand it is ignored: your `kino.fetch` stays on your `hosts`, and `sdk/validate.mjs` warns "fetchHosts solo tiene efecto en plugins convertidos desde Nuvio; en tu plugin se ignora". From `apiVersion: 4` its only value is `"any"`; any other is refused with "El campo \"fetchHosts\" solo admite \"any\"". Below apiVersion 4 it is ignored. |
 | `description`, `author`, `homepage` | Optional strings. Trimmed and cut to 300, 60 and 200 characters. Kino shows the name, author, version and description when it asks the person to install. |
 
@@ -110,7 +114,7 @@ node sdk/seal.mjs --repo owner/repo --name apiKey
 address people install from: a trailing `/` and a `.git` are dropped, but a URL
 (`https://github.com/...`) and an `@ref` are refused rather than guessed at. The value is read from a
 hidden prompt or piped on stdin -- never as a command-line argument, which would land in shell
-history. It must be 1 to 4,096 bytes (UTF-8); the tool prints one line, `kino-sealed:v1:...`, to paste
+history. It must be 1 to 4,096 bytes (UTF-8) -- up to 8,192 with `"apiVersion": 6`; the tool prints one line, `kino-sealed:v1:...`, to paste
 into the manifest:
 
 ```json
@@ -143,6 +147,33 @@ into the manifest:
   brings secrets to a plugin that had none asks again, exactly like a new host. Adding, changing or
   removing a secret in a plugin that already declared some does not.
 
+### Typed cipher keys (apiVersion 6) { #typed-keys }
+
+A sealed value used as the key of `kino.crypto.encrypt`/`decrypt` can be declared as a key, so Kino
+reads its bytes with an encoding fixed in the manifest instead of whatever `keyEncoding` the code
+passes. That is what lets a sealed key work for `des-ede3-*` too (an untyped sealed key stays AES-only):
+
+    node sdk/seal.mjs --repo owner/repo --name portalKey --use cipher-key --encoding hex
+
+prints one JSON line to paste as the secret's value:
+
+```json
+"apiVersion": 6,
+"secrets": { "portalKey": { "seal": "kino-sealed:v1:...", "use": "cipher-key", "encoding": "hex" } }
+```
+
+- `use` must be `"cipher-key"`; `encoding` is `"hex"` or `"base64"`; no other field is allowed.
+- The value must decode, under that encoding, to a 16, 24 or 32-byte key: `seal.mjs` refuses anything
+  else, and Kino refuses the install with "El secreto "portalKey" debe ser una clave de 16, 24 o 32 bytes".
+- `kino.secret("portalKey")` works as the **whole** `key` of any `encrypt`/`decrypt`; the `keyEncoding`
+  you pass is ignored. It is refused, with "no se puede usar un dato sellado aquí", as an HMAC key, a
+  `pbkdf2` input, anywhere in `data`/`iv`/`aad`, and anywhere in a `kino.fetch` request (the URL,
+  header names or values, a text, JSON or form body): a typed key is for `kino.crypto` only and never
+  goes on the wire.
+- Below apiVersion 6 an object here is not a seal: the manifest is refused.
+- The SDK kit simulates all of this from the plain value in `.kino-secrets.json`; the key's bytes, in
+  hex (either case) or base64, are also redacted from anything a server sends back.
+
 **What this protects, and what it does not.** This is obfuscation, not secrecy: the private key that
 opens a seal ships inside every copy of Kino. Sealing a value keeps it out of your manifest and your
 repository's history; it does not stop someone from pulling Kino apart and opening the seal
@@ -159,7 +190,8 @@ testing with the Node kit is on [Test it locally](test-locally.md#secrets).
 
 ## Settings { #settings }
 
-`settings` is a list of at most 12 entries. Each one becomes a field on the plugin's "Configurar"
+`settings` is a list of at most 12 entries that hold a value (plus, from apiVersion 6, at most 16 that
+only show or do something: see [The settings form](settings-form.md)). Each one becomes a field on the plugin's "Configurar"
 screen (Ajustes ▸ Plugins), and your code reads its value with `kino.config.get(key)`:
 
 ```json
@@ -182,6 +214,9 @@ screen (Ajustes ▸ Plugins), and your code reads its value with `kino.config.ge
 | `toggle` | `true` / `false` | no (always has a value) | yes | — |
 | `select` | one of the `options` values | no (always has a value) | yes | — |
 | `list` | a list of entries, each an object of the list's `fields` | yes | no | — |
+| `section` | none (apiVersion 6) | no (holds no value) | no | — |
+| `status` | none (apiVersion 6) | no (holds no value) | no | — |
+| `action` | none (apiVersion 6) | no (holds no value) | no | — |
 <!-- contract:settings:end -->
 
 - `key` matches `^[a-z][a-zA-Z0-9_]{0,31}$` and is unique; `label` is 1 to 40 characters; `hint`
@@ -213,6 +248,8 @@ screen (Ajustes ▸ Plugins), and your code reads its value with `kino.config.ge
   rows, so the next call starts a new session with the new values. `kino.storage` is **not** cleared:
   if you keep a token there, key it by the user and server it belongs to (the cookbook does).
 - Uninstalling deletes the settings, passwords included.
+- From apiVersion 6 the form can also show a status, run action buttons and check values before saving,
+  and settings travel between the person's devices: see [The settings form](settings-form.md).
 
 ## The person's own servers { #own-servers }
 

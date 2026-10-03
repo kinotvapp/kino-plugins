@@ -130,6 +130,11 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
 | [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
+| [Formulario de ajustes](settings-form.md) | `section`, `status` y `action` en los ajustes, `clearSettings`, `validateSettings`, la pestaña propia y la sincronización (apiVersion 6) |
+| [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
+| [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
+| [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
+| [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |
 | [Aparecer en Kino](listed.md) | Los cinco pasos para salir en "De la comunidad", cuánto tarda y cómo comprobarlo |
@@ -138,4 +143,5 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, Widevine, `http` plano |
 | [Scrapers de Nuvio](nuvio.md) | Cómo instala la gente los scrapers de Nuvio, qué arma la conversión y sus límites |
 | [Plugins de ejemplo](examples.md) | Los dos ejemplos publicados, y cómo está hecho el plugin de referencia |
+| [Reclamos y retiro de plugins](claims.md) | Cómo pedir que un plugin de la comunidad salga del índice, qué hace Kino y cómo apelar |
 | [Referencia](reference/index.md) | `contract.json` y `kino.d.ts`, para leer o descargar |
