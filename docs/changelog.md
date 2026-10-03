@@ -3,14 +3,46 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Kino 0.9.46 (aún sin publicar) { #v0946 }
+## Próxima versión de Kino (después de la 0.9.49, aún sin publicar) { #next }
 
-- **Se aceptará un `./` al principio de `entry` e `icon`.** Kino lo quita e instala el plugin.
+- **Instalar desde la URL del manifiesto.** La gente puede pegar la URL `https` de un
+  `kino-plugin.json` en cualquier servidor público, no solo un `owner/repo` de GitHub. Una instalación
+  `url:` así lee `entry` e `icon` al lado del manifiesto, no puede usar `secrets` sellados, siempre
+  cuenta como no firmada y nunca sale en "De la comunidad" (el descubrimiento sigue usando el topic de
+  GitHub). Una URL de `kino-plugin.json` en GitHub, raw.githubusercontent.com o jsDelivr
+  (`cdn.jsdelivr.net/gh/owner/repo@<ref exacta>/…`; `@latest` es la rama por defecto, un rango de
+  versiones se rechaza) se vuelve `owner/repo` como antes.
+  [Instalar desde la URL del manifiesto](index.md#manifest-url), [Publicar](publish.md#manifest-url).
+- **`liveSearch`, un export opcional nuevo para canales en vivo** (sin `apiVersion` nuevo: sigue
+  siendo 3 con `channels`). Kino lo pide desde la búsqueda de En vivo mientras algunos de tus canales
+  nunca se han listado; devuelve canales como una página de `liveChannels`, máximo 100 conservados,
+  desde 2 caracteres escritos, 15 s. [Canales en vivo](live-channels.md#live-search).
+- **Los catálogos en vivo grandes siguen paginando.** `liveChannels` recibe 10 páginas al comienzo, y
+  5 más cada vez que la persona se acerca al final, hasta 10.000 canales (200 páginas) por categoría.
+  Las versiones anteriores se quedan en 10 páginas. Pruébalo con `node sdk/run.mjs . live search <consulta>`.
+- **Listas M3U** en UTF-8, Latin-1 o UTF-16; los atributos de `#EXTINF` pueden ir con comillas simples
+  o sin comillas; una lista de más de 20 MB o una guía de más de 50 MB se corta en su última línea
+  completa en vez de rechazarse. [Canales en vivo](live-channels.md#live-contract).
+- **Addons de Stremio**: la gente los puede instalar desde el mismo campo (Kino genera el plugin; no
+  tienes nada que escribir). Su `resolve`, como el de un scraper de Nuvio convertido, tiene 75 s.
+- `ditu` ya no es un `id` de plugin reservado (las versiones anteriores lo siguen rechazando, así que
+  evítalo).
+
+## Kino 0.9.46 a 0.9.49 { #v0946 }
+
+- **Se acepta un `./` al principio de `entry` e `icon`.** Kino lo quita e instala el plugin.
   **Kino 0.9.45 y anteriores lo siguen rechazando** (`El campo "entry" debe ser una ruta relativa a
   un archivo .js`), así que sigue escribiendo `"plugin.js"` e `"icon.png"`. El `validate.mjs` del
   kit rechaza `"./plugin.js"` por eso. [Detalles](manifest.md#entry-dot-slash).
-- Por ahora nada más cambia en el contrato de plugins en 0.9.46 (el resto del trabajo de esa versión,
-  como la búsqueda de subtítulos en línea, no toca los plugins).
+- **Tus logs ayudan cuando falla un plugin recomendado.** En un plugin del catálogo recomendado de
+  Kino, las últimas 30 líneas de `kino.log` de una llamada fallida (depuradas, 2 KB) van con el reporte
+  del error como `plugin_log`. Registra pasos y estados, nunca lo que la persona escribió ni un
+  secreto. [`kino.log`](kino-api.md#log).
+- Un canal en vivo nunca muestra el botón de descarga, aunque el plugin declare `download`.
+
+!!! note "Sobre la versión de cada punto"
+    Estos puntos están en las versiones publicadas como 0.9.46 a 0.9.49; no se comprobó la versión
+    exacta en la que apareció cada uno.
 
 ## Kino 0.9.45 { #v0945 }
 

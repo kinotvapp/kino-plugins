@@ -12,6 +12,7 @@ export async function resolve(ref) { /* -> Stream */ }
 export async function liveCategories() { /* -> Array<LiveCategory | Playlist> or Playlist */ }
 export async function liveChannels({ categoryId, cursor }) { /* -> { items: LiveChannel[], next? } */ }
 export async function guide({ channelIds, from, to }) { /* -> GuideEntry[] */ }
+export async function liveSearch({ query }) { /* -> { items: LiveChannel[] } */ }
 ```
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
@@ -19,8 +20,8 @@ export async function guide({ channelIds, from, to }) { /* -> GuideEntry[] */ }
 Use named exports (`export async function ...`). Data crosses into and out of your code as JSON, so
 return plain data: strings, numbers, booleans, arrays and objects.
 
-The three live-channel functions (`liveCategories`, `liveChannels`, `guide`, apiVersion 3) have their
-arguments and rules on [Live channels](live-channels.md#live-contract).
+The live-channel functions (`liveCategories`, `liveChannels`, and the optional `guide` and
+`liveSearch`, apiVersion 3) have their arguments and rules on [Live channels](live-channels.md#live-contract).
 
 ## Arguments { #arguments }
 

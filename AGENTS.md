@@ -87,8 +87,9 @@ exact message Kino shows, never a summary.
    changed after release), `name`, `version` `0.1.0`, the lowest `apiVersion`, `entry`, `hosts`,
    `capabilities`, `settings` if needed, `description` in Spanish.
 3. **Implement one named `export async function` per declared capability** (`search`, `home`,
-   `browse`, `episodes`, `resolve`; `liveCategories` + `liveChannels` (+ optional `guide`) for
-   `channels`). `download` and `drm` are declarative: nothing to export. Return plain JSON only.
+   `browse`, `episodes`, `resolve`; `liveCategories` + `liveChannels` (+ optional `guide`, and optional `liveSearch` for a
+   catalog too big to list whole: `liveSearch({ query })` returns channels like a `liveChannels`
+   page, with the same `id`s; export it only if the source can really search) for `channels`). `download` and `drm` are declarative: nothing to export. Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
    than one file for its own sake, write it split (e.g. `src/plugin.js` importing from
@@ -108,7 +109,7 @@ exact message Kino shows, never a summary.
     ```
 
     For live channels: `node sdk/run.mjs . live categories`, `node sdk/run.mjs . live channels <categoryId>`,
-    `node sdk/run.mjs . live guide <id,id>`, `node sdk/run.mjs live playlist <url|file> [--epg <url|file>]`,
+    `node sdk/run.mjs . live guide <id,id>`, `node sdk/run.mjs . live search <query>` (for `liveSearch`), `node sdk/run.mjs live playlist <url|file> [--epg <url|file>]`,
     and `resolve <ref> --live` for a channel's ref. Settings: `--config key=value` (repeatable) or
     `sdk/config.json` (never committed).
 6. **Record fixtures and test offline**: `node sdk/run.mjs --record test/fixtures.json . search "algo"`,
@@ -126,7 +127,16 @@ exact message Kino shows, never a summary.
    the manifest: that is what Kino's cards show (see section 6). The person installs it from Kino (on
    a phone: menu ☰ → Plugins → the + button; on a TV: Ajustes → Plugins → Agregar), typing
    `owner/repo` → Agregar → Instalar, and must try it in the app (search, episodes, play, and download
-   if declared).
+   if declared). The same field ("Escribe usuario/repositorio de GitHub o pega la URL del manifest
+   (kino-plugin.json)") also takes the URL of the `kino-plugin.json` (GitHub `blob`/`raw`,
+   raw.githubusercontent.com or `cdn.jsdelivr.net/gh/owner/repo@<exact ref>/…`, which all become
+   `owner/repo`; jsDelivr needs an exact ref such as `@main` or `@v1.0.0`, `@latest` is the default
+   branch, a range like `@1` is refused). From the Kino version after 0.9.49 a plugin can also live
+   **outside GitHub**, shared as the `https` URL of its `kino-plugin.json` on any public server (the
+   file must be named exactly that; `entry`/`icon` are read next to it; no IPs, `localhost` or local
+   names). Such a `url:` install cannot use sealed `secrets` (refused), always counts as unsigned,
+   updates from that same URL, and is never listed in "De la comunidad" (discovery only finds GitHub
+   repositories with the topic). Recommend GitHub + topic unless the person has a reason not to.
 9. **Updates**: raise `version` every time (an equal or lower version never reaches anyone). Adding
    hosts, `permissions`, `download`, `drm`, `channels`, `liveStreamHosts`, `streamHosts`, an
    `insecureHttp` host, or `secrets` to a plugin that had none makes the update wait for the person's
@@ -160,7 +170,7 @@ exact message Kino shows, never a summary.
 - **`"entry"` and `"icon"` never start with `./`.** Write `"plugin.js"`, not `"./plugin.js"`: Kino
   0.9.45 and older refuse the `./` (`El campo "entry" debe ser una ruta relativa a un archivo .js`)
   and the plugin does not install (an AI-generated plugin did exactly this and failed for about 35
-  installs). Kino 0.9.46 will tolerate it, but never rely on that. The kit's `validate.mjs` refuses it.
+  installs). Kino 0.9.46 and later tolerate it, but never rely on that. The kit's `validate.mjs` refuses it.
 - `"liveStreamHosts": "any"` (apiVersion 3 + `channels`) frees only live channel streams, never
   `kino.fetch`, playlists, subtitles, licenses, movies or images.
 - `"streamHosts": "any"` (apiVersion 4) lets what the plugin plays be on any public host: for a movie
@@ -189,7 +199,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; all fetches and sleeps count (not the time the person spends answering a host question) |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; all fetches and sleeps count (not the time the person spends answering a host question) |
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
@@ -198,10 +208,10 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.storage` | 256 KB; `ttlMs` 1..2,592,000,000 (30 days) |
 | `kino.sleep` | 0..5,000 ms |
 | `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024 |
-| Log message | 2,000 characters |
+| Log message | 2,000 characters; for a recommended-catalog plugin, a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
-| Live (apiVersion 3) | 200 categories; 500 channels/page, 10 pages/category; `guide` 50 channels, 24 h, 100 entries/channel; `number` 1..9999 |
+| Live (apiVersion 3) | 200 categories; 500 channels/page, 10 pages at first then 5 more per scroll, up to 10,000 channels (200 pages)/category; `liveSearch` keeps 100 channels, asked from 2 characters; `guide` 50 channels, 24 h, 100 entries/channel; `number` 1..9999 |
 | Settings | 12; `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields |
 | `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes |
 

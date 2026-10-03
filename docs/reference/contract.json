@@ -10,12 +10,12 @@
     "apiVersions": { "download": 2, "drm": 2, "channels": 3 },
     "needsApproval": ["download", "drm", "channels"],
     "exports": { "channels": ["liveCategories", "liveChannels"] },
-    "optionalExports": { "channels": ["guide"] }
+    "optionalExports": { "channels": ["guide", "liveSearch"] }
   },
   "manifest": {
     "maxBytes": 16384,
     "idPattern": "^[a-z0-9][a-z0-9-]{1,39}$",
-    "reservedIds": ["magis", "ditu", "live", "local", "unknown", "plugin", "own"],
+    "reservedIds": ["magis", "live", "local", "unknown", "plugin", "own"],
     "nameMaxChars": 40,
     "descriptionMaxChars": 300,
     "authorMaxChars": 60,
@@ -102,6 +102,11 @@
     "maxCategories": 200,
     "maxChannelsPerPage": 500,
     "maxPagesPerCategory": 10,
+    "pagesPerStep": 5,
+    "maxChannelsPerCategory": 10000,
+    "maxTotalPagesPerCategory": 200,
+    "maxSearchChannels": 100,
+    "minSearchChars": 2,
     "maxGuideChannels": 50,
     "maxGuideWindowMs": 86400000,
     "maxGuideEntriesPerChannel": 100,
@@ -138,7 +143,8 @@
     "nuvioResolve": 75000,
     "liveCategories": 20000,
     "liveChannels": 20000,
-    "guide": 20000
+    "guide": 20000,
+    "liveSearch": 15000
   },
   "runtime": {
     "memoryBytes": 67108864,
@@ -146,6 +152,9 @@
     "idleCloseMs": 300000,
     "timeoutsBeforeUnresponsive": 3,
     "maxLogChars": 2000,
+    "reportLogLines": 30,
+    "reportLogLineChars": 300,
+    "reportLogChars": 2048,
     "maxErrorChars": 2000
   },
   "fetch": {

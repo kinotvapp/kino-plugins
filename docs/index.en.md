@@ -34,7 +34,8 @@ whole `kino` API for your editor (`/// <reference path="./kino.d.ts" />` at the 
 4. **Check it the way Kino does:** `node sdk/validate.mjs .`, then
    `node sdk/run.mjs . search "algo"` ([Test it locally](test-locally.md)).
 5. **Publish** it as a public repository with the topic `kino-plugin` (mandatory: without it Kino cannot find it), and install it in Kino from
-   Ajustes > Plugins by typing `owner/repo` ([Publishing](publish.md)).
+   Ajustes > Plugins by typing `owner/repo` or pasting the URL of its `kino-plugin.json`
+   ([Publishing](publish.md)).
 6. **Get Kino to show it by itself** in "De la comunidad": the topic, name and description, and how
    to check it, in [Get listed in Kino](listed.md).
 
@@ -70,13 +71,46 @@ use a build step or a library, bundle everything into that single file -- see
 | `owner/repo@v1.2.0` | a branch, tag or commit (the name cannot contain `/`); also works with a folder |
 | `https://github.com/owner/repo` or `.../tree/<ref>/<path>` | the same, pasted from the browser |
 | `https://raw.githubusercontent.com/owner/repo/<ref>/<path>/kino-plugin.json` (or a `github.com/.../blob/<ref>/.../kino-plugin.json`, also `/raw/`) | the folder that `.json` file is in, at that ref; any other kind of file is refused |
+| `https://cdn.jsdelivr.net/gh/owner/repo[@<ref>]/<path>/kino-plugin.json` (also `fastly`, `gcore`, `testingcf` and `quantil.jsdelivr.net`) | the same repository folder, read from GitHub: no `@ref` or `@latest` is the default branch; the ref must be an exact branch, tag or commit (`@main`, `@v1.2.0`), so a version range (`@1`, `@^1.2`, `@1.x`) is refused |
+| `https://<any public server>/<path>/kino-plugin.json` | a plugin hosted outside GitHub: see [Installing from a manifest URL](#manifest-url) |
 
-A `?query` or `#fragment` in a pasted URL is ignored. A ref that only comes from a pasted URL is not a
-pin: a plugin with [sealed secrets](manifest.md#secrets) pasted that way installs from the default
-branch.
+The field in Kino says "Escribe usuario/repositorio de GitHub o pega la URL del manifest
+(kino-plugin.json)". A `?query` or `#fragment` in a pasted URL is ignored. A ref that only comes from a
+pasted URL (`tree`, `blob`, `raw`, `raw.githubusercontent.com` or jsDelivr's `@ref`) is not a pin: a
+plugin with [sealed secrets](manifest.md#secrets) pasted that way installs from the default branch.
 
-Kino downloads `kino-plugin.json`, your entry file and the icon from `raw.githubusercontent.com`,
-which is why the repository has to be public.
+For a repository address, Kino downloads `kino-plugin.json`, your entry file and the icon from
+`raw.githubusercontent.com`, which is why the repository has to be public. A URL of a repository's
+`kino-plugin.json` (on GitHub, raw.githubusercontent.com or jsDelivr) always becomes that repository's
+address, so sealed secrets, signatures and community search keep working for it.
+
+### Installing from a manifest URL { #manifest-url }
+
+Your plugin does not have to live on GitHub (new in the Kino version after 0.9.49). People can paste the
+`https` URL of its `kino-plugin.json` on any public server: your own site, GitHub Pages, a CDN such as
+jsDelivr's `npm/`. Kino stores it as the address `url:https://…/kino-plugin.json` (scheme and host
+lowercased, default port, query and fragment dropped): that URL is the plugin's identity, and it
+travels as is to the person's other devices with plugin sync.
+
+- `entry` and `icon` are read relative to the manifest URL: `"entry": "plugin.js"` next to
+  `https://example.com/kino/kino-plugin.json` is `https://example.com/kino/plugin.js`.
+- `https` only (`http://` is refused with "Kino solo instala plugins desde direcciones https…"), on a
+  public name: no IP addresses, no `localhost`, no single-label or `.local`/`.lan` names, no
+  user:password in the URL, and the file has to be named exactly `kino-plugin.json`. A name that
+  resolves to a private address, and a redirect off `https` or to such a host, are refused too.
+- **No sealed secrets**: seals are bound to a GitHub repository, so a manifest with `secrets`
+  installed from a URL is refused ("Este plugin trae datos sellados, y esos solo funcionan si lo
+  instalas desde su repositorio de GitHub…"). Publish such a plugin on GitHub.
+- **Unsigned**: a `signature` is bound to `owner/repo`, so it is not checked and the plugin installs
+  (and shows) as unsigned.
+- Everything else is the same as a repository install: the consent sheet, `hosts` and every approval
+  rule, and updates: Kino re-reads the same URL and applies a higher `version`, asking again when it
+  needs more than was approved. The plugin is never listed by community search (that only finds
+  GitHub repositories with the `kino-plugin` topic).
+
+**Stremio addons** are a Kino feature for people, not something you write: in the same field a person
+can paste the address of a Stremio addon's `manifest.json` (or a `stremio://` link) and Kino generates
+a plugin for it. Nothing in this guide changes for your plugin.
 
 ## The guide, page by page { #pages }
 

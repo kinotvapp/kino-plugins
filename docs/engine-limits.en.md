@@ -7,7 +7,7 @@
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack, per plugin | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s each (`resolve` of a plugin converted from a Nuvio scraper: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s each; counting all your fetches and sleeps together, but not the time the person spends answering a host question for that call |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s each (`resolve` of a plugin Kino itself generates, from a Nuvio scraper or a Stremio addon: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s each; `liveSearch` 15 s; counting all your fetches and sleeps together, but not the time the person spends answering a host question for that call |
 | Loading the module (its top level) | 10 s |
 | Idle sandbox | closed after 5 minutes without calls |
 | Consecutive timeouts | 3 in a row and Kino disables the plugin ("No responde") |
@@ -16,10 +16,10 @@
 | `kino.storage` | 256 KB per plugin; an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
 | `kino.sleep` | 0 to 5,000 ms per call |
 | `kino.crypto` | data at most 5 MB per call; PBKDF2 at most 100,000 iterations and 64-byte keys; `randomBytes` at most 1,024 |
-| `kino.log` / `console.*` | 2,000 characters per message |
+| `kino.log` / `console.*` | 2,000 characters per message; when a call of a recommended-catalog plugin fails, its last 30 lines (each cut at 300 characters, scrubbed, 2,048 characters in all) go with the failure report |
 | What a function returns | at most 2,000,000 characters once turned into JSON |
 | Results | `search` 100 items; `home` 20 rows of 60; `browse` 100 per page; `episodes` 5,000 (and 50 `seasons`); `ref` 4,096 characters; `next` 2,048 characters; `id` matches `^[A-Za-z0-9._~-]{1,128}$` |
-| Live channels (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 per page and 10 pages per category; `guide` 50 channels and 24 h per call, 100 entries per channel; `number` 1..9999 |
+| Live channels (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 per page, 10 pages at first and 5 more per scroll, 10,000 channels (200 pages) per category; `liveSearch` 100 channels, asked from 2 characters; `guide` 50 channels and 24 h per call, 100 entries per channel; `number` 1..9999 |
 | Settings | at most 12; `text` 500, `url` 2,048, `password` 500 characters |
 | Error messages | your `kino.error` message is shown as a detail, cut at 200 characters |
 | `hosts` | at least 1 entry, no upper limit from Kino 0.9.45 (only the manifest's 16 KB; Kino 0.9.44 and older refuse more than 20); from apiVersion 2, none (`[]`) when a `url` setting exists |

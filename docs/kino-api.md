@@ -274,6 +274,19 @@ También `console.log`, `console.info`, `console.warn` y `console.error`: todos 
 `KinoPlugin` en `adb logcat`), los objetos se escriben como JSON, y un mensaje se corta a los 2000
 caracteres. En el kit de Node van a stderr.
 
+Cuando una llamada de un plugin que viene del catálogo recomendado de Kino **falla** (lanza un error,
+se pasa del tiempo, devuelve algo inservible), las líneas que registró durante esa llamada (las
+últimas 30, cada una cortada a 300 caracteres) viajan con el reporte de la falla al registro de
+errores de quienes mantienen Kino como `plugin_log`; así que un `kino.log("home: status", r.status)`
+antes del `throw` es como ves por qué falló en el celular de otra persona. No se envía nada de una
+llamada que sale bien, ni de ningún otro plugin (uno instalado desde un repositorio que no está en el
+catálogo, el tuyo, un scraper de Nuvio convertido). Antes de salir del aparato, a cada línea se le
+quitan URL, nombres de host, IP, correos, ids largos, tiras largas de hex/base64, texto con forma de
+credencial, los valores de los ajustes de la persona y el texto de su búsqueda o del título, y el
+total se limita a 2 KB (ganan las líneas más nuevas). Aun así: registra lo que pasó (un estado, un
+paso, un conteo), nunca lo que la persona escribió ni un secreto, y nunca el valor de un ajuste.
+Funciona en cualquier `apiVersion`.
+
 ## `kino.rank` { #rank }
 
 Para un backend de búsqueda que solo compara una bolsa suelta de palabras en común, no un título

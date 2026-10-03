@@ -2,7 +2,8 @@
 
 ## Para aparecer en la app, dos cosas { #appear-in-the-app }
 
-La gente siempre puede instalar tu plugin escribiendo `usuario/repositorio`. Para que **aparezca solo**
+La gente siempre puede instalar tu plugin escribiendo `usuario/repositorio`, o pegando la URL de su
+`kino-plugin.json` ([más abajo](#manifest-url)). Para que **aparezca solo**
 en Kino (Ajustes ▸ Plugins ▸ "De la comunidad", y en "Elige tus fuentes" la primera vez), necesitas:
 
 1. **El topic `kino-plugin` en el repositorio de GitHub.** Es la única forma en que la app descubre un
@@ -29,8 +30,13 @@ cuando la persona toca "Actualizar". Si aun así no aparece, mira
    `.kino-storage.json` al `.gitignore`. (Un plugin también puede vivir en una subcarpeta; la gente
    escribe entonces `owner/repo/sub/dir`.)
 2. **La gente lo instala** en Kino desde Ajustes > Plugins, escribiendo `owner/repo` en el campo
-   "usuario/repositorio" y tocando "Agregar". Para apuntar a una versión, escriben `owner/repo@v1.0.0`.
-   Ponle tags a tus versiones para que la gente pueda fijarlas.
+   ("Escribe usuario/repositorio de GitHub o pega la URL del manifest (kino-plugin.json)") y tocando
+   "Agregar". Para apuntar a una versión, escriben `owner/repo@v1.0.0`. Ponle tags a tus versiones para
+   que la gente pueda fijarlas. También pueden pegar la URL de tu `kino-plugin.json` en GitHub, en
+   raw.githubusercontent.com o en jsDelivr (`https://cdn.jsdelivr.net/gh/owner/repo@v1.0.0/kino-plugin.json`;
+   jsDelivr necesita una ref exacta como `@main` o `@v1.0.0`, `@latest` es la rama por defecto y un
+   rango como `@1` se rechaza): Kino convierte cualquiera de esas en la dirección del repositorio
+   ([todas las direcciones que Kino acepta](index.md#what-a-plugin-is)).
 3. **Un repositorio privado no se puede instalar.** Kino lee tus archivos desde
    `raw.githubusercontent.com` sin ninguna credencial, y GitHub responde "not found" para un
    repositorio privado. Haz público el repositorio, o el plugin no se puede instalar.
@@ -53,7 +59,8 @@ cuando la persona toca "Actualizar". Si aun así no aparece, mira
    una instalación o en una búsqueda de actualización.
 6. **Conserva el `id` y la dirección.** Un `id` que ya está instalado desde otra dirección se rechaza
    ("Ya hay un plugin con ese id"), así que renombrar o mover tu repositorio lo vuelve otro plugin para
-   la gente que lo instaló.
+   la gente que lo instaló. Lo mismo vale para un plugin instalado desde la URL de su manifiesto: esa
+   URL es su dirección.
 
 La misma aprobación aplica a las otras adiciones que necesitan una línea en la hoja de
 consentimiento: `channels` ([Canales en vivo](live-channels.md#en-vivo-tab)),
@@ -63,6 +70,23 @@ en un plugin que no tenía ([Secretos sellados](manifest.md#secrets); agregar, c
 secreto después de eso no pregunta nada). Los hosts que la persona aprobó mientras tu plugin corría
 ([Un host que se te olvidó](contract.md#forgotten-host)) y el permiso amplio de video se conservan en
 cada actualización. Un plugin con `secrets` solo se actualiza desde su rama principal, sin `@ref`.
+
+### Compartirlo por la URL de su manifiesto { #manifest-url }
+
+Desde la versión de Kino que sigue a la 0.9.49 también puedes compartir tu plugin como la URL `https` de su `kino-plugin.json`, en GitHub o en
+cualquier otro servidor público (tu sitio, GitHub Pages, el `npm/` de jsDelivr); el archivo tiene que
+llamarse exactamente `kino-plugin.json`, y `entry` e `icon` se leen a su lado. Un plugin alojado
+**fuera de GitHub**:
+
+- no puede usar [secretos sellados](manifest.md#secrets) (un manifiesto con `secrets` instalado desde
+  una URL se rechaza) y siempre cuenta como **no firmado** (una [firma](signed.md) va amarrada a
+  `owner/repo`);
+- se actualiza igual (Kino vuelve a leer esa URL y aplica una `version` más alta, con las mismas
+  aprobaciones), y esa URL es su identidad, así que no la muevas;
+- **nunca sale en "De la comunidad"**: el descubrimiento solo busca repositorios de GitHub con el topic
+  `kino-plugin`. Para que te encuentren, publica en GitHub con el topic.
+
+Todas las reglas: [Instalar desde la URL del manifiesto](index.md#manifest-url).
 
 ## Antes de publicar { #checklist }
 
@@ -217,7 +241,7 @@ La lista descarta, tenga las estrellas que tenga:
   instaló el plugin de Internet Archive: **cambia siempre el `id`**.
 - **Repetidos.** El mismo repositorio dos veces, o dos repositorios con el mismo `id`: gana el primero
   (el de más estrellas).
-- **Los ids que Kino se guarda para sí** (`magis`, `ditu`, `live`, `local`, `unknown`, `plugin`, `own`)
+- **Los ids que Kino se guarda para sí** (`magis`, `live`, `local`, `unknown`, `plugin`, `own`; las versiones anteriores también `ditu`)
   vuelven inválido el manifiesto, así que nunca llegan hasta aquí.
 
 ### "Mi plugin no aparece": qué revisar { #troubleshooting }

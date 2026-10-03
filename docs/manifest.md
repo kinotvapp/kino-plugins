@@ -24,7 +24,7 @@ español que nombra el campo.
 
 | Campo | Regla |
 | --- | --- |
-| `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$` (de 2 a 40 letras minúsculas, dígitos o guiones, sin empezar por guion). No puede ser `magis`, `ditu`, `live`, `local`, `unknown`, `plugin` ni `own`. Es la identidad del plugin: nunca lo cambies cuando ya haya gente que lo instaló. |
+| `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$` (de 2 a 40 letras minúsculas, dígitos o guiones, sin empezar por guion). No puede ser `magis`, `live`, `local`, `unknown`, `plugin` ni `own` (las versiones anteriores de Kino también reservan `ditu`: evítalo). Es la identidad del plugin: nunca lo cambies cuando ya haya gente que lo instaló. |
 | `name` | Obligatorio. De 1 a 40 caracteres. |
 | `version` | Obligatorio. `MAJOR.MINOR.PATCH` y nada más (sin `-beta`, sin `+build`), cada número de hasta 6 dígitos y sin ceros a la izquierda. |
 | `apiVersion` | Obligatorio. `1`, `2`, `3`, `4` o `5`. Un número más alto del que Kino soporta se rechaza con "Este plugin necesita una versión más nueva de Kino". Declara el número más bajo que tenga lo que usas, para que tu plugin también corra en versiones viejas de Kino: `2` para `download`, `drm`, `insecureHttp`, `"hosts": []` o ítems `live`; `3` para `channels`/`liveStreamHosts`; `4` para un ajuste `list`, `streamHosts` o `secrets`; `5` solo para un [plugin firmado](signed.md) (Kino 0.9.45+). |
@@ -57,7 +57,7 @@ Los ítems en vivo (apiVersion 2) y la pestaña En vivo (apiVersion 3) tienen su
     al principio**: la instalación falla con `El campo "entry" debe ser una ruta relativa a un
     archivo .js` (o lo mismo para `"icon"`), y en la app solo parece que el plugin "no se instala".
     Un plugin generado con IA escribió `"./plugin.js"` y falló en unas 35 instalaciones. Kino 0.9.46
-    (aún sin publicar) aceptará un `./` al principio y lo quitará, pero casi todos usan versiones
+    y posteriores aceptan un `./` al principio y lo quitan, pero todavía hay gente con versiones
     más viejas, así que escribe siempre `"plugin.js"` e `"icon.png"`, sin `./` (una carpeta sí vale:
     `"src/plugin.js"`). El `validate.mjs` del kit lo rechaza con: `Quita el "./" del campo "entry"
     (por ejemplo "plugin.js"): Kino 0.9.45 y anteriores no instalan el plugin con "./"`.
@@ -305,7 +305,8 @@ Qué se descarga y qué no:
   manifiesto DASH o Smooth (`.mpd`, `application/dash+xml`, …), una playlist HLS en vivo (sin
   `EXT-X-ENDLIST`), SAMPLE-AES o cualquier llave DRM, una llave que no tiene 16 bytes o que no
   descifra, un segmento vacío (pedido 3 veces antes), una maestra en la que toda variante de video necesita una pista de audio aparte
-  (Kino no guarda un video mudo), un stream con DRM y un canal en vivo. Los subtítulos que vienen
+  (Kino no guarda un video mudo), un stream con DRM y un canal en vivo (un canal en vivo ni siquiera muestra el botón de descarga,
+  tampoco en un plugin que declara `channels` y `download` a la vez). Los subtítulos que vienen
   dentro de la playlist no se guardan (tus `subtitles` sí). No hay una llamada aparte de "resolve
   para descargar": si tu fuente ofrece DASH y también un archivo o HLS, prefiere esos, o acepta que
   esos títulos se reproducen pero no se descargan.

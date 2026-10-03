@@ -69,7 +69,7 @@ the apiVersion 3 `channels` capability ([below](#en-vivo-tab)).
 ## Channels in the En vivo tab (apiVersion 3) { #en-vivo-tab }
 
 Declare `"apiVersion": 3` and the capability `"channels"`, and export `liveCategories()` and
-`liveChannels({ categoryId, cursor })` (and, optionally, `guide(...)`, see [below](#live-contract)). Your channels then
+`liveChannels({ categoryId, cursor })` (and, optionally, `guide(...)` and `liveSearch(...)`, see [below](#live-contract)). Your channels then
 appear in Kino's own En vivo tab, TV guide, channel drawer and Home "Canales en vivo" row, in a
 section with your plugin's name. `channels` does not replace `search`/`home`: the manifest still
 needs one of them (a plugin with only channels exports a `home()` that returns `[]`). Items of kind
@@ -121,14 +121,16 @@ lista", and an update that newly adds it waits for the person's approval, like a
 
 ## The channel functions (apiVersion 3) { #live-contract }
 
-With the `channels` capability ([above](#en-vivo-tab)) Kino calls three
-more functions. Their arguments:
+With the `channels` capability ([above](#en-vivo-tab)) Kino calls up to
+four more functions. Their arguments:
 
 - `liveCategories()` gets `null`.
 - `liveChannels({ categoryId, cursor })` gets the `id` of one of your categories, and `cursor` `null`
   for the first page or the `next` of the page before.
 - `guide({ channelIds, from, to })` gets at most 50 of your channel ids and a window of at most
   24 hours: `from` and `to` are epoch milliseconds.
+- `liveSearch({ query })` (optional) gets what the person typed in En vivo's search, trimmed, at
+  least 2 characters.
 
 They return:
 
@@ -161,7 +163,12 @@ A plugin can give its channels in three ways, and mix them:
    the list, for the channels that only answer a known `User-Agent` (or a `Referer`): they are filtered
    like a Stream's `headers` and kept apart from `headers` on purpose, because those carry your list's own
    credentials and go only to the list's host, never to the many hosts the channels are on. A header an
-   M3U entry names itself (`#EXTVLCOPT:http-user-agent=...`, `#EXTHTTP:{"User-Agent":"..."}`, a `url|User-Agent=...&Referer=...` suffix, or `#KODIPROP` stream headers) wins; only `User-Agent`, `Referer`, `Origin` and `Cookie` are kept, and a value with a control character is dropped. Kino versions before the one that added
+   M3U entry names itself (`#EXTVLCOPT:http-user-agent=...`, `#EXTHTTP:{"User-Agent":"..."}`, a `url|User-Agent=...&Referer=...` suffix, or `#KODIPROP` stream headers) wins; only `User-Agent`, `Referer`, `Origin` and `Cookie` are kept, and a value with a control character is dropped. The list
+   may be UTF-8, Latin-1 or UTF-16 (with or without a BOM); `#EXTINF` attributes may be double-quoted,
+   single-quoted or bare (`tvg-id=abc`). A list over 20 MB, or a guide over 50 MB, is not refused: Kino
+   keeps its start, up to its last whole line (`node sdk/run.mjs live playlist` says when). A guide
+   `<programme>` without `stop` ends where the next programme of its channel starts, or one hour
+   after its start when none follows. Kino versions before the one that added
    `streamHeaders` ignore the field, so the list plays without it. `refreshHours` is 1 to 168 (default 12); `hideGroups` lists
    group titles not to show (case doesn't matter, at most 50). With `resolve: true`, each entry plays
    through your `resolve(<entry url>)`, for lists whose links need a fresh token. At most 10 per
@@ -184,13 +191,41 @@ The rules:
   `number` is 1 to 9999 (anything else counts as no number); `logo` follows the poster rules;
   `categoryId` is optional and informational (a channel is listed under the category
   `liveChannels` was asked for); one that is not a valid id becomes empty.
-- Kino pages `liveChannels` until `next` is missing, repeats, or brings nothing new, at most 10
-  pages per category.
+- Kino pages `liveChannels` until `next` is missing, repeats, or brings nothing new. A category's
+  first listing asks at most 10 pages; when the last one still has a `next`, Kino keeps it and asks
+  5 more pages each time the person scrolls near the end of the list, up to 10,000 channels (or 200
+  pages) per category. Kino 0.9.49 and older stop at the first 10 pages and never ask `liveSearch`.
+- <span id="live-search"></span>`liveSearch` is optional, for a catalog too big to list whole. Kino
+  asks it from En vivo's search (the phone's field, the TV guide's and the TV channel drawer's) when
+  the person stops typing, only while some of your channels were never listed (a category not opened
+  yet, or one with pages left), and keeps each answer 10 minutes per query. It returns channels
+  exactly like a `liveChannels` page (`next` is ignored), at most 100 kept, with the same `id` a
+  listed channel has, so favourites and recents match. Kino still shows only the ones whose name
+  contains what was typed (or whose number is it). A channel found this way plays like a listed one,
+  and a favourite Kino no longer has in memory nor in its cache is looked up again by name through
+  `liveSearch` (one call) before the first pages of your first 10 categories; without `liveSearch`,
+  only those first pages are looked at, never the pages after them. Its time limit is 15 s and it
+  runs as a background call: a slow search never marks the plugin "No responde". Export it only when
+  you can really search: an empty answer is taken as "nothing found", and Kino keeps saying some
+  channels were not loaded.
 - Kino caches your categories and channels for 1 hour and your guide for 30 minutes.
 - `guide` is optional. Kino keeps entries for the channels it asked for, with `end` after `start`,
   inside the window, at most 100 per channel and one per start time. A `guide` that fails or is not
   exported is simply not asked again for 30 minutes: your channels still list.
 - An `adult: true` category or channel is dropped.
+
+A `liveSearch` for an API that can search its channels by name:
+
+```js
+export async function liveSearch({ query }) {
+  const r = await kino.fetch("https://api.example.com/channels?q=" + encodeURIComponent(query));
+  if (!r.ok) throw kino.error("unavailable");
+  return r.json().items.map(c => ({ id: c.id, title: c.name, ref: c.id, logo: c.logo }));
+}
+```
+
+Use the same `id` your `liveChannels` gives that channel. Test it with
+`node sdk/run.mjs . live search <query>` ([Test it locally](test-locally.md#live)).
 
 ## Three recipes (apiVersion 3) { #recipes }
 

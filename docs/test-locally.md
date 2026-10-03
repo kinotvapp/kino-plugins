@@ -91,6 +91,7 @@ node sdk/run.mjs . live categories
 node sdk/run.mjs . live channels noticias
 node sdk/run.mjs . live channels noticias 2
 node sdk/run.mjs . live guide canal1,canal2
+node sdk/run.mjs . live search caracol
 node sdk/run.mjs live playlist https://iptv-org.github.io/iptv/countries/co.m3u
 node sdk/run.mjs live playlist ./lista.m3u --epg ./guia.xml.gz
 ```
@@ -104,6 +105,8 @@ node sdk/run.mjs live playlist ./lista.m3u --epg ./guia.xml.gz
   `resolve()` y revisa la respuesta como la de un canal en vivo (así que aplica
   `"liveStreamHosts": "any"`). Con `validate.mjs --run liveChannels`, una respuesta rechazada ahí es un
   problema.
+- `live search <consulta>` llama `liveSearch({ query })`, imprime los canales que Kino conserva
+  (máximo 100) y reproduce el primero que tenga `ref`, como `live channels`.
 - `resolve <ref> --live` revisa una respuesta de `resolve()` como la de un canal en vivo. Sin `--live`
   el kit no puede saber que el `ref` es de un canal y aplica la regla estricta; cuando solo eso frena la
   URL y tu manifiesto tiene `"liveStreamHosts": "any"`, dice "si este ref es de un canal en vivo,

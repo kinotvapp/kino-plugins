@@ -254,8 +254,16 @@ interface KinoPlugin {
   resolve(ref: string): Promise<KinoStream>;
   /** apiVersion 3, capability "channels" (required with it). At most 200 categories. */
   liveCategories?(): Promise<Array<KinoLiveCategory | KinoPlaylist> | KinoPlaylist>;
-  /** apiVersion 3, capability "channels" (required with it). At most 500 per page. */
+  /**
+   * apiVersion 3, capability "channels" (required with it). At most 500 per page. Kino asks 10
+   * pages at first and 5 more each time the person scrolls near the end, up to 10,000 channels.
+   */
   liveChannels?(arg: { categoryId: string; cursor: string | null }): Promise<KinoLiveChannelPage | KinoLiveChannel[]>;
+  /**
+   * apiVersion 3, optional with "channels": channels whose name matches `query`, listed or not (the
+   * En vivo search, while some of your channels were never listed). At most 100 kept; `next` ignored.
+   */
+  liveSearch?(arg: { query: string }): Promise<KinoLiveChannelPage | KinoLiveChannel[]>;
   /** apiVersion 3, optional with "channels". At most 50 channels and a 24 h window per call. */
   guide?(arg: { channelIds: string[]; from: number; to: number }): Promise<KinoGuideEntry[]>;
 }
@@ -344,7 +352,7 @@ declare namespace kino {
   /** apiVersion 4: a marker for a secret the manifest's `secrets` declares (throws for any other name). Kino swaps it for the value in `kino.fetch`, toward the manifest's own hosts only; your code never sees the value. */
   function secret(name: string): string;
 
-  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. */
+  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a recommended-catalog plugin fails, the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
   function log(...args: unknown[]): void;
 
   namespace html {

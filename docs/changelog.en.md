@@ -3,14 +3,43 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Kino 0.9.46 (not released yet) { #v0946 }
+## Next Kino version (after 0.9.49, not released yet) { #next }
 
-- **A leading `./` in `entry` and `icon` will be accepted.** Kino drops it and installs the plugin.
+- **Install from a manifest URL.** People can paste the `https` URL of a `kino-plugin.json` on any
+  public server, not only a GitHub `owner/repo`. Such a `url:` install reads `entry` and `icon` next to
+  the manifest, cannot use sealed `secrets`, always counts as unsigned, and never appears in "De la
+  comunidad" (discovery still uses the GitHub topic). A `kino-plugin.json` URL on GitHub,
+  raw.githubusercontent.com or jsDelivr (`cdn.jsdelivr.net/gh/owner/repo@<exact ref>/…`; `@latest` is
+  the default branch, a version range is refused) becomes `owner/repo` as before.
+  [Installing from a manifest URL](index.md#manifest-url), [Publishing](publish.md#manifest-url).
+- **`liveSearch`, a new optional export for live channels** (no new `apiVersion`: it stays 3 with
+  `channels`). Kino asks it from En vivo's search while some of your channels were never listed;
+  it returns channels like a `liveChannels` page, at most 100 kept, from 2 typed characters, 15 s.
+  [Live channels](live-channels.md#live-search).
+- **Big live catalogs keep paging.** `liveChannels` gets 10 pages at first, then 5 more each time
+  the person scrolls near the end, up to 10,000 channels (200 pages) per category. Older versions stop
+  at 10 pages. Test with `node sdk/run.mjs . live search <query>`.
+- **M3U lists** may be UTF-8, Latin-1 or UTF-16; `#EXTINF` attributes may be single-quoted or bare; a
+  list over 20 MB or a guide over 50 MB is cut at its last whole line instead of refused.
+  [Live channels](live-channels.md#live-contract).
+- **Stremio addons** can be installed by people from the same field (Kino generates the plugin; nothing
+  for you to write). Their `resolve`, like a converted Nuvio scraper's, gets 75 s.
+- `ditu` is no longer a reserved plugin `id` (older versions still refuse it, so avoid it).
+
+## Kino 0.9.46 to 0.9.49 { #v0946 }
+
+- **A leading `./` in `entry` and `icon` is accepted.** Kino drops it and installs the plugin.
   **Kino 0.9.45 and older still refuse it** (`El campo "entry" debe ser una ruta relativa a un
   archivo .js`), so keep writing `"plugin.js"` and `"icon.png"`. The kit's `validate.mjs` refuses
   `"./plugin.js"` for that reason. [Details](manifest.md#entry-dot-slash).
-- Nothing else in the plugin contract changes in 0.9.46 so far (the other work in that version, such
-  as online subtitle search, does not touch plugins).
+- **Your logs help when a recommended plugin fails.** For a plugin in Kino's recommended catalog, a
+  failed call's last 30 `kino.log` lines (scrubbed, 2 KB) go with the error report as `plugin_log`.
+  Log steps and statuses, never what the person typed or a secret. [`kino.log`](kino-api.md#log).
+- A live channel never shows a download button, even in a plugin that declares `download`.
+
+!!! note "About the version of each item"
+    These items are in the builds released as 0.9.46 to 0.9.49; the exact version in which each one
+    first appeared was not checked.
 
 ## Kino 0.9.45 { #v0945 }
 
