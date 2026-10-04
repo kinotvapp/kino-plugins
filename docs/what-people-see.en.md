@@ -7,7 +7,7 @@
   If your manifest has a `password` setting it adds "Este plugin usa tu usuario y contraseña"; a `url`
   setting adds "Se conectará a los servidores que escribas en su configuración". Declaring `download`
   adds "Puede descargar videos para verlos sin conexión", `drm` adds "Reproduce video protegido (DRM)",
-  `channels` adds "Agrega canales en vivo a la pestaña En vivo", `secrets` adds "Usa datos sellados por su autor", each `insecureHttp` host adds, in red, "Conexión sin cifrar con &lt;host&gt;", `liveStreamHosts: "any"` adds, in red, "Puede reproducir canales desde cualquier servidor que indique su lista", and `streamHosts: "any"` adds, in red, "Puede reproducir video desde cualquier servidor que indique". From apiVersion 6, `migrate` adds "Revisar lo que tienes guardado (biblioteca, historial, favoritos) para pasarlo a este plugin", `telemetry: true` adds "Comparte registros de errores con Kino para corregir fallas" and `telemetry: "verbose"` adds "Comparte registros detallados de reproducción y errores con Kino para corregir fallas". On an update, what is new carries a "nuevo" chip. Nothing of yours runs
+  `channels` adds "Agrega canales en vivo a la pestaña En vivo", `secrets` adds "Usa datos sellados por su autor", the `subtitles` capability adds "Agrega subtítulos a tus películas y series", each `insecureHttp` host adds, in red, "Conexión sin cifrar con &lt;host&gt;", `liveStreamHosts: "any"` adds, in red, "Puede reproducir canales desde cualquier servidor que indique su lista", and `streamHosts: "any"` adds, in red, "Puede reproducir video desde cualquier servidor que indique". From apiVersion 6, `migrate` adds "Revisar lo que tienes guardado (biblioteca, historial, favoritos) para pasarlo a este plugin", `telemetry: true` adds "Comparte registros de errores con Kino para corregir fallas" and `telemetry: "verbose"` adds "Comparte registros detallados de reproducción y errores con Kino para corregir fallas"; `"browser": true` adds, in red, "Puede abrir páginas web ocultas para encontrar el video" and `"browser": "pages"`, in red, "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video" ([Hidden browser](browser.md#permission)). On an update, what is new carries a "nuevo" chip. Nothing of yours runs
   before they accept.
 - **A long host list folds.** With more than 3 hosts the sheet says "Se va a conectar con N
   servidores:", lists the first 3 (on an update, the new ones first) and "y N más (M nuevos)", with a
@@ -102,6 +102,21 @@ With nothing new in your manifest, except where said:
   ([Section, categories and colors](section-theme.md)).
 - **Search inside a "Ver más" page.** Every "Ver más" page has "Buscar en esta categoría"
   ([`scopedSearch`](contract.md#scoped-search)).
+- **Your own tab in Ajustes.** A plugin with `settings` gets a tab named after it, with its form, status
+  lines and buttons, painted in its [`theme`](section-theme.md#theme) colors
+  ([The settings form](settings-form.md)).
+- **The Servidor menu.** When a Stream has two or more copies, the player's "Audio y subtítulos" menu
+  starts with a **Servidor** section listing them by `label` ("Opción 2", "Opción 3"… without one); the
+  person switches and keeps watching from the same spot ([Labelled and lazy copies](contract.md#lazy-copies)).
+- **Your own sentence on an error.** A valid `userMessage` shows as "Mensaje de &lt;name&gt;: …" instead
+  of Kino's line ([Your own sentence](contract.md#user-message)).
+- **Subtitles from your plugin.** A plugin that exports `subtitles` is listed, under its name, in the
+  player's "Buscar subtítulos en línea" for any title Kino knows by IMDb or TMDB id
+  ([Subtitles for any title](contract.md#subtitles)).
+- **Info pages filled by your plugin.** A `meta` plugin fills what TMDB and AniList left empty on any
+  title's info page ([Describing other titles](contract.md#meta)).
+- **Hidden pages.** A `"browser"` plugin's page is never on screen: the player shows its usual loading
+  state while it runs ([Hidden browser](browser.md)).
 - **Updates.** A badge on Ajustes ▸ Plugins counts the updates waiting for approval, and a failed call
   of a plugin with a pending update says so ([Updates](publish.md#updates)).
 - **Community plugins.** The section carries the note "Plugins de la comunidad — Kino no los revisa ni

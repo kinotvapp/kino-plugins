@@ -11,10 +11,14 @@
   `insecureHttp` agrega, en rojo, "Conexión sin cifrar con &lt;host&gt;", y `liveStreamHosts: "any"`
   agrega, en rojo, "Puede reproducir canales desde cualquier servidor que indique su lista",
   `streamHosts: "any"` agrega, en rojo, "Puede reproducir video desde cualquier servidor que indique",
-  y `secrets` agrega "Usa datos sellados por su autor". Desde apiVersion 6, `migrate` agrega "Revisar lo
+  y `secrets` agrega "Usa datos sellados por su autor". La capacidad `subtitles` agrega "Agrega subtítulos a
+  tus películas y series". Desde apiVersion 6, `migrate` agrega "Revisar lo
   que tienes guardado (biblioteca, historial, favoritos) para pasarlo a este plugin", `telemetry: true`
   agrega "Comparte registros de errores con Kino para corregir fallas" y `telemetry: "verbose"` agrega
-  "Comparte registros detallados de reproducción y errores con Kino para corregir fallas". En una actualización, lo nuevo lleva un chip
+  "Comparte registros detallados de reproducción y errores con Kino para corregir fallas"; `"browser": true`
+  agrega, en rojo, "Puede abrir páginas web ocultas para encontrar el video" y `"browser": "pages"`, en
+  rojo, "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video"
+  ([Navegador oculto](browser.md#permission)). En una actualización, lo nuevo lleva un chip
   "nuevo". Nada tuyo corre antes de que acepten.
 - **Una lista larga de hosts se pliega.** Con más de 3 hosts la hoja dice "Se va a conectar con N
   servidores:", lista los 3 primeros (en una actualización, primero los nuevos) y "y N más (M
@@ -115,6 +119,22 @@ Sin nada nuevo en tu manifiesto, salvo donde se dice:
   ([Sección, categorías y colores](section-theme.md)).
 - **Buscar dentro de un "Ver más".** Toda página "Ver más" tiene "Buscar en esta categoría"
   ([`scopedSearch`](contract.md#scoped-search)).
+- **Tu propia pestaña en Ajustes.** Un plugin con `settings` tiene una pestaña con su nombre, con su
+  formulario, sus líneas de estado y sus botones, pintada con los colores de su
+  [`theme`](section-theme.md#theme) ([Formulario de ajustes](settings-form.md)).
+- **El menú Servidor.** Cuando un Stream tiene dos copias o más, el menú "Audio y subtítulos" del
+  reproductor empieza con una sección **Servidor** que las lista por su `label` ("Opción 2", "Opción 3"…
+  si no tienen); la persona cambia y sigue viendo desde el mismo punto
+  ([Copias con etiqueta y perezosas](contract.md#lazy-copies)).
+- **Tu propia frase en un error.** Un `userMessage` válido sale como "Mensaje de &lt;nombre&gt;: …" en
+  lugar de la línea de Kino ([Tu propia frase](contract.md#user-message)).
+- **Subtítulos de tu plugin.** Un plugin que exporta `subtitles` aparece, con su nombre, en "Buscar
+  subtítulos en línea" del reproductor para cualquier título que Kino conozca por su id de IMDb o TMDB
+  ([Subtítulos para cualquier título](contract.md#subtitles)).
+- **Fichas completadas por tu plugin.** Un plugin con `meta` llena lo que TMDB y AniList dejaron vacío en
+  la ficha de cualquier título ([Describir otros títulos](contract.md#meta)).
+- **Páginas ocultas.** La página de un plugin con `"browser"` nunca sale en pantalla: el reproductor
+  muestra su carga de siempre mientras corre ([Navegador oculto](browser.md)).
 - **Actualizaciones.** Una insignia en Ajustes ▸ Plugins cuenta las actualizaciones que esperan
   aprobación, y una llamada fallida de un plugin con una actualización pendiente lo dice
   ([Actualizaciones](publish.md#updates)).

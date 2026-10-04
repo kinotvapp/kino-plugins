@@ -82,7 +82,9 @@ consentimiento: `channels` ([Canales en vivo](live-channels.md#en-vivo-tab)),
 `"liveStreamHosts": "any"` ([Canales desde cualquier servidor](live-channels.md#live-stream-hosts)),
 `"streamHosts": "any"` ([Reproducir desde cualquier servidor](manifest.md#stream-hosts)), `migrate`
 ([Pasar lo guardado](migrate.md)), `telemetry` o un paso de `true` a `"verbose"`
-([Registro y telemetría](diagnostics.md#telemetry)) y `secrets` en un plugin que no tenía ([Secretos sellados](manifest.md#secrets); agregar, cambiar o quitar un
+([Registro y telemetría](diagnostics.md#telemetry)), `"browser"` o un paso de `true` a `"pages"`
+([Navegador oculto](browser.md#permission); también en la pasada automática después de actualizar
+Kino) y `secrets` en un plugin que no tenía ([Secretos sellados](manifest.md#secrets); agregar, cambiar o quitar un
 secreto después de eso no pregunta nada). Los hosts que la persona aprobó mientras tu plugin corría
 ([Un host que se te olvidó](contract.md#forgotten-host)) y el permiso amplio de video se conservan en
 cada actualización. Un plugin con `secrets` solo se actualiza desde su rama principal, sin `@ref`.

@@ -7,7 +7,7 @@ sale del aparato. Todas desde `"apiVersion": 6` (Kino 0.9.50); por debajo, los c
 | --- | --- | --- |
 | [`kino.log`](kino-api.md#log) | `adb logcat` | siempre |
 | [`"debug": true`](#debug) | panel de error en pantalla, página "Registro" | tú, mientras desarrollas |
-| [`"telemetry": true`](#telemetry) / `"verbose"` | el registro de errores de quienes mantienen Kino | tú lo pides, la persona lo aprueba y lo puede apagar |
+| [`"telemetry": true`](#telemetry) / `"verbose"` | el registro de errores de quienes mantienen Kino | tú lo pides y la persona lo aprueba (todavía no hay interruptor para apagarlo) |
 
 ## Logcat { #logcat }
 
@@ -88,8 +88,9 @@ kino.log.report("myplugin:session", "shared_fallback", "tries=2");   // área my
   minúsculas, dígitos, `_` y `:`, con al menos un `_` o `:`, máximo 24 caracteres. Cualquier otra
   primera palabra (una palabra suelta, algo con punto, `@` o `/`, o que contiene uno de los valores de
   la persona) se archiva como `other`.
-- Máximo un reporte por plugin y área por hora, y 3 por plugin hasta que Kino se reinicia; se envía como
-  advertencia.
+- Máximo un reporte por plugin y área por hora, y 3 por plugin hasta que Kino se reinicia (y 10 en total,
+  sumando todos los plugins, en esa misma corrida de Kino); se envía como advertencia. Ese tope deja espacio
+  a los fallos de verdad, que tienen sus propios topes.
 - La línea entera se depura como cualquier línea de log, incluido el texto de la llamada en curso.
 - Sin `telemetry` (o, cuando exista ese interruptor, con él apagado) es solo una línea de log.
 - Reporta lo que pasó en códigos y conteos, nunca valores que vinieron de una respuesta.

@@ -80,8 +80,9 @@ The same approval applies to the other additions that need a line on the consent
 ([Live channels](live-channels.md#en-vivo-tab)), `"liveStreamHosts": "any"`
 ([Channels from any server](live-channels.md#live-stream-hosts)), `"streamHosts": "any"`
 ([Playing from any server](manifest.md#stream-hosts)), `migrate` ([Moving saved titles](migrate.md)),
-`telemetry` or a move from `true` to `"verbose"` ([Logs and telemetry](diagnostics.md#telemetry)) and
-`secrets` in a plugin that had none
+`telemetry` or a move from `true` to `"verbose"` ([Logs and telemetry](diagnostics.md#telemetry)),
+`"browser"` or a move from `true` to `"pages"` ([Hidden browser](browser.md#permission); also on the
+automatic pass after a Kino upgrade) and `secrets` in a plugin that had none
 ([Sealed secrets](manifest.md#secrets); adding, changing or removing a secret after that asks
 nothing). Hosts the person approved while your plugin ran ([A host you forgot](contract.md#forgotten-host))
 and the broad video permission carry over to every update. A plugin with `secrets` only updates from

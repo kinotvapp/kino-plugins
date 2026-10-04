@@ -7,7 +7,7 @@ one that leaves the device. All from `"apiVersion": 6` (Kino 0.9.50); below it t
 | --- | --- | --- |
 | [`kino.log`](kino-api.md#log) | `adb logcat` | always |
 | [`"debug": true`](#debug) | error panel on screen, "Registro" page | you, while developing |
-| [`"telemetry": true`](#telemetry) / `"verbose"` | the maintainers' error tracker | you ask, the person approves and can turn it off |
+| [`"telemetry": true`](#telemetry) / `"verbose"` | the maintainers' error tracker | you ask and the person approves (no switch to turn it off yet) |
 
 ## Logcat { #logcat }
 
@@ -82,8 +82,9 @@ kino.log.report("myplugin:session", "shared_fallback", "tries=2");   // area myp
 - The line's first word names the area, and must be a namespaced word of lowercase letters, digits, `_`
   and `:` with at least one `_` or `:`, up to 24 characters. Any other first word (a bare word, anything
   with a dot, `@` or `/`, or one that holds one of the person's values) is filed as `other`.
-- At most one report per plugin and area an hour and 3 per plugin until Kino restarts, sent as a
-  warning.
+- At most one report per plugin and area an hour and 3 per plugin until Kino restarts (and 10 in all,
+  every plugin together, in that same run of Kino), sent as a warning. That cap leaves room for
+  real failures, which have caps of their own.
 - The whole line is scrubbed like any log line, the text of the call running at the time included.
 - Without `telemetry` (or, once that switch exists, with it off) it is just a log line.
 - Report what happened in codes and counts, never values that came from a response.
