@@ -35,8 +35,9 @@ Desde apiVersion 6 hay tres tipos que no guardan ningún valor (nunca están en 
   ajuste `status`.
 - **`action`**: un botón. Kino llama tu `action(key)` (30 s), una acción a la vez (los otros botones y
   Guardar esperan), y muestra el `message` que devuelves (máximo 300 caracteres) o "Listo"; si lanza un
-  error o se pasa del tiempo, la persona ve el texto del error. `refresh: true` vuelve a pedir
-  `settingsStatus()`. `confirm` (de 1 a 120 caracteres) pregunta antes, con Cancelar enfocado. **Export
+  error o se pasa del tiempo, la persona ve el texto del error. Kino vuelve a pedir
+  `settingsStatus()` después de cada acción (y al abrir el formulario), así que las líneas de estado
+  describen lo que acaba de hacer; `refresh: true` se sigue aceptando y no cambia nada. `confirm` (de 1 a 120 caracteres) pregunta antes, con Cancelar enfocado. **Export
   obligatorio** cuando existe un ajuste `action`.
 
 ## Olvidar ajustes desde una acción (`clearSettings`) { #clear-settings }

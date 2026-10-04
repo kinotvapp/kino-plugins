@@ -13,12 +13,15 @@ export async function liveCategories() { /* -> Array<LiveCategory | Playlist> or
 export async function liveChannels({ categoryId, cursor }) { /* -> { items: LiveChannel[], next? } */ }
 export async function guide({ channelIds, from, to }) { /* -> GuideEntry[] */ }
 export async function liveSearch({ query }) { /* -> { items: LiveChannel[] } */ }
+export async function subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages }) { /* -> { lang, url, format?, label?, translated? }[] */ }
 ```
 
 From `"apiVersion": 6` (Kino 0.9.50) there are more optional exports, each with its own page:
 `sign` ([Signing every request](signed-streams.md)), `migrate` ([Moving saved titles](migrate.md)),
 `section` and `categories` ([Section, categories and colors](section-theme.md)), and `settingsStatus`,
-`action` and `validateSettings` ([The settings form](settings-form.md)).
+`action` and `validateSettings` ([The settings form](settings-form.md)), and `meta`
+([Describing other titles](#meta)). `subtitles` ([Subtitles for any title](#subtitles)) needs no new
+`apiVersion`.
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
 
@@ -51,7 +54,11 @@ The live-channel functions (`liveCategories`, `liveChannels`, and the optional `
 - `episodes(ref)` gets the `ref` of a `series` item, as you returned it.
 - `resolve(ref, options)` gets the `ref` of a `movie` item, the `ref` of an episode, or (apiVersion 2) the
   `ref` of a `live` item. `options` is `undefined` on a normal call; only an apiVersion 6 plugin with a
-  [request-signed](signed-streams.md#retry) stream ever gets it, as `{ retry }`.
+  [request-signed](signed-streams.md#retry) stream ever gets it, as `{ retry }`. From apiVersion 6 it
+  also gets the `ref` of one of your [lazy copies](#lazy-copies), when that copy is needed.
+- `subtitles(arg)` gets `{ imdbId?, tmdbId?, kind, season?, episode?, title?, year?, languages }` (see
+  [Subtitles for any title](#subtitles)) and returns an array shaped like a `Stream`'s `subtitles`,
+  each entry with an optional `label` and `translated`.
 
 ## What you return { #returns }
 
@@ -74,7 +81,10 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
                audioTracks?: { lang: string, url: string, label?: string }[],
                durationMs?: number, expiresInSeconds?: number,
                drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> },
-               alternatives?: { url: string, mime?: string, headers?: Record<string, string> }[],
+               label?: string,                                                        // apiVersion 6
+               alternatives?: ({ url: string, mime?: string, headers?: Record<string, string>, label?: string }
+                               | { ref: string, label?: string })[],                  // label and { ref }: apiVersion 6
+               skip?: { openingStartMs?: number, openingEndMs?: number, endingStartMs?: number },
                signing?: "request", signContext?: string, alternateHosts?: string[] }   // the last three: apiVersion 6
 ```
 
@@ -250,10 +260,36 @@ It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exac
   rest still count. They share the stream's `subtitles` and `audioTracks`. Ignored next to `drm`, with
   `signing` (`alternateHosts` is a signed stream's failover) and for a live channel. Return them when
   your source offers several files of one title (other servers, resolutions, encodes): a device that
-  cannot decode the first one still gets to watch.
+  cannot decode the first one still gets to watch. From apiVersion 6 an alternative may carry a
+  `label`, or be a lazy `{ label, ref }` resolved only when needed: see
+  [Labelled and lazy copies](#lazy-copies).
+- `label` (apiVersion 6): the Stream's own short name, and each alternative may carry one too -- e.g.
+  `"Latino · Servidor 1"`. Trimmed; at most 48 characters, no control characters, or it is dropped (the
+  copy still plays). When a Stream has two or more copies the player shows them all, by label, in a
+  **Servidor** section at the top of its "Audio y subtítulos" menu (phone and TV, reachable with the
+  D-pad), where the person can switch at any moment and keep watching from the same spot; a copy
+  without a label shows as "Opción 2", "Opción 3"… Labels also go to the plugin's log, with the host
+  only (never a URL or a token).
 - `signing`, `signContext` and `alternateHosts` (apiVersion 6): an HLS stream that needs a fresh
   signature on every request. They have their own page: [Signing every request](signed-streams.md).
 - `durationMs` is optional, in milliseconds.
+- `skip` is optional: where THIS file's opening and ending are, in milliseconds from its start --
+  `{ openingStartMs?, openingEndMs?, endingStartMs? }`. Kino shows its "Saltar intro" button from
+  `openingStartMs` (0 when left out or `null`) to `openingEndMs`, and "Saltar outro" (to the next
+  episode) from `endingStartMs`. Every value must be a finite number between 0 and `durationMs` (or
+  24 h when you give no `durationMs`); the opening needs its `openingEndMs`, after its start;
+  `endingStartMs` must not be before the opening's end. A bad part is dropped and the rest still count;
+  a bad `skip` never stops the stream. Send times for the exact file you return: a different cut of the
+  same episode has its opening somewhere else. Kino keeps them as the episode's markers, also for a
+  downloaded copy, and they sync to the person's other device. A correction the person makes by hand
+  always wins over yours; yours win over the community times Kino looks up on its own for anime
+  (AniSkip), which is not asked at all when you send `skip`. Ignored for a live channel. Older Kino
+  versions ignore the field.
+
+    ```js
+    return { url: videoUrl, durationMs: 1_420_000, skip: { openingStartMs: 62_000, openingEndMs: 152_000, endingStartMs: 1_290_000 } };
+    ```
+
 - `expiresInSeconds` (30 to 86400) says when your URL may stop working. If playback fails after that
   long, Kino calls `resolve` once more and continues where the person was.
 - **DRM only when declared.** A stream carrying any of `drm`, `license`, `licenseUrl`, `drmLicenseUrl`,
@@ -264,6 +300,61 @@ It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exac
   `licenseHeaders` are filtered like `headers` (at most 20) and sent with the license request only.
   The other five keys are refused even next to a valid `drm` block. See
   [A Widevine-protected stream](cookbook.md#widevine).
+
+### Labelled and lazy copies (apiVersion 6) { #lazy-copies }
+
+A source often has the same episode in several languages and on several servers, and finding each
+server's video costs time (a page to open, sometimes a [hidden browser](browser.md) capture of 5-25 s).
+Resolving all of them before the first frame would make every play slow. From `"apiVersion": 6`, a
+Stream's `alternatives` may name a copy **without resolving it**: `{ label, ref }` instead of `{ url }`.
+Kino passes that `ref` to your `resolve(ref)` only when the copy is actually needed:
+
+- the person picks it in the player's **Servidor** menu (the copy on screen keeps playing while it
+  opens, then the new one starts at the same spot; if it fails, they read "No se pudo abrir …" and keep
+  watching the copy they had);
+- the automatic fallback reaches it (the copy on screen cannot play on this device, or is gone);
+- a download's copy choice gets to it (inside the same 30 s budget it spends probing copies; a lazy copy
+  that has not answered by then is skipped, never waited for).
+
+That call is a normal `resolve`: the same time limit (75 s for an approved [`browser`](browser.md)
+plugin) when the person picked the copy -- they chose to wait for it -- but **at most 20 s when the
+automatic fallback asked**, after which Kino cancels it (ending a capture still running) and moves on
+to the next copy; the same checks on what it returns, `kino.browser.capture` allowed (for a download's copy
+choice: only when no other page is open, else `busy` and the copy is skipped), host questions asked as
+for the title. From its answer Kino uses `url`, `headers`, `mime`, `subtitles` (when it brings some;
+otherwise the title's are kept), `expiresInSeconds` (a lazy copy past its expiry is resolved again, not
+the whole title) and `skip` (it shows "Saltar intro" while that copy plays, never saved: the Stream's
+own `skip` stays the episode's, and a hand correction still wins). Its own `alternatives` are ignored --
+a copy never expands into more copies. A `resolve` that fails moves on to the next copy.
+
+```js
+export async function resolve(ref) {
+  // A copy's own ref: "<episode>|<server>". Resolve just that server.
+  if (ref.includes("|")) return resolveServer(ref);
+  const servers = await listServers(ref);            // [{ id, lang, name }], fast: no page opened yet
+  const first = await resolveServer(`${ref}|${servers[0].id}`);
+  return {
+    ...first,
+    label: `${servers[0].lang} · ${servers[0].name}`,  // "Latino · Servidor 1"
+    alternatives: servers.slice(1, 9).map((s) => ({
+      label: `${s.lang} · ${s.name}`,                // "Subtitulado · Servidor 2"
+      ref: `${ref}|${s.id}`,
+    })),
+  };
+}
+```
+
+Rules: `ref` is a non-blank string of at most 512 characters with no control characters (a bad or
+repeated one is dropped); an entry with a `url` is a normal copy whatever else it carries; lazy and
+concrete copies mix freely and share the limit of 8; each `label` is trimmed, at most 48 characters, no
+control characters, or it is dropped while the copy still counts. Keep the ref enough to find that one
+server again: it may be resolved minutes after the title (a person switching servers mid-episode).
+Below apiVersion 6 the keys are unknown: a `label` is ignored and a `{ ref }` entry, having no `url`, is
+dropped exactly as before. Try it with `node sdk/run.mjs ./plugin.js resolve '<ref>'`, which prints
+each copy with its label, then `resolve '<a copy's ref>'` to resolve that copy.
+
+A complete plugin that captures its first server and offers the rest this way is on
+[Hidden browser](browser.md#example).
 
 ### A host you forgot may be asked about, once { #forgotten-host }
 
@@ -305,6 +396,66 @@ never covers:
 It exists for sources whose hosters change domain per video or mid-playback; a plugin with a fixed
 CDN should still declare it.
 
+## Subtitles for any title { #subtitles }
+
+Export `subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages })` and Kino lists
+what you answer in the player's "Buscar subtítulos en línea" (phone and TV), under your plugin's name,
+next to OpenSubtitles and SubDL: for **any** movie or episode the person plays -- your titles, another
+plugin's, a Stremio addon's -- as long as Kino knows its IMDb or TMDB id (a title known only by name is
+never sent to you). The person picks a track, Kino downloads it, turns it into SRT and adds it like any
+online subtitle (sync offset, style, remembered for the title).
+
+Two ways to offer it:
+
+- **A subtitle provider**: `"capabilities": ["subtitles"]` and nothing else. No `resolve`, `search` or
+  `home` needed; the plugin appears nowhere but the subtitle search and Ajustes ▸ Plugins (it is not a
+  source in "Elige tus fuentes"). The consent screen says "Agrega subtítulos a tus películas y series".
+  Older Kino versions refuse a capability they do not know: they do not install it.
+- **Alongside your videos**: keep your capabilities and just export `subtitles` (declaring `subtitles`
+  too adds the consent line, but older Kino versions would then refuse the plugin). Kino asks every
+  plugin whose install found the export; older versions never call it.
+
+The argument: `imdbId` (`tt…`) and/or `tmdbId` (a number), at least one of them; `kind` `"movie"` or
+`"series"` -- for an episode the ids are the **series'** and `season`/`episode` are set; `title` and
+`year` are hints; `languages` are the person's subtitle languages, ISO 639-1, best first (`["es",
+"en"]`). Return an array of `{ lang, url, format?, label?, translated? }`: a `Stream`'s `subtitles`
+entries plus an optional `label` and `translated: true` for a machine translation (the menu then says
+"Español (traducido)" and lists it after the person-made tracks of that language). Kino keeps 30, then
+lists only those in the person's languages, in that order, 15 per plugin: put the asked languages first.
+`label` (60 characters) is shown next to the language, a release name for example. Each `url` follows a
+`Stream`'s subtitle rule: your `hosts`, the person's server, or any public host with
+[`streamHosts: "any"`](manifest.md#stream-hosts). The call is a background one (10 s, it never marks
+your plugin "No responde"); return `[]` when you have nothing. Try it with
+`node sdk/run.mjs ./plugin.js subtitles tt0944947 1 1` (`KINO_LANGS=es,en` for the languages).
+
+## Describing other titles (`meta`, apiVersion 6) { #meta }
+
+Declare `"meta"` and export `meta(query)` to fill in what Kino could not find about a title on its info
+page, whatever plugin listed it: a synopsis, a poster or background, genres, a year, a runtime, an
+episode list. Kino asks TMDB first and, for an anime, AniList; your answer only fills what they left
+empty, never replaces a value they gave (and never the title's own plugin's). It is the way to describe
+titles TMDB does not know, like `kitsu:` anime. No consent line.
+
+```js
+export async function meta(query) {
+  // query: { type: "movie" | "series", ids: { imdb?, tmdb?, kitsu?, mal?, anilist? }, id?, lang? }
+  //   id: the title's own Stremio-style id in its source ("kitsu:1376", "tt0944947"), when it has one
+  //   lang: the person's language ("es")
+  const found = await lookUp(query.ids);
+  if (!found) return null;                         // not a title you know: no failure
+  return {
+    title, overview, poster, backdrop, year: "2011", genres: ["Drama"], runtimeMinutes: 57,
+    episodes: [{ season: 1, number: 1, title, overview, still, airDate: "2011-04-17", id: "tt0944947:1:1" }],
+  };
+}
+```
+
+Every field is optional. Images follow the same rules as an item's. `episodes[].id` is the episode's
+Stremio-style video id: a Stremio addon's title whose own listing failed can then play those episodes
+by it. Kino asks every `meta` plugin of the person at once, at most 6 s each, uses the first answer in
+install order, and remembers it for 30 minutes; a failure or a timeout is just no answer, and the page
+never waits for you.
+
 ## Errors people understand { #errors }
 
 A plain `throw new Error("…")` reaches the person as a generic failure of your plugin. When the
@@ -318,7 +469,7 @@ if (r.status === 401) throw kino.error("auth_required", "la sesión venció");
 <!-- contract:errors:start -->
 | `kino.error` code | What the person sees |
 | --- | --- |
-| `auth_required` | "Configura {plugin} en Ajustes ▸ Plugins", with a button to its Configurar screen |
+| `auth_required` | "Configura {plugin} en Ajustes ▸ {plugin}" when your plugin declares settings (its own tab in Ajustes), else "Configura {plugin} en Ajustes ▸ Plugins" ("Menú ▸ Plugins" on the phone), with a button to its Configurar screen |
 | `not_found` | "No se encontró en {plugin}" |
 | `geo_blocked` | "Este contenido no está disponible en tu región" |
 | `rate_limited` | "{plugin} está limitando las peticiones; intenta en unos minutos" |

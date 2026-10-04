@@ -33,6 +33,22 @@ lista:
   [Canales en vivo](live-channels.md#home-rows).
 - **Pares de llaves en `kino.crypto`**: `generateKeyPair`, `sign`, `verify`, `importKey`,
   `deriveSharedSecret`. [API kino](kino-api.md#key-pairs).
+- **El navegador oculto**: `"browser": true` (aprobado en rojo, "Puede abrir páginas web ocultas para
+  encontrar el video") y `kino.browser.capture`, que abre un embed en una WebView oculta dentro de la app,
+  en un `resolve` que empezó la persona, y devuelve las peticiones de video que hizo, retenidas para que
+  sus tokens sigan frescos, con los encabezados y cookies para reproducirlas. Todo su tráfico pasa por un
+  proxy con una credencial por captura e IP revisadas y fijas; la red de la casa nunca; una página a la
+  vez; cookies y almacenamiento borrados. Una página que pide una persona termina con `blocked`: **Kino
+  nunca resuelve un captcha**. El `resolve` de un plugin aprobado tiene 75 s. También,
+  con `"browser": "pages"` (su propia línea roja), `kino.browser.page`, que lee el HTML de una página a través del mismo navegador oculto cuando la
+  revisión automática del sitio pasa sola. [Navegador oculto](browser.md).
+- **`Stream.label` y copias perezosas con etiqueta**: nombra cada copia ("Latino · Servidor 1") para el
+  nuevo menú **Servidor** del reproductor, y lista copias como `{ label, ref }` que Kino resuelve con
+  `resolve(ref)` solo cuando la persona escoge una, el cambio automático llega a ella (máximo 20 s cada
+  una) o la elección de copia de una descarga la prueba. Si la escogida falla, se vuelve a la copia que
+  se estaba viendo. [Copias con etiqueta y perezosas](contract.md#lazy-copies).
+- **`meta`**: describir títulos que listaron otras fuentes (sinopsis, imágenes, capítulos) cuando TMDB
+  y AniList no tienen nada. [Describir otros títulos](contract.md#meta).
 
 Sin `apiVersion` nuevo (sirve para cualquier plugin):
 
@@ -44,7 +60,22 @@ Sin `apiVersion` nuevo (sirve para cualquier plugin):
   fallida con una actualización pendiente lo dice. [Publicar](publish.md#updates).
 - **Un plugin firmado en dos repositorios** cuenta como el mismo con el mismo `id` y la misma llave.
   [Plugins firmados](signed.md#two-addresses).
-- **Ids reservados**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys` (la lista cambió:
+- **Export `subtitles`**: responder la "Buscar subtítulos en línea" del reproductor para cualquier
+  título que Kino conozca por id de IMDb o TMDB, junto a tus videos o como proveedor de subtítulos
+  (`"capabilities": ["subtitles"]` sola). [Subtítulos para cualquier título](contract.md#subtitles).
+- **`Stream.skip`**: dónde están la entrada y el cierre de este archivo, para "Saltar intro" / "Saltar
+  outro"; los tuyos le ganan a AniSkip, una corrección a mano le gana a los tuyos. [Contrato](contract.md#stream).
+- **El campo `categories` del manifiesto** (`movies`, `series`, `anime`, `live`, `radio`, `subtitles`,
+  `utilities`, `adult`): los chips de categoría de la tienda de plugins. [Manifiesto](manifest.md).
+- **Formulario de ajustes**: `settingsStatus()` se vuelve a pedir después de cada acción, así que
+  `refresh: true` ya no hace falta. [Formulario de ajustes](settings-form.md#ui-types).
+- **Registros**: solo un plugin que declara `telemetry` envía líneas de `kino.log` con una falla,
+  recomendado o no; por ahora no hay interruptor para apagarlo. [Registro y telemetría](diagnostics.md#telemetry).
+- **"De la comunidad"** es su propia pestaña de la pantalla Plugins. [Publicar](publish.md#get-found).
+- **Addons de subtítulos de Stremio** (OpenSubtitles v3, traductores como GTSubs) se instalan como
+  proveedores de subtítulos; las traducciones automáticas salen como "Español (traducido)". No tienes
+  nada que escribir.
+- **Ids reservados**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`, `subtitle-prefs` (la lista cambió:
   las versiones anteriores reservan algunos más, así que si una dice "El id … está reservado por Kino",
   escoge otro).
 - **Reclamos y retiro de plugins de la comunidad**: [`community-blocklist.json`](claims.md).

@@ -38,14 +38,17 @@ refused with "El campo \"debug\" debe ser true o false".
 
 ## `telemetry`: your lines reach the error tracker { #telemetry }
 
-Plugins in Kino's recommended catalog already send their `kino.log` lines when a call fails.
-`"telemetry": true` asks for the same for your plugin, whatever repository it comes from:
+From Kino 0.9.50 only a plugin that declares `"telemetry"` sends its `kino.log` lines when a call
+fails, recommended or not, whatever repository it comes from. For any other plugin (a converted Nuvio
+scraper included) Kino only notes that the call failed: your id and version, the function and the kind
+of failure, never a log line.
 
 - **Consent.** The consent sheet says "Comparte registros de errores con Kino para corregir fallas". An
   update that newly declares it waits for the person's approval, like a new host ("Actualización
   disponible — requiere tu aprobación").
-- **Switch.** Your plugin's tab in Ajustes gets an "Enviar registros de errores" switch, on by default,
-  that the person can turn off on each device. Off, nothing leaves.
+- **No switch yet.** For now, while plugins are being stabilized, a declared plugin's lines are always
+  sent. A later Kino build adds an "Enviar registros de errores" switch to your plugin's tab in Ajustes,
+  on by default, that the person can turn off on each device; then nothing leaves while it is off.
 - **What is sent.** When a call fails (it throws, times out, returns something unusable, including
   `sign`, `settingsStatus`, `action` and `validateSettings`), the lines it logged during that call (the
   last 30, each at most 300 characters, 2 KB in all) as `plugin_log`, tagged with your plugin's id and
@@ -82,7 +85,7 @@ kino.log.report("myplugin:session", "shared_fallback", "tries=2");   // area myp
 - At most one report per plugin and area an hour and 3 per plugin until Kino restarts, sent as a
   warning.
 - The whole line is scrubbed like any log line, the text of the call running at the time included.
-- Without `telemetry`, or with the switch off, it is just a log line.
+- Without `telemetry` (or, once that switch exists, with it off) it is just a log line.
 - Report what happened in codes and counts, never values that came from a response.
 
 ## Playback metrics and problem reports { #playback }
@@ -108,7 +111,7 @@ Where it goes:
 - your plugin's **Registro** (with `"debug": true`), one `kino:play …` line per milestone and a summary
   line;
 - **logcat** under the tag `KinoPlay` in a debug build of Kino, or in any build with `"debug": true`;
-- the **error tracker**, only with `telemetry` and the person's switch on: with `true`, one summary per
+- the **error tracker**, only with `telemetry` (and, once that switch exists, while the person leaves it on): with `true`, one summary per
   playback that ended on an error the person saw; with `"verbose"`, also a quarter of the playbacks that
   went well, and one event per problem or edge case (at most 60 per plugin until Kino restarts, one a
   minute per area). Failure events carry the Kotlin exception's stack and, when your script threw, its

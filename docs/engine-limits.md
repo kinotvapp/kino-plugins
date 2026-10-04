@@ -6,7 +6,7 @@
 | --- | --- |
 | Manifiesto / archivo de entrada / ícono | 16 KB / 1 MB / 128 KB |
 | Memoria / pila, por plugin | 64 MB / 1 MB |
-| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin que genera el propio Kino, desde un scraper de Nuvio o un addon de Stremio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; `liveSearch` 15 s; `section`, `categories` 20 s cada una (apiVersion 6); `migrate` 10 s; `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `sign` 1,5 s (y 3 s contando su espera); cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
+| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin que genera el propio Kino, desde un scraper de Nuvio o un addon de Stremio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; `liveSearch` 15 s; `subtitles` 10 s; `section`, `categories` 20 s cada una (apiVersion 6); `migrate` 10 s; `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `sign` 1,5 s (y 3 s contando su espera); cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
@@ -15,7 +15,7 @@
 | `kino.storage` | 256 KB por plugin; el `ttlMs` opcional de una entrada va de 1 a 2.592.000.000 ms (30 días) |
 | `kino.sleep` | de 0 a 5.000 ms por llamada |
 | `kino.crypto` | datos de máximo 5 MB por llamada; PBKDF2 máximo 100.000 iteraciones y llaves de 64 bytes; `randomBytes` máximo 1.024 |
-| `kino.log` / `console.*` | 2.000 caracteres por mensaje; cuando falla una llamada de un plugin del catálogo recomendado (o de uno con `telemetry`, apiVersion 6), sus últimas 30 líneas (cada una cortada a 300 caracteres, depuradas, 2.048 caracteres en total) van con el reporte de la falla |
+| `kino.log` / `console.*` | 2.000 caracteres por mensaje; cuando falla una llamada de un plugin cuyo manifiesto declara `telemetry`, sus últimas 30 líneas (cada una cortada a 300 caracteres, depuradas, 2.048 caracteres en total) van con el reporte de la falla |
 | Lo que devuelve una función | máximo 2.000.000 caracteres ya convertido a JSON |
 | Resultados | `search` 100 ítems; `home` 20 filas de 60; `browse` 100 por página; `episodes` 5.000 (y 50 `seasons`); `ref` 4.096 caracteres; `next` 2.048 caracteres; `id` cumple `^[A-Za-z0-9._~-]{1,128}$` |
 | Canales en vivo (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 por página, 10 páginas al comienzo y 5 más por desplazamiento, 10.000 canales (200 páginas) por categoría; `liveSearch` 100 canales, pedido desde 2 caracteres; `guide` 50 canales y 24 h por llamada, 100 entradas por canal; `number` 1..9999 |
@@ -28,7 +28,11 @@ Desde apiVersion 6, además:
 
 | Qué | Límite |
 | --- | --- |
-| Stream | `alternatives` 8; `alternateHosts` 6; `signContext` 4.096 caracteres; 3 reintentos de `resolve` por reproducción firmada |
+| Stream | `alternatives` 8 (perezosas y concretas juntas); `label` 48 caracteres; `ref` de una copia perezosa 512 caracteres; `alternateHosts` 6; `signContext` 4.096 caracteres; 3 reintentos de `resolve` por reproducción firmada |
+| Copias perezosas | el cambio automático espera máximo 20 s el `resolve` de una copia; una copia que la persona escogió tiene todo el límite de `resolve`; la elección de copia de una descarga prueba dentro de 30 s en total |
+| Navegador oculto (`"browser": true` o `"pages"`) | `resolve` 75 s; una página a la vez en toda la app; `kino.browser.capture` `timeoutMs` 1..25.000 (18.000 por defecto), máximo 8 media y 10 subtítulos, 12 encabezados por media; `kino.browser.page` (solo `"pages"`) `timeoutMs` 1..25.000 (15.000 por defecto), 20 lecturas por minuto por plugin, HTML de máximo 2.000.000 caracteres. Ver [Navegador oculto](browser.md) |
+| `subtitles()` (cualquier apiVersion) | 10 s; se conservan 30 pistas, se listan 15 por plugin; `label` 60 caracteres |
+| `meta()` | 6 s por plugin; la primera respuesta en orden de instalación se guarda 30 minutos |
 | Formulario de ajustes | `status` 200 caracteres, `message` de una acción 300, `confirm` 120, error de un campo 200; `clearSettings` 12 claves |
 | Sección y categorías | etiqueta de la sección 20 caracteres; 8 pestañas de 24 caracteres; texto del destacado 300; `categories` 24 mosaicos con títulos de 40 caracteres |
 | `kino.crypto`, pares de llaves | 64 llaves privadas vivas por runtime; firma de máximo 512 bytes |

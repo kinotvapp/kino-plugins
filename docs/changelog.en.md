@@ -32,6 +32,21 @@ list:
   [Live channels](live-channels.md#home-rows).
 - **Key pairs in `kino.crypto`**: `generateKeyPair`, `sign`, `verify`, `importKey`,
   `deriveSharedSecret`. [The kino API](kino-api.md#key-pairs).
+- **The hidden browser**: `"browser": true` (approved in red, "Puede abrir páginas web ocultas para
+  encontrar el video") and `kino.browser.capture`, which opens an embed in a hidden in-app WebView inside
+  a `resolve` the person started and returns the video requests it made, held so their tokens stay
+  fresh, with the headers and cookies to play them. All its traffic goes through a proxy with a
+  per-capture credential and vetted, pinned IPs; the home network never; one page at a time; cookies and
+  storage wiped. A page that asks for a human ends with `blocked`: **Kino never solves a captcha**. An
+  approved plugin's `resolve` gets 75 s. Also, with `"browser": "pages"` (its own red line), `kino.browser.page`, which reads a page's HTML through the
+  same hidden browser when the site's automatic check passes by itself. [Hidden browser](browser.md).
+- **`Stream.label` and labelled lazy copies**: name each copy ("Latino · Servidor 1") for the player's
+  new **Servidor** menu, and list copies as `{ label, ref }` that Kino resolves through `resolve(ref)`
+  only when the person picks one, the automatic fallback reaches it (at most 20 s each) or a download's
+  copy choice probes it. A failed pick returns to the copy that was playing.
+  [Labelled and lazy copies](contract.md#lazy-copies).
+- **`meta`**: describe titles other sources listed (synopsis, images, episodes) when TMDB and AniList
+  have nothing. [Describing other titles](contract.md#meta).
 
 No new `apiVersion` (for any plugin):
 
@@ -43,7 +58,21 @@ No new `apiVersion` (for any plugin):
   call with a pending update says so. [Publishing](publish.md#updates).
 - **A signed plugin at two repositories** counts as the same plugin with the same `id` and key.
   [Signed plugins](signed.md#two-addresses).
-- **Reserved ids**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys` (the list changed:
+- **`subtitles` export**: answer the player's "Buscar subtítulos en línea" for any title Kino knows by
+  IMDb or TMDB id, alongside your videos or as a subtitle provider (`"capabilities": ["subtitles"]`
+  alone). [Subtitles for any title](contract.md#subtitles).
+- **`Stream.skip`**: where this file's opening and ending are, for "Saltar intro" / "Saltar outro";
+  yours win over AniSkip, a hand correction wins over yours. [The contract](contract.md#stream).
+- **The manifest's `categories`** (`movies`, `series`, `anime`, `live`, `radio`, `subtitles`,
+  `utilities`, `adult`): the plugin marketplace's category chips. [The manifest](manifest.md).
+- **Settings form**: `settingsStatus()` is asked again after every action, so `refresh: true` is no
+  longer needed. [The settings form](settings-form.md#ui-types).
+- **Logs**: only a plugin that declares `telemetry` sends `kino.log` lines with a failure, recommended
+  or not; for now there is no switch to turn it off. [Logs and telemetry](diagnostics.md#telemetry).
+- **"De la comunidad"** is its own tab of the Plugins screen. [Publishing](publish.md#get-found).
+- **Stremio subtitle addons** (OpenSubtitles v3, translators such as GTSubs) install as subtitle
+  providers; machine translations show as "Español (traducido)". Nothing for you to write.
+- **Reserved ids**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`, `subtitle-prefs` (the list changed:
   older versions reserve a few more, so if one says "El id … está reservado por Kino", pick another).
 - **Claims and takedowns of community plugins**: [`community-blocklist.json`](claims.md).
 - **Sending to the TV**: every HLS goes through the phone; a file without `headers` goes direct and,

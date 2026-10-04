@@ -29,7 +29,8 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Signing every request](https://kinotvapp.github.io/kino-plugins/en/signed-streams/),
    [Moving saved titles](https://kinotvapp.github.io/kino-plugins/en/migrate/),
    [Section, categories and colors](https://kinotvapp.github.io/kino-plugins/en/section-theme/),
-   [Logs and telemetry](https://kinotvapp.github.io/kino-plugins/en/diagnostics/).
+   [Logs and telemetry](https://kinotvapp.github.io/kino-plugins/en/diagnostics/),
+   [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
 3. The machine-readable contract: `contract.json` (every number and rule) and `kino.d.ts` (every
    shape and the whole `kino` API), at <https://kinotvapp.github.io/kino-plugins/reference/contract.json>
    and <https://kinotvapp.github.io/kino-plugins/reference/kino.d.ts>, and also in the template.
@@ -72,6 +73,14 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   change at one, which is refused); a live stream, DASH, SAMPLE-AES or any DRM never downloads. A
   download never asks about a host: a refused server ends it for good (the person plays the title
   once to approve a server playback would ask about, then downloads again).
+- **Whether plain `kino.fetch` is enough** (it almost always is): fetch the real pages with `curl` and
+  look for the video address in the HTML, JSON or a script. Only if a server's embed builds the address
+  by running its own scripts does the plugin need the hidden browser (`"browser": true`,
+  `kino.browser.capture`, apiVersion 6, a red consent line): see "The hidden browser" in section 4. If
+  the site shows a captcha or "verify you are human", tell the person Kino cannot use that source that
+  way: **never** try to get around it.
+- **Several servers or languages per title?** Plan labelled lazy copies (apiVersion 6): resolve one,
+  list the rest as `{ label, ref }` (section 4).
 - **Optional apiVersion 6 extras to offer only when they fit**: a settings form with a status line and
   action buttons (an account to link and a "Cerrar sesión"), a section of its own and Categorías
   tiles, colors, `adult` marks for 18+ content, `telemetry` so its errors reach Kino's error tracker,
@@ -103,7 +112,7 @@ exact message Kino shows, never a summary.
    `browse`, `episodes`, `resolve`; `liveCategories` + `liveChannels` (+ optional `guide`, and optional `liveSearch` for a
    catalog too big to list whole: `liveSearch({ query })` returns channels like a `liveChannels`
    page, with the same `id`s; export it only if the source can really search) for `channels`; `migrate`
-   for `migrate`). `download`, `drm` and `scopedSearch` are declarative: nothing to export. Other
+   for `migrate`; `meta` for `meta`; `subtitles` for `subtitles`). `download`, `drm` and `scopedSearch` are declarative: nothing to export. Other
    exports are required by a manifest field, not a capability: `section` (by `"section"`),
    `settingsStatus` (by a `status` setting), `action` (by an `action` setting), `sign` (by any stream
    with `signing: "request"`); `categories` (needs `browse`) and `validateSettings` are optional.
@@ -162,7 +171,7 @@ exact message Kino shows, never a summary.
    repositories with the topic). Recommend GitHub + topic unless the person has a reason not to.
 9. **Updates**: raise `version` every time (an equal or lower version never reaches anyone). Adding
    hosts, `permissions`, `download`, `drm`, `channels`, `migrate`, `telemetry` (or `true` → `"verbose"`),
-   `liveStreamHosts`, `streamHosts`, an `insecureHttp` host, or `secrets` to a plugin that had none
+   `liveStreamHosts`, `streamHosts`, `browser` (or `true` → `"pages"`), an `insecureHttp` host, or `secrets` to a plugin that had none
    makes the update wait for the person's approval. From Kino 0.9.50 updates are also checked at app
    start (at most every 12 h), a badge counts the waiting ones, and a failed call of a plugin whose
    update waits says "Hay una versión nueva de <name>: actualízala en Ajustes ▸ Plugins".
@@ -224,7 +233,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; all fetches and sleeps count (not the time the person spends answering a host question) |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s (`resolve` 75 s for an approved `"browser": true` plugin); `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; `subtitles` 10 s; apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; all fetches and sleeps count (not the time the person spends answering a host question) |
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
@@ -233,13 +242,14 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.storage` | 256 KB; `ttlMs` 1..2,592,000,000 (30 days) |
 | `kino.sleep` | 0..5,000 ms |
 | `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024 |
-| Log message | 2,000 characters; for a recommended-catalog plugin or one with `"telemetry"` (apiVersion 6, person's switch on), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
+| Log message | 2,000 characters; for a plugin with `"telemetry"` (apiVersion 6; no other plugin sends lines), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
 | Live (apiVersion 3) | 200 categories; 500 channels/page, 10 pages at first then 5 more per scroll, up to 10,000 channels (200 pages)/category; `liveSearch` keeps 100 channels, asked from 2 characters; `guide` 50 channels, 24 h, 100 entries/channel; `number` 1..9999 |
 | Settings | 12 with a value, plus 16 `section`/`status`/`action` (apiVersion 6); `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields; `status` text 200, action `message` 300, `confirm` 120, `clearSettings` 12 keys |
 | `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes (1..8,192 at apiVersion 6); typed cipher keys 16/24/32 bytes (apiVersion 6) |
-| Stream (apiVersion 6) | `alternatives` 8 (any apiVersion); `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
+| Stream (apiVersion 6) | `alternatives` 8 (any apiVersion; lazy and concrete together); `label` 48 chars; lazy `ref` 512 chars; `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
+| Hidden browser (apiVersion 6) | one page at a time in the whole app; `capture` `timeoutMs` ≤ 25,000 (default 18,000), ≤ 8 media, 10 subtitles; `page` `timeoutMs` ≤ 25,000 (default 15,000; pass ~12,000 in `search`, ~16,000 in 20 s exports, 25,000 in `resolve`), 20 reads a minute; automatic fallback waits ≤ 20 s per lazy copy |
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
 
@@ -362,8 +372,9 @@ only when you use one of these.
   `KinoPlugin/<id>` (and `KinoPlay` for playback metrics). Development only: **remove before
   publishing** (`validate.mjs` warns).
 - **`telemetry: true | "verbose"`**: asks the person (consent line, and an update that adds it waits
-  for approval) to share the failed call's scrubbed `kino.log` lines with Kino's error tracker; the
-  person can switch it off per device. `"verbose"` adds playback metrics of a sample of good plays and
+  for approval) to share the failed call's scrubbed `kino.log` lines with Kino's error tracker; only
+  plugins that declare it ever send lines (recommended or not), and for now there is no switch (a later
+  Kino adds a per-device one). `"verbose"` adds playback metrics of a sample of good plays and
   edge cases (60 events per run). `kino.log.report("myplugin:area", "code", "count=2")` flags a
   degraded-but-working result (area: lowercase namespaced word with `_` or `:`, ≤ 24 chars; 1/hour per
   area, 3 per run). Log codes and counts, never values from a response, never what the person typed.
@@ -389,9 +400,62 @@ only when you use one of these.
   that made them (not in `sign()`'s lane), at most 64. For a player that proves itself by signing a
   challenge. Map Node/WebCrypto calls with the table in
   [The kino API](https://kinotvapp.github.io/kino-plugins/en/kino-api/#key-pairs).
+- **`Stream.label` and labelled lazy copies**: `label` (≤ 48 chars, e.g. `"Latino · Servidor 1"`) names
+  a copy in the player's **Servidor** menu; an alternative may be `{ label, ref }` (ref ≤ 512 chars) that
+  Kino passes to `resolve(ref)` only when needed: the person picks it (whole `resolve` limit; if it fails
+  they keep watching the copy they had), the automatic fallback reaches it (≤ 20 s, then the next copy),
+  or a download's copy choice probes it (inside its 30 s budget). From that answer only `url`,
+  `headers`, `mime`, `subtitles`, `expiresInSeconds` and `skip` are used; its own `alternatives` are
+  ignored. Use it for **every** source with several servers or languages: never resolve all of them up
+  front. [Labelled and lazy copies](https://kinotvapp.github.io/kino-plugins/en/contract/#lazy-copies).
+- **`"browser": true`** (`kino.browser.capture`) or **`"browser": "pages"`** (capture plus `kino.browser.page`): see "The hidden browser"
+  below.
+- **`meta`** (capability + export `meta(query)`, no consent line, 6 s): fill a title's info page when
+  TMDB/AniList have nothing (e.g. `kitsu:` anime); return `null` for titles you do not know.
 - **Any apiVersion**: `Stream.alternatives` (≤ 8 `{ url, mime?, headers? }`, other copies of the same
   video, best first; Kino switches when one cannot decode or is gone; ignored with `drm`, `signing` and
-  for live).
+  for live). `Stream.skip` (`{ openingStartMs?, openingEndMs?, endingStartMs? }` for this exact file:
+  "Saltar intro"/"Saltar outro"; wins over AniSkip, a hand correction wins over it). The `subtitles`
+  export (10 s, background): tracks for any title Kino knows by IMDb/TMDB id, alongside your videos or
+  as a pure subtitle provider (`"capabilities": ["subtitles"]` alone). The manifest's `categories`
+  field (`movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`) only tags the
+  plugin in the marketplace; it is not the `categories()` export. `settingsStatus()` is asked again after
+  every `action` (no need for `refresh: true`).
+
+**The hidden browser (`"browser": true` or `"pages"`, apiVersion 6, Kino 0.9.50+).** Rules, in order:
+
+1. **Prefer `kino.fetch`.** Use the browser only for a server whose embed builds the video address by
+   running its own scripts, after you checked the HTML, JSON and scripts with `curl`. It costs the
+   person a red consent line ("Puede abrir páginas web ocultas para encontrar el video"), 5-25 s per page,
+   and it never runs in the Node kit (`browser_unavailable` there): keep a `kino.fetch` path wherever one
+   exists.
+2. **`kino.browser.capture(url, { timeoutMs, headers, match, autoplay })` only inside `resolve`**, and
+   only a `resolve` the person started (play or a download); anywhere else `not_allowed`. The start
+   `url` must be on your `hosts`, https, public. It returns `{ media: [{ url, mime?, headers }],
+   subtitles, finalUrl }`: return `media[0].url` with **its `headers`** (Referer, User-Agent, cookies…)
+   as the Stream's `headers`. Add `"streamHosts": "any"` because the video lives on hosts you cannot list.
+   An approved plugin's `resolve` gets 75 s: plan for two or three servers, not all of them.
+3. **`kino.browser.page(url, { waitFor, timeoutMs })`**, only with `"browser": "pages"` (its own red line,
+   "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video"; `true` is capture-only and
+   gets `not_allowed`; an update from `true` to `"pages"` asks the person again), returns `{ html, finalUrl, status, truncated }` for
+   a site whose plain fetch only gets its automatic check page ("Just a moment…"): only from `search`,
+   `home`, `browse`, `episodes`, `section`, `categories` or `resolve` while the person is using the app
+   (never background calls), 20 reads a minute, Kino never touches the page. Keep `timeoutMs` under the
+   call's budget: ~12000 in `search`, ~16000 in the 20 s exports, 25000 in `resolve`. Try `kino.fetch`
+   first and cache with `kino.storage`.
+4. **Never try to defeat a captcha or bot protection.** Kino never solves, clicks or ticks a CAPTCHA,
+   Turnstile, hCaptcha, reCAPTCHA or "verify you are human": the call ends with `blocked`. Do not add
+   solver services, fingerprint spoofing, stealth tricks, or retry loops; on `blocked`, `timeout` or
+   `busy` move to the next server or return nothing. A plugin built to defeat bot protection is not
+   listed and is removed.
+5. **One page at a time in the whole app** (`busy`); a device without WebView gets
+   `browser_unavailable`. Each page starts with no cookies and is wiped after; it never reaches the
+   home network.
+6. **Combine it with labelled lazy copies**: capture the first server in `resolve`, list the other
+   servers/languages as `{ label, ref }`, and capture each only when its `ref` comes back. (Maratón,
+   to be published as `xuper-plugin/maraton`, works this way; "Tu servidor" stays the complete
+   reference for everything else.) Full page:
+   [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
 
 What Kino 0.9.50 does for every plugin, with no field: plays a plugin title on the paired TV through
 the TV's own copy of the plugin (keep `id` and refs identical across devices), checks followed series
@@ -428,6 +492,10 @@ updating. Do not build anything that infringes rights or harms people. See
 - [ ] Every `userMessage` passes the rules (Spanish, ≤ 160, no URL/digits/money/credentials/contact)
       and `run.mjs` shows it; 18+ content carries `adult: true`.
 - [ ] `"entry"` and `"icon"` have **no leading `./`** (`"plugin.js"`).
+- [ ] If `"browser": true`: every server that works with `kino.fetch` uses it; `kino.browser.capture`
+      is only called from `resolve`; nothing tries to solve, click or bypass a captcha or bot check;
+      `blocked`/`timeout`/`busy`/`browser_unavailable` move on to the next server or end cleanly; the
+      captured `headers` are returned with the Stream; several servers are labelled lazy copies.
 - [ ] If signed: `"apiVersion": 5`, `signature` present, `node sdk/validate.mjs . --repo owner/repo`
       verified it after the last edit, `*.pem` in `.gitignore`, no `.pem` tracked, the person knows to
       back the key up.

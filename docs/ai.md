@@ -92,6 +92,12 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   usa kino.fetch, kino.sleep, kino.crypto, kino.storage. Sí hay URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder y console. Un solo archivo, sin import.
 - Nunca lances un error antes del primer await de una función async (primero await, luego valida).
+- Usa kino.fetch siempre que encuentre el video. Solo si el embed de un servidor arma la dirección
+  ejecutando sus propios scripts, usa el navegador oculto ("browser": true, apiVersion 6; me lo pregunta
+  en rojo) y llama kino.browser.capture solo dentro de resolve. Nunca intentes resolver ni saltarte un
+  captcha o una revisión de "confirma que eres humano": con blocked, pasa al siguiente servidor. Si un
+  título tiene varios servidores o idiomas, resuelve uno y lista los demás como alternatives
+  { label, ref }.
 - Límites: search 15 s y las demás llamadas 20 s; 60 peticiones por llamada (cada salto de
   redirección cuenta, también los rechazados) y máximo 6 al mismo tiempo; cuerpos de 5 MB;
   256 KB de kino.storage; 100 resultados de búsqueda; Inicio con 20 filas de 60.

@@ -125,6 +125,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [The settings form](settings-form.md) | `section`, `status` and `action` settings, `clearSettings`, `validateSettings`, the own tab and syncing (apiVersion 6) |
 | [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |
+| [Hidden browser](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` and `kino.browser.page`: when to use them, the safety model, never a captcha, timeouts and failures (apiVersion 6) |
 | [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |
 | [Section, categories and colors](section-theme.md) | `section`, `categories` and `theme` (apiVersion 6) |
 | [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |

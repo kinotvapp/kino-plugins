@@ -39,14 +39,18 @@ un plugin publicado con `debug` le muestra paneles técnicos a todo el mundo. Cu
 
 ## `telemetry`: tus líneas llegan al registro de errores { #telemetry }
 
-Los plugins del catálogo recomendado de Kino ya envían sus líneas de `kino.log` cuando una llamada
-falla. `"telemetry": true` pide lo mismo para tu plugin, venga del repositorio que venga:
+Desde Kino 0.9.50 solo un plugin que declara `"telemetry"` envía sus líneas de `kino.log` cuando una
+llamada falla, sea recomendado o no, venga del repositorio que venga. De cualquier otro plugin (incluido
+un scraper de Nuvio convertido) Kino solo anota que la llamada falló: tu id y versión, la función y el
+tipo de falla, nunca una línea de log.
 
 - **Consentimiento.** La hoja de consentimiento dice "Comparte registros de errores con Kino para
   corregir fallas". Una actualización que lo declara por primera vez espera la aprobación de la persona,
   como un host nuevo (queda en "Actualización disponible — requiere tu aprobación").
-- **Interruptor.** La pestaña de tu plugin en Ajustes gana un interruptor "Enviar registros de errores",
-  encendido por defecto, que la persona puede apagar en cada aparato. Apagado, no sale nada.
+- **Todavía sin interruptor.** Por ahora, mientras se estabilizan los plugins, las líneas de un plugin
+  que lo declara se envían siempre. Una versión posterior de Kino agrega un interruptor "Enviar registros
+  de errores" en la pestaña de tu plugin en Ajustes, encendido por defecto, que la persona puede apagar
+  en cada aparato; entonces no sale nada mientras esté apagado.
 - **Qué se envía.** Cuando una llamada falla (lanza un error, se pasa del tiempo, devuelve algo
   inservible, incluidos `sign`, `settingsStatus`, `action` y `validateSettings`), las líneas que registró
   durante esa llamada (las últimas 30, cada una de máximo 300 caracteres, 2 KB en total) como
@@ -87,7 +91,7 @@ kino.log.report("myplugin:session", "shared_fallback", "tries=2");   // área my
 - Máximo un reporte por plugin y área por hora, y 3 por plugin hasta que Kino se reinicia; se envía como
   advertencia.
 - La línea entera se depura como cualquier línea de log, incluido el texto de la llamada en curso.
-- Sin `telemetry`, o con el interruptor apagado, es solo una línea de log.
+- Sin `telemetry` (o, cuando exista ese interruptor, con él apagado) es solo una línea de log.
 - Reporta lo que pasó en códigos y conteos, nunca valores que vinieron de una respuesta.
 
 ## Métricas de reproducción y reportes de problemas { #playback }
@@ -116,7 +120,7 @@ Adónde va:
   resumen;
 - a **logcat** con la etiqueta `KinoPlay` en una compilación de depuración de Kino, o en cualquiera con
   `"debug": true`;
-- al **registro de errores**, solo con `telemetry` y el interruptor de la persona encendido: con `true`,
+- al **registro de errores**, solo con `telemetry` (y, cuando exista ese interruptor, mientras la persona lo deje encendido): con `true`,
   un resumen por reproducción que terminó en un error que la persona vio; con `"verbose"`, además un
   cuarto de las reproducciones que salieron bien y un evento por problema o caso especial (máximo 60 por
   plugin hasta que Kino se reinicia, uno por minuto por área). Los eventos de falla llevan la pila de la

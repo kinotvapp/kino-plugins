@@ -3,7 +3,7 @@
 `kino` is a global object, frozen, always there. Nothing else from the outside world is.
 
 ```js
-kino.apiVersion   // 5 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 6 -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"
 ```
@@ -250,6 +250,17 @@ Buffer. There is no `kino.crypto.generateKeyPairSync`: a Node or browser library
 adapted to these calls. A plugin that uses them should declare `"apiVersion": 6`, so a Kino without
 them refuses to install it (`validate` says so).
 
+## `kino.browser` (apiVersion 6) { #browser }
+
+Only with `"browser": true` (capture only) or `"browser": "pages"` (capture and page reads) in the
+manifest, approved by the person in red. `kino.browser.capture(url,
+options?)` opens a page in a hidden web view inside a `resolve` the person started and returns the
+video requests it made, with the headers and cookies to play them; `kino.browser.page(url, options?)`
+returns a page's HTML once it is past the site's automatic check. Kino never solves a captcha: a page
+that asks for a human ends the call with `blocked`. Prefer `kino.fetch` whenever it works. Everything
+-- where each may be called, the safety model, timeouts, errors and a complete example -- is on
+[Hidden browser](browser.md).
+
 ## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` waits 0 to 5000 ms (for a site that rate-limits you); the time counts
@@ -317,16 +328,17 @@ Also `console.log`, `console.info`, `console.warn` and `console.error`: they all
 when your manifest says `"debug": true`), objects are written as JSON, and a message is cut at 2000
 characters. Under the Node kit they go to stderr.
 
-When a call of a plugin that comes from Kino's recommended catalog, or of one whose manifest says
-`"telemetry": true` (apiVersion 6) while the person leaves "Enviar registros de errores" on, **fails**
+When a call of a plugin whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) **fails**
 (it throws, times out, returns something unusable, including `sign`, `settingsStatus`, `action` and
 `validateSettings`), the lines it logged during that call (the last 30, each cut at 300
 characters) travel with the failure report to the maintainers' error tracker as `plugin_log`, so a
 `kino.log("home: status", r.status)` before the throw is how you see why it failed on someone else's
 phone. Each report is tagged with your plugin's id and version; at most one report per function and
-kind of failure an hour. Nothing is sent for a call that succeeds, and nothing for any other plugin
-(one installed from a repo that is not in the catalog and does not declare `telemetry`, a converted
-Nuvio scraper), nor when the person turns the switch off. Before it leaves the device
+kind of failure an hour. Nothing is sent for a call that succeeds, and no line of any plugin that does
+not declare `telemetry` (recommended or not, a converted Nuvio scraper): for those Kino only notes that
+the call failed (your id and version, the function, the kind of failure). Today a declared plugin's lines
+are always sent; a later Kino build will let the person turn "Enviar registros de errores" off on each
+device, and then nothing is sent while it is off. Before it leaves the device
 every line has URLs, hostnames, IPs, e-mails, long ids, long hex/base64 runs, credential-shaped text,
 the person's setting values and the text of their search or title removed, and the whole is capped at
 2 KB (the newest lines win). Still: log what happened (a status, a step, a count), never what the

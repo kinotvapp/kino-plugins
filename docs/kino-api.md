@@ -3,7 +3,7 @@
 `kino` es un objeto global, congelado, que siempre está. Nada más del mundo exterior está.
 
 ```js
-kino.apiVersion   // 5 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 6 -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"
 ```
@@ -274,6 +274,17 @@ entrega un Buffer. No existe `kino.crypto.generateKeyPairSync`: una librería de
 llame hay que adaptarla a estas llamadas. Un plugin que las usa debe declarar `"apiVersion": 6`, para
 que un Kino sin ellas se niegue a instalarlo (`validate` lo dice).
 
+## `kino.browser` (apiVersion 6) { #browser }
+
+Solo con `"browser": true` (solo captura) o `"browser": "pages"` (captura y lectura de páginas) en el
+manifiesto, aprobado en rojo por la persona. `kino.browser.capture(url,
+options?)` abre una página en una vista web oculta dentro de un `resolve` que empezó la persona y
+devuelve las peticiones de video que hizo, con los encabezados y cookies para reproducirlas;
+`kino.browser.page(url, options?)` devuelve el HTML de una página cuando ya pasó la revisión automática
+del sitio. Kino nunca resuelve un captcha: una página que pide una persona termina la llamada con
+`blocked`. Prefiere `kino.fetch` siempre que funcione. Todo -- dónde se puede llamar cada una, el modelo
+de seguridad, los tiempos, los errores y un ejemplo completo -- está en [Navegador oculto](browser.md).
+
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo
@@ -344,17 +355,18 @@ También `console.log`, `console.info`, `console.warn` y `console.error`: todos 
 cualquier compilación cuando tu manifiesto dice `"debug": true`), los objetos se escriben como JSON, y un mensaje se corta a los 2000
 caracteres. En el kit de Node van a stderr.
 
-Cuando una llamada de un plugin que viene del catálogo recomendado de Kino, o de uno cuyo manifiesto
-dice `"telemetry": true` (apiVersion 6) mientras la persona deja encendido "Enviar registros de errores",
+Cuando una llamada de un plugin cuyo manifiesto dice `"telemetry": true` o `"verbose"` (apiVersion 6)
 **falla** (lanza un error, se pasa del tiempo, devuelve algo inservible, incluidos `sign`,
 `settingsStatus`, `action` y `validateSettings`), las líneas que registró durante esa llamada (las
 últimas 30, cada una cortada a 300 caracteres) viajan con el reporte de la falla al registro de
 errores de quienes mantienen Kino como `plugin_log`; así que un `kino.log("home: status", r.status)`
 antes del `throw` es como ves por qué falló en el celular de otra persona. Cada reporte va marcado con
 el id y la versión de tu plugin; máximo un reporte por función y tipo de falla por hora. No se envía
-nada de una llamada que sale bien, ni de ningún otro plugin (uno instalado desde un repositorio que no
-está en el catálogo y no declara `telemetry`, un scraper de Nuvio convertido), ni cuando la persona
-apaga el interruptor. Antes de salir del aparato, a cada línea se le
+nada de una llamada que sale bien, ni ninguna línea de un plugin que no declara `telemetry` (recomendado o
+no, un scraper de Nuvio convertido): de esos Kino solo anota que la llamada falló (tu id y versión, la
+función, el tipo de falla). Hoy las líneas de un plugin que lo declara se envían siempre; una versión
+posterior de Kino dejará que la persona apague "Enviar registros de errores" en cada aparato, y entonces
+no se envía nada mientras esté apagado. Antes de salir del aparato, a cada línea se le
 quitan URL, nombres de host, IP, correos, ids largos, tiras largas de hex/base64, texto con forma de
 credencial, los valores de los ajustes de la persona y el texto de su búsqueda o del título, y el
 total se limita a 2 KB (ganan las líneas más nuevas). Aun así: registra lo que pasó (un estado, un

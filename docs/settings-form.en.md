@@ -34,7 +34,7 @@ no `default`), at most 16 of them on top of the 12 valued settings:
   working either way. **Required export** when a `status` setting exists.
 - **`action`**: a button. Kino calls your `action(key)` (30 s), one action at a time (the other buttons
   and Guardar wait), and shows the `message` you return (at most 300 characters) or "Listo"; if it throws
-  or times out, the person sees the error text instead. `refresh: true` asks `settingsStatus()` again.
+  or times out, the person sees the error text instead. Kino asks `settingsStatus()` again after every action (and when the form opens), so the status lines describe what it just did; `refresh: true` is still accepted and changes nothing.
   `confirm` (1 to 120 characters) asks first, with Cancelar focused. **Required export** when an
   `action` setting exists.
 

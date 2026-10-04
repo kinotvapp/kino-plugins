@@ -132,6 +132,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
 | [Formulario de ajustes](settings-form.md) | `section`, `status` y `action` en los ajustes, `clearSettings`, `validateSettings`, la pestaña propia y la sincronización (apiVersion 6) |
 | [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
+| [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |

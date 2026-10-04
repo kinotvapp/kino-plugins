@@ -90,6 +90,11 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   use kino.fetch, kino.sleep, kino.crypto, kino.storage. URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder and console do exist. One file, no import.
 - Never throw before the first await of an async function (await first, validate after).
+- Use kino.fetch whenever it can find the video. Only if a server's embed builds the address by
+  running its own scripts, use the hidden browser ("browser": true, apiVersion 6; it asks me in red)
+  and call kino.browser.capture only inside resolve. Never try to solve or get around a captcha or a
+  "verify you are human" check: on blocked, move to the next server. If a title has several servers
+  or languages, resolve one and list the others as alternatives { label, ref }.
 - Limits: search 15 s and the other calls 20 s; 60 requests per call (every redirect hop counts,
   refused ones too) and at most 6 at once; 5 MB bodies; 256 KB of
   kino.storage; 100 search results; Home with 20 rows of 60.

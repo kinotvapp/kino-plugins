@@ -156,8 +156,9 @@ Para aparecer:
    `"discoverable": false`. Un plugin en una subcarpeta se puede instalar por dirección pero no se
    busca.
 3. Kino se queda con los 30 resultados con más estrellas, busca máximo cada 12 horas por dispositivo
-   (y cuando la persona toca "Actualizar"), y los muestra después de los plugins recomendados, con la
-   etiqueta "De la comunidad". Instalar uno pasa por la misma hoja de consentimiento que cualquier
+   (y cuando la persona toca "Actualizar"), y los muestra en su propia pestaña de la pantalla Plugins,
+   "De la comunidad" (junto a Recomendados; en "Elige tus fuentes", después de los plugins
+   recomendados). Instalar uno pasa por la misma hoja de consentimiento que cualquier
    otro plugin.
 
 Para quedarte por fuera de la búsqueda sin quitar el topic, pon `"discoverable": false`;
@@ -208,8 +209,9 @@ tarjeta durante un día.
   5xx o 429, el presupuesto de tiempo gastado) conserva el plugin como se vio la última vez; un
   veredicto (404, 410, 451, demasiado grande, inválido, demasiado nuevo, `"discoverable": false`) lo
   descarta.
-- **En pantalla.** "De la comunidad" va después de los plugins recomendados ("Recomendados") en
-  Ajustes > Plugins, en celulares y televisores, en el orden de la búsqueda (primero los de más
+- **En pantalla.** "De la comunidad" es su propia pestaña de la pantalla Plugins, junto a
+  "Recomendados" (en "Elige tus fuentes" va después de los plugins recomendados), en celulares y
+  televisores, en el orden de la búsqueda (primero los de más
   estrellas). La caja de búsqueda de arriba también la filtra, por nombre, descripción y
   "por &lt;owner&gt;". Un plugin ya instalado desde el mismo repositorio muestra "Instalado".
 - **Cuándo busca.** Cuando se abre la pantalla de plugins: la copia guardada en el dispositivo sale de

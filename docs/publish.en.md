@@ -152,7 +152,8 @@ To be listed:
    newer `apiVersion` than the person's Kino, or says `"discoverable": false`. A plugin in a subfolder
    can be installed by address but is not searched.
 3. Kino keeps the 30 most-starred matches, searches at most every 12 hours per device (and when the
-   person taps "Actualizar"), and shows them after the recommended plugins, labelled "De la comunidad".
+   person taps "Actualizar"), and shows them in their own tab of the Plugins screen, "De la comunidad"
+   (beside Recomendados; in "Elige tus fuentes", after the recommended plugins).
    Installing one goes through the same consent sheet as any other plugin.
 
 To stay out of the search while keeping the topic, set `"discoverable": false`;
@@ -200,8 +201,8 @@ card falls back to the neutral look. The app keeps each card's colour and icon f
   manifest that could not be read for a passing reason (offline, a timeout, a 5xx or 429, the budget
   spent) keeps the plugin as it was last seen; a verdict (404, 410, 451, too big, invalid, too new,
   `"discoverable": false`) drops it.
-- **On screen.** "De la comunidad" comes after the recommended plugins ("Recomendados") in Ajustes >
-  Plugins, on phones and TVs, in the search's order (most stars first). The search box above the
+- **On screen.** "De la comunidad" is its own tab of the Plugins screen, beside "Recomendados" (in
+  "Elige tus fuentes" it comes after the recommended plugins), on phones and TVs, in the search's order (most stars first). The search box above the
   list filters it too, by name, description and "por &lt;owner&gt;". A plugin already installed from the
   same repository shows "Instalado".
 - **When it searches.** When the plugins screen opens: the copy saved on the device shows at once,
