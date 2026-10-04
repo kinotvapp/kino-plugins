@@ -8,7 +8,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 <span id="next"></span>**`apiVersion` 6 = Kino 0.9.50.** The contract (`contract.json`) now says `maxApiVersion` 6 and
 `kino.apiVersion` reports 6. A manifest with `"apiVersion": 6` is refused by Kino 0.9.49 and older
 ("Este plugin necesita una versión más nueva de Kino"), so declare 6 only if you use something on this
-list:
+list. Everything a plugin can now change in how Kino shows it is gathered on
+[Customize your plugin](customize.md).
 
 - **Larger and typed sealed secrets**: up to 8,192 bytes, and typed cipher keys (`use: "cipher-key"`)
   that also work for `des-ede3`. [The manifest](manifest.md#typed-keys).
@@ -79,6 +80,23 @@ No new `apiVersion` (for any plugin):
 - **Claims and takedowns of community plugins**: [`community-blocklist.json`](claims.md).
 - **Sending to the TV**: every HLS goes through the phone; a file without `headers` goes direct and,
   if the TV fails it, through the phone. [Sending to the TV](what-people-see.md#cast).
+- **`genre`** on a Home row, a live category or a playlist (`peliculas`, `series`, `anime`, `infantil`,
+  `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros`): Categorías groups the
+  browsable rows of every plugin by it, and En vivo filters by it across providers. Optional; without it
+  Kino guesses from the title. [The contract](contract.md#returns).
+- **`streamHeaders`** on a playlist: the `User-Agent` or `Referer` the player sends for every channel of
+  the list, kept apart from the list's own download `headers`. [Live channels](live-channels.md#live-contract).
+- **A failing synchronous `kino.*` call is catchable** (a full `kino.storage`, a `kino.crypto` error):
+  your `try`/`catch` gets an ordinary `Error`; Kino 0.9.49 ended the whole call there.
+  [Errors your code can catch](kino-api.md#catch).
+- **After a Kino upgrade**, plugin updates that wait for approval are installed once, from the plugin's
+  own address, with a one-time "Se actualizaron tus plugins" notice listing what each may do now.
+  [Publishing](publish.md#updates).
+- **The settings form, documented whole**: every field type, attribute and default, with a complete
+  example. [The settings form](settings-form.md#types).
+
+(Kino builds before `genre` and `streamHeaders` ignore them; the exact version that first shipped each
+was not checked.)
 
 Also in this version (documented earlier on this page as "next version"):
 

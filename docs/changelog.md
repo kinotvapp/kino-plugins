@@ -8,7 +8,8 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 <span id="next"></span>**`apiVersion` 6 = Kino 0.9.50.** El contrato (`contract.json`) dice ahora `maxApiVersion` 6 y
 `kino.apiVersion` reporta 6. Un manifiesto con `"apiVersion": 6` se rechaza en Kino 0.9.49 y anteriores
 ("Este plugin necesita una versión más nueva de Kino"), así que declara 6 solo si usas algo de esta
-lista:
+lista. Todo lo que un plugin ahora puede cambiar de cómo lo muestra Kino está reunido en
+[Personaliza tu plugin](customize.md).
 
 - **Secretos sellados más grandes y con tipo**: hasta 8.192 bytes, y llaves de cifrado con tipo
   (`use: "cipher-key"`) que sirven también para `des-ede3`. [Manifiesto](manifest.md#typed-keys).
@@ -82,6 +83,24 @@ Sin `apiVersion` nuevo (sirve para cualquier plugin):
 - **Reclamos y retiro de plugins de la comunidad**: [`community-blocklist.json`](claims.md).
 - **Enviar a la TV**: todo HLS pasa por el celular; un archivo sin `headers` va directo y, si la TV no
   puede, por el celular. [Enviar a la TV](what-people-see.md#cast).
+- **`genre`** en una fila de Inicio, una categoría en vivo o una lista (`peliculas`, `series`, `anime`,
+  `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros`): Categorías
+  agrupa por él las filas navegables de todos los plugins, y En vivo filtra por él entre proveedores.
+  Opcional; sin él, Kino lo adivina por el título. [Contrato](contract.md#returns).
+- **`streamHeaders`** en una lista: el `User-Agent` o el `Referer` que el reproductor manda para cada
+  canal de la lista, aparte de los `headers` de descarga de la propia lista.
+  [Canales en vivo](live-channels.md#live-contract).
+- **Una llamada `kino.*` síncrona que falla se puede atajar** (un `kino.storage` lleno, un error de
+  `kino.crypto`): tu `try`/`catch` recibe un `Error` normal; Kino 0.9.49 terminaba ahí la llamada entera.
+  [Errores que tu código puede atrapar](kino-api.md#catch).
+- **Después de actualizar Kino**, las actualizaciones de plugins que esperan aprobación se instalan una
+  vez, desde la dirección del propio plugin, con un aviso único "Se actualizaron tus plugins" que dice lo
+  que cada uno puede hacer ahora. [Publicar](publish.md#updates).
+- **El formulario de ajustes, documentado entero**: cada tipo de campo, atributo y valor por defecto,
+  con un ejemplo completo. [Formulario de ajustes](settings-form.md#types).
+
+(Las versiones de Kino anteriores a `genre` y `streamHeaders` los ignoran; no se revisó la versión exacta
+en que salió cada uno.)
 
 También en esta versión (ya documentado antes en esta página como "próxima versión"):
 
