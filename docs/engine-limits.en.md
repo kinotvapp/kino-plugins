@@ -148,10 +148,20 @@ fetches. Add it as an npm script
 every `sdk/` test or publish. Rollup and webpack work the same way; esbuild needs the least
 configuration for a plugin this size.
 
-## The trap: a rejection nobody is listening to yet { #rejection-trap }
+## The trap: a rejection nobody is listening to yet (Kino 0.9.49 and older) { #rejection-trap }
 
-The engine aborts the **whole call** when a promise is rejected before anything has a handler on it,
-even if your code is inside `try`/`catch`. The Node kit cannot show you this, so learn the rules:
+**From Kino 0.9.50** a rejection behaves as in Node: a `throw` inside an `async` function is caught
+by the caller's `try`/`catch`, `.catch()`, `Promise.all` or `Promise.allSettled`, however early it
+happens -- even before the function's first `await`, and even when the handler is attached a few
+`await`s later. What still fails the call is a rejection **nobody ever handles**: one still without a
+handler once the plugin is only waiting on Kino (a `kino.fetch`, a `kino.sleep`, ...). For example a
+helper called without `await` that throws, or a promise you keep and only `await` after a
+`kino.fetch`. The call then fails with that error, as Node would stop with an `unhandledRejection`.
+Await what you start, or give it a `.catch()` right away.
+
+**Kino 0.9.49 and older** abort the **whole call** when a promise is rejected before anything has a
+handler on it, even if your code is inside `try`/`catch`. The Node kit cannot show you this. If your
+plugin must work there too (people update late), follow these rules:
 
 - **Aborts the call:** a `throw` inside an `async` function **before its first `await`**, while the
   caller is wrapped in `try`/`catch`. A `.catch()` on that call, or `Promise.all`/`Promise.allSettled`
@@ -159,8 +169,8 @@ even if your code is inside `try`/`catch`. The Node kit cannot show you this, so
   right away, and `return Promise.reject(e)` from an `async` function.
 - **Is caught normally:** a `throw` after any `await` (even `await null;`), a rejection coming from
   `kino.fetch` or `kino.sleep` (for example a refused host), and `await Promise.reject(e)` or
-  `Promise.reject(e).catch(...)` (Kino delays `Promise.reject` by one tick so a handler can attach
-  in time).
+  `Promise.reject(e).catch(...)` (those builds delay `Promise.reject` by one tick so a handler can
+  attach in time).
 - **A synchronous `kino.*` call that fails** (`kino.storage.set` over 256 KB, a `kino.crypto` error,
   a selector `kino.html.select` refuses) is caught normally from Kino 0.9.50. Kino 0.9.49 and older
   ended the whole call there, even inside `try`/`catch` ([Errors your code can catch](kino-api.md#catch)).
@@ -172,17 +182,18 @@ even if your code is inside `try`/`catch`. The Node kit cannot show you this, so
   first `await` is caught normally. A native `async` function (yours, or an untranspiled scraper's)
   still needs the `await` before anything that can throw.
 
-So in a helper that a caller may wrap in `try`/`catch`, do the `await` first and validate afterwards:
+So, for those builds, in a helper that a caller may wrap in `try`/`catch`, do the `await` first and
+validate afterwards:
 
 ```js
-// Wrong: in Kino this throw is NOT caught by the caller's try/catch; it aborts the whole call.
+// Wrong before Kino 0.9.50: this throw is NOT caught by the caller's try/catch; it aborts the whole call.
 async function getJson(url) {
   if (!url.startsWith("https://")) throw new Error("dirección inválida");
   const r = await kino.fetch(url);
   return r.json();
 }
 
-// Right: the first await comes before anything that can throw.
+// Right everywhere: the first await comes before anything that can throw.
 async function getJson(url) {
   const r = await kino.fetch(url);
   if (!r.ok) throw new Error("archive.org respondió " + r.status);
@@ -191,4 +202,4 @@ async function getJson(url) {
 ```
 
 (If a helper has nothing to await, start it with `await null;`, or check the input in the caller
-before it calls the helper.)
+before it calls the helper. The examples on this site do, so they run on older builds too.)

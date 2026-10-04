@@ -153,7 +153,7 @@ differences:
 - The kit's XMLTV reader is a tolerant regex walk, not the app's XML parser. It gives the app's answer
   on every shared test guide, but on malformed XML in mid-document it may keep more than the app
   (which stops at the first error and keeps what it read up to there).
-- The rejection trap of [Limits and engine quirks](engine-limits.md#rejection-trap): Node catches what Kino would not.
+- The rejection trap of [Limits and engine quirks](engine-limits.md#rejection-trap): Node catches what Kino 0.9.49 and older would not.
 - Node has globals Kino lacks (`setTimeout`, `fetch`, `Buffer`, ...): the plugin may pass under Node
   and fail in Kino. Kino's `URL` has no punycode.
 - The host, redirect and request-count rules are the same, and so are the cookie rules as far as

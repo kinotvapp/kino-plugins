@@ -211,9 +211,9 @@ export async function resolve(ref) {
 | `not_allowed` | Not approved, not in `resolve`, or a `resolve` nobody started. | Call it only from `resolve`. |
 | `invalid_request` | A bad option (`timeoutMs` out of range, a `match` that is not a valid expression…). | Fix the call. |
 
-Debugging: with `"debug": true` in the manifest, Kino's logcat lines for the hidden page (tag
-`KinoPlugin/<id>`) name the hosts and paths it loaded; in a release build without `debug` they never
-do. See [Logs and telemetry](diagnostics.md).
+Debugging: while your plugin's [Modo debug](diagnostics.md#debug) switch is on (`"debug": true` in the
+manifest only makes it on by default), Kino's logcat lines for the hidden page (tag `KinoPlugin/<id>`)
+name the hosts and paths it loaded; in a release build with the switch off they never do. See [Logs and telemetry](diagnostics.md).
 
 ## `kino.browser.page(url, options?)`: reading a page { #page }
 

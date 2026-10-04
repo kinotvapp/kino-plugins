@@ -217,9 +217,10 @@ export async function resolve(ref) {
 | `not_allowed` | Sin aprobar, fuera de `resolve`, o un `resolve` que nadie empezó. | Llámalo solo desde `resolve`. |
 | `invalid_request` | Una opción mala (`timeoutMs` fuera de rango, un `match` que no es una expresión válida…). | Corrige la llamada. |
 
-Para depurar: con `"debug": true` en el manifiesto, las líneas de logcat de Kino sobre la página oculta
-(etiqueta `KinoPlugin/<id>`) nombran los hosts y rutas que cargó; en una versión de producción sin
-`debug` nunca lo hacen. Ver [Registro y telemetría](diagnostics.md).
+Para depurar: mientras el [Modo debug](diagnostics.md#debug) de tu plugin está encendido (`"debug": true`
+en el manifiesto solo lo deja así de entrada), las líneas de logcat de Kino sobre la página oculta
+(etiqueta `KinoPlugin/<id>`) nombran los hosts y rutas que cargó; en una versión de producción con el
+interruptor apagado nunca lo hacen. Ver [Registro y telemetría](diagnostics.md).
 
 ## `kino.browser.page(url, options?)`: leer una página { #page }
 

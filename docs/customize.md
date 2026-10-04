@@ -55,7 +55,8 @@ declara 6 solo si usas algo de eso, porque Kino 0.9.49 y anteriores rechazan un 
 
 ## Tu pestaña de ajustes { #settings }
 
-Todo plugin encendido con `settings` tiene su propia pestaña en Ajustes. Nueve tipos de campo (`text`,
+Todo plugin encendido tiene su propia pestaña en Ajustes, con su interruptor de
+[Modo debug](diagnostics.md#debug); uno con `settings` muestra ahí también su formulario. Nueve tipos de campo (`text`,
 `password`, `url`, `toggle`, `select`, `list`, y desde apiVersion 6 `section`, `status`, `action`),
 valores por defecto, campos obligatorios, una revisión antes de guardar y botones que corren tu código:
 

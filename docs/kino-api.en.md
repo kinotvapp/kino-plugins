@@ -371,7 +371,7 @@ export async function home() {
 
 Also `console.log`, `console.info`, `console.warn` and `console.error`: they all go to the log
 (tag `KinoPlugin` in `adb logcat`; `KinoPlugin/<your id>` in a debug build of Kino, or in any build
-when your manifest says `"debug": true`), objects are written as JSON, and a message is cut at 2000
+while your plugin's [Modo debug](diagnostics.md#debug) switch is on: `"debug": true` only makes that the default), objects are written as JSON, and a message is cut at 2000
 characters. Under the Node kit they go to stderr.
 
 When a call of a plugin whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) **fails**

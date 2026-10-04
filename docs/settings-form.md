@@ -2,14 +2,15 @@
 
 Los [ajustes](manifest.md#settings) de siempre guardan valores que tu código lee con `kino.config`.
 Desde `"apiVersion": 6` (Kino 0.9.50) el formulario también puede **mostrar** cosas y **hacer** cosas,
-y cada plugin con ajustes tiene su propia pestaña en Ajustes. Esta página tiene [todos los tipos de
+y cada plugin instalado tiene su propia pestaña en Ajustes. Esta página tiene [todos los tipos de
 campo](#types), los tres tipos sin valor, las funciones que los llenan y los revisan, y
 [un ejemplo completo](#example).
 
 ## Su propia pestaña en Ajustes { #own-tab }
 
-Cada plugin instalado, encendido y con `settings` tiene **su propia pestaña en Ajustes** (celular y
-TV), con el nombre del plugin; Plugins ▸ Configurar abre el mismo formulario. Por eso, desde Kino 0.9.50,
+Cada plugin instalado y encendido tiene **su propia pestaña en Ajustes** (celular y TV), con el nombre
+del plugin y su interruptor de [Modo debug](diagnostics.md#debug); cuando tiene `settings`, la pestaña
+también muestra su formulario, y Plugins ▸ Configurar abre el mismo formulario. Por eso, desde Kino 0.9.50,
 el error `auth_required` dice "Configura {plugin} en Ajustes ▸ {plugin}" cuando tu plugin declara
 ajustes.
 

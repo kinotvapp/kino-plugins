@@ -145,11 +145,21 @@ descarga. Agrégalo como script de npm
 cada prueba con `sdk/` o antes de publicar. Rollup y webpack funcionan igual; esbuild es el que
 necesita menos configuración para un plugin de este tamaño.
 
-## La trampa: un rechazo que nadie está escuchando todavía { #rejection-trap }
+## La trampa: un rechazo que nadie está escuchando todavía (Kino 0.9.49 y anteriores) { #rejection-trap }
 
-El motor aborta **toda la llamada** cuando una promesa se rechaza antes de que algo le haya puesto un
-manejador, aunque tu código esté dentro de un `try`/`catch`. El kit de Node no te puede mostrar esto,
-así que apréndete las reglas:
+**Desde Kino 0.9.50** un rechazo se comporta como en Node: un `throw` dentro de una función `async` lo
+ataja el `try`/`catch`, el `.catch()`, el `Promise.all` o el `Promise.allSettled` de quien la llama, por
+temprano que pase -- aunque sea antes de su primer `await`, y aunque el manejador se enganche unos
+`await` después. Lo que sigue haciendo fallar la llamada es un rechazo que **nadie maneja nunca**: uno
+que sigue sin manejador cuando el plugin ya solo está esperando a Kino (un `kino.fetch`, un
+`kino.sleep`...). Por ejemplo, una función auxiliar que llamas sin `await` y que lanza error, o una
+promesa que guardas y solo esperas después de un `kino.fetch`. La llamada falla entonces con ese error,
+como Node se detendría con un `unhandledRejection`. Espera lo que arrancas, o ponle un `.catch()` de una.
+
+**Kino 0.9.49 y anteriores** abortan **toda la llamada** cuando una promesa se rechaza antes de que
+algo le haya puesto un manejador, aunque tu código esté dentro de un `try`/`catch`. El kit de Node no te
+puede mostrar esto. Si tu plugin también tiene que funcionar ahí (la gente actualiza tarde), sigue estas
+reglas:
 
 - **Aborta la llamada:** un `throw` dentro de una función `async` **antes de su primer `await`**,
   cuando quien la llama está envuelto en `try`/`catch`. Un `.catch()` sobre esa llamada, o un
@@ -158,8 +168,8 @@ así que apréndete las reglas:
   una función `async`.
 - **Se ataja normal:** un `throw` después de cualquier `await` (aunque sea `await null;`), un rechazo
   que viene de `kino.fetch` o de `kino.sleep` (por ejemplo, un host rechazado), y `await Promise.reject(e)`
-  o `Promise.reject(e).catch(...)` (Kino retrasa `Promise.reject` un tick para que un manejador alcance
-  a engancharse).
+  o `Promise.reject(e).catch(...)` (esas versiones retrasan `Promise.reject` un tick para que un manejador
+  alcance a engancharse).
 - **Una llamada `kino.*` síncrona que falla** (`kino.storage.set` por encima de 256 KB, un error de
   `kino.crypto`, un selector que `kino.html.select` rechaza) se ataja normal desde Kino 0.9.50. Kino
   0.9.49 y anteriores terminaban ahí la llamada entera, aunque estuviera dentro de `try`/`catch`
@@ -173,18 +183,18 @@ así que apréndete las reglas:
   ataja normal. Una función `async` nativa (la tuya, o la de un scraper sin transpilar) igual necesita
   el `await` antes de cualquier cosa que pueda lanzar error.
 
-Así que en una función auxiliar que quien la llama puede envolver en `try`/`catch`, haz primero el
-`await` y valida después:
+Así que, para esas versiones, en una función auxiliar que quien la llama puede envolver en
+`try`/`catch`, haz primero el `await` y valida después:
 
 ```js
-// Wrong: in Kino this throw is NOT caught by the caller's try/catch; it aborts the whole call.
+// Wrong before Kino 0.9.50: this throw is NOT caught by the caller's try/catch; it aborts the whole call.
 async function getJson(url) {
   if (!url.startsWith("https://")) throw new Error("dirección inválida");
   const r = await kino.fetch(url);
   return r.json();
 }
 
-// Right: the first await comes before anything that can throw.
+// Right everywhere: the first await comes before anything that can throw.
 async function getJson(url) {
   const r = await kino.fetch(url);
   if (!r.ok) throw new Error("archive.org respondió " + r.status);
@@ -192,7 +202,8 @@ async function getJson(url) {
 }
 ```
 
-(El primero está mal: en Kino ese `throw` NO lo ataja el `try`/`catch` de quien llama y aborta toda
-la llamada. El segundo está bien: el primer `await` va antes de cualquier cosa que pueda lanzar un
-error. Si una función auxiliar no tiene nada que esperar, empiézala con `await null;`, o revisa la
-entrada en quien la llama antes de llamarla.)
+(El primero está mal antes de Kino 0.9.50: ese `throw` NO lo ataja el `try`/`catch` de quien llama y
+aborta toda la llamada. El segundo está bien en todas las versiones: el primer `await` va antes de
+cualquier cosa que pueda lanzar un error. Si una función auxiliar no tiene nada que esperar, empiézala
+con `await null;`, o revisa la entrada en quien la llama antes de llamarla. Los ejemplos de este sitio
+lo hacen, así que también corren en versiones viejas.)

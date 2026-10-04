@@ -91,7 +91,8 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
 - No es Node ni un navegador: no hay fetch, setTimeout, Buffer, process, require, crypto ni Intl;
   usa kino.fetch, kino.sleep, kino.crypto, kino.storage. Sí hay URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder y console. Un solo archivo, sin import.
-- Nunca lances un error antes del primer await de una función async (primero await, luego valida).
+- Nunca lances un error antes del primer await de una función async (primero await, luego valida):
+  Kino 0.9.50 lo ataja, pero 0.9.49 y anteriores abortan toda la llamada, y la gente actualiza tarde.
 - Usa kino.fetch siempre que encuentre el video. Solo si el embed de un servidor arma la dirección
   ejecutando sus propios scripts, usa el navegador oculto ("browser": true, apiVersion 6; me lo pregunta
   en rojo) y llama kino.browser.capture solo dentro de resolve. Nunca intentes resolver ni saltarte un
@@ -130,7 +131,8 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   botones en los ajustes, una sección propia, colores, telemetry, migrate, firma por petición,
   userMessage, adult, canales en filas de Inicio; 6 necesita Kino 0.9.50 o más nuevo). Un id nuevo y
   mío (nunca "archive-org").
-- "debug": true solo mientras pruebas; quítalo antes de publicar. "telemetry" solo si yo acepto que
+- Nada de "debug": true en un plugin publicado salvo que yo lo pida: todo plugin ya tiene un
+  interruptor "Modo debug" en Ajustes de Kino, y "debug": true solo lo deja encendido de entrada para todos. "telemetry" solo si yo acepto que
   los errores del plugin lleguen a Kino; registra pasos y conteos, nunca lo que escribe la persona.
 
 Trabaja paso a paso: primero explora la fuente con peticiones reales, luego el manifiesto, luego
@@ -140,7 +142,7 @@ y arregla todo lo que Kino descartaría. Graba fixtures con --record y haz que
 antes de entregarme el plugin, corre esta autocomprobación y dime el resultado de cada línea:
 - `node sdk/validate.mjs .` sale con 0 y sin problemas;
 - kino-plugin.json: "entry" e "icon" sin "./" al principio; "version" subida; el apiVersion es el más
-  bajo que funciona; no queda "debug": true;
+  bajo que funciona; no hay "debug": true salvo que yo lo haya pedido;
 - si se firma: "signature" está en kino-plugin.json, `validate.mjs` la verificó DESPUÉS de la última
   edición, y ningún .pem está rastreado (el `.gitignore` tiene *.pem);
 - cada host (video, subtítulos, segmentos, redirecciones) está en "hosts" o cubierto por un campo "any";
@@ -212,7 +214,7 @@ esperabas. Algunos casos comunes:
 | `El campo "entry" debe ser una ruta relativa a un archivo .js` (Kino) o `Quita el "./" del campo "entry"` (kit) | `"entry"` (o `"icon"`) empieza con `./`. Escribe `"plugin.js"`: Kino 0.9.45 y anteriores rechazan el `./` ([por qué](manifest.md#entry-dot-slash)). |
 | `La firma del autor no es válida…` | El plugin está [firmado](signed.md) y `plugin.js` o `version` cambiaron después de firmar: corre otra vez `node sdk/seal.mjs --sign --repo owner/repo`. |
 | `[timeout] …` | La fuente es lenta o hay demasiadas peticiones: que haga menos peticiones por llamada. |
-| Funciona en el kit pero falla en Kino | El kit de Node es más permisivo que la app ([lo que no reproduce](test-locally.md#differences)): globales que faltan, un `throw` antes del primer `await`, `kino.html.select`. Dale al asistente el mensaje exacto que muestra Kino (o una foto de la pantalla). |
+| Funciona en el kit pero falla en Kino | El kit de Node es más permisivo que la app ([lo que no reproduce](test-locally.md#differences)): globales que faltan, un `throw` antes del primer `await` (en Kino 0.9.49 y anteriores), `kino.html.select`. Dale al asistente el mensaje exacto que muestra Kino (o una foto de la pantalla). |
 | Kino dice "Configura … en Ajustes ▸ Plugins" | El plugin necesita datos: toca el botón Configurar del mensaje, o ve a Plugins → Instalados → tu plugin → Configurar. |
 | No sale en "De la comunidad" | Revisa [Aparecer en Kino](listed.md). |
 

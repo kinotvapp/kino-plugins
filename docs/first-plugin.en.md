@@ -100,6 +100,6 @@ example by downloading the ZIP from **Code → Download ZIP**). The commands are
 - [The manifest](manifest.md): every field and what the person approves.
 - [The contract](contract.md): the shapes you return and the rules Kino checks them with.
 - [Limits and engine quirks](engine-limits.md): read [the rejection trap](engine-limits.md#rejection-trap)
-  before you write a helper.
+  before you write a helper (it matters on Kino 0.9.49 and older).
 - [Get listed in Kino](listed.md): once it works, the five steps for people to find it in the app
   without knowing its address.

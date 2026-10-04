@@ -29,6 +29,10 @@ lista. Todo lo que un plugin ahora puede cambiar de cómo lo muestra Kino está 
   te puede mandar una captura o su Registro. `"debug": true` ahora solo lo deja encendido de entrada; sin
   él arranca apagado. La decisión de la persona se conserva en las actualizaciones y se sincroniza con sus
   otros aparatos. [Modo debug](diagnostics.md#debug).
+- **Los rechazos tempranos se atajan**: un `throw` en una función `async` antes de su primer `await` lo
+  ataja el `try`/`catch` de quien la llama (o un `.catch()`, un `Promise.all`), como en Node; solo un
+  rechazo que nadie maneja nunca sigue haciendo fallar la llamada. Sigue haciendo el `await` primero si tu
+  plugin tiene que correr en 0.9.49 y anteriores. [La trampa del rechazo](engine-limits.md#rejection-trap).
 - **`section`, `categories` y `theme`**: una sección propia, un grupo en Categorías y tus colores.
   [Sección, categorías y colores](section-theme.md).
 - **`scopedSearch`**: responder tú la búsqueda dentro de un "Ver más". [Contrato](contract.md#scoped-search).

@@ -27,6 +27,10 @@ list. Everything a plugin can now change in how Kino shows it is gathered on
   on screen and its Registro can be copied or shared, so a person can send you a screenshot or their
   Registro. `"debug": true` now only makes the switch on by default; without it the switch starts off.
   The person's choice survives updates and syncs to their other devices. [Modo debug](diagnostics.md#debug).
+- **Early rejections are caught**: a `throw` in an `async` function before its first `await` is caught
+  by the caller's `try`/`catch` (or `.catch()`, `Promise.all`), as in Node; only a rejection nobody ever
+  handles still fails the call. Keep awaiting first if your plugin must run on 0.9.49 and older.
+  [The rejection trap](engine-limits.md#rejection-trap).
 - **`section`, `categories` and `theme`**: a section of your own, a group in Categorías and your
   colors. [Section, categories and colors](section-theme.md).
 - **`scopedSearch`**: answer the search inside a "Ver más" page yourself. [The contract](contract.md#scoped-search).

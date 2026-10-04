@@ -1,14 +1,15 @@
 # The settings form (apiVersion 6)
 
 The usual [settings](manifest.md#settings) hold values your code reads with `kino.config`. From
-`"apiVersion": 6` (Kino 0.9.50) the form can also **show** and **do** things, and every plugin with
-settings gets its own tab in Ajustes. This page has [every field type](#types), the three types without
+`"apiVersion": 6` (Kino 0.9.50) the form can also **show** and **do** things, and every installed plugin
+gets its own tab in Ajustes. This page has [every field type](#types), the three types without
 a value, the exports that fill and check them, and [a complete example](#example).
 
 ## Its own tab in Ajustes { #own-tab }
 
-Every installed plugin that is enabled and has `settings` gets **its own tab in Ajustes** (phone and
-TV), named after the plugin; Plugins ▸ Configurar opens the same form. That is why, from Kino 0.9.50,
+Every installed plugin that is enabled gets **its own tab in Ajustes** (phone and TV), named after the
+plugin, with its [Modo debug](diagnostics.md#debug) switch; when it has `settings` the tab holds their
+form too, and Plugins ▸ Configurar opens the same form. That is why, from Kino 0.9.50,
 the `auth_required` error reads "Configura {plugin} en Ajustes ▸ {plugin}" when your plugin declares
 settings.
 

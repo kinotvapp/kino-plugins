@@ -55,7 +55,8 @@ you use one of those, because Kino 0.9.49 and older refuse an apiVersion 6 plugi
 
 ## Your settings tab { #settings }
 
-Every enabled plugin with `settings` gets its own tab in Ajustes. Nine field types (`text`, `password`,
+Every enabled plugin gets its own tab in Ajustes, with its [Modo debug](diagnostics.md#debug) switch; one
+with `settings` shows their form there too. Nine field types (`text`, `password`,
 `url`, `toggle`, `select`, `list`, and from apiVersion 6 `section`, `status`, `action`), defaults,
 required fields, a check before saving and buttons that run your code:
 

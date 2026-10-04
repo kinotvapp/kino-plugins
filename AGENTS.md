@@ -301,10 +301,11 @@ throw, write it in Spanish, and never echo what the person typed. Full rules:
 `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request`. `kino.crypto` errors carry
 `code: "crypto_error"`.
 
-**The unhandled-rejection trap**: in Kino a `throw` inside an `async` function **before its first
-`await`** aborts the whole call even if the caller wraps it in `try`/`catch` (also
-`return Promise.reject(e)` and a `new Promise` rejected at once). The Node kit does not show this.
-Always `await` first (a fetch, or `await null;`) and validate after.
+**The unhandled-rejection trap**: in Kino 0.9.49 and older a `throw` inside an `async` function
+**before its first `await`** aborts the whole call even if the caller wraps it in `try`/`catch` (also
+`return Promise.reject(e)` and a `new Promise` rejected at once). Kino 0.9.50 catches it like Node; only a
+rejection nobody ever handles still fails the call. The Node kit does not show the old behaviour.
+Since people update late, keep `await`ing first (a fetch, or `await null;`) and validate after.
 
 **Language**: everything the person sees (the manifest's `name` and `description`, settings `label`
 and `hint`, Home row titles, error details, badges) is **Spanish from Bogotá, with tuteo** ("Configura",
@@ -508,7 +509,8 @@ people. See
 - [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
       it needs Kino 0.9.50+).
-- [ ] No `"debug": true` left in the manifest. If `telemetry` is declared, the person agreed and
+- [ ] No `"debug": true` in the manifest unless the person asked for it (every plugin has a
+      "Modo debug" switch in Kino's Ajustes; `true` only turns it on by default for everyone). If `telemetry` is declared, the person agreed and
       the logs hold codes and counts only.
 - [ ] Every `userMessage` passes the rules (Spanish, ≤ 160, no URL/digits/money/credentials/contact)
       and `run.mjs` shows it; 18+ content carries `adult: true`.
@@ -584,7 +586,7 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   a new key for an already published plugin (everyone must reinstall).
 - Declaring `apiVersion` 2 or 3 without needing it (older Kino builds cannot install it); declaring
   6 for nothing (Kino 0.9.49 and older refuse it).
-- Publishing with `"debug": true`.
+- Publishing with `"debug": true` without being asked (it turns error panels on by default for everyone).
 - Calling `kino.fetch`, `kino.storage` or a private-key handle from `sign()`, or putting a
   `kino.secret()` marker in `signContext`.
 - A `userMessage` with a URL, a phone number, "WhatsApp", "paga"/"recarga" or the person's own input:

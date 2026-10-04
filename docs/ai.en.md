@@ -89,7 +89,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
 - It is neither Node nor a browser: no fetch, setTimeout, Buffer, process, require, crypto or Intl;
   use kino.fetch, kino.sleep, kino.crypto, kino.storage. URL, URLSearchParams, atob, btoa,
   TextEncoder, TextDecoder and console do exist. One file, no import.
-- Never throw before the first await of an async function (await first, validate after).
+- Never throw before the first await of an async function (await first, validate after): Kino 0.9.50
+  catches it, but 0.9.49 and older abort the whole call, and people update late.
 - Use kino.fetch whenever it can find the video. Only if a server's embed builds the address by
   running its own scripts, use the hidden browser ("browser": true, apiVersion 6; it asks me in red)
   and call kino.browser.capture only inside resolve. Never try to solve or get around a captcha or a
@@ -127,7 +128,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   and buttons in the settings, a section of its own, colors, telemetry, migrate, request signing,
   userMessage, adult, channels in Home rows; 6 needs Kino 0.9.50 or newer). A new id of my own (never
   "archive-org").
-- "debug": true only while testing; remove it before publishing. "telemetry" only if I agree that the
+- No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
+  switch in Kino's Ajustes, and "debug": true only turns it on by default for everyone. "telemetry" only if I agree that the
   plugin's errors reach Kino; log steps and counts, never what the person types.
 
 Work step by step: first explore the source with real requests, then the manifest, then each
@@ -137,7 +139,7 @@ fix everything Kino would drop. Record fixtures with --record and make
 you hand the plugin over run this self-check and tell me the result of each line:
 - `node sdk/validate.mjs .` exits 0 with no problems;
 - kino-plugin.json: "entry" and "icon" have no leading "./"; "version" raised; apiVersion is the
-  lowest that works; no "debug": true left;
+  lowest that works; no "debug": true unless I asked for it;
 - if signing: "signature" is in kino-plugin.json, `validate.mjs` verified it AFTER the last edit, and
   no .pem is tracked (`.gitignore` has *.pem);
 - every host (video, subtitles, segments, redirects) is in "hosts" or covered by an "any" field;
@@ -207,7 +209,7 @@ expected. Some common cases:
 | `El campo "entry" debe ser una ruta relativa a un archivo .js` (Kino) or `Quita el "./" del campo "entry"` (kit) | `"entry"` (or `"icon"`) starts with `./`. Write `"plugin.js"`: Kino 0.9.45 and older refuse the `./` ([why](manifest.md#entry-dot-slash)). |
 | `La firma del autor no es válida…` | The plugin is [signed](signed.md) and `plugin.js` or `version` changed after signing: run `node sdk/seal.mjs --sign --repo owner/repo` again. |
 | `[timeout] …` | The source is slow or there are too many requests: have it make fewer requests per call. |
-| Works in the kit but fails in Kino | The Node kit is more permissive than the app ([what it does not reproduce](test-locally.md#differences)): missing globals, a `throw` before the first `await`, `kino.html.select`. Give the assistant the exact message Kino shows (or a photo of the screen). |
+| Works in the kit but fails in Kino | The Node kit is more permissive than the app ([what it does not reproduce](test-locally.md#differences)): missing globals, a `throw` before the first `await` (on Kino 0.9.49 and older), `kino.html.select`. Give the assistant the exact message Kino shows (or a photo of the screen). |
 | Kino says "Configura … en Ajustes ▸ Plugins" | The plugin needs data: tap the message's Configurar button, or go to Plugins → Instalados → your plugin → Configurar. |
 | It does not show in "De la comunidad" | See [Get listed in Kino](listed.md). |
 
