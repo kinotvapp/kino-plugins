@@ -42,11 +42,11 @@ same files. A fork would work as a plugin too, but Kino's community search leave
 ([Get found](publish.md#get-found)). Then change `id`, `name`, `homepage`, `hosts` and
 `capabilities` in `kino-plugin.json`, rewrite `plugin.js`, and keep `sdk/`.
 
-!!! note "Coming: a plugin that uses the hidden browser"
-    **Maratón** (to be published as `xuper-plugin/maraton`, not public yet) is a real-world plugin that
+!!! note "A real-world example: a plugin that uses the hidden browser"
+    [**Maratón**](https://github.com/xuper-plugin/maraton) (signed, `apiVersion` 6, `"browser": "pages"`) is a real-world plugin, by someone else, that
     finds its video with [`kino.browser.capture`](browser.md) and offers each episode's other servers
     and languages as [labelled lazy copies](contract.md#lazy-copies). It is an example of those two
-    features only; "Tu servidor" stays the complete reference plugin.
+    features only (Kino just lists community plugins: each author is responsible for theirs); "Tu servidor" stays the complete reference plugin.
 
 ## The reference plugin { #reference-plugin }
 

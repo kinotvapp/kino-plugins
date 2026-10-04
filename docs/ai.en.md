@@ -103,7 +103,7 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   kino.error(code, detail, { userMessage: "…" }): in Spanish, at most 160 characters, no URL or
   domain, no long numbers, never asking for money, passwords, codes or contact outside Kino, and never
   echoing what the person typed (Kino shows it as "Mensaje de <plugin>: …" only if it passes all its
-  rules; a plugin that uses it to ask for money or data breaks the rules and is hidden from the community section).
+  rules; a plugin that uses it to ask for money or data breaks the rules and is taken out of the community index).
 - 18+ content: mark it with adult: true (apiVersion 6; Kino shows it only with the 18+ code
   unlocked). Never try to get around that lock.
 - Everything the person reads is in Spanish from Bogotá with tuteo, never voseo.

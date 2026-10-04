@@ -285,11 +285,11 @@ letter; never spells "Kino"; never asks for money, credentials, codes or contact
 SMS/verification codes); never contains a password the person typed or a sealed value. The plugin
 name itself must be plain (no `:`, no digit glued to a letter). **A plugin that uses `userMessage` to
 ask for money, credentials or contact outside Kino breaks the rules for plugins.** Each author is responsible
-for their own plugin; Kino only lists community plugins (no recommendation or promotion). Anyone can
-report one that breaks the rules (asking for money, passwords or contact data, malware, rights claims)
-with the ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template, and Kino then hides it from the "De la
-comunidad" section through [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json); installed copies keep working and
-updating, and it can still be installed by its address. Build it where you
+for their own plugin; Kino only lists community plugins (no recommendation or promotion), and removes one
+that breaks the rules (asking for money, passwords or contact data, malware, rights claims) from the
+community index through [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json); anyone can report it with the
+["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template. An installed copy stays installed, shows
+"Retirado del índice de la comunidad." and gets no more updates; a fork needs its own report. Build it where you
 throw, write it in Spanish, and never echo what the person typed. Full rules:
 [Your own sentence](https://kinotvapp.github.io/kino-plugins/en/contract/#user-message).
 
@@ -458,8 +458,8 @@ only when you use one of these.
    `browser_unavailable`. Each page starts with no cookies and is wiped after; it never reaches the
    home network.
 6. **Combine it with labelled lazy copies**: capture the first server in `resolve`, list the other
-   servers/languages as `{ label, ref }`, and capture each only when its `ref` comes back. (Maratón,
-   to be published as `xuper-plugin/maraton`, works this way; "Tu servidor" stays the complete
+   servers/languages as `{ label, ref }`, and capture each only when its `ref` comes back. ([Maratón](https://github.com/xuper-plugin/maraton),
+   a signed community plugin, works this way; "Tu servidor" stays the complete
    reference for everything else.) Full page:
    [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
 
@@ -470,13 +470,12 @@ and treats a **signed** plugin installed from two repos with the same `id` and a
 plugin across devices.
 
 **Community takedowns**: each author is responsible for their own plugin; Kino only lists community
-plugins (no recommendation or promotion). Anyone can report a plugin that breaks the rules for plugins
-(a `userMessage` asking for money, passwords or contact data, malware, a rights claim) with the
-"Reclamo / retiro de plugin" issue template; Kino then adds it to `community-blocklist.json` at the root
-of `kinotvapp/kino-plugins` (reasons `claim`, `malware`, `broken`, `rules`, `author_request`), which
-**only hides it from the "De la comunidad" section**: installed copies keep working and updating
-normally, and anyone can still install it by its address (manifest URL or `owner/repo`). A fork is a
-separate repository and needs its own report. Do not build anything that infringes rights or harms
+plugins (no recommendation or promotion). A plugin that breaks the rules for plugins (a `userMessage`
+asking for money, passwords or contact data, malware, a rights claim) is removed from the community
+index through `community-blocklist.json` at the root of `kinotvapp/kino-plugins` (reasons `claim`,
+`malware`, `broken`, `rules`, `author_request`); anyone can report one with the "Reclamo / retiro de
+plugin" issue template. Installed copies stay installed, show "Retirado del índice de la comunidad."
+and stop updating; a fork needs its own report. Do not build anything that infringes rights or harms
 people. See
 [Claims and plugin takedowns](https://kinotvapp.github.io/kino-plugins/en/claims/).
 

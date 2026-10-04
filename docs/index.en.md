@@ -137,5 +137,5 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |
 | [Nuvio scrapers](nuvio.md) | How people install Nuvio scrapers, what the conversion builds, and its limits |
 | [Example plugins](examples.md) | The two published examples, and how the reference plugin is built |
-| [Claims and plugin takedowns](claims.md) | How to ask for a community plugin to be hidden from "De la comunidad", what Kino does and how to appeal |
+| [Claims and plugin takedowns](claims.md) | How to ask for a community plugin to leave the index, what Kino does and how to appeal |
 | [Reference](reference/index.md) | `contract.json` and `kino.d.ts`, to read or download |

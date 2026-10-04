@@ -42,11 +42,11 @@ mismos archivos. Un fork también funcionaría como plugin, pero la búsqueda de
 los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`, `name`, `homepage`,
 `hosts` y `capabilities` en `kino-plugin.json`, reescribe `plugin.js` y conserva `sdk/`.
 
-!!! note "Pronto: un plugin que usa el navegador oculto"
-    **Maratón** (se publicará como `xuper-plugin/maraton`, todavía no es público) es un plugin real que
+!!! note "Un ejemplo real: un plugin que usa el navegador oculto"
+    [**Maratón**](https://github.com/xuper-plugin/maraton) (firmado, `apiVersion` 6, `"browser": "pages"`) es un plugin real, de otra persona, que
     encuentra su video con [`kino.browser.capture`](browser.md) y ofrece los otros servidores e idiomas
     de cada capítulo como [copias perezosas con etiqueta](contract.md#lazy-copies). Es un ejemplo solo
-    de esas dos funciones; "Tu servidor" sigue siendo el plugin de referencia completo.
+    de esas dos funciones (Kino solo lista los plugins de la comunidad: cada autor responde por el suyo); "Tu servidor" sigue siendo el plugin de referencia completo.
 
 ## El plugin de referencia { #reference-plugin }
 

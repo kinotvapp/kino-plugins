@@ -33,13 +33,13 @@ Everything a person reads in Kino is Spanish (Bogotá, tuteo). The guide exists 
 - [Cookbook](https://kinotvapp.github.io/kino-plugins/en/cookbook/): HTML site with login, JSON API with token, the person's own server, Widevine, plain http
 - [Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/): how Kino installs Nuvio scrapers by converting them (version 1.<converter revision>.0, typed search through TMDB, sealed TMDB key), and the limits and globals only converted scrapers get (not for hand-written plugins)
 
-- [Claims and plugin takedowns](https://kinotvapp.github.io/kino-plugins/en/claims/): Kino is a player; community plugins are an automatic index (listed, not recommended or promoted; each author is responsible for their plugin); how to file a claim or report a rule-breaking plugin ("Reclamo / retiro de plugin" issue template), community-blocklist.json and its reasons (claim, malware, broken, rules, author_request), the blocklist only hides a repository from "De la comunidad" (installed copies keep working and updating; install by address still works), how authors appeal
+- [Claims and plugin takedowns](https://kinotvapp.github.io/kino-plugins/en/claims/): Kino is a player; community plugins are an automatic index (listed, not recommended or promoted; each author is responsible for their plugin); how to file a claim or report a rule-breaking plugin ("Reclamo / retiro de plugin" issue template), community-blocklist.json and its reasons (claim, malware, broken, rules, author_request), what happens to installed copies, how authors appeal
 
 ## Reference
 
 - [contract.json](https://kinotvapp.github.io/kino-plugins/reference/contract.json): every number and rule the app enforces (machine-readable)
 - [kino.d.ts](https://kinotvapp.github.io/kino-plugins/reference/kino.d.ts): TypeScript declarations of the kino API and every shape
-- [Example plugins](https://kinotvapp.github.io/kino-plugins/en/examples/): the two published examples (and Maratón, a coming plugin that uses the hidden browser and labelled lazy copies)
+- [Example plugins](https://kinotvapp.github.io/kino-plugins/en/examples/): the two published examples (and [Maratón](https://github.com/xuper-plugin/maraton), a community plugin that uses the hidden browser and labelled lazy copies; Kino only lists community plugins)
 - [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): the complete API reference and template -- settings, auth, kino.storage, downloads, live items and channels in all three shapes. Raw files: [plugin.js](https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/plugin.js), [kino-plugin.json](https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/kino-plugin.json)
 - [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive): the simplest template to start from, with the sdk/ kit -- start here for a plain plugin with no settings or login
 

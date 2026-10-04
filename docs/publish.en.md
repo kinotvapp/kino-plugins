@@ -246,9 +246,8 @@ The list drops, whatever the stars:
   everyone who installed the Internet Archive plugin: **always change the `id`**.
 - **Repeats.** The same repository listed twice, or two repositories with the same `id`: the first
   one (the one with more stars) wins.
-- **A repository hidden from the section.** The repositories in
-  [`community-blocklist.json`](claims.md) never show in "De la comunidad" nor in the fallback list;
-  installed copies keep working and updating, and they can still be installed by address
+- **A repository taken down from the index.** The repositories in
+  [`community-blocklist.json`](claims.md) never show in "De la comunidad" nor in the fallback list
   ([Claims and plugin takedowns](claims.md)).
 - **The ids Kino keeps for itself** (`live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`; older versions reserve a few more) make the
   manifest invalid, so they never get this far.

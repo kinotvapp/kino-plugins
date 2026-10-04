@@ -1,6 +1,6 @@
 # Claims and plugin takedowns { #claims }
 
-Kino is a player: it does not host, sell or distribute content. The list of community plugins is an automatic index of third-party public repositories that use the kino-plugin topic; Kino does not review, recommend or promote them, and each author is responsible for their own plugin. If a plugin infringes your rights, is harmful or breaks the rules for plugins (for example, it uses `userMessage` to ask for money, passwords or contact data), open an issue at github.com/kinotvapp/kino-plugins/issues naming the repository and the reason. We hide it from the "De la comunidad" section within 5 business days at most and leave a public record in the repository's history. Authors can ask for a takedown to be reviewed the same way.
+Kino is a player: it does not host, sell or distribute content. The list of community plugins is an automatic index of third-party public repositories that use the kino-plugin topic; Kino does not review, recommend or promote them, and each author is responsible for their own plugin. If a plugin infringes your rights, is harmful or breaks the rules for plugins (for example, it uses `userMessage` to ask for money, passwords or contact data), open an issue at github.com/kinotvapp/kino-plugins/issues naming the repository and the reason. We remove it from the index within 5 business days at most and leave a public record in the repository's history. Authors can ask for a takedown to be reviewed the same way.
 
 ## How to file a claim { #how }
 
@@ -27,12 +27,13 @@ Kino is a player: it does not host, sell or distribute content. The list of comm
 
   That
   file's git history is the public record.
-- The app downloads that list and uses it for one thing only: a listed repository is **hidden from the
-  "De la comunidad" section** (and its fallback list).
-- Nothing else changes. A listed plugin someone already has installed keeps working and keeps updating
-  normally from its repository, with no extra label, and anyone can still install any plugin by its
-  address (its `owner/repo` or the URL of its manifest).
-- The repository match ignores case. A fork of a listed repository is not hidden automatically: it
+- The app downloads that list and applies it:
+    - a listed repository never shows in "De la comunidad" nor in the fallback list;
+    - a listed plugin someone already has installed keeps working, but its card says "Retirado del
+      índice de la comunidad." and it no longer receives updates from its repository. It is not
+      uninstalled by force.
+    - installing it by typing its address (`owner/repo` or the URL of its manifest) still works.
+- The repository match ignores case. A fork of a removed repository is not removed automatically: it
   needs its own claim.
 
 ## If you are the author { #appeal }
@@ -40,7 +41,7 @@ Kino is a player: it does not host, sell or distribute content. The list of comm
 Ask for the takedown to be reviewed the same way: an issue at
 [github.com/kinotvapp/kino-plugins/issues](https://github.com/kinotvapp/kino-plugins/issues), linking the
 original issue and explaining what changed. If it is accepted, the repository leaves the list in another
-commit, public too. To hide your own plugin from "De la comunidad", open the issue with the reason "at the
+commit, public too. To take your own plugin out of the index, open the issue with the reason "at the
 author's request" (`author_request`), or set `"discoverable": false` in your manifest
 ([The manifest](manifest.md)).
 

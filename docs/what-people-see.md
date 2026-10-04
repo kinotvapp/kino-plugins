@@ -119,8 +119,8 @@ Sin nada nuevo en tu manifiesto, salvo donde se dice:
   aprobación, y una llamada fallida de un plugin con una actualización pendiente lo dice
   ([Actualizaciones](publish.md#updates)).
 - **Plugins de la comunidad.** La sección lleva la nota "Plugins de la comunidad — Kino no los revisa ni
-  responde por su contenido.". Un plugin que se oculta de esa sección tras un reclamo sigue funcionando
-  y actualizándose para quien lo instaló ([Reclamos y retiro de plugins](claims.md)).
+  responde por su contenido.", y un plugin instalado que fue retirado del índice dice "Retirado del
+  índice de la comunidad." ([Reclamos y retiro de plugins](claims.md)).
 
 ## Plugins en los otros aparatos de la persona { #sync }
 

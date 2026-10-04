@@ -258,9 +258,8 @@ La lista descarta, tenga las estrellas que tenga:
   instaló el plugin de Internet Archive: **cambia siempre el `id`**.
 - **Repetidos.** El mismo repositorio dos veces, o dos repositorios con el mismo `id`: gana el primero
   (el de más estrellas).
-- **Un repositorio oculto de la sección.** Los repositorios de
-  [`community-blocklist.json`](claims.md) nunca salen en "De la comunidad" ni en la lista de respaldo;
-  las copias instaladas siguen funcionando y actualizándose, y se pueden seguir instalando por dirección
+- **Un repositorio retirado del índice.** Los repositorios de
+  [`community-blocklist.json`](claims.md) nunca salen en "De la comunidad" ni en la lista de respaldo
   ([Reclamos y retiro de plugins](claims.md)).
 - **Los ids que Kino se guarda para sí** (`live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`; las versiones anteriores reservan algunos más)
   vuelven inválido el manifiesto, así que nunca llegan hasta aquí.
