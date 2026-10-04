@@ -1,5 +1,5 @@
 name: "Reclamo / retiro de plugin"
-description: "Pide que un plugin de la comunidad salga del índice de Kino (derechos infringidos, plugin dañino, a pedido del autor) o pide revisar un retiro."
+description: "Pide que un plugin de la comunidad salga del índice de Kino (derechos infringidos, plugin dañino, incumple las reglas para plugins, a pedido del autor) o pide revisar un retiro."
 title: "Reclamo: owner/repositorio"
 body:
   - type: markdown
@@ -20,7 +20,7 @@ body:
     id: motivo
     attributes:
       label: "Motivo"
-      description: "Qué derecho infringe, por qué es dañino, o (si eres el autor) por qué pides el retiro o la revisión de un retiro."
+      description: "Qué derecho infringe, por qué es dañino, qué regla para plugins incumple, o (si eres el autor) por qué pides el retiro o la revisión de un retiro."
     validations:
       required: true
   - type: input

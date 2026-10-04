@@ -531,9 +531,15 @@ detail is):
   stored values; while they can't be read, the sentence is not shown), nor any sealed secret's value.
   Never echo what the person typed, in any form.
 
-!!! danger "A plugin that uses `userMessage` to ask for money, credentials or contact is removed"
-    A plugin that uses `userMessage` to ask people for money, credentials or contact outside Kino is
-    removed from the plugin catalog.
+!!! danger "Never use `userMessage` to ask for money, passwords or contact data"
+    Each author is responsible for their own plugin. Kino only **lists** community plugins (its
+    community search); it does not recommend or promote them. If a plugin breaks the rules for
+    plugins -- for example, it uses `userMessage` to ask for money, passwords or contact data, it is
+    malware, or it infringes someone's rights -- Kino removes it from the community index through
+    [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (at the root of this repository), and anyone can report it
+    with the ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template. An installed copy stays installed,
+    its card says "Retirado del índice de la comunidad." and it gets no more updates; a fork needs its
+    own report. See [Claims and plugin takedowns](claims.md).
 
 Write it for the person, in their language; Kino doesn't translate it. It takes the very place Kino's
 own line takes, so it never changes what the screen does: `auth_required` keeps the button to your

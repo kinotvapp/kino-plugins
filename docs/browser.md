@@ -100,9 +100,14 @@ La página corre en el aparato de la persona, así que Kino la encierra:
     Trata `blocked` como "este servidor no es para nosotros ahora" y pasa a tu siguiente servidor, o
     falla con un error claro.
 
-    Cada autor es responsable de su propio plugin y de cómo usa las fuentes a las que llega. Kino solo
-    **lista** los plugins de la comunidad (su búsqueda de la comunidad); no los recomienda, revisa ni
-    promociona.
+    Cada autor es responsable de su propio plugin. Kino solo **lista** los plugins de la comunidad (su
+    búsqueda de la comunidad); no los recomienda ni los promociona. Si un plugin incumple las reglas
+    para plugins -- por ejemplo, usa `userMessage` para pedir plata, contraseñas o datos de contacto,
+    es malware o infringe los derechos de alguien --, Kino lo retira del índice de la comunidad con
+    [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (en la raíz de este repositorio), y cualquiera lo puede reportar
+    con la plantilla de issue ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml). Una copia instalada sigue
+    instalada, su tarjeta dice "Retirado del índice de la comunidad." y no recibe más actualizaciones;
+    un fork necesita su propio reporte. Ver [Reclamos y retiro de plugins](claims.md).
 
 ## `kino.browser.capture(url, options?)` { #capture }
 

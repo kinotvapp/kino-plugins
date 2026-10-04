@@ -1,6 +1,6 @@
 # Claims and plugin takedowns { #claims }
 
-Kino is a player: it does not host, sell or distribute content. The list of community plugins is an automatic index of third-party public repositories that use the kino-plugin topic; Kino does not review them and is not responsible for their content. If a plugin infringes your rights or is harmful, open an issue at github.com/kinotvapp/kino-plugins/issues naming the repository and the reason. We remove it from the index within 5 business days at most and leave a public record in the repository's history. Authors can ask for a takedown to be reviewed the same way.
+Kino is a player: it does not host, sell or distribute content. The list of community plugins is an automatic index of third-party public repositories that use the kino-plugin topic; Kino does not review, recommend or promote them, and each author is responsible for their own plugin. If a plugin infringes your rights, is harmful or breaks the rules for plugins (for example, it uses `userMessage` to ask for money, passwords or contact data), open an issue at github.com/kinotvapp/kino-plugins/issues naming the repository and the reason. We remove it from the index within 5 business days at most and leave a public record in the repository's history. Authors can ask for a takedown to be reviewed the same way.
 
 ## How to file a claim { #how }
 
@@ -9,7 +9,7 @@ Kino is a player: it does not host, sell or distribute content. The list of comm
    there is no e-mail.
 2. Fill in its three fields:
     - **Repositorio** (repository): the plugin, as `owner/name` (the one shown in "De la comunidad").
-    - **Motivo** (reason): which right it infringes, or why it is harmful.
+    - **Motivo** (reason): which right it infringes, why it is harmful, or which rule for plugins it breaks.
     - **Enlace a la prueba** (link to the evidence): where what you claim can be seen.
 3. Do not include personal data you don't want public: anyone can read the issue.
 
@@ -17,7 +17,15 @@ Kino is a player: it does not host, sell or distribute content. The list of comm
 
 - It adds the repository to [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json),
   at the root of this repository, within 5 business days at most. Each entry names the repository, the
-  reason (`claim`, `malware`, `broken` or `author_request`), the date and the link to the issue. That
+  reason, the date and the link to the issue. The reasons:
+    - `claim`: it infringes someone's rights;
+    - `malware`: it is harmful;
+    - `broken`: it does not work;
+    - `rules`: it breaks the rules for plugins ("incumple las reglas para plugins"), for example a
+      `userMessage` that asks for money, passwords or contact data ([The contract](contract.md#user-message));
+    - `author_request`: its author asked for it.
+
+  That
   file's git history is the public record.
 - The app downloads that list and applies it:
     - a listed repository never shows in "De la comunidad" nor in the fallback list;

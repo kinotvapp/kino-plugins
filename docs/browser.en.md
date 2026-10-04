@@ -97,9 +97,14 @@ The page runs on the person's device, so Kino fences it in:
     tricks, no retry loop to wear the check down. Treat `blocked` as "this server is not for us right
     now" and move on to your next server, or fail with a clear error.
 
-    Each author is responsible for their own plugin and for how it uses the sources it reaches. Kino
-    only **lists** community plugins (its community search); it does not recommend, review or promote
-    them.
+    Each author is responsible for their own plugin. Kino only **lists** community plugins (its
+    community search); it does not recommend or promote them. If a plugin breaks the rules for
+    plugins -- for example, it uses `userMessage` to ask for money, passwords or contact data, it is
+    malware, or it infringes someone's rights -- Kino removes it from the community index through
+    [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (at the root of this repository), and anyone can report it
+    with the ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template. An installed copy stays installed,
+    its card says "Retirado del índice de la comunidad." and it gets no more updates; a fork needs its
+    own report. See [Claims and plugin takedowns](claims.md).
 
 ## `kino.browser.capture(url, options?)` { #capture }
 

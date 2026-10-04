@@ -1,6 +1,6 @@
 # Reclamos y retiro de plugins { #claims }
 
-Kino es un reproductor: no aloja, no vende ni distribuye contenido. La lista de plugins de la comunidad es un índice automático de repositorios públicos de terceros que usan la etiqueta kino-plugin; Kino no los revisa ni responde por su contenido. Si un plugin infringe tus derechos o es dañino, abre un issue en github.com/kinotvapp/kino-plugins/issues indicando el repositorio y el motivo. Lo retiramos del índice en un plazo máximo de 5 días hábiles y dejamos constancia pública en el historial del repositorio. Los autores pueden pedir la revisión de un retiro por el mismo medio.
+Kino es un reproductor: no aloja, no vende ni distribuye contenido. La lista de plugins de la comunidad es un índice automático de repositorios públicos de terceros que usan la etiqueta kino-plugin; Kino no los revisa, no los recomienda ni los promociona, y cada autor es responsable de su propio plugin. Si un plugin infringe tus derechos, es dañino o incumple las reglas para plugins (por ejemplo, usa `userMessage` para pedir plata, contraseñas o datos de contacto), abre un issue en github.com/kinotvapp/kino-plugins/issues indicando el repositorio y el motivo. Lo retiramos del índice en un plazo máximo de 5 días hábiles y dejamos constancia pública en el historial del repositorio. Los autores pueden pedir la revisión de un retiro por el mismo medio.
 
 ## Cómo hacer un reclamo { #how }
 
@@ -9,7 +9,7 @@ Kino es un reproductor: no aloja, no vende ni distribuye contenido. La lista de 
    hay correo.
 2. Llena los tres campos:
     - **Repositorio**: el plugin, como `owner/nombre` (el que aparece en "De la comunidad").
-    - **Motivo**: qué derecho infringe o por qué es dañino.
+    - **Motivo**: qué derecho infringe, por qué es dañino o qué regla para plugins incumple.
     - **Enlace a la prueba**: dónde se ve lo que reclamas.
 3. No pongas datos personales que no quieras que sean públicos: el issue lo puede leer cualquiera.
 
@@ -17,7 +17,15 @@ Kino es un reproductor: no aloja, no vende ni distribuye contenido. La lista de 
 
 - Agrega el repositorio a [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json),
   en la raíz de este repositorio, en un plazo máximo de 5 días hábiles. Cada entrada dice el repositorio,
-  el motivo (`claim`, `malware`, `broken` o `author_request`), la fecha y el enlace al issue. El
+  el motivo, la fecha y el enlace al issue. Los motivos:
+    - `claim`: infringe los derechos de alguien;
+    - `malware`: es dañino;
+    - `broken`: no funciona;
+    - `rules`: incumple las reglas para plugins, por ejemplo un `userMessage` que pide plata, contraseñas o
+      datos de contacto ([Contrato](contract.md#user-message));
+    - `author_request`: lo pidió su autor.
+
+  El
   historial de git de ese archivo es la constancia pública.
 - La app descarga esa lista y la aplica:
     - un repositorio de la lista nunca aparece en "De la comunidad" ni en la lista de respaldo;

@@ -284,7 +284,12 @@ letter; never spells "Kino"; never asks for money, credentials, codes or contact
 `transfer…`, `contraseñ…`, `clave…`, `token…`, `tarjeta`, `PIN`, Nequi, Daviplata, WhatsApp, Telegram,
 SMS/verification codes); never contains a password the person typed or a sealed value. The plugin
 name itself must be plain (no `:`, no digit glued to a letter). **A plugin that uses `userMessage` to
-ask for money, credentials or contact outside Kino is removed from the catalog.** Build it where you
+ask for money, credentials or contact outside Kino breaks the rules for plugins.** Each author is responsible
+for their own plugin; Kino only lists community plugins (no recommendation or promotion), and removes one
+that breaks the rules (asking for money, passwords or contact data, malware, rights claims) from the
+community index through [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json); anyone can report it with the
+["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template. An installed copy stays installed, shows
+"Retirado del índice de la comunidad." and gets no more updates; a fork needs its own report. Build it where you
 throw, write it in Spanish, and never echo what the person typed. Full rules:
 [Your own sentence](https://kinotvapp.github.io/kino-plugins/en/contract/#user-message).
 
@@ -447,7 +452,8 @@ only when you use one of these.
    Turnstile, hCaptcha, reCAPTCHA or "verify you are human": the call ends with `blocked`. Do not add
    solver services, fingerprint spoofing, stealth tricks, or retry loops; on `blocked`, `timeout` or
    `busy` move to the next server or return nothing. The author is responsible for their own plugin;
-   Kino only lists community plugins (community search), it does not recommend or promote them.
+   Kino only lists community plugins (community search), it does not recommend or promote them (see
+   "Community takedowns" for what happens to a plugin that breaks the rules).
 5. **One page at a time in the whole app** (`busy`); a device without WebView gets
    `browser_unavailable`. Each page starts with no cookies and is wiped after; it never reaches the
    home network.
@@ -463,9 +469,14 @@ for new chapters through `episodes(ref)` (keep series refs stable), saves "Para 
 and treats a **signed** plugin installed from two repos with the same `id` and author key as one
 plugin across devices.
 
-**Community takedowns**: a community plugin can be removed from Kino's index on a claim
-(`community-blocklist.json` in `kinotvapp/kino-plugins`); installed copies keep working but stop
-updating. Do not build anything that infringes rights or harms people. See
+**Community takedowns**: each author is responsible for their own plugin; Kino only lists community
+plugins (no recommendation or promotion). A plugin that breaks the rules for plugins (a `userMessage`
+asking for money, passwords or contact data, malware, a rights claim) is removed from the community
+index through `community-blocklist.json` at the root of `kinotvapp/kino-plugins` (reasons `claim`,
+`malware`, `broken`, `rules`, `author_request`); anyone can report one with the "Reclamo / retiro de
+plugin" issue template. Installed copies stay installed, show "Retirado del índice de la comunidad."
+and stop updating; a fork needs its own report. Do not build anything that infringes rights or harms
+people. See
 [Claims and plugin takedowns](https://kinotvapp.github.io/kino-plugins/en/claims/).
 
 **Sending to the TV** needs nothing from the plugin; it casts best with a correct `mime` and no

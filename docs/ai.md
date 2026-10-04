@@ -106,7 +106,7 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   kino.error(code, detalle, { userMessage: "…" }): en español, máximo 160 caracteres, sin URL ni
   dominios, sin números largos, nunca pidiendo plata, contraseñas, códigos ni contacto por fuera de
   Kino, y nunca repitiendo lo que escribió la persona (Kino la muestra como "Mensaje de <plugin>: …"
-  solo si pasa todas sus reglas; un plugin que la usa para pedir plata o datos se retira).
+  solo si pasa todas sus reglas; un plugin que la usa para pedir plata o datos incumple las reglas y sale del índice de la comunidad).
 - Contenido +18: márcalo con adult: true (apiVersion 6; Kino lo muestra solo con el código +18
   desbloqueado). Nunca intentes saltarte ese candado.
 - Todo lo que lee la persona, en español de Bogotá con tuteo, nunca voseo.
