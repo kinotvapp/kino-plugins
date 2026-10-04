@@ -535,11 +535,11 @@ detail is):
     Each author is responsible for their own plugin. Kino only **lists** community plugins (its
     community search); it does not recommend or promote them. If a plugin breaks the rules for
     plugins -- for example, it uses `userMessage` to ask for money, passwords or contact data, it is
-    malware, or it infringes someone's rights -- Kino removes it from the community index through
-    [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (at the root of this repository), and anyone can report it
-    with the ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template. An installed copy stays installed,
-    its card says "Retirado del índice de la comunidad." and it gets no more updates; a fork needs its
-    own report. See [Claims and plugin takedowns](claims.md).
+    malware, or it infringes someone's rights -- anyone can report it with the
+    ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml) issue template, and Kino hides it from the "De la comunidad"
+    section through [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (at the root of this repository). That is all
+    it does: copies already installed keep working and updating as before, and anyone can still
+    install it by its address. See [Claims and plugin takedowns](claims.md).
 
 Write it for the person, in their language; Kino doesn't translate it. It takes the very place Kino's
 own line takes, so it never changes what the screen does: `auth_required` keeps the button to your

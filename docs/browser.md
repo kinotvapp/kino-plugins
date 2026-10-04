@@ -103,11 +103,11 @@ La página corre en el aparato de la persona, así que Kino la encierra:
     Cada autor es responsable de su propio plugin. Kino solo **lista** los plugins de la comunidad (su
     búsqueda de la comunidad); no los recomienda ni los promociona. Si un plugin incumple las reglas
     para plugins -- por ejemplo, usa `userMessage` para pedir plata, contraseñas o datos de contacto,
-    es malware o infringe los derechos de alguien --, Kino lo retira del índice de la comunidad con
-    [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (en la raíz de este repositorio), y cualquiera lo puede reportar
-    con la plantilla de issue ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml). Una copia instalada sigue
-    instalada, su tarjeta dice "Retirado del índice de la comunidad." y no recibe más actualizaciones;
-    un fork necesita su propio reporte. Ver [Reclamos y retiro de plugins](claims.md).
+    es malware o infringe los derechos de alguien --, cualquiera lo puede reportar con la plantilla de
+    issue ["Reclamo / retiro de plugin"](https://github.com/kinotvapp/kino-plugins/issues/new?template=reclamo-retiro-plugin.yml), y Kino lo oculta de la sección "De la comunidad" con
+    [`community-blocklist.json`](https://github.com/kinotvapp/kino-plugins/blob/main/community-blocklist.json) (en la raíz de este repositorio). Eso es todo lo que hace: las
+    copias ya instaladas siguen funcionando y actualizándose como antes, y cualquiera lo puede seguir
+    instalando por su dirección. Ver [Reclamos y retiro de plugins](claims.md).
 
 ## `kino.browser.capture(url, options?)` { #capture }
 

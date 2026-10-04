@@ -105,8 +105,8 @@ With nothing new in your manifest, except where said:
 - **Updates.** A badge on Ajustes ▸ Plugins counts the updates waiting for approval, and a failed call
   of a plugin with a pending update says so ([Updates](publish.md#updates)).
 - **Community plugins.** The section carries the note "Plugins de la comunidad — Kino no los revisa ni
-  responde por su contenido.", and an installed plugin taken down from the index says "Retirado del
-  índice de la comunidad." ([Claims and plugin takedowns](claims.md)).
+  responde por su contenido.". A plugin hidden from that section after a claim keeps working and
+  updating for whoever installed it ([Claims and plugin takedowns](claims.md)).
 
 ## Plugins on the person's other devices { #sync }
 
