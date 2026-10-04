@@ -201,13 +201,41 @@ interface KinoStream {
    */
   alternateHosts?: string[];
   /**
+   * apiVersion 6: this copy's short name, e.g. "Latino · Streamwish", shown in the player's "Servidor" menu (phone and
+   * TV) and in logs. Trimmed; at most 48 characters, no control characters, or it is dropped (the copy still plays).
+   * Ignored below apiVersion 6.
+   */
+  label?: string;
+  /**
    * Other copies of the same video, best first, at most 8: when `url` cannot play on the device (a codec it lacks, a broken
    * file) or is gone, Kino moves on to the next one by itself, at the same spot, before showing any error. Each is checked
    * exactly like `url`, `mime` and `headers`; a bad entry is dropped. They share this stream's subtitles and audio tracks.
    * Ignored next to `drm`, with `signing` (use `alternateHosts`) and for a live channel.
+   *
+   * apiVersion 6: each may carry a `label` (same rules as the Stream's), and may be `{ label, ref }` instead of a URL: a
+   * lazy copy. `ref` (a non-blank string of at most 512 characters) goes to your `resolve(ref)` ONLY when that copy is
+   * needed -- the person picks it in the "Servidor" menu, the automatic fallback reaches it, or a download's copy choice
+   * probes it within its 30 s budget. That call is a normal `resolve` (same time limit, same checks,
+   * `kino.browser.capture` allowed); only its `url`, `headers`, `mime`, `subtitles`, `expiresInSeconds` and `skip` are
+   * used, never its own `alternatives`. Its `skip` applies while that copy plays and is never saved (the Stream's `skip`
+   * stays the episode's). A failure moves on to the next copy. Below apiVersion 6 a ref-only entry has no `url` and is
+   * dropped.
    */
-  alternatives?: { url: string; mime?: string; headers?: Record<string, string> }[];
+  alternatives?: KinoStreamAlternative[];
+  /**
+   * Where THIS file's opening and ending are, in ms from its start: Kino's "Saltar intro" shows from
+   * `openingStartMs` (0 when left out or null) to `openingEndMs`, "Saltar outro" from `endingStartMs`. Each a
+   * finite number in 0..`durationMs` (0..86 400 000 without `durationMs`); the opening needs its end,
+   * after its start; the ending not before the opening's end. A bad part is dropped, never the stream.
+   * A person's hand correction wins over it; it wins over AniSkip. Ignored for a live channel.
+   */
+  skip?: { openingStartMs?: number; openingEndMs?: number; endingStartMs?: number };
 }
+
+/** One of a Stream's `alternatives`: a URL (labelled from apiVersion 6), or (apiVersion 6) a lazy `{ label, ref }`. */
+type KinoStreamAlternative =
+  | { url: string; mime?: string; headers?: Record<string, string>; label?: string }
+  | { ref: string; label?: string };
 
 /** apiVersion 3, capability "channels": a section of the En vivo tab. */
 interface KinoLiveCategory {
@@ -373,7 +401,7 @@ interface KinoPlugin {
   guide?(arg: { channelIds: string[]; from: number; to: number }): Promise<KinoGuideEntry[]>;
   /** apiVersion 6: required when a setting has `type: "status"`. One text per status setting key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. */
   settingsStatus?(): Promise<Record<string, string>>;
-  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; `refresh: true` asks settingsStatus() again. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. */
+  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. */
   action?(key: string): Promise<{ message?: string; refresh?: boolean; clearSettings?: string[] } | null | void>;
   /**
    * apiVersion 6, optional: checks the values BEFORE Kino saves them (20 s). `null` accepts; `{ key: "mensaje" }`
@@ -383,6 +411,29 @@ interface KinoPlugin {
    */
   validateSettings?(values: Record<string, string | boolean | Array<Record<string, string>>>): Promise<Record<string, string> | string | null>;
 }
+
+/** A subtitles() track: a Stream's `subtitles` entry plus an optional `label` and `translated` (a machine translation). */
+interface KinoSubtitleTrack { lang: string; url: string; format?: "vtt" | "srt"; label?: string; translated?: boolean }
+
+/**
+ * `subtitles` -- optional for any plugin (Kino asks every plugin that exports it), required with the capability
+ * "subtitles". Tracks for a title Kino knows by IMDb or TMDB id (an episode's ids are the series'); `languages` are ISO
+ * 639-1, best first. Checked like a Stream's `subtitles`: 30 kept, then only the person's languages are listed. 10 s, a
+ * background call.
+ */
+type KinoSubtitlesFn = (arg: {
+  imdbId?: string; tmdbId?: number; kind: "movie" | "series"; season?: number; episode?: number;
+  title?: string; year?: number; languages: string[];
+}) => Promise<KinoSubtitleTrack[]>;
+
+/** A plugin that plays (`resolve` required, as above), optionally finding subtitles too. */
+interface KinoPlayingPlugin extends KinoPlugin { subtitles?: KinoSubtitlesFn }
+
+/** A subtitle provider: capabilities exactly ["subtitles"], so `subtitles` is its only export. */
+interface KinoSubtitleProvider { subtitles: KinoSubtitlesFn }
+
+/** Your module's exports: one or the other. */
+type KinoPluginModule = KinoPlayingPlugin | KinoSubtitleProvider;
 
 // ---------- the kino API ----------
 
@@ -480,6 +531,55 @@ type KinoCipher =
   | "aes-128-gcm" | "aes-192-gcm" | "aes-256-gcm"
   | "des-ede3-cbc" | "des-ede3-ecb";
 
+/** apiVersion 6: `kino.browser.capture` options. */
+interface KinoBrowserCaptureOptions {
+  /** 1..25000 ms; default 18000. */
+  timeoutMs?: number;
+  /** Extra headers for the first page load only (a `Referer` an embed insists on). */
+  headers?: Record<string, string>;
+  /** A regular expression (case-insensitive, up to 500 characters) for what counts as the video request; default: m3u8, mpd, mp4, `master.txt`, `videoplayback`, `/hls/`. */
+  match?: string;
+  /** Default true: mute and start the page's player, click common play buttons, tap the middle. */
+  autoplay?: boolean;
+}
+
+/** apiVersion 6: what `kino.browser.capture` saw. */
+interface KinoBrowserCapture {
+  /** At most 8, manifests first. `headers` carries Referer, User-Agent and, when the request had them, Origin and Cookie. */
+  media: { url: string; mime?: string; headers: Record<string, string> }[];
+  /** `.vtt`/`.srt` requests the page made, at most 10. */
+  subtitles: { url: string; lang?: string }[];
+  /** The top page's last address. */
+  finalUrl: string;
+}
+
+/** apiVersion 6, `"browser": "pages"`: `kino.browser.page` options. */
+interface KinoBrowserPageOptions {
+  /**
+   * 1..25000 ms; default 15000. Counts inside your call's own time limit, which ends the read when it runs out: pass
+   * less than what is left of it (about 12000 in `search`, whose whole call has 15 s; about 16000 in the 20 s exports).
+   */
+  timeoutMs?: number;
+  /**
+   * A JavaScript regular expression (source string or RegExp; matched case-insensitively against the page's HTML, up
+   * to 500 characters): the page is returned only once it matches. Without it, as soon as the page is loaded and is no
+   * longer the site's browser check page. Use it for pages that fill in their list with scripts.
+   */
+  waitFor?: string | RegExp;
+}
+
+/** apiVersion 6, `"browser": "pages"`: what `kino.browser.page` read. */
+interface KinoBrowserPage {
+  /** The doctype and the DOM's outerHTML (after the page's scripts ran), at most 2,000,000 characters. Feed it to `kino.html.select`. */
+  html: string;
+  /** The top page's last address (after redirects and the browser check). */
+  finalUrl: string;
+  /** The HTTP status of the top page's last load: 200 unless that load answered an error. */
+  status: number;
+  /** True when `html` was cut at 2,000,000 characters. */
+  truncated: boolean;
+}
+
 declare namespace kino {
   const apiVersion: number;
   const appVersion: string;
@@ -498,13 +598,43 @@ declare namespace kino {
   /** 0..5000 ms, counts inside the call's own timeout. */
   function sleep(ms: number): Promise<void>;
 
+  /**
+   * apiVersion 6, with `"browser": true` (or `"pages"`) in the manifest (the person approves it in red): from `resolve` only, and only
+   * a `resolve` the person started (they pressed play, or they started a download; never a background one), opens
+   * `url` in a hidden web view, lets the page run its own player (muted; with `autoplay`, the default, it also clicks the
+   * usual play buttons and taps the middle of the page), and answers the video requests the page made, HLS/DASH first,
+   * each with the headers to play it with (put them in your Stream's `headers`). The start `url` must be a host your
+   * `kino.fetch` may reach; the page may then load from any public server, never the home network. One page at a
+   * time in the whole app (a download's capture never waits: `busy` at once). Throws a typed error: `browser_unavailable`
+   * (no WebView on this device, and always under the Node kit), `timeout` (no video in `timeoutMs`, default 18000, at
+   * most 25000), `blocked`, `busy`, `not_allowed` (no approved `"browser": true`, not inside `resolve`, or a `resolve`
+   * nobody started), `invalid_request`.
+   */
+  namespace browser {
+    function capture(url: string, options?: KinoBrowserCaptureOptions): Promise<KinoBrowserCapture>;
+    /**
+     * apiVersion 6, with `"browser": "pages"` in the manifest (`true` is capture-only and answers `not_allowed` here; the
+     * person approves "Puede abrir páginas web ocultas para mostrar contenido y
+     * encontrar el video", in red): from `search`, `home`, `browse`, `episodes`, `section`, `categories` or `resolve`, only
+     * while the person is using the app (never a background call), loads `url` in the same hidden web view and returns its
+     * HTML once the page is past the site's automatic browser check (Cloudflare's "Just a moment…") and matches `waitFor`.
+     * Kino never clicks, taps, types or scrolls in it and never solves a captcha: a page that asks for a human answers
+     * `blocked` at once, and one still on its check page when the time runs out answers `blocked` too. Same start-host
+     * rule, same one page at a time, fresh cookies per call; at most 20 page reads per minute per plugin. Throws a typed
+     * error: `browser_unavailable` (always under the Node kit: keep a plain `kino.fetch` path), `timeout`, `blocked`,
+     * `busy` (another page is open, or the person pressed play and the read was ended), `not_allowed`, `rate_limited`,
+     * `invalid_request`.
+     */
+    function page(url: string, options?: KinoBrowserPageOptions): Promise<KinoBrowserPage>;
+  }
+
   /** apiVersion 4: a marker for a secret the manifest's `secrets` declares (throws for any other name). Kino swaps it for the value in `kino.fetch`, toward the manifest's own hosts only; your code never sees the value. apiVersion 6: a secret declared `{ seal, use: "cipher-key", encoding }` is accepted as the whole `key` of any `kino.crypto.encrypt`/`decrypt` (des-ede3 included), read with the manifest's encoding; it is refused everywhere else, including `kino.fetch`. */
   function secret(name: string): string;
 
-  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a recommended-catalog plugin, or of one whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) with the person's "Enviar registros de errores" on, fails (sign and the settings exports included), the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
+  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a plugin whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) fails (a plugin that does not declare it never sends a line; a later Kino build adds a per-device "Enviar registros de errores" switch, on by default, that stops them) (sign and the settings exports included), the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
   function log(...args: unknown[]): void;
   namespace log {
-    /** apiVersion 6, with `"telemetry": true`: a log line that also tells Kino's error tracker your plugin served a degraded result (a fallback account, a backup source). The line's first word is its area (`[a-z0-9_:]`, with a `_` or `:`, up to 24 characters; anything else is filed as "other"); at most one report per area an hour and 3 per plugin per session, scrubbed like any line. Without telemetry (or switched off) it is only a log line. With `"telemetry": "verbose"` a plugin's playback metrics, live/cast problems and edge cases also reach the board (see the README). In a debug build, or with `"debug": true`, every line is in logcat under `KinoPlugin/<id>` and Kino's playback lines under `KinoPlay`. */
+    /** apiVersion 6, with `"telemetry": true`: a log line that also tells Kino's error tracker your plugin served a degraded result (a fallback account, a backup source). The line's first word is its area (`[a-z0-9_:]`, with a `_` or `:`, up to 24 characters; anything else is filed as "other"); at most one report per area an hour and 3 per plugin per session, scrubbed like any line. Without telemetry (or, once the per-device switch exists, with it off) it is only a log line. With `"telemetry": "verbose"` a plugin's playback metrics, live/cast problems and edge cases also reach the board (see the README). In a debug build, or with `"debug": true`, every line is in logcat under `KinoPlugin/<id>` and Kino's playback lines under `KinoPlay`. */
     function report(...args: unknown[]): void;
   }
 
@@ -609,3 +739,31 @@ declare namespace kino {
 // ---------- web globals Kino adds (QuickJS has none of them natively) ----------
 // URL, URLSearchParams, atob, btoa, TextEncoder and TextDecoder (UTF-8 only) behave like the
 // browser's, without IDN/punycode. Use the lib "dom" typings, or declare them in your editor.
+
+/**
+ * The manifest's optional `categories` (every apiVersion; read only by Kino's plugin marketplace for its category chips).
+ * A list without repeats; when present it replaces what Kino guesses from the capabilities.
+ */
+type KinoManifestCategory = "movies" | "series" | "anime" | "live" | "radio" | "subtitles" | "utilities" | "adult";
+
+/** apiVersion 6, capability "meta": what `meta(query)` is asked about a title another source listed. */
+interface KinoMetaQuery {
+  type: "movie" | "series";
+  ids: { imdb?: string; tmdb?: number; kitsu?: number; mal?: number; anilist?: number };
+  /** The title's own Stremio-style id in its source ("kitsu:1376"), when it has one. */
+  id?: string;
+  /** The person's language ("es"). */
+  lang?: string;
+}
+
+/** `meta`'s answer (or null: a title you do not know). Every field optional; Kino only fills what TMDB and AniList left empty. */
+interface KinoTitleMeta {
+  title?: string;
+  overview?: string;
+  poster?: string;
+  backdrop?: string;
+  year?: string;
+  genres?: string[];
+  runtimeMinutes?: number;
+  episodes?: { season: number; number: number; title?: string; overview?: string; still?: string; airDate?: string; id?: string }[];
+}

@@ -7,7 +7,7 @@
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack, per plugin | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s each (`resolve` of a plugin Kino itself generates, from a Nuvio scraper or a Stremio addon: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s each; `liveSearch` 15 s; `section`, `categories` 20 s each (apiVersion 6); `migrate` 10 s; `sign` 1.5 s (and 3 s counting its wait); counting all your fetches and sleeps together, but not the time the person spends answering a host question for that call |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s each (`resolve` of a plugin Kino itself generates, from a Nuvio scraper or a Stremio addon: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s each; `liveSearch` 15 s; `subtitles` 10 s; `section`, `categories` 20 s each (apiVersion 6); `migrate` 10 s; `sign` 1.5 s (and 3 s counting its wait); counting all your fetches and sleeps together, but not the time the person spends answering a host question for that call |
 | Loading the module (its top level) | 10 s |
 | Idle sandbox | closed after 5 minutes without calls |
 | Consecutive timeouts | 3 in a row and Kino disables the plugin ("No responde") |
@@ -16,7 +16,7 @@
 | `kino.storage` | 256 KB per plugin; an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
 | `kino.sleep` | 0 to 5,000 ms per call |
 | `kino.crypto` | data at most 5 MB per call; PBKDF2 at most 100,000 iterations and 64-byte keys; `randomBytes` at most 1,024 |
-| `kino.log` / `console.*` | 2,000 characters per message; when a call of a recommended-catalog plugin fails, its last 30 lines (each cut at 300 characters, scrubbed, 2,048 characters in all) go with the failure report |
+| `kino.log` / `console.*` | 2,000 characters per message; when a call of a plugin whose manifest declares `telemetry` fails, its last 30 lines (each cut at 300 characters, scrubbed, 2,048 characters in all) go with the failure report |
 | What a function returns | at most 2,000,000 characters once turned into JSON |
 | Results | `search` 100 items; `home` 20 rows of 60; `browse` 100 per page; `episodes` 5,000 (and 50 `seasons`); `ref` 4,096 characters; `next` 2,048 characters; `id` matches `^[A-Za-z0-9._~-]{1,128}$` |
 | Live channels (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 per page, 10 pages at first and 5 more per scroll, 10,000 channels (200 pages) per category; `liveSearch` 100 channels, asked from 2 characters; `guide` 50 channels and 24 h per call, 100 entries per channel; `number` 1..9999 |
@@ -34,7 +34,11 @@ From apiVersion 6, also:
 
 | What | Limit |
 | --- | --- |
-| Stream | `alternatives` 8; `alternateHosts` 6; `signContext` 4,096 characters; 3 `resolve` retries per signed playback |
+| Stream | `alternatives` 8 (lazy and concrete together); `label` 48 characters; a lazy copy's `ref` 512 characters; `alternateHosts` 6; `signContext` 4,096 characters; 3 `resolve` retries per signed playback |
+| Lazy copies | the automatic fallback waits at most 20 s for one copy's `resolve`; a copy the person picked gets the whole `resolve` limit; a download's copy choice probes within 30 s in all |
+| Hidden browser (`"browser": true` or `"pages"`) | `resolve` 75 s; one page at a time in the whole app; `kino.browser.capture` `timeoutMs` 1..25,000 (default 18,000), at most 8 media and 10 subtitles, 12 headers per media; `kino.browser.page` (`"pages"` only) `timeoutMs` 1..25,000 (default 15,000), 20 reads a minute per plugin, HTML at most 2,000,000 characters. See [Hidden browser](browser.md) |
+| `subtitles()` (any apiVersion) | 10 s; 30 tracks kept, 15 listed per plugin; `label` 60 characters |
+| `meta()` | 6 s per plugin; the first answer in install order is kept 30 minutes |
 | Settings form | `status` 200 characters, an action's `message` 300, `confirm` 120, a field error 200; `clearSettings` 12 keys |
 | Section and categories | section label 20 characters; 8 tabs of 24 characters; hero text 300; `categories` 24 tiles with 40-character titles |
 | `kino.crypto` key pairs | 64 live private keys per runtime; a signature at most 512 bytes |
