@@ -22,6 +22,11 @@ list. Everything a plugin can now change in how Kino shows it is gathered on
   Ajustes and syncing across devices. [The settings form](settings-form.md).
 - **`debug`** and **`telemetry`** (`true` or `"verbose"`), `kino.log.report`, the Registro page, the
   `KinoPlugin/<id>` and `KinoPlay` logcat tags, and playback metrics. [Logs and telemetry](diagnostics.md).
+- **Modo debug in every plugin**: every installed plugin (yours, a generated Stremio addon, a Nuvio
+  scraper) has a "Modo debug" switch in its Ajustes tab, with no work on your side: on, its failures show
+  on screen and its Registro can be copied or shared, so a person can send you a screenshot or their
+  Registro. `"debug": true` now only makes the switch on by default; without it the switch starts off.
+  The person's choice survives updates and syncs to their other devices. [Modo debug](diagnostics.md#debug).
 - **`section`, `categories` and `theme`**: a section of your own, a group in Categorías and your
   colors. [Section, categories and colors](section-theme.md).
 - **`scopedSearch`**: answer the search inside a "Ver más" page yourself. [The contract](contract.md#scoped-search).

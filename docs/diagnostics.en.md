@@ -6,13 +6,13 @@ one that leaves the device. All from `"apiVersion": 6` (Kino 0.9.50); below it t
 | What | Where you see it | Who turns it on |
 | --- | --- | --- |
 | [`kino.log`](kino-api.md#log) | `adb logcat` | always |
-| [`"debug": true`](#debug) | error panel on screen, "Registro" page | you, while developing |
+| [Modo debug](#debug) | error panel on screen, "Registro" page | the person, with the switch every plugin has (`"debug": true` makes it on by default) |
 | [`"telemetry": true`](#telemetry) / `"verbose"` | the maintainers' error tracker | you ask and the person approves (no switch to turn it off yet) |
 
 ## Logcat { #logcat }
 
 `kino.log` and `console.*` go to `adb logcat` under the tag `KinoPlugin`; in a debug build of Kino, or in
-any build when your manifest says `"debug": true`, under `KinoPlugin/<your id>`. Kino's own
+any build while your plugin's [Modo debug](#debug) switch is on, under `KinoPlugin/<your id>`. Kino's own
 [playback metrics](#playback) go under the tag `KinoPlay` in those same cases, so
 
 ```
@@ -21,20 +21,37 @@ adb logcat -s KinoPlay KinoPlugin/<your id>
 
 shows Kino's lines and yours together.
 
-## `debug`: errors on screen and the Registro page { #debug }
+## Modo debug: errors on screen and the Registro page { #debug }
 
-`"debug": true` is a development aid. While it is on:
+Since Kino 0.9.50 **every installed plugin** (yours, a generated Stremio addon, a Nuvio scraper) has a
+**"Modo debug"** switch in its own tab in Ajustes (Ajustes ▸ *your plugin's name*, phone and TV), with
+the line "Muestra los errores de este plugin en pantalla y guarda un registro que puedes compartir con su
+autor." You don't have to do anything for it to be there. While it is on:
 
 - every failed call of your plugin shows a panel on screen with the function, the error code, the
   technical message, the JavaScript stack and your last `kino.log` lines;
-- your plugin's tab in Ajustes gets a **"Registro"** page with the last 200 events (your lines, the
-  failures and each playback's `kino:play …` lines) and a button to copy them.
+- the tab gets a **"Ver registro"** button that opens the **Registro**: the last 200 events (your lines,
+  the failures and each playback's `kino:play …` lines), with "Copiar registro" and, on the phone,
+  "Compartir registro".
+
+While it is off, nothing is shown and nothing is kept; turning it off clears the Registro.
+
+**This is how a person sends you what went wrong.** When someone reports a problem, ask them to turn on
+Modo debug for your plugin in Ajustes, repeat what failed, and send you a screenshot of the panel or the
+copied/shared Registro.
+
+**`"debug": true` in your manifest only sets the default.** With it, the switch starts on for everyone
+who installs the plugin (they still see your panels until they turn it off); without it (or with
+`false`), the switch starts off. Use `true` while you develop, or for a test build you hand to testers;
+for a plugin you publish to everyone, leave it out and let each person turn it on when they need to
+send you a report. `validate.mjs` adds a note when it is `true`. Once a person touches the switch, their
+choice is kept across updates (an update that adds or drops `debug` only moves the default of people who
+never touched it) and syncs to their other devices. Any value other than `true` or `false` is refused
+with "El campo \"debug\" debe ser true o false".
 
 The Registro is kept in a private file on the device, so it survives a restart; it is never synced or
-backed up, and it is deleted when the plugin is uninstalled or an update drops `debug`. Secrets are
-redacted there like everywhere else. `validate.mjs` reminds you to remove it before publishing: a plugin
-published with `debug` shows technical panels to everyone. Any value other than `true` or `false` is
-refused with "El campo \"debug\" debe ser true o false".
+backed up, and it is deleted when the switch goes off or the plugin is uninstalled. Secrets, and the
+person's own passwords, are masked there like everywhere else, so a shared Registro carries neither.
 
 ## `telemetry`: your lines reach the error tracker { #telemetry }
 
@@ -109,9 +126,9 @@ anything the person typed: only numbers and Kino's own words.
 
 Where it goes:
 
-- your plugin's **Registro** (with `"debug": true`), one `kino:play …` line per milestone and a summary
+- your plugin's **Registro** (while its Modo debug switch is on), one `kino:play …` line per milestone and a summary
   line;
-- **logcat** under the tag `KinoPlay` in a debug build of Kino, or in any build with `"debug": true`;
+- **logcat** under the tag `KinoPlay` in a debug build of Kino, or in any build while that switch is on;
 - the **error tracker**, only with `telemetry` (and, once that switch exists, while the person leaves it on): with `true`, one summary per
   playback that ended on an error the person saw; with `"verbose"`, also a quarter of the playbacks that
   went well, and one event per problem or edge case (at most 60 per plugin until Kino restarts, one a

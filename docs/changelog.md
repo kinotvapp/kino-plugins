@@ -23,6 +23,12 @@ lista. Todo lo que un plugin ahora puede cambiar de cómo lo muestra Kino está 
 - **`debug`** y **`telemetry`** (`true` o `"verbose"`), `kino.log.report`, la página Registro, las
   etiquetas de logcat `KinoPlugin/<id>` y `KinoPlay`, y las métricas de reproducción.
   [Registro y telemetría](diagnostics.md).
+- **Modo debug en todo plugin**: todo plugin instalado (el tuyo, un addon de Stremio convertido, un
+  scraper de Nuvio) tiene un interruptor "Modo debug" en su pestaña de Ajustes, sin que hagas nada:
+  encendido, sus fallas se ven en pantalla y su Registro se puede copiar o compartir, así que una persona
+  te puede mandar una captura o su Registro. `"debug": true` ahora solo lo deja encendido de entrada; sin
+  él arranca apagado. La decisión de la persona se conserva en las actualizaciones y se sincroniza con sus
+  otros aparatos. [Modo debug](diagnostics.md#debug).
 - **`section`, `categories` y `theme`**: una sección propia, un grupo en Categorías y tus colores.
   [Sección, categorías y colores](section-theme.md).
 - **`scopedSearch`**: responder tú la búsqueda dentro de un "Ver más". [Contrato](contract.md#scoped-search).

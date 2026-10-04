@@ -6,14 +6,14 @@ sale del aparato. Todas desde `"apiVersion": 6` (Kino 0.9.50); por debajo, los c
 | Qué | Dónde se ve | Quién lo enciende |
 | --- | --- | --- |
 | [`kino.log`](kino-api.md#log) | `adb logcat` | siempre |
-| [`"debug": true`](#debug) | panel de error en pantalla, página "Registro" | tú, mientras desarrollas |
+| [Modo debug](#debug) | panel de error en pantalla, página "Registro" | la persona, con el interruptor que tiene todo plugin (`"debug": true` lo deja encendido de entrada) |
 | [`"telemetry": true`](#telemetry) / `"verbose"` | el registro de errores de quienes mantienen Kino | tú lo pides y la persona lo aprueba (todavía no hay interruptor para apagarlo) |
 
 ## Logcat { #logcat }
 
 `kino.log` y `console.*` van a `adb logcat` con la etiqueta `KinoPlugin`; en una compilación de
-depuración de Kino, o en cualquier compilación cuando tu manifiesto dice `"debug": true`, con la
-etiqueta `KinoPlugin/<tu id>`. Las [métricas de reproducción](#playback) de Kino van con la etiqueta
+depuración de Kino, o en cualquier compilación mientras el [Modo debug](#debug) de tu plugin está
+encendido, con la etiqueta `KinoPlugin/<tu id>`. Las [métricas de reproducción](#playback) de Kino van con la etiqueta
 `KinoPlay` en esos mismos casos, así que
 
 ```
@@ -22,20 +22,40 @@ adb logcat -s KinoPlay KinoPlugin/<tu id>
 
 muestra las líneas de Kino y las tuyas juntas.
 
-## `debug`: errores en pantalla y la página Registro { #debug }
+## Modo debug: errores en pantalla y la página Registro { #debug }
 
-`"debug": true` es una ayuda para desarrollar. Mientras está:
+Desde Kino 0.9.50 **todo plugin instalado** (el tuyo, un addon de Stremio convertido, un scraper de Nuvio)
+tiene un interruptor **"Modo debug"** en su propia pestaña de Ajustes (Ajustes ▸ *el nombre de tu
+plugin*, en el celular y en la TV), con la línea "Muestra los errores de este plugin en pantalla y guarda
+un registro que puedes compartir con su autor." No tienes que hacer nada para que aparezca. Mientras está
+encendido:
 
 - cada llamada fallida de tu plugin muestra un panel en pantalla con la función, el código de error, el
   mensaje técnico, la pila de JavaScript y tus últimas líneas de `kino.log`;
-- la pestaña de tu plugin en Ajustes gana una página **"Registro"** con los últimos 200 eventos (tus
-  líneas, las fallas y las líneas `kino:play …` de cada reproducción) y un botón para copiarlos.
+- la pestaña gana un botón **"Ver registro"** que abre el **Registro**: los últimos 200 eventos (tus
+  líneas, las fallas y las líneas `kino:play …` de cada reproducción), con "Copiar registro" y, en el
+  celular, "Compartir registro".
+
+Mientras está apagado, no se muestra ni se guarda nada; apagarlo borra el Registro.
+
+**Así es como una persona te manda lo que falló.** Cuando alguien te reporte un problema, pídele que
+encienda el Modo debug de tu plugin en Ajustes, repita lo que falló y te mande una captura del panel o el
+Registro copiado o compartido.
+
+**`"debug": true` en tu manifiesto solo fija el valor de entrada.** Con él, el interruptor arranca
+encendido para todo el que instale el plugin (verá tus paneles hasta que lo apague); sin él (o con
+`false`), arranca apagado. Usa `true` mientras desarrollas, o en una versión de prueba que le pasas a
+quienes te ayudan a probar; en un plugin que publicas para todo el mundo, déjalo por fuera y que cada
+persona lo encienda cuando necesite mandarte un reporte. `validate.mjs` agrega una nota cuando está en
+`true`. Cuando una persona toca el interruptor, su decisión se conserva en las actualizaciones (una
+actualización que agrega o quita `debug` solo cambia el valor de entrada de quien nunca lo tocó) y se
+sincroniza con sus otros aparatos. Cualquier valor distinto de `true` o `false` se rechaza con "El campo
+\"debug\" debe ser true o false".
 
 El Registro se guarda en un archivo privado del aparato, así que sobrevive a un reinicio; nunca se
-sincroniza ni se respalda, y se borra cuando el plugin se desinstala o una actualización quita `debug`.
-Los secretos se tapan ahí como en todas partes. `validate.mjs` te recuerda quitarlo antes de publicar:
-un plugin publicado con `debug` le muestra paneles técnicos a todo el mundo. Cualquier valor distinto de
-`true` o `false` se rechaza con "El campo \"debug\" debe ser true o false".
+sincroniza ni se respalda, y se borra cuando se apaga el interruptor o se desinstala el plugin. Los
+secretos, y las contraseñas de la propia persona, se tapan ahí como en todas partes, así que un Registro
+compartido no lleva ninguno de los dos.
 
 ## `telemetry`: tus líneas llegan al registro de errores { #telemetry }
 
@@ -117,10 +137,10 @@ números y las palabras propias de Kino.
 
 Adónde va:
 
-- a la página **Registro** de tu plugin (con `"debug": true`): una línea `kino:play …` por hito y una de
+- a la página **Registro** de tu plugin (mientras su Modo debug está encendido): una línea `kino:play …` por hito y una de
   resumen;
-- a **logcat** con la etiqueta `KinoPlay` en una compilación de depuración de Kino, o en cualquiera con
-  `"debug": true`;
+- a **logcat** con la etiqueta `KinoPlay` en una compilación de depuración de Kino, o en cualquiera
+  mientras ese interruptor está encendido;
 - al **registro de errores**, solo con `telemetry` (y, cuando exista ese interruptor, mientras la persona lo deje encendido): con `true`,
   un resumen por reproducción que terminó en un error que la persona vio; con `"verbose"`, además un
   cuarto de las reproducciones que salieron bien y un evento por problema o caso especial (máximo 60 por
