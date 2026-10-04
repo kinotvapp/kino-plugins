@@ -73,6 +73,7 @@ No new `apiVersion` (for any plugin):
 - **"De la comunidad"** is its own tab of the Plugins screen. [Publishing](publish.md#get-found).
 - **Stremio subtitle addons** (OpenSubtitles v3, translators such as GTSubs) install as subtitle
   providers; machine translations show as "Español (traducido)". Nothing for you to write.
+  [Stremio addons](stremio.md#subtitles).
 - **Reserved ids**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`, `subtitle-prefs` (the list changed:
   older versions reserve a few more, so if one says "El id … está reservado por Kino", pick another).
 - **Claims and takedowns of community plugins**: [`community-blocklist.json`](claims.md).
@@ -99,7 +100,9 @@ Also in this version (documented earlier on this page as "next version"):
   list over 20 MB or a guide over 50 MB is cut at its last whole line instead of refused.
   [Live channels](live-channels.md#live-contract).
 - **Stremio addons** can be installed by people from the same field (Kino generates the plugin; nothing
-  for you to write). Their `resolve`, like a converted Nuvio scraper's, gets 75 s.
+  for you to write). Their `resolve`, like a converted Nuvio scraper's, gets 75 s. What is supported,
+  what is refused (torrents and P2P, always) and how to make an addon work well:
+  [Stremio addons](stremio.md).
 - `ditu` is no longer a reserved plugin `id` (older versions still refuse it, so avoid it).
 
 ## Kino 0.9.46 to 0.9.49 { #v0946 }

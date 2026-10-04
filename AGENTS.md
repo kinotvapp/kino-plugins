@@ -87,6 +87,9 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `migrate` when the plugin replaces an older one. Each has a cost (approval prompts, more code): ask.
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
+- If the person wants a **Stremio addon** in Kino, stop too: Kino installs it from its `manifest.json`
+  URL ([Stremio addons](https://kinotvapp.github.io/kino-plugins/en/stremio/)). Write a Kino plugin only
+  for what an addon cannot do there (torrents and P2P are refused either way).
 
 **The person may not program.** Explain each step in plain Spanish, run the commands yourself (say
 which and why first), ask before anything irreversible (deleting files, pushing, publishing), and

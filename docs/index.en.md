@@ -136,6 +136,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [What people see](what-people-see.md) | The consent sheet, host dialogs, player messages, Configurar, statuses, disabling and uninstalling |
 | [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |
 | [Nuvio scrapers](nuvio.md) | How people install Nuvio scrapers, what the conversion builds, and its limits |
+| [Stremio addons](stremio.md) | How people install a Stremio addon, how each resource maps, what is refused, and its limits |
 | [Example plugins](examples.md) | The two published examples, and how the reference plugin is built |
 | [Claims and plugin takedowns](claims.md) | How to ask for a community plugin to leave the index, what Kino does and how to appeal |
 | [Reference](reference/index.md) | `contract.json` and `kino.d.ts`, to read or download |

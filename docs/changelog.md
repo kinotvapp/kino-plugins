@@ -75,7 +75,7 @@ Sin `apiVersion` nuevo (sirve para cualquier plugin):
 - **"De la comunidad"** es su propia pestaña de la pantalla Plugins. [Publicar](publish.md#get-found).
 - **Addons de subtítulos de Stremio** (OpenSubtitles v3, traductores como GTSubs) se instalan como
   proveedores de subtítulos; las traducciones automáticas salen como "Español (traducido)". No tienes
-  nada que escribir.
+  nada que escribir. [Addons de Stremio](stremio.md#subtitles).
 - **Ids reservados**: `live`, `local`, `unknown`, `plugin`, `own`, `subtitle-keys`, `subtitle-prefs` (la lista cambió:
   las versiones anteriores reservan algunos más, así que si una dice "El id … está reservado por Kino",
   escoge otro).
@@ -105,6 +105,8 @@ También en esta versión (ya documentado antes en esta página como "próxima v
   completa en vez de rechazarse. [Canales en vivo](live-channels.md#live-contract).
 - **Addons de Stremio**: la gente los puede instalar desde el mismo campo (Kino genera el plugin; no
   tienes nada que escribir). Su `resolve`, como el de un scraper de Nuvio convertido, tiene 75 s.
+  Qué se admite, qué se rechaza (torrents y P2P siempre) y cómo hacer que un addon funcione bien:
+  [Addons de Stremio](stremio.md).
 - `ditu` ya no es un `id` de plugin reservado (las versiones anteriores lo siguen rechazando, así que
   evítalo).
 
