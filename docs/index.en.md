@@ -123,7 +123,8 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
-| [The settings form](settings-form.md) | `section`, `status` and `action` settings, `clearSettings`, `validateSettings`, the own tab and syncing (apiVersion 6) |
+| [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
+| [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `validateSettings`, a complete example, the own tab and syncing |
 | [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |
 | [Hidden browser](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` and `kino.browser.page`: when to use them, the safety model, never a captcha, timeouts and failures (apiVersion 6) |
 | [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |

@@ -24,7 +24,8 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/),
    [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/), and for live TV
    [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/). For apiVersion 6
-   features, the page of each one:
+   features, the page of each one (and, for an overview of everything a plugin can change in how Kino
+   shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
    [Signing every request](https://kinotvapp.github.io/kino-plugins/en/signed-streams/),
    [Moving saved titles](https://kinotvapp.github.io/kino-plugins/en/migrate/),
@@ -375,7 +376,11 @@ only when you use one of these.
   "Cerrar sesión". Optional `validateSettings(values)` (20 s) returns `null` to accept, a text, or
   `{ key: "message" }` to refuse. Every plugin with settings gets its own Ajustes tab; settings sync
   between paired devices and arrive **without** `validateSettings`, so key any `kino.storage` session
-  by account and never store a device identity in a setting.
+  by account and never store a device identity in a setting. A `toggle` without `default` reads
+  `false`, a `select` without one its first option, a `list` an array of `{ [field key]: string }`;
+  `confirm` only on `action`, `fields`/`max` only on `list`, `options` only on `select`. There are no
+  conditional fields: group with a `section` and check combinations in `validateSettings`. Every type
+  and attribute: [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/#types).
 - **`debug: true`**: on-screen error panels and a "Registro" page (last 200 events); logcat tag
   `KinoPlugin/<id>` (and `KinoPlay` for playback metrics). Development only: **remove before
   publishing** (`validate.mjs` warns).

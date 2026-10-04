@@ -130,7 +130,8 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
 | [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
-| [Formulario de ajustes](settings-form.md) | `section`, `status` y `action` en los ajustes, `clearSettings`, `validateSettings`, la pestaña propia y la sincronización (apiVersion 6) |
+| [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
+| [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
 | [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
