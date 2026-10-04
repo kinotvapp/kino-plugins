@@ -95,8 +95,11 @@ The page runs on the person's device, so Kino fences it in:
     human" or "Confirme que es humano", the capture ends **at once** with `blocked`. Kino never tries to
     solve, click or tick it, and your plugin must not either: no solving services, no fingerprint
     tricks, no retry loop to wear the check down. Treat `blocked` as "this server is not for us right
-    now" and move on to your next server, or fail with a clear error. A plugin built to defeat bot
-    protection is not listed and is [removed from the catalog](claims.md).
+    now" and move on to your next server, or fail with a clear error.
+
+    Each author is responsible for their own plugin and for how it uses the sources it reaches. Kino
+    only **lists** community plugins (its community search); it does not recommend, review or promote
+    them.
 
 ## `kino.browser.capture(url, options?)` { #capture }
 

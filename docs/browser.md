@@ -98,8 +98,11 @@ La página corre en el aparato de la persona, así que Kino la encierra:
     Kino nunca intenta resolverlo, hacerle clic ni marcarlo, y tu plugin tampoco: nada de servicios que
     resuelven captchas, trucos de huella del navegador ni bucles de reintento para desgastar la revisión.
     Trata `blocked` como "este servidor no es para nosotros ahora" y pasa a tu siguiente servidor, o
-    falla con un error claro. Un plugin hecho para vencer protecciones contra bots no se lista y se
-    [retira del catálogo](claims.md).
+    falla con un error claro.
+
+    Cada autor es responsable de su propio plugin y de cómo usa las fuentes a las que llega. Kino solo
+    **lista** los plugins de la comunidad (su búsqueda de la comunidad); no los recomienda, revisa ni
+    promociona.
 
 ## `kino.browser.capture(url, options?)` { #capture }
 

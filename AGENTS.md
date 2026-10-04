@@ -446,8 +446,8 @@ only when you use one of these.
 4. **Never try to defeat a captcha or bot protection.** Kino never solves, clicks or ticks a CAPTCHA,
    Turnstile, hCaptcha, reCAPTCHA or "verify you are human": the call ends with `blocked`. Do not add
    solver services, fingerprint spoofing, stealth tricks, or retry loops; on `blocked`, `timeout` or
-   `busy` move to the next server or return nothing. A plugin built to defeat bot protection is not
-   listed and is removed.
+   `busy` move to the next server or return nothing. The author is responsible for their own plugin;
+   Kino only lists community plugins (community search), it does not recommend or promote them.
 5. **One page at a time in the whole app** (`busy`); a device without WebView gets
    `browser_unavailable`. Each page starts with no cookies and is wiped after; it never reaches the
    home network.
