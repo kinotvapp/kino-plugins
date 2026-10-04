@@ -75,6 +75,10 @@ The page runs on the person's device, so Kino fences it in:
   itself must be public and `https`, or the capture throws `blocked`.
 - **Every method, the same check.** `POST` works, redirects are followed by the page as in a browser,
   and WebSocket connections pass the same check. WebRTC is switched off.
+- **Where the top page may go.** A capture's page may navigate anywhere public at the top level (an
+  embed's redirect chain hops hosts by design): it only ever returns the video requests the page made
+  and the top page's last address, never a document. A [page read](#page) is stricter: its top
+  document must stay on your hosts.
 - **Clean every time.** Each page starts with no cookies or storage, and everything is wiped when it
   closes. Nothing is shared with [`kino.cookies`](kino-api.md#cookies), with your other captures or
   with any other plugin.
@@ -233,11 +237,25 @@ start-host rule, same proxy and home-network refusal, fresh cookies and storage,
 the whole app -- and returns the page's HTML once it is loaded, is **no longer the site's check page**
 (Cloudflare's "Just a moment…", its `cf-chl` markers) and matches `waitFor`.
 
-**Where.** From `search`, `home`, `browse`, `episodes`, `section`, `categories` or `resolve`, only while
-the person is using the app: their own search, the Home row or section they opened, a list, a title,
-its categories, their play (a `resolve` also for a download they started). A call Kino makes on its own
-(a background refresh, the live zap's resolve ahead, sync, an update check) gets `not_allowed`, and so
-does a list's read while the app is not in front.
+**Where.** From `search`, `home`, `browse`, `episodes`, `section` or `resolve`, only while the person
+is using the app: their own search, the Home row or section they opened, a list, a title, their play (a
+`resolve` also for a download they started). A call Kino makes on its own gets `not_allowed`: "Para ti"
+checking its suggestions after an episode ends, **`categories`** (always Kino's own call, even while the
+person looks at Categorías), the Home rows it prefetches at start, new chapters, the live zap's resolve
+ahead, sync, an update check. So does a list's read while the app is not in front.
+
+!!! warning "`categories` cannot read pages"
+    Earlier 0.9.50 builds listed `categories` among the exports that may call `kino.browser.page`; it
+    was removed. Build your Categorías tiles from data you already have (a `kino.fetch`, or what a
+    page read in `home` or `section` left in [`kino.storage`](kino-api.md#storage)).
+
+**The page must stay on your hosts.** Not only the start address: every top-level navigation -- a
+redirect, a meta refresh, a script setting `location`, an open redirect -- and the document finally read
+must be on a host your `kino.fetch` may reach, over https. The first hop that is not stops the read with
+`blocked` ("la página terminó en un host que el plugin no declaró") and no HTML comes back. Frames,
+scripts and images inside the page may still load from any public server. Nothing on the page plays
+(media needs a gesture that never comes), and the hidden page takes none of the person's touches or
+keys.
 
 ```js
 // A site whose every kino.fetch answers Cloudflare's 403 "Just a moment…" page.
@@ -264,8 +282,8 @@ export async function search(query) {
 
 | option | |
 | --- | --- |
-| `timeoutMs` | 1 to 25000 ms; default 15000. It counts inside your call's own limit, which ends the read when it runs out: pass less than what is left of it -- about **12000 in `search`** (15 s for the whole call, your other fetches included), about **16000 in `home`, `browse`, `episodes`, `section` and `categories`** (20 s). In `resolve` (75 s for a browser plugin) the full **25000** fits. |
-| `waitFor` | A JavaScript regular expression (a string or a `RegExp`, 1-500 characters, matched case-insensitively against the HTML inside the page): the page is returned only once it matches. Without it, as soon as the page is loaded and past its check page. Use it for pages that fill in their list with scripts. |
+| `timeoutMs` | 1 to 25000 ms; default 15000. It counts inside your call's own limit (`search` 15 s, your other fetches included; `home`, `browse`, `episodes`, `section` 20 s; `resolve` 75 s for a browser plugin). Kino cuts it to what is left of that limit **minus 1.5 s** for you to use the HTML, so the read ends with its own `timeout` instead of the whole call being cancelled; still, pass about **12000 in `search`** and leave room for your other fetches. |
+| `waitFor` | A JavaScript regular expression (a string or a `RegExp`, 1-500 characters, matched case-insensitively against the HTML inside the page; a `RegExp` keeps its `m` and `s` flags, the others change nothing for a test): the page is returned only once it matches. Without it, as soon as the page is loaded and past its check page. Use it for pages that fill in their list with scripts. |
 
 The answer is `{ html, finalUrl, status, truncated }`: the doctype and the DOM's `outerHTML` after the
 page's own scripts ran (at most 2,000,000 characters, what `kino.html.select` takes; `truncated` is
@@ -283,9 +301,12 @@ hammered through the hidden browser). Each read opens a fresh page, so cache wha
 [`kino.storage`](kino-api.md#storage). A list's read waits up to 8 s for its turn when another page is
 open (`busy` after that), and the person pressing play ends it.
 
-Errors: `browser_unavailable` (no WebView, and always in the Node kit: keep a plain `kino.fetch` path so
-the kit can still run your plugin), `timeout` (the page did not load, or `waitFor` never matched),
-`blocked`, `busy`, `not_allowed` (no approved `"browser": "pages"` -- `true` is capture-only --, another
+Errors: `browser_unavailable` (no WebView, and always in the Node kit once the request is valid and the
+manifest says `"pages"` -- the kit answers `invalid_request` and `not_allowed` first, the way the app
+does; keep a plain `kino.fetch` path so the kit can still run your plugin), `timeout` (the page did not
+load, or `waitFor` never matched), `blocked` (a human check, a check page that never passed, a top
+document off your hosts; or the start host is not yours, not https, or resolves into the home network),
+`busy`, `not_allowed` (no approved `"browser": "pages"` -- `true` is capture-only --, another
 function, or nobody is using the app), `rate_limited` and `invalid_request`.
 
 ## A real-world example { #real-world }

@@ -41,7 +41,8 @@ lista:
   vez; cookies y almacenamiento borrados. Una página que pide una persona termina con `blocked`: **Kino
   nunca resuelve un captcha**. El `resolve` de un plugin aprobado tiene 75 s. También,
   con `"browser": "pages"` (su propia línea roja), `kino.browser.page`, que lee el HTML de una página a través del mismo navegador oculto cuando la
-  revisión automática del sitio pasa sola. [Navegador oculto](browser.md).
+  revisión automática del sitio pasa sola (nunca desde `categories`; el documento principal tiene que quedarse
+  en tus hosts, revisando cada salto de redirección, o la lectura termina en `blocked`). [Navegador oculto](browser.md).
 - **`Stream.label` y copias perezosas con etiqueta**: nombra cada copia ("Latino · Servidor 1") para el
   nuevo menú **Servidor** del reproductor, y lista copias como `{ label, ref }` que Kino resuelve con
   `resolve(ref)` solo cuando la persona escoge una, el cambio automático llega a ella (máximo 20 s cada

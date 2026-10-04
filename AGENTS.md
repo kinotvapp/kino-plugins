@@ -249,7 +249,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Settings | 12 with a value, plus 16 `section`/`status`/`action` (apiVersion 6); `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields; `status` text 200, action `message` 300, `confirm` 120, `clearSettings` 12 keys |
 | `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes (1..8,192 at apiVersion 6); typed cipher keys 16/24/32 bytes (apiVersion 6) |
 | Stream (apiVersion 6) | `alternatives` 8 (any apiVersion; lazy and concrete together); `label` 48 chars; lazy `ref` 512 chars; `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
-| Hidden browser (apiVersion 6) | one page at a time in the whole app; `capture` `timeoutMs` ≤ 25,000 (default 18,000), ≤ 8 media, 10 subtitles; `page` `timeoutMs` ≤ 25,000 (default 15,000; pass ~12,000 in `search`, ~16,000 in 20 s exports, 25,000 in `resolve`), 20 reads a minute; automatic fallback waits ≤ 20 s per lazy copy |
+| Hidden browser (apiVersion 6) | one page at a time in the whole app; `capture` `timeoutMs` ≤ 25,000 (default 18,000), ≤ 8 media, 10 subtitles; `page` `timeoutMs` ≤ 25,000 (default 15,000; Kino cuts it to the call's remaining time minus 1.5 s; pass ~12,000 in `search`), never from `categories`, top document on your hosts, 20 reads a minute; automatic fallback waits ≤ 20 s per lazy copy |
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
 
@@ -444,9 +444,11 @@ only when you use one of these.
    "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video"; `true` is capture-only and
    gets `not_allowed`; an update from `true` to `"pages"` asks the person again), returns `{ html, finalUrl, status, truncated }` for
    a site whose plain fetch only gets its automatic check page ("Just a moment…"): only from `search`,
-   `home`, `browse`, `episodes`, `section`, `categories` or `resolve` while the person is using the app
-   (never background calls), 20 reads a minute, Kino never touches the page. Keep `timeoutMs` under the
-   call's budget: ~12000 in `search`, ~16000 in the 20 s exports, 25000 in `resolve`. Try `kino.fetch`
+   `home`, `browse`, `episodes`, `section` or `resolve` while the person is using the app (never
+   background calls; **never from `categories`**, which is always Kino's own call), 20 reads a minute,
+   Kino never touches the page. The top document must stay on your hosts: every redirect or navigation
+   hop is checked, and the first one off your hosts ends the read with `blocked` (no HTML). Kino cuts
+   `timeoutMs` to the call's remaining time minus 1.5 s; still pass ~12000 in `search`. Try `kino.fetch`
    first and cache with `kino.storage`.
 4. **Never try to defeat a captcha or bot protection.** Kino never solves, clicks or ticks a CAPTCHA,
    Turnstile, hCaptcha, reCAPTCHA or "verify you are human": the call ends with `blocked`. Do not add

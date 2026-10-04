@@ -39,7 +39,8 @@ list:
   per-capture credential and vetted, pinned IPs; the home network never; one page at a time; cookies and
   storage wiped. A page that asks for a human ends with `blocked`: **Kino never solves a captcha**. An
   approved plugin's `resolve` gets 75 s. Also, with `"browser": "pages"` (its own red line), `kino.browser.page`, which reads a page's HTML through the
-  same hidden browser when the site's automatic check passes by itself. [Hidden browser](browser.md).
+  same hidden browser when the site's automatic check passes by itself (never from `categories`; the top
+  document must stay on your hosts, every redirect hop checked, or the read ends `blocked`). [Hidden browser](browser.md).
 - **`Stream.label` and labelled lazy copies**: name each copy ("Latino · Servidor 1") for the player's
   new **Servidor** menu, and list copies as `{ label, ref }` that Kino resolves through `resolve(ref)`
   only when the person picks one, the automatic fallback reaches it (at most 20 s each) or a download's

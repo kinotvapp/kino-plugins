@@ -556,13 +556,13 @@ interface KinoBrowserCapture {
 /** apiVersion 6, `"browser": "pages"`: `kino.browser.page` options. */
 interface KinoBrowserPageOptions {
   /**
-   * 1..25000 ms; default 15000. Counts inside your call's own time limit, which ends the read when it runs out: pass
-   * less than what is left of it (about 12000 in `search`, whose whole call has 15 s; about 16000 in the 20 s exports).
+   * 1..25000 ms; default 15000. Counts inside your call's own time limit; Kino cuts it to what is left of that limit
+   * minus 1.5 s. Pass about 12000 in `search` (15 s for the whole call).
    */
   timeoutMs?: number;
   /**
-   * A JavaScript regular expression (source string or RegExp; matched case-insensitively against the page's HTML, up
-   * to 500 characters): the page is returned only once it matches. Without it, as soon as the page is loaded and is no
+   * A JavaScript regular expression (source string or RegExp, whose `m` and `s` flags are kept; matched
+   * case-insensitively against the page's HTML, up to 500 characters): the page is returned only once it matches. Without it, as soon as the page is loaded and is no
    * longer the site's browser check page. Use it for pages that fill in their list with scripts.
    */
   waitFor?: string | RegExp;
@@ -615,11 +615,12 @@ declare namespace kino {
     /**
      * apiVersion 6, with `"browser": "pages"` in the manifest (`true` is capture-only and answers `not_allowed` here; the
      * person approves "Puede abrir páginas web ocultas para mostrar contenido y
-     * encontrar el video", in red): from `search`, `home`, `browse`, `episodes`, `section`, `categories` or `resolve`, only
+     * encontrar el video", in red): from `search`, `home`, `browse`, `episodes`, `section` or `resolve`, only
      * while the person is using the app (never a background call), loads `url` in the same hidden web view and returns its
      * HTML once the page is past the site's automatic browser check (Cloudflare's "Just a moment…") and matches `waitFor`.
      * Kino never clicks, taps, types or scrolls in it and never solves a captcha: a page that asks for a human answers
-     * `blocked` at once, and one still on its check page when the time runs out answers `blocked` too. Same start-host
+     * `blocked` at once, and one still on its check page when the time runs out answers `blocked` too. The top document
+     * must stay on your hosts: a redirect or navigation elsewhere answers `blocked`, never that site's HTML. Same start-host
      * rule, same one page at a time, fresh cookies per call; at most 20 page reads per minute per plugin. Throws a typed
      * error: `browser_unavailable` (always under the Node kit: keep a plain `kino.fetch` path), `timeout`, `blocked`,
      * `busy` (another page is open, or the person pressed play and the read was ended), `not_allowed`, `rate_limited`,

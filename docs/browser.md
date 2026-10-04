@@ -78,6 +78,11 @@ La página corre en el aparato de la persona, así que Kino la encierra:
   vacía. La página inicial misma debe ser pública y `https`, o la captura lanza `blocked`.
 - **Todos los métodos, la misma revisión.** `POST` funciona, la página sigue las redirecciones como en
   un navegador, y las conexiones WebSocket pasan por la misma revisión. WebRTC está apagado.
+- **A dónde puede ir la página principal.** La página de una captura puede navegar a cualquier sitio
+  público en el nivel principal (la cadena de redirecciones de un embed salta de host a propósito):
+  solo devuelve las peticiones de video que hizo la página y la última dirección de la página principal,
+  nunca un documento. Una [lectura de página](#page) es más estricta: su documento principal tiene que
+  quedarse en tus hosts.
 - **Limpia cada vez.** Cada página empieza sin cookies ni almacenamiento, y todo se borra al cerrarla.
   Nada se comparte con [`kino.cookies`](kino-api.md#cookies), con tus otras capturas ni con ningún otro
   plugin.
@@ -240,12 +245,28 @@ almacenamiento nuevos, una sola página a la vez en toda la app -- y devuelve el
 ya cargó, **ya no es la página de revisión del sitio** (el "Just a moment…" de Cloudflare, sus marcas
 `cf-chl`) y coincide con `waitFor`.
 
-**Dónde.** Desde `search`, `home`, `browse`, `episodes`, `section`, `categories` o `resolve`, solo
-mientras la persona está usando la app: su propia búsqueda, la fila de Inicio o la sección que abrió,
-una lista, un título, sus categorías, su play (un `resolve` también para una descarga que ella empezó).
-Una llamada que Kino hace por su cuenta (una actualización en segundo plano, el resolve por adelantado
-del zapping en vivo, la sincronización, la búsqueda de actualizaciones) recibe `not_allowed`, y también
-la lectura de una lista mientras la app no está al frente.
+**Dónde.** Desde `search`, `home`, `browse`, `episodes`, `section` o `resolve`, solo mientras la
+persona está usando la app: su propia búsqueda, la fila de Inicio o la sección que abrió, una lista, un
+título, su play (un `resolve` también para una descarga que ella empezó). Una llamada que Kino hace por
+su cuenta recibe `not_allowed`: "Para ti" revisando sus sugerencias cuando termina un capítulo,
+**`categories`** (siempre es una llamada propia de Kino, aunque la persona esté mirando Categorías), las
+filas de Inicio que pide por adelantado al abrir, los capítulos nuevos, el resolve por adelantado del
+zapping en vivo, la sincronización y la búsqueda de actualizaciones. También la lectura de una lista
+mientras la app no está al frente.
+
+!!! warning "`categories` no puede leer páginas"
+    Versiones anteriores de 0.9.50 ponían `categories` entre los exports que pueden llamar
+    `kino.browser.page`; ya no. Arma tus mosaicos de Categorías con datos que ya tienes (un
+    `kino.fetch`, o lo que una lectura de página en `home` o `section` dejó en
+    [`kino.storage`](kino-api.md#storage)).
+
+**La página tiene que quedarse en tus hosts.** No solo la dirección inicial: cada navegación del nivel
+principal -- una redirección, un meta refresh, un script que cambia `location`, una redirección abierta
+-- y el documento que finalmente se lee tienen que estar en un host al que llega tu `kino.fetch`, por
+https. El primer salto que no lo está corta la lectura con `blocked` ("la página terminó en un host que
+el plugin no declaró") y no vuelve ningún HTML. Los frames, scripts e imágenes dentro de la página sí
+pueden cargar desde cualquier servidor público. Nada en la página se reproduce (el video necesita un
+gesto que nunca llega), y la página oculta no recibe ningún toque ni tecla de la persona.
 
 ```js
 // Un sitio cuyo kino.fetch siempre responde el 403 "Just a moment…" de Cloudflare.
@@ -272,8 +293,8 @@ export async function search(query) {
 
 | opción | |
 | --- | --- |
-| `timeoutMs` | 1 a 25000 ms; por defecto 15000. Cuenta dentro del límite de tu propia llamada, que corta la lectura cuando se acaba: pasa menos de lo que te queda -- unos **12000 en `search`** (15 s para toda la llamada, tus otros fetch incluidos), unos **16000 en `home`, `browse`, `episodes`, `section` y `categories`** (20 s). En `resolve` (75 s para un plugin con navegador) caben los **25000** completos. |
-| `waitFor` | Una expresión regular de JavaScript (texto o `RegExp`, 1 a 500 caracteres, sin distinguir mayúsculas, contra el HTML dentro de la página): la página se devuelve solo cuando coincide. Sin ella, apenas carga la página y pasa su revisión. Úsala con páginas que llenan su lista con scripts. |
+| `timeoutMs` | 1 a 25000 ms; por defecto 15000. Cuenta dentro del límite de tu propia llamada (`search` 15 s, tus otros fetch incluidos; `home`, `browse`, `episodes`, `section` 20 s; `resolve` 75 s para un plugin con navegador). Kino lo recorta a lo que queda de ese límite **menos 1,5 s** para que alcances a usar el HTML, así la lectura termina con su propio `timeout` en vez de cancelarse toda la llamada; igual, pasa unos **12000 en `search`** y deja espacio para tus otros fetch. |
+| `waitFor` | Una expresión regular de JavaScript (texto o `RegExp`, 1 a 500 caracteres, sin distinguir mayúsculas, contra el HTML dentro de la página; un `RegExp` conserva sus banderas `m` y `s`, las demás no cambian nada en una prueba): la página se devuelve solo cuando coincide. Sin ella, apenas carga la página y pasa su revisión. Úsala con páginas que llenan su lista con scripts. |
 
 La respuesta es `{ html, finalUrl, status, truncated }`: el doctype y el `outerHTML` del DOM después de
 que corrieron los scripts de la página (máximo 2.000.000 caracteres, lo que acepta `kino.html.select`;
@@ -292,9 +313,12 @@ martilla un sitio a través del navegador oculto). Cada lectura abre una página
 que leíste con [`kino.storage`](kino-api.md#storage). La lectura de una lista espera hasta 8 s su turno
 cuando hay otra página abierta (`busy` después), y la persona dándole play la termina.
 
-Errores: `browser_unavailable` (sin WebView, y siempre en el kit de Node: deja un camino con
-`kino.fetch` normal para que el kit pueda correr tu plugin), `timeout` (la página no cargó, o `waitFor`
-nunca coincidió), `blocked`, `busy`, `not_allowed` (sin `"browser": "pages"` aprobado -- `true` es solo captura --, otra
+Errores: `browser_unavailable` (sin WebView, y siempre en el kit de Node cuando la petición es válida y
+el manifiesto dice `"pages"` -- antes el kit responde `invalid_request` y `not_allowed` como lo hace la
+app; deja un camino con `kino.fetch` normal para que el kit pueda correr tu plugin), `timeout` (la
+página no cargó, o `waitFor` nunca coincidió), `blocked` (una revisión que pide una persona, una revisión
+que nunca pasó, un documento principal fuera de tus hosts; o el host inicial no es tuyo, no es https o
+resuelve dentro de la red de la casa), `busy`, `not_allowed` (sin `"browser": "pages"` aprobado -- `true` es solo captura --, otra
 función, o nadie está usando la app), `rate_limited` e `invalid_request`.
 
 ## Un ejemplo real { #real-world }

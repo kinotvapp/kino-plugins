@@ -252,8 +252,8 @@
     "page": {
       "apiVersion": 6,
       "manifest": "\"browser\": \"pages\" (\"browser\": true stays capture-only)",
-      "onlyFrom": ["search", "home", "browse", "episodes", "section", "categories", "resolve"],
-      "onlyWhen": "the person is using the app: their own search, Home, list, title, categories or play (a resolve also for a download they started); never a background call (prewarm, the live zap's resolve ahead, sync, update checks), and a list's read only with the app in front. Never clicks, taps, types or scrolls: only a check that completes with no input passes",
+      "onlyFrom": ["search", "home", "browse", "episodes", "section", "resolve"],
+      "onlyWhen": "the person is using the app: their own search, Home, list, title or play (a resolve also for a download they started); never a background call (prewarm, the live zap's resolve ahead, sync, update checks), and a list's read only with the app in front. Never clicks, taps, types or scrolls: only a check that completes with no input passes",
       "defaultTimeoutMs": 15000,
       "minTimeoutMs": 1000,
       "maxTimeoutMs": 25000,
@@ -262,6 +262,9 @@
       "perMinute": 20,
       "pollMs": 500,
       "lockWaitMs": 8000,
+      "callMarginMs": 1500,
+      "topLevel": "every top-level navigation and the document read stay on the plugin's kino.fetch hosts (https); else blocked, no HTML",
+      "waitForFlags": ["m", "s"],
       "errorCodes": ["browser_unavailable", "timeout", "blocked", "busy", "not_allowed", "invalid_request", "rate_limited"]
     }
   },
