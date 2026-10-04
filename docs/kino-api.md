@@ -293,16 +293,64 @@ cuenta dentro del límite de la llamada. `kino.error` arma los errores con tipo 
 propia frase para la persona, que se muestra bajo [sus reglas](contract.md#user-message) como
 "Mensaje de &lt;tu plugin&gt;: …".
 
+### Errores que tu código puede atrapar { #catch }
+
+Toda falla que reporta una llamada `kino.*` es un `Error` normal que recibe tu `try`/`catch` (tus
+propios `throw` siguen teniendo [la trampa del rechazo](engine-limits.md#rejection-trap)). Compara
+`e.code`, nunca el texto de `e.message`: ese texto es para el log y puede cambiar.
+
+| Dónde | `e.code` |
+| --- | --- |
+| `kino.fetch` | `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request` ([la tabla](#fetch)) |
+| `kino.crypto` | `crypto_error` |
+| `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
+| `kino.browser.page` | los mismos, más `rate_limited` ([Navegador oculto](browser.md#page)) |
+| dentro de [`sign()`](signed-streams.md#rules) | `host_not_allowed` desde `kino.fetch`; `not_allowed` desde `kino.storage`, `kino.cookies` y `kino.sleep` |
+| `kino.storage` por encima de 256 KB o con un `ttlMs` inválido, `kino.html.select` por encima de sus límites, `kino.secret` con un nombre no declarado | sin `code`: un `Error` simple con un mensaje en español |
+
+Desde Kino 0.9.50 una llamada `kino.*` **síncrona** que falla (un `kino.storage` lleno, una clave de
+cifrado mala, un selector demasiado largo) la atrapa tu `try`/`catch` como cualquier otro error. Kino
+0.9.49 y anteriores terminaban ahí la llamada entera aunque estuviera dentro de un `try`/`catch`, así
+que en esas versiones vigila lo que guardas.
+
+`kino.error(code, message?, { userMessage }?)` arma un `Error` cuyo `name` es `KinoError_<code>`
+(`KinoError_not_found`), con `code` y, si pasaste una, `userMessage`. Un código que no es uno de los
+cinco queda como `code: "unknown"`, y la persona lee un error simple. Lánzalo tal cual, o vuelve a lanzar
+uno que atrapaste: el código le llega a la persona solo si el error sale de tu función con él. Lo que
+lances (un `Error`, un texto, lo que sea) le llega a Kino como texto, cortado a 2.000 caracteres.
+
+```js
+try {
+  kino.storage.set("cache:" + key, JSON.stringify(rows), { ttlMs: 3600000 });
+} catch (e) {
+  kino.log("cache: not saved", e.message);   // almacenamiento lleno: sigue sin el caché
+}
+
+try {
+  return await api("/play/" + encodeURIComponent(ref));
+} catch (e) {
+  if (e.code === "timeout" || e.code === "network") return backupStream(ref);
+  throw e;                                     // un kino.error conserva su código y su userMessage
+}
+```
+
 ## `kino.config` { #config }
 
 ```js
-kino.config.get("server")   // a setting's value: a string, or true/false for a toggle
-kino.config.all()           // every setting that has a value, as an object
+kino.config.get("server")   // text, url, password, select: un texto; toggle: true/false
+kino.config.get("sources")  // list (apiVersion 4): [{ url: "https://…", category: "Noticias" }, …]
+kino.config.all()           // todos los ajustes que tienen valor, como un objeto
 ```
 
-`get` devuelve el valor de un ajuste (un texto, o `true`/`false` en un `toggle`); `all` devuelve todos
-los ajustes que tienen valor, como un objeto. Solo lectura: los valores que guardó la persona, o el
-`default` de un ajuste que no tocó. Un ajuste sin valor y sin `default` es `undefined`.
+`get` devuelve el valor de un ajuste: un texto en `text`, `url`, `password` y `select`; `true`/`false`
+en un `toggle`; y en una `list` (apiVersion 4) un arreglo de objetos, uno por entrada, con las claves
+de sus `fields` (`[{ url: "https://…", category: "Noticias" }, …]`), recortados y sin entradas en
+blanco. `all` devuelve todos los ajustes que tienen valor, como un objeto. Solo lectura: los valores que
+guardó la persona, o el `default` de un ajuste que no tocó. Un `toggle` sin `default` vale `false` y un
+`select` sin `default` vale su primera opción, así que los dos siempre tienen valor. Un `text` o un
+`password` sin valor y sin `default`, un `url` vacío (nunca tiene `default`) y una `list` vacía son
+`undefined`. Los tipos `section`, `status` y `action` no guardan valor y nunca salen aquí. Todos los
+tipos están en [Formulario de ajustes](settings-form.md#types).
 
 ## `kino.html.select(html, css)` { #html }
 

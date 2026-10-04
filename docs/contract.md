@@ -472,7 +472,8 @@ Todos los campos son opcionales. Las imágenes siguen las mismas reglas que las 
 propio listado falló puede entonces reproducir esos capítulos con él. Kino le pregunta a la vez a todos
 los plugins `meta` de la persona, máximo 6 s cada uno, usa la primera respuesta en orden de instalación
 y la recuerda 30 minutos; una falla o un tiempo agotado es simplemente no responder, y la página nunca
-te espera.
+te espera. El kit de Node no tiene un comando `meta` ni revisa que lo exportes: pruébalo en la app, en
+la ficha de un título que TMDB no conoce.
 
 ## Errores que la gente entiende { #errors }
 

@@ -165,3 +165,6 @@ differences:
   video permission either; `"streamHosts": "any"` it does apply.
 - The per-call time limits, the memory limit and the size caps on requests, answers and selectors
   are not enforced.
+- There is no `meta` command, and `validate.mjs` does not check that a plugin declaring `meta` exports
+  it: try [`meta`](contract.md#meta) in the app. `kino.browser.capture` and `kino.browser.page` always
+  answer `browser_unavailable` ([Hidden browser](browser.md)).

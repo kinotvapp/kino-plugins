@@ -454,7 +454,8 @@ Every field is optional. Images follow the same rules as an item's. `episodes[].
 Stremio-style video id: a Stremio addon's title whose own listing failed can then play those episodes
 by it. Kino asks every `meta` plugin of the person at once, at most 6 s each, uses the first answer in
 install order, and remembers it for 30 minutes; a failure or a timeout is just no answer, and the page
-never waits for you.
+never waits for you. The Node kit has no `meta` command and does not check that you export it: test it
+in the app, on the info page of a title TMDB does not know.
 
 ## Errors people understand { #errors }
 

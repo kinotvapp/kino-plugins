@@ -269,15 +269,61 @@ inside the call's own limit. `kino.error` builds the typed errors of
 own sentence for the person, shown under [its rules](contract.md#user-message) as "Mensaje de &lt;your
 plugin&gt;: …".
 
+### Errors your code can catch { #catch }
+
+Every failure a `kino.*` call reports is an ordinary `Error` your `try`/`catch` receives (your own
+`throw`s still have [the rejection trap](engine-limits.md#rejection-trap)). Test `e.code`, never the
+text of `e.message`: that is Spanish, for the log, and may change.
+
+| Where | `e.code` |
+| --- | --- |
+| `kino.fetch` | `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request` ([the table](#fetch)) |
+| `kino.crypto` | `crypto_error` |
+| `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
+| `kino.browser.page` | the same, plus `rate_limited` ([Hidden browser](browser.md#page)) |
+| inside [`sign()`](signed-streams.md#rules) | `host_not_allowed` from `kino.fetch`; `not_allowed` from `kino.storage`, `kino.cookies` and `kino.sleep` |
+| `kino.storage` over 256 KB or a bad `ttlMs`, `kino.html.select` over its limits, `kino.secret` with an undeclared name | no `code`: a plain `Error` with a Spanish message |
+
+From Kino 0.9.50 a **synchronous** `kino.*` call that fails (a full `kino.storage`, a bad cipher key, a
+selector that is too long) is caught by your `try`/`catch` like any other error. Kino 0.9.49 and older
+ended the whole call there even inside a `try`/`catch`, so on those versions keep an eye on what you
+store.
+
+`kino.error(code, message?, { userMessage }?)` builds an `Error` whose `name` is `KinoError_<code>`
+(`KinoError_not_found`), with `code` and, when you passed one, `userMessage`. A code that is not one of
+the five becomes `code: "unknown"`, and the person reads a plain error. Throw it as it is, or rethrow a
+caught one: the code reaches the person only when the error leaves your function with it. Whatever you
+throw (an `Error`, a string, anything) reaches Kino as text, cut at 2,000 characters.
+
+```js
+try {
+  kino.storage.set("cache:" + key, JSON.stringify(rows), { ttlMs: 3600000 });
+} catch (e) {
+  kino.log("cache: not saved", e.message);   // full storage: keep going without the cache
+}
+
+try {
+  return await api("/play/" + encodeURIComponent(ref));
+} catch (e) {
+  if (e.code === "timeout" || e.code === "network") return backupStream(ref);
+  throw e;                                     // a kino.error keeps its code and its userMessage
+}
+```
+
 ## `kino.config` { #config }
 
 ```js
-kino.config.get("server")   // a setting's value: a string, or true/false for a toggle
+kino.config.get("server")   // text, url, password, select: a string; toggle: true/false
+kino.config.get("sources")  // list (apiVersion 4): [{ url: "https://…", category: "Noticias" }, …]
 kino.config.all()           // every setting that has a value, as an object
 ```
 
-Read-only: the values the person saved, or the `default` of a setting they left alone. A setting
-with no value and no default is `undefined`.
+Read-only: the values the person saved, or the `default` of a setting they left alone. A `toggle`
+without a `default` is `false` and a `select` without one is its first option, so both always have a
+value. A `text` or `password` with no value and no `default`, a `url` the person left empty (it never
+has a default) and an empty `list` are `undefined`. A `list` is an array of objects, one per entry,
+keyed by its `fields`' keys, trimmed, without all-blank entries. The `section`, `status` and `action`
+types hold no value and never appear here. Every type is on [The settings form](settings-form.md#types).
 
 ## `kino.html.select(html, css)` { #html }
 

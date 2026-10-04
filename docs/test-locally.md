@@ -171,3 +171,6 @@ instala el plugin en la app y pruébalo ahí. Las diferencias:
   Tampoco tiene el permiso amplio de video; `"streamHosts": "any"` sí lo aplica.
 - No se hacen cumplir los límites de tiempo por llamada, el límite de memoria ni los topes de tamaño
   de peticiones, respuestas y selectores.
+- No hay comando `meta`, y `validate.mjs` no revisa que un plugin que declara `meta` lo exporte: prueba
+  [`meta`](contract.md#meta) en la app. `kino.browser.capture` y `kino.browser.page` siempre responden
+  `browser_unavailable` ([Navegador oculto](browser.md)).

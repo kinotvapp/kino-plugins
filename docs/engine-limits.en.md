@@ -39,7 +39,8 @@ From apiVersion 6, also:
 | Hidden browser (`"browser": true` or `"pages"`) | `resolve` 75 s; one page at a time in the whole app; `kino.browser.capture` `timeoutMs` 1..25,000 (default 18,000), at most 8 media and 10 subtitles, 12 headers per media; `kino.browser.page` (`"pages"` only) `timeoutMs` 1..25,000 (default 15,000), 20 reads a minute per plugin, HTML at most 2,000,000 characters. See [Hidden browser](browser.md) |
 | `subtitles()` (any apiVersion) | 10 s; 30 tracks kept, 15 listed per plugin; `label` 60 characters |
 | `meta()` | 6 s per plugin; the first answer in install order is kept 30 minutes |
-| Settings form | `status` 200 characters, an action's `message` 300, `confirm` 120, a field error 200; `clearSettings` 12 keys |
+| Settings form | `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `status` 200 characters, an action's `message` 300, `confirm` 120, a field error 200; `clearSettings` 12 keys |
+| Setting fields (every apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 characters; `hint` 80; `select` 1..20 `options`, each `value` and `label` 40; `list` (apiVersion 4) `max` 1..50 entries (default 20), 1..4 `fields` of type `text` or `url`. See [The settings form](settings-form.md#types) |
 | Section and categories | section label 20 characters; 8 tabs of 24 characters; hero text 300; `categories` 24 tiles with 40-character titles |
 | `kino.crypto` key pairs | 64 live private keys per runtime; a signature at most 512 bytes |
 | `kino.log.report` | one report per plugin and area an hour, 3 per plugin until Kino restarts; area at most 24 characters |
@@ -160,6 +161,9 @@ even if your code is inside `try`/`catch`. The Node kit cannot show you this, so
   `kino.fetch` or `kino.sleep` (for example a refused host), and `await Promise.reject(e)` or
   `Promise.reject(e).catch(...)` (Kino delays `Promise.reject` by one tick so a handler can attach
   in time).
+- **A synchronous `kino.*` call that fails** (`kino.storage.set` over 256 KB, a `kino.crypto` error,
+  a selector `kino.html.select` refuses) is caught normally from Kino 0.9.50. Kino 0.9.49 and older
+  ended the whole call there, even inside `try`/`catch` ([Errors your code can catch](kino-api.md#catch)).
 - If nobody catches the error anyway, it is harmless: the call fails with that error either way, and
   a `kino.error` code still reaches the person correctly.
 - **Nuvio-converted scrapers get a workaround:** when Kino converts a [Nuvio scraper](nuvio.md) it

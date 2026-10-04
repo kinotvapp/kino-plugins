@@ -33,7 +33,8 @@ Desde apiVersion 6, además:
 | Navegador oculto (`"browser": true` o `"pages"`) | `resolve` 75 s; una página a la vez en toda la app; `kino.browser.capture` `timeoutMs` 1..25.000 (18.000 por defecto), máximo 8 media y 10 subtítulos, 12 encabezados por media; `kino.browser.page` (solo `"pages"`) `timeoutMs` 1..25.000 (15.000 por defecto), 20 lecturas por minuto por plugin, HTML de máximo 2.000.000 caracteres. Ver [Navegador oculto](browser.md) |
 | `subtitles()` (cualquier apiVersion) | 10 s; se conservan 30 pistas, se listan 15 por plugin; `label` 60 caracteres |
 | `meta()` | 6 s por plugin; la primera respuesta en orden de instalación se guarda 30 minutos |
-| Formulario de ajustes | `status` 200 caracteres, `message` de una acción 300, `confirm` 120, error de un campo 200; `clearSettings` 12 claves |
+| Formulario de ajustes | `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `status` 200 caracteres, `message` de una acción 300, `confirm` 120, error de un campo 200; `clearSettings` 12 claves |
+| Campos de ajustes (cualquier apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 caracteres; `hint` 80; `select` de 1 a 20 `options`, cada `value` y `label` de 40; `list` (apiVersion 4) `max` de 1 a 50 entradas (20 por defecto), de 1 a 4 `fields` de tipo `text` o `url`. Ver [Formulario de ajustes](settings-form.md#types) |
 | Sección y categorías | etiqueta de la sección 20 caracteres; 8 pestañas de 24 caracteres; texto del destacado 300; `categories` 24 mosaicos con títulos de 40 caracteres |
 | `kino.crypto`, pares de llaves | 64 llaves privadas vivas por runtime; firma de máximo 512 bytes |
 | `kino.log.report` | un reporte por plugin y área por hora, 3 por plugin hasta que Kino se reinicia; área de máximo 24 caracteres |
@@ -159,6 +160,10 @@ así que apréndete las reglas:
   que viene de `kino.fetch` o de `kino.sleep` (por ejemplo, un host rechazado), y `await Promise.reject(e)`
   o `Promise.reject(e).catch(...)` (Kino retrasa `Promise.reject` un tick para que un manejador alcance
   a engancharse).
+- **Una llamada `kino.*` síncrona que falla** (`kino.storage.set` por encima de 256 KB, un error de
+  `kino.crypto`, un selector que `kino.html.select` rechaza) se ataja normal desde Kino 0.9.50. Kino
+  0.9.49 y anteriores terminaban ahí la llamada entera, aunque estuviera dentro de `try`/`catch`
+  ([Errores que tu código puede atrapar](kino-api.md#catch)).
 - Si igual nadie ataja el error, no pasa nada grave: la llamada falla con ese error de todos modos, y
   un código de `kino.error` le llega bien a la persona.
 - **Los scrapers convertidos de Nuvio tienen un arreglo:** cuando Kino convierte un
