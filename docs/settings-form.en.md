@@ -37,7 +37,7 @@ What each entry may carry:
 | `key` | all | required, `^[a-z][a-zA-Z0-9_]{0,31}$`, unique in the list |
 | `label` | all | required, 1 to 40 characters |
 | `type` | all | required, one of the nine above |
-| `hint` | all | optional, at most 80 characters: the example or explanation under the field |
+| `hint` | all | optional, at most 80 characters: the example or explanation under the field. On a `section`, up to 300, wrapped over several lines (Kino 0.9.51; builds before 0.9.51 refuse one over 80) |
 | `required` | `text`, `password`, `url`, `list` | optional `true`/`false`. A required setting with no value stops every call ("Falta configurar") |
 | `default` | `text`, `password`, `toggle`, `select` | optional. Never on `url` or `list` ("… no puede tener valor por defecto: usa "hint"") nor on the three types without a value; it must fit its type (a `select` default is one of its `values`) |
 | `options` | `select` only | required: 1 to 20 `{ "value", "label" }`, `value` 1..40 characters and unique, `label` 1..40 |

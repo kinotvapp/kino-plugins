@@ -38,7 +38,7 @@ Lo que puede llevar cada entrada:
 | `key` | todos | obligatorio, `^[a-z][a-zA-Z0-9_]{0,31}$`, único en la lista |
 | `label` | todos | obligatorio, de 1 a 40 caracteres |
 | `type` | todos | obligatorio, uno de los nueve de arriba |
-| `hint` | todos | opcional, máximo 80 caracteres: el ejemplo o la explicación debajo del campo |
+| `hint` | todos | opcional, máximo 80 caracteres: el ejemplo o la explicación debajo del campo. En una `section`, hasta 300 y se parte en varias líneas (Kino 0.9.51; antes de 0.9.51 se rechaza una de más de 80) |
 | `required` | `text`, `password`, `url`, `list` | opcional `true`/`false`. Un ajuste obligatorio sin valor detiene toda llamada ("Falta configurar") |
 | `default` | `text`, `password`, `toggle`, `select` | opcional. Nunca en `url` ni en `list` ("… no puede tener valor por defecto: usa "hint"") ni en los tres tipos sin valor; tiene que servir para su tipo (el `default` de un `select` es uno de sus `value`) |
 | `options` | solo `select` | obligatorio: de 1 a 20 `{ "value", "label" }`, `value` de 1 a 40 caracteres y sin repetir, `label` de 1 a 40 |

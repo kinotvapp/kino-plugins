@@ -40,7 +40,7 @@ From apiVersion 6, also:
 | `subtitles()` (any apiVersion) | 10 s; 30 tracks kept, 15 listed per plugin; `label` 60 characters |
 | `meta()` | 6 s per plugin; the first answer in install order is kept 30 minutes |
 | Settings form | `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `status` 200 characters, an action's `message` 300, `confirm` 120, a field error 200; `clearSettings` 12 keys |
-| Setting fields (every apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 characters; `hint` 80; `select` 1..20 `options`, each `value` and `label` 40; `list` (apiVersion 4) `max` 1..50 entries (default 20), 1..4 `fields` of type `text` or `url`. See [The settings form](settings-form.md#types) |
+| Setting fields (every apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 characters; `hint` 80 (300 on a `section` from Kino 0.9.51); `select` 1..20 `options`, each `value` and `label` 40; `list` (apiVersion 4) `max` 1..50 entries (default 20), 1..4 `fields` of type `text` or `url`. See [The settings form](settings-form.md#types) |
 | Section and categories | section label 20 characters; 8 tabs of 24 characters; hero text 300; `categories` 24 tiles with 40-character titles |
 | `kino.crypto` key pairs | 64 live private keys per runtime; a signature at most 512 bytes |
 | `kino.log.report` | one report per plugin and area an hour, 3 per plugin until Kino restarts; area at most 24 characters |

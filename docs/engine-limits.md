@@ -34,7 +34,7 @@ Desde apiVersion 6, además:
 | `subtitles()` (cualquier apiVersion) | 10 s; se conservan 30 pistas, se listan 15 por plugin; `label` 60 caracteres |
 | `meta()` | 6 s por plugin; la primera respuesta en orden de instalación se guarda 30 minutos |
 | Formulario de ajustes | `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `status` 200 caracteres, `message` de una acción 300, `confirm` 120, error de un campo 200; `clearSettings` 12 claves |
-| Campos de ajustes (cualquier apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 caracteres; `hint` 80; `select` de 1 a 20 `options`, cada `value` y `label` de 40; `list` (apiVersion 4) `max` de 1 a 50 entradas (20 por defecto), de 1 a 4 `fields` de tipo `text` o `url`. Ver [Formulario de ajustes](settings-form.md#types) |
+| Campos de ajustes (cualquier apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 caracteres; `hint` 80 (300 en una `section` desde Kino 0.9.51); `select` de 1 a 20 `options`, cada `value` y `label` de 40; `list` (apiVersion 4) `max` de 1 a 50 entradas (20 por defecto), de 1 a 4 `fields` de tipo `text` o `url`. Ver [Formulario de ajustes](settings-form.md#types) |
 | Sección y categorías | etiqueta de la sección 20 caracteres; 8 pestañas de 24 caracteres; texto del destacado 300; `categories` 24 mosaicos con títulos de 40 caracteres |
 | `kino.crypto`, pares de llaves | 64 llaves privadas vivas por runtime; firma de máximo 512 bytes |
 | `kino.log.report` | un reporte por plugin y área por hora, 3 por plugin hasta que Kino se reinicia; área de máximo 24 caracteres |
