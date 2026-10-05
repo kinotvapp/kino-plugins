@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "plugins": [
+    {
+      "id": "internet-archive",
+      "repo": "kinotvapp/kino-plugin-archive",
+      "name": "Internet Archive",
+      "description": "Películas de dominio público y televisión clásica de archive.org.",
+      "tags": ["películas", "clásicos", "gratis"]
+    },
+    {
+      "id": "own-server",
+      "repo": "kinotvapp/kino-plugin-own-server",
+      "name": "Tu servidor",
+      "description": "Ve el contenido de tu propio servidor de video. Necesita que escribas su dirección.",
+      "tags": ["servidor", "propio"],
+      "needsSetup": true
+    },
+    {
+      "id": "opensubtitles-v3",
+      "stremio": "https://opensubtitles-v3.strem.io/manifest.json",
+      "description": "Subtítulos en muchos idiomas para películas y series, de OpenSubtitles.",
+      "categories": ["subtitles"]
+    },
+    {
+      "id": "subtis",
+      "stremio": "https://stremio.fly.dev/manifest.json",
+      "description": "Subtítulos en español para películas.",
+      "categories": ["subtitles"]
+    },
+    {
+      "id": "cinemeta",
+      "stremio": "https://v3-cinemeta.strem.io/manifest.json",
+      "description": "El catálogo oficial de Stremio: películas y series populares, nuevas y destacadas.",
+      "categories": ["movies", "series", "utilities"]
+    },
+    {
+      "id": "tmdb",
+      "stremio": "https://94c8cb9f702d-tmdb-addon.baby-beamup.club/manifest.json",
+      "description": "Catálogos de películas y series de The Movie Database: populares, tendencias, por año y por idioma.",
+      "categories": ["movies", "series", "utilities"]
+    },
+    {
+      "id": "streaming-catalogs",
+      "stremio": "https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club/manifest.json",
+      "description": "Lo que está en tendencia en Netflix, HBO Max, Disney+, Prime Video y más.",
+      "categories": ["movies", "series", "utilities"]
+    },
+    {
+      "id": "imdb-catalogs",
+      "stremio": "https://1fe84bc728af-imdb-catalogs.baby-beamup.club/manifest.json",
+      "description": "Listas de películas y series de IMDb.",
+      "categories": ["movies", "series", "utilities"]
+    },
+    {
+      "id": "anime-kitsu",
+      "stremio": "https://anime-kitsu.strem.fun/manifest.json",
+      "description": "Catálogo de anime de Kitsu: en tendencia, en emisión, más populares y mejor calificados.",
+      "categories": ["anime", "utilities"]
+    },
+    {
+      "id": "pluto-tv",
+      "stremio": "https://dev.nebulawp.org/stremio/pluto-tv-addon/manifest.json",
+      "description": "Cientos de canales en vivo gratis de Pluto TV, con anuncios.",
+      "categories": ["live"]
+    },
+    {
+      "id": "radios",
+      "stremio": "https://1fe84bc728af-stremio-radios.baby-beamup.club/manifest.json",
+      "description": "Más de 90.000 emisoras de radio por internet, del directorio SHOUTcast.",
+      "categories": ["radio"]
+    }
+  ]
+}
