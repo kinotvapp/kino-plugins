@@ -3,7 +3,7 @@
 Two published plugins, both public, both installable in Kino, and both usable as a template. Start
 from **Internet Archive** for the simplest possible template; start from **Tu servidor**, the
 complete API demo, when your source is a server the person owns, or when you want to see every
-apiVersion 2 and 3 feature working end to end.
+feature up to apiVersion 7 working end to end.
 
 <div class="grid cards" markdown>
 
@@ -12,10 +12,11 @@ apiVersion 2 and 3 feature working end to end.
     ---
 
     **The complete API demo.** A media server at home (Jellyfin, Emby, a NAS…): the person types its
-    address, user and password. apiVersion 3, `"hosts": []`, `url`/`user`/`password` settings, a
-    session kept with `kino.storage`, a cache TTL, `kino.rank`, `ids.tmdb`, seasons, `download`,
-    `audioTracks`, `live` items and `channels` in all three shapes, plus a reference server
-    (`server.mjs`) to run it against with nothing of your own.
+    address, user and password. Version 1.5.0, apiVersion 7: `"hosts": []`, every setting type and the
+    full settings form, a session kept with `kino.storage`, `kino.rank`, seasons, `download`, copies,
+    request signing, `channels` in every shape, a section and Categorías tiles, `migrate`, `meta`,
+    `subtitles`, `tracking` and `segments`, plus a reference server (`server.mjs`) to run it against
+    with nothing of your own.
 
     [:octicons-repo-template-16: Use as template](https://github.com/kinotvapp/kino-plugin-own-server/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: View on GitHub](https://github.com/kinotvapp/kino-plugin-own-server){ .md-button }
@@ -80,9 +81,10 @@ Archive plugin, with all five capabilities. It reads about like this:
 `README.md` in that repository says what it does not do (a collection is exposed as a single movie,
 episodes numbered 0 are dropped), so do not copy those as intended behavior.
 
-For everything else apiVersion 2 and 3 allow -- settings, a session, downloads, `live` items,
-`channels` -- the reference is
-[kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): its
+For everything else, up to apiVersion 7 (Kino 0.9.51) -- settings, a session, downloads, `live`
+items, `channels`, the apiVersion 6 set, `tracking` and `segments` -- the reference is
+[kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) ("Tu servidor"
+1.5.0): its
 [`kino-plugin.json`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/kino-plugin.json)
 and its [`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js) use
 nearly everything that exists, and its
@@ -91,34 +93,45 @@ feature to the title of its test server that exercises it:
 
 | What it shows | Where in the code | Guide |
 | --- | --- | --- |
-| `url`, `text`, `password`, `toggle` settings | `kino-plugin.json`: `settings` | [Settings](manifest.md#settings) |
-| `"hosts": []` and the server the person types | `kino-plugin.json`; `base()` | [The person's own servers](manifest.md#own-servers) |
-| A login and a token kept in `kino.storage` | `token()`, `api()` | [`kino.storage`](kino-api.md#storage) |
-| A cache with `ttlMs` | `home()` | [`kino.storage`](kino-api.md#storage) |
-| Title search over a backend that matches any word | `search()`, `kino.rank.*` | [`kino.rank`](kino-api.md#rank) |
-| Cursor paging | `browse()` | [Paging](contract.md#paging) |
+| `"hosts": []`, the server the person types and its other addresses (a `list` of `url` fields) | `kino-plugin.json`; `base()`, `addresses()`, `reach()` | [The person's own servers](manifest.md#own-servers) |
+| Every setting type: `url`, `text`, `password`, `toggle`, `select`, `list`, `section` (a 300-character hint), `status`, `action` | `kino-plugin.json`: `settings` | [The settings form](settings-form.md#types) |
+| Status lines, buttons (`confirm`, `clearSettings`) and a check before saving | `settingsStatus()`, `action()`, `validateSettings()` | [The settings form](settings-form.md) |
+| A login and a token kept in `kino.storage`, retried once on a 401; `kino.sleep` on a short `Retry-After` | `token()`, `api()` | [`kino.storage`](kino-api.md#storage) |
+| Typed errors (`kino.error`) and your own sentence (`userMessage`) | `api()`, `resolveCopy()` | [Errors people understand](contract.md#errors) |
+| A cache with `ttlMs` the person picks, and the last copy when the server is down; `telemetry` + `kino.log.report` | `home()`, `reach()` | [`kino.storage`](kino-api.md#storage), [Telemetry](diagnostics.md#telemetry) |
+| Title search over a backend that matches any word; a `Page` with `next`; `scopedSearch` | `search()`, `kino.rank.*` | [`kino.rank`](kino-api.md#rank), [Searching inside "Ver más"](contract.md#scoped-search) |
+| Cursor paging, rows with `genre` | `browse()`, `refFilter()`, `ROWS` | [Paging](contract.md#paging) |
 | Seasons as separate titles | `episodes()` | [Seasons](contract.md#seasons) |
+| `ids.tmdb` + `ids.imdb`, item fields, `adult: true` entries | `item()`, `categories()` | [`ids.tmdb`](contract.md#tmdb), [18+ content](contract.md#adult) |
+| A section with tabs and a hero, Categorías tiles, `theme` | `section()`, `categories()`; `kino-plugin.json` | [Section, categories and colors](section-theme.md) |
 | Downloads (`download`) | `kino-plugin.json`; `resolve()` returns a progressive mp4 | [Downloads](manifest.md#downloads) |
-| A separate audio track (`audioTracks`) | `resolve()` | [The `Stream` rules](contract.md#stream) |
-| `ids.tmdb` | `item()` | [`ids.tmdb`](contract.md#tmdb) |
+| `audioTracks`, `subtitles`, `durationMs` and `skip` on the Stream | `resolve()` | [The `Stream` rules](contract.md#stream) |
+| Labelled and lazy copies, the same file at the other addresses | `withCopies()`, `resolveCopy()`, `withAddresses()` | [Labelled and lazy copies](contract.md#lazy-copies) |
+| Signing every request (`signing`, `signContext`, `sign`, `alternateHosts`, `resolve(ref, { retry })`) | `signedStream()`, `sign()`, `resolve()` | [Signing every request](signed-streams.md) |
 | `live` items (apiVersion 2) | `item()`, `resolve()` | [Live channels (apiVersion 2)](live-channels.md#live-items) |
-| `channels`: a `ref`, an inline `stream`, and an M3U list with an XMLTV guide | `liveCategories()`, `liveChannels()` | [Channels in the En vivo tab](live-channels.md#en-vivo-tab), [Three recipes](live-channels.md#recipes) |
-| A User-Agent the channels insist on, typed in Configurar: `headers` on a Stream, `streamHeaders` on a playlist | `resolve()`, `liveChannels()`, `liveCategories()` | [Channels in the En vivo tab](live-channels.md#en-vivo-tab) |
+| `channels`: a `ref`, an inline `stream`, an M3U list with an XMLTV guide, a `resolve: true` list, `liveSearch`, paging | `liveCategories()`, `channel()`, `liveChannels()`, `liveSearch()`, `resolveListEntry()` | [Channels in the En vivo tab](live-channels.md#en-vivo-tab), [Three recipes](live-channels.md#recipes) |
+| A User-Agent the channels insist on: `headers` on a Stream, `streamHeaders` on a playlist | `agentHeaders()` | [Channels in the En vivo tab](live-channels.md#en-vivo-tab) |
 | A guide for its own channels | `guide()` | [The channel functions](live-channels.md#live-contract) |
-| Typed errors (`kino.error`) | `api()` | [Errors people understand](contract.md#errors) |
+| Moving saved titles from the server's older ids | `migrate()`, `movedTable()` | [Moving saved titles](migrate.md) |
+| `meta` with `logo`, `ratings` and `cast` (Kino 0.9.51) | `meta()` | [Describing other titles](contract.md#meta) |
+| `subtitles` with the `file` hint (Kino 0.9.51) | `subtitles()` | [Subtitles for any title](contract.md#subtitles) |
+| `tracking` (apiVersion 7): idempotency by `event.id`, `{ skipped: true }` | `track()` | [Telling a tracker](contract.md#tracking) |
+| `segments` (apiVersion 7) | `segments()` | [Where the intro and credits are](contract.md#segments) |
 
-The complete code, explained line by line, is in the cookbook:
+Its core, line by line, is in the cookbook:
 [The person's own server](cookbook.md#own-server).
 
 ## Install it and see it work { #own-server-demo }
 
 [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) bundles a
 reference server with no dependencies
-(`node server.mjs [--port 8096] [--user ana] [--password s3cr3t]`) whose catalog exercises one
+(`node server.mjs [--port 8096] [--user ana] [--password s3cr3t] [--live-agent VLC]`) whose catalog exercises one
 feature per title, so you can install the plugin in Kino and watch every row of the table above work,
 with no real server of your own.
 
-Three powers are deliberately **not** in it, because a server at home never needs them: Widevine DRM
+A few powers are deliberately **not** in it, because a server at home never needs them: Widevine DRM
 ([recipe](cookbook.md#widevine)), a declared host over plain `http`
-([recipe](cookbook.md#insecure-site)), and channel streams on any server
-([recipe](live-channels.md#recipe-m3u)).
+([recipe](cookbook.md#insecure-site)), streams on any server
+([recipe](live-channels.md#recipe-m3u)), sealed secrets ([`kino.secret`](kino-api.md#secret)), the
+author's signature ([Signed plugins](signed.md)), the hidden browser and `kino.html.select`
+([Hidden browser](browser.md)), and key pairs ([Key pairs](kino-api.md#key-pairs)).

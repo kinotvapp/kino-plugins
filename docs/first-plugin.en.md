@@ -69,7 +69,8 @@ your plugin from a template, so the kit is already inside.
 
 1. Open the template closest to what you want to build:
     - [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): the
-      complete example (settings, user and password, downloads, live channels).
+      complete example, "Tu servidor" 1.5.0 (settings, user and password, downloads, live channels, and
+      every feature up to apiVersion 7).
     - [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive): the
       simplest, for a site with search and videos.
 2. Top right, press the green **Use this template → Create a new repository** button. Name your

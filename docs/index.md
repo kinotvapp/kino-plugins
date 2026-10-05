@@ -13,7 +13,7 @@ código debe cumplir, la API que Kino te da, cada límite, las particularidades 
 JavaScript y cómo publicar.
 
 La demo completa de la API es [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
-("Tu servidor": cada función funcionando de punta a punta); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
+("Tu servidor" 1.5.0: cada función hasta apiVersion 7 funcionando de punta a punta); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
 (Internet Archive) es la plantilla de arranque más simple. Los dos traen la carpeta `sdk/`, el kit de
 Node. Otros dos archivos describen el contrato para máquinas (los dos están en la página
 [Referencia](reference/index.md)): `contract.json` guarda cada número y cada regla que la app hace

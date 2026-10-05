@@ -134,39 +134,107 @@ kino.error("not_found"); }` is enough when only search pages.
 
 A media server at home (Jellyfin, Emby, a NAS…): the person types its address, user and password.
 The address becomes an allowed host for that install, `http` and a LAN address included; streams,
-posters and stills may point at it. This is the published demo plugin **Tu servidor**
+posters and stills may point at it. This is the published demo plugin **Tu servidor** 1.5.0
 ([kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server), with a
-reference server to run it against), which uses every apiVersion 3 feature a server of your own
-can: seasons, `download`, `audioTracks`, `live` items, a `kino.storage` TTL, `kino.rank`,
-`ids.tmdb`, and `channels` in all three shapes (channels with a `ref`, channels with an inline
-`stream`, and an M3U playlist with an XMLTV guide). What follows is, line for line, its real
-[`kino-plugin.json`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/kino-plugin.json)
-and [`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js): it is
-the reference plugin for anything beyond the five basic capabilities (see
-[Example plugins](examples.md#reference-plugin)).
+reference server to run it against), which uses every feature up to apiVersion 7 (Kino 0.9.51) a
+server of your own can: seasons, `download`, `audioTracks`, `subtitles`, `durationMs` and `skip`,
+`live` items, `kino.storage` with a TTL, `kino.rank`, `ids`, `channels` in every shape (a `ref`, an
+inline `stream`, an M3U playlist with an XMLTV guide, a `resolve: true` playlist, `liveSearch` and
+paging), the apiVersion 6 set (a section with tabs, Categorías tiles, `scopedSearch`, `migrate`,
+`adult` entries, labelled and lazy copies, request-signed HLS, the full settings form, `telemetry`,
+`userMessage`) and the apiVersion 7 capabilities `tracking` and `segments`, plus `meta` with a logo,
+ratings and cast and `subtitles` with Kino 0.9.51's `file` hint. It is the reference plugin for
+anything beyond the five basic capabilities; [Example plugins](examples.md#reference-plugin) maps
+every feature to its function. Its real
+[`kino-plugin.json`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/kino-plugin.json):
 
 ```json
 {
-  "id": "own-server", "name": "Tu servidor", "version": "1.2.0", "apiVersion": 3, "entry": "plugin.js",
+  "id": "own-server",
+  "name": "Tu servidor",
+  "version": "1.5.0",
+  "apiVersion": 7,
+  "entry": "plugin.js",
+  "description": "Ve el contenido de tu propio servidor de video, con sus canales y subtítulos, y cuéntale qué ves. Necesita que escribas su dirección.",
+  "author": "kinotvapp",
+  "homepage": "https://github.com/kinotvapp/kino-plugin-own-server",
   "hosts": [],
-  "capabilities": ["search", "home", "browse", "episodes", "resolve", "download", "channels"],
+  "capabilities": [
+    "search",
+    "home",
+    "browse",
+    "episodes",
+    "resolve",
+    "download",
+    "channels",
+    "scopedSearch",
+    "migrate",
+    "meta",
+    "subtitles",
+    "tracking",
+    "segments"
+  ],
+  "categories": ["movies", "series", "live", "subtitles", "utilities"],
+  "discoverable": true,
+  "debug": false,
+  "telemetry": true,
+  "section": { "label": "Tu servidor" },
+  "theme": { "accent": "#2BB68F", "onAccent": "#06201A", "background": "#0B1513", "surface": "#15241F", "highlight": "#E8F5F0" },
   "settings": [
+    { "key": "cuenta", "label": "Tu servidor", "type": "section", "hint": "Escribe la dirección de tu servidor (Jellyfin, Emby, un NAS…) tal como la abres en el navegador de tu casa, con su puerto, y tu usuario y contraseña de ese servidor. Kino solo se conecta a esa dirección y a las otras que pongas abajo." },
     { "key": "server", "label": "Servidor", "type": "url", "required": true, "hint": "http://192.168.1.10:8096" },
     { "key": "user", "label": "Usuario", "type": "text", "required": true },
     { "key": "password", "label": "Contraseña", "type": "password", "required": true },
-    { "key": "hd", "label": "Solo HD", "type": "toggle" }
-  ]
+    { "key": "estado", "label": "Conexión", "type": "status" },
+    { "key": "probar", "label": "Probar conexión", "type": "action" },
+    { "key": "salir", "label": "Cerrar sesión", "type": "action", "confirm": "¿Cerrar la sesión en tu servidor? Kino vuelve a entrar con tu usuario la próxima vez." },
+    { "key": "reproduccion", "label": "Reproducción", "type": "section", "hint": "Cómo pedir los videos y cada cuánto revisar lo nuevo de tu servidor." },
+    { "key": "hd", "label": "Solo HD", "type": "toggle" },
+    { "key": "homeTtl", "label": "Revisar lo nuevo", "type": "select", "default": "15",
+      "options": [{ "value": "5", "label": "Cada 5 minutos" }, { "value": "15", "label": "Cada 15 minutos" }, { "value": "60", "label": "Cada hora" }] },
+    { "key": "addresses", "label": "Otras direcciones del mismo servidor", "type": "list", "max": 5,
+      "fields": [
+        { "key": "url", "label": "Dirección", "type": "url", "required": true, "hint": "https://mi-servidor.example.org" },
+        { "key": "label", "label": "Nombre", "type": "text", "hint": "Desde fuera de casa" }
+      ] },
+    { "key": "canales", "label": "Canales en vivo", "type": "section", "hint": "Algunos canales solo responden a un reproductor conocido: escribe aquí el User-Agent que piden." },
+    { "key": "userAgent", "label": "User-Agent de los canales", "type": "text", "hint": "VLC/3.0.20 LibVLC/3.0.20" },
+    { "key": "quitarAgente", "label": "Usar el User-Agent de Kino", "type": "action" },
+    { "key": "avisos", "label": "Lo que ves", "type": "section", "hint": "Kino le cuenta a tu servidor qué ves en este aparato y cuándo lo terminas, para que marque lo visto como lo hace su propia app. Apágalo cuando quieras con el interruptor «Enviar lo que veo» de esta misma pestaña." },
+    { "key": "ultimoAviso", "label": "Último aviso", "type": "status" }
+  ],
+  "color": "#1F8A70",
+  "icon": "icon.png"
 }
 ```
 
-`hosts` is empty: the plugin reaches only the server the person types (allowed from apiVersion 2
-with a `url` setting, see [The person's own servers](manifest.md#own-servers)). Up to 1.1.1 the
-demo declared the placeholder `"tu-servidor.invalid"` for Kino builds from before that rule; 1.2.0
-is apiVersion 3, which those builds refuse anyway, so it declares none. Every channel list, guide
-and stream is on that same server, so it needs no `"liveStreamHosts": "any"`. Then:
+`hosts` is empty: the plugin reaches only the server the person types and the other addresses of
+that server they list (allowed from apiVersion 2 with a `url` setting, see
+[The person's own servers](manifest.md#own-servers)). Every channel list, guide and stream is on that
+same server, so it needs no `"liveStreamHosts": "any"`. `"apiVersion": 7` makes Kino 0.9.50 and older
+refuse it ("Este plugin necesita una versión más nueva de Kino"); declare the lowest number that has
+what you use.
+
+What follows is, line for line, the core of its real
+[`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js): the requests ([`reach`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js#L56-L74) falls back to the other addresses,
+`api` turns every status into a typed error), the listing and the playing. The rest -- copies,
+signing, channels, the section, `migrate`, `meta`, `subtitles`, the settings form -- is in the same
+file, one function per feature.
 
 ```js
-const base = () => String(kino.config.get("server")).replace(/\/+$/, "");
+const VERSION = "1.5.0";
+const HLS = "application/vnd.apple.mpegurl";
+
+const trimSlash = (u) => String(u).replace(/\/+$/, "");
+const base = () => trimSlash(kino.config.get("server") || "");
+const enc = encodeURIComponent;
+
+// The other addresses of the SAME server (the `list` setting "addresses": its LAN address and its public
+// name, say). Each `url` field is an allowed host too. Used three ways: the API falls back to them when
+// the main address does not answer (`reach`), every file gets them as labelled copies (`withAddresses`),
+// and the signed video as `alternateHosts` (`signedStream`).
+const addresses = () =>
+  (kino.config.get("addresses") || []).map((a) => ({ url: trimSlash(a.url), label: (a.label || "").trim() || new URL(a.url).host }));
 
 // Everything cached in kino.storage belongs to one user on one server: storage survives a change
 // in Configurar, so a key without them would hand the old server's answers to the new one.
@@ -176,11 +244,47 @@ const scope = () => kino.config.get("user") + "@" + base();
 // still-valid token keeps working, exactly like a real session would, until the server rejects it.
 const tokenKey = () => "token:" + scope();
 
+// Who is asking, the way a Jellyfin client says it: Kino's version and language, this plugin's version, and
+// a random id for this install (kino.crypto.uuid, kept in kino.storage: per device, never in a setting --
+// settings travel to the person's other devices). Headers only, so the Node kit's recordings still match.
+function clientHeaders() {
+  let id = kino.storage.get("client-id");
+  if (!id) kino.storage.set("client-id", (id = kino.crypto.uuid()));
+  return {
+    "X-Client": `Kino/${kino.appVersion} own-server/${VERSION} api/${kino.apiVersion}`,
+    "X-Client-Id": id,
+    "Accept-Language": kino.lang,
+  };
+}
+
+// One request, to the main address and, when it does not answer at all (network or timeout), to the other
+// addresses in order. A fallback is a degraded result even though the call works: kino.log.report tells
+// Kino's error tracker (the manifest declares `"telemetry": true`), at most once an hour per area.
+async function reach(path, init = {}) {
+  const options = { ...init, headers: { ...clientHeaders(), ...init.headers } };
+  try {
+    return await kino.fetch(base() + path, options);
+  } catch (e) {
+    if (e.code !== "network" && e.code !== "timeout") throw e;
+    const others = addresses();
+    for (let i = 0; i < others.length; i++) {
+      try {
+        const r = await kino.fetch(others[i].url + path, options);
+        kino.log.report("own_server:address", "main_unreachable", "fallback=" + (i + 1));
+        return r;
+      } catch (again) {
+        if (again.code !== "network" && again.code !== "timeout") throw again;
+      }
+    }
+    throw e;
+  }
+}
+
 async function token() {
   await null;
   const saved = kino.storage.get(tokenKey());
   if (saved) return saved;
-  const r = await kino.fetch(base() + "/auth", {
+  const r = await reach("/auth", {
     method: "POST",
     body: { json: { user: kino.config.get("user"), password: kino.config.get("password") } },
   });
@@ -191,27 +295,41 @@ async function token() {
   return t;
 }
 
-// Every request goes through here, so a token invalidated server-side (expired, revoked, or a
-// stale one from before a real password change) is forgotten and asked for again on the next call.
-async function api(path) {
-  const r = await kino.fetch(base() + path, { headers: { "X-Token": await token() } });
+// Every request goes through here. A token invalidated server-side (expired, revoked, or a stale one
+// from before a real password change) is forgotten and the request tried once more with a fresh login.
+// A 429 that asks to wait at most 3 s is waited out once with kino.sleep (the wait counts inside the
+// call's own time limit). Every other failure becomes one of Kino's typed errors.
+async function api(path, { method = "GET", body, headers = {}, timeoutMs } = {}) {
+  const send = async () => reach(path, { method, body, timeoutMs, headers: { ...headers, "X-Token": await token() } });
+  let r = await send();
+  if (r.status === 401) {
+    kino.storage.remove(tokenKey());
+    r = await send();
+  }
+  const wait = Number(r.headers["retry-after"]);
+  if (r.status === 429 && wait > 0 && wait <= 3) {
+    await kino.sleep(wait * 1000);
+    r = await send();
+  }
   if (r.status === 401) { kino.storage.remove(tokenKey()); throw kino.error("auth_required", "la sesión venció"); }
-  if (r.status === 404) throw kino.error("not_found");
+  if (r.status === 400 || r.status === 404) throw kino.error("not_found", "el servidor respondió " + r.status);
   if (r.status === 429) throw kino.error("rate_limited");
-  if (r.status === 451) throw kino.error("geo_blocked");
+  // Kino words the other codes itself; this one says more, as "Mensaje de Tu servidor: …" (kino.error's userMessage).
+  if (r.status === 451) throw kino.error("geo_blocked", "el servidor respondió 451", { userMessage: "Tu servidor no deja ver este título desde esta red." });
   if (!r.ok) throw kino.error("unavailable", "el servidor respondió " + r.status);
-  return r.json();
+  return r.status === 204 ? null : r.json();
 }
 
 // Artwork lives on the same typed server, so `http` and a LAN address are fine here too. Posters
-// are 2:3 (the cards), backdrops 16:9 (the info page's background, and each episode's still).
-const art = (shape, id) => base() + "/img/" + shape + "/" + encodeURIComponent(id) + ".png";
+// are 2:3 (the cards), backdrops 16:9 (the info page's background, and each episode's still), the
+// logo a clear-logo on a transparent background (meta's `logo`).
+const art = (shape, id) => base() + "/img/" + shape + "/" + enc(id) + ".png";
 const poster = (id) => art("poster", id);
 const backdrop = (id) => art("backdrop", id);
 
 // `kind` comes from the server: "movie", "series" (one season of a show) or "live" (apiVersion 2).
-// `ids.tmdb` only when the server knows it: Kino then matches the title with TMDB and fills in its
-// info page (cast, director, tagline...).
+// `ids` only when the server knows them: Kino then matches the title with TMDB and fills in its
+// info page (cast, director, tagline...). `adult: true` (apiVersion 6) keeps it behind the person's 18+ code.
 const item = (x) => ({
   id: x.id,
   ref: x.id,
@@ -220,58 +338,99 @@ const item = (x) => ({
   year: x.year,
   poster: poster(x.id),
   backdrop: backdrop(x.id),
-  ids: x.tmdb ? { tmdb: x.tmdb } : undefined,
+  overview: x.overview,
+  genres: x.genres ? x.genres.slice(0, 5) : undefined,
+  rating: x.rating,
+  runtimeMinutes: x.kind === "live" ? undefined : x.runtime,
+  badges: x.badges,
+  quality: x.quality,
+  lang: x.lang,
+  ids: x.tmdb || x.imdb ? { tmdb: x.tmdb, imdb: x.imdb } : undefined,
+  adult: x.adult || undefined,
 });
 
-// Home rows, one per kind; each row's ref is the kind, which browse() pages through.
+// A browse ref (a Home or section row, a Categorías tile) as the server's filter: a kind, or "genre:<id>".
+function refFilter(ref) {
+  if (ref === "movie" || ref === "series" || ref === "live") return "kind=" + ref;
+  const genre = /^genre:([a-z0-9-]+)$/.exec(ref);
+  return genre ? "genre=" + genre[1] : null;
+}
+
+// Home rows, one per kind; each row's ref is the kind, which browse() pages through. `genre` lines the
+// rows up with other plugins' in Categorías and the En vivo filter (the live row leaves it to Kino's guess).
 const ROWS = [
-  { id: "novedades", title: "Novedades", kind: "movie" },
-  { id: "series", title: "Series", kind: "series" },
+  { id: "novedades", title: "Novedades", kind: "movie", genre: "peliculas" },
+  { id: "series", title: "Series", kind: "series", genre: "series" },
   { id: "en-vivo", title: "En vivo", kind: "live" },
 ];
 
-// Home asks the server three times; the answer is kept for 15 minutes with a storage TTL, so
-// opening Kino again right away costs no request. An expired entry reads as null by itself.
-const HOME_TTL_MS = 15 * 60 * 1000;
-
+// Home asks the server three times; the answer is kept with a storage TTL the person picks ("Revisar lo
+// nuevo", a `select` setting), so opening Kino again right away costs no request. An expired entry reads
+// as null by itself. A copy without TTL ("home-last:") is the fallback when the server is down.
 export async function home() {
   const key = "home:" + scope();
   const cached = kino.storage.get(key);
   if (cached) return JSON.parse(cached);
-  const rows = [];
-  for (const row of ROWS) {
-    const p = await api("/items?limit=10&kind=" + row.kind);
-    if (p.items.length) rows.push({ id: row.id, title: row.title, ref: row.kind, items: p.items.map(item) });
+  let rows;
+  try {
+    rows = [];
+    for (const row of ROWS) {
+      const p = await api("/items?limit=10&kind=" + row.kind);
+      if (p.items.length) rows.push({ id: row.id, title: row.title, ref: row.kind, genre: row.genre, items: p.items.map(item) });
+    }
+  } catch (e) {
+    const last = kino.storage.get("home-last:" + scope());
+    if (!last || !["unavailable", "network", "timeout"].includes(e.code)) throw e;
+    kino.log.report("own_server:home", "stale_rows", e.code);
+    return JSON.parse(last);
   }
-  kino.storage.set(key, JSON.stringify(rows), { ttlMs: HOME_TTL_MS });
+  const minutes = Number(kino.config.get("homeTtl")) || 15;
+  kino.storage.set(key, JSON.stringify(rows), { ttlMs: minutes * 60 * 1000 });
+  kino.storage.set("home-last:" + scope(), JSON.stringify(rows));
   return rows;
 }
 
 export async function browse(ref, cursor) {
-  const p = await api("/items?limit=10&kind=" + encodeURIComponent(ref) + (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""));
+  const filter = refFilter(ref);
+  if (!filter) throw kino.error("not_found", "fila desconocida");
+  const p = await api("/items?limit=10&" + filter + (cursor ? "&cursor=" + enc(cursor) : ""));
   return { items: p.items.map(item), next: p.next || undefined };
 }
 
 // The server matches ANY word of the query, so "Serie de prueba" also brings "Video de prueba 1".
 // kino.rank turns that into a title search: ask with the title's head, drop the stray-word hits,
-// best match first -- trying every form of the title Kino knows.
+// best match first -- trying every form of the title Kino knows. `type` is only a hint: the kind it
+// names goes first, nothing is dropped for it. The answer is a Page: its `next` gets "Ver más resultados".
+// With `within` (the `scopedSearch` capability) the person is searching inside one of this plugin's
+// "Ver más" pages: the server searches that row's kind or genre only; null for a ref it cannot search.
 export async function search(query) {
+  if (query.within !== undefined) {
+    const filter = refFilter(query.within);
+    if (!filter) return null;
+    const p = await api("/items?limit=50&" + filter + "&q=" + enc(query.q) + (query.cursor ? "&cursor=" + enc(query.cursor) : ""));
+    return { items: kino.rank.filterRelevant(p.items, query.q).map(item), next: p.next || undefined };
+  }
   if (!query.q.trim()) return [];
   const titles = [query.q, query.originalTitle, ...(query.altTitles || [])].filter(Boolean);
-  const found = (await api("/items?limit=50&q=" + encodeURIComponent(kino.rank.shortQuery(query.q)))).items;
-  const relevant = kino.rank.filterRelevant(found, titles);
-  return kino.rank.sortBySimilarity(relevant, titles).map(item);
+  const p = await api("/items?limit=50&q=" + enc(kino.rank.shortQuery(query.q)) + (query.cursor ? "&cursor=" + enc(query.cursor) : ""));
+  const best = kino.rank.sortBySimilarity(kino.rank.filterRelevant(p.items, titles), titles);
+  const wanted = query.type === "movie" || query.type === "series" ? query.type : null;
+  const ordered = wanted ? [...best.filter((x) => x.kind === wanted), ...best.filter((x) => x.kind !== wanted)] : best;
+  return { items: ordered.map(item), next: p.next || undefined };
 }
 
 // Each season is its own title on this server, so the answer lists every season of the show in
 // `seasons` (the one being answered marked `current`): Kino shows them as chips and calls
 // episodes() again with the chosen season's ref.
 export async function episodes(ref) {
-  const x = await api("/items/" + encodeURIComponent(ref));
+  const x = await api("/items/" + enc(ref));
   if (x.kind !== "series") throw kino.error("not_found");
   return {
-    series: { title: x.show.title, overview: x.show.overview, poster: poster(x.id), backdrop: backdrop(x.id) },
-    episodes: x.episodes.map((e) => ({ season: x.season, number: e.number, ref: e.id, title: e.title, still: backdrop(e.id) })),
+    series: { title: x.show.title, overview: x.show.overview, poster: poster(x.id), backdrop: backdrop(x.id), genres: x.genres, year: x.year },
+    episodes: x.episodes.map((e) => ({
+      season: x.season, number: e.number, ref: e.id, title: e.title, still: backdrop(e.id),
+      overview: e.overview, airDate: e.airDate, runtimeMinutes: e.runtime,
+    })),
     seasons: x.seasons.map((s) => ({
       id: s.id,
       ref: s.id,
@@ -283,63 +442,89 @@ export async function episodes(ref) {
 }
 
 // Movies and episodes are progressive mp4 files, so with `download` declared Kino can save them;
-// the live channel is HLS and plays as live (never downloadable). A movie with a separate audio
-// file gets it as an `audioTracks` entry, merged by the player and picked in its audio menu.
-export async function resolve(ref) {
-  const x = await api("/items/" + encodeURIComponent(ref));
-  if (x.kind === "live") return { url: base() + x.stream, mime: "application/vnd.apple.mpegurl" };
-  const hd = kino.config.get("hd");
+// the live channels are HLS and play as live (never downloadable). A movie with a separate audio
+// file gets it as an `audioTracks` entry, merged by the player and picked in its audio menu; its
+// subtitles go in `subtitles`; its length in `durationMs` and, when the server knows where THIS file's
+// opening and ending are, `skip` ("Saltar intro" / "Saltar outro").
+// `options.retry` (apiVersion 6) comes only after the origin refused a signed stream: see signedStream.
+export async function resolve(ref, options) {
+  // An entry of the list declared with `resolve: true` (liveCategories): its link needs the token.
+  if (/\/channels\/[^/]+\/play$/.test(ref)) return resolveListEntry(ref);
+  // A lazy copy's own ref ("<title>|<copy>", see below): Kino asks for it only when the person picks that
+  // copy in the player's Servidor menu, the fallback reaches it or a download's copy choice does.
+  if (ref.includes("|")) return resolveCopy(ref);
+  const retry = options && options.retry;
+  if (retry) kino.log("resolve: retry", retry.reason, retry.attempt, retry.status || "-");
+  const x = await api("/items/" + enc(ref) + (retry ? "?fresh=1" : ""));
+  if (x.kind === "live") return { url: base() + x.stream, mime: HLS, headers: agentHeaders() };
+  if (x.hls) return signedStream(x);
+  const path = x.stream + (kino.config.get("hd") ? "?quality=hd" : "");
   const stream = {
-    url: base() + x.stream + (hd ? "?quality=hd" : ""),
+    url: base() + path,
     mime: "video/mp4",
-    // The stream URL is short-lived on the reference server: resolve again once it is stale.
+    // The token is short-lived server-side (see server.mjs); resolve again once it's stale.
     expiresInSeconds: 600,
   };
+  if (x.durationMs) stream.durationMs = x.durationMs;
+  if (x.skip) stream.skip = x.skip;
+  if (x.subtitles && x.subtitles.length) {
+    stream.subtitles = x.subtitles.map((s) => ({ lang: s.lang, url: base() + s.file, format: s.format }));
+  }
   if (x.audio && x.audio.length) {
     stream.audioTracks = x.audio.map((a) => ({ lang: a.lang, label: a.label, url: base() + a.stream }));
   }
-  return stream;
-}
-
-// channels (apiVersion 3), all three shapes in one answer: Noticias with a `ref` (played through
-// resolve() above), Deportes with an inline `stream` (no plugin call on play), and a playlist Kino
-// downloads and parses itself, sent with the token and hiding one group.
-export async function liveCategories() {
-  const categories = await api("/channels/categories");
-  return [
-    ...categories,
-    { playlist: {
-      url: base() + "/lista.m3u", format: "m3u",
-      headers: { "X-Token": await token() },
-      epg: { url: base() + "/guia.xml.gz", format: "xmltv" },
-      refreshHours: 1,
-      hideGroups: ["Compras"],
-    } },
-  ];
-}
-
-export async function liveChannels({ categoryId }) {
-  const page = await api("/channels?category=" + encodeURIComponent(categoryId));
-  return {
-    items: page.items.map((c) => {
-      const channel = { id: c.id, title: c.title, number: c.number, categoryId: c.categoryId, logo: poster(c.id) };
-      if (categoryId === "deportes") channel.stream = { url: base() + "/live/" + c.id + ".m3u8", mime: "application/vnd.apple.mpegurl" };
-      else channel.ref = c.id;
-      return channel;
-    }),
-  };
-}
-
-export async function guide({ channelIds, from, to }) {
-  return api("/channels/guide?ids=" + encodeURIComponent(channelIds.join(",")) + "&from=" + from + "&to=" + to);
+  if (x.copies && x.copies.length) return withCopies(ref, stream, x.copies);
+  return withAddresses(stream, path);
 }
 ```
 
-Try it under Node with `--config server=http://192.168.1.10:8096 --config user=ana --config
-password=…` (or `sdk/config.json`, kept out of git), from your computer's LAN address, not
-`127.0.0.1`: a loopback address is refused even as the person's own server. `node sdk/run.mjs .
-live categories` then shows the two categories and the playlist as Kino reads it ("3 canales en 1
-categorías; 0 entradas descartadas; 2 ocultas (adultos)").
+The apiVersion 7 exports, [`track and segments`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js#L557-L591): the server marks what is in its library
+as watched, like its own app, and knows where each title's intro and credits are.
+
+```js
+// `tracking` (apiVersion 7, approved in red: "Le contará al servidor que escribas en su configuración qué
+// ves y cuándo lo terminas"): Kino calls track() for every movie or episode played on this device, from any
+// source, and keeps the event in its own queue until it is delivered (offline, app closed...). The server
+// marks what is in its library as watched, like its own app. The event id is the idempotency key. What the
+// error codes mean to Kino: `unavailable`/`rate_limited` (and network trouble) retry later, in order;
+// `auth_required`/`not_found` drop the event. Log the outcome, never the title.
+export async function track(event) {
+  const answer = await api("/playing", { method: "POST", body: { json: event }, headers: { "Idempotency-Key": event.id } });
+  kino.log("track:", event.type, answer && answer.ignored ? "skipped" : "delivered");
+  // A title the server does not have (it played from another source) is of no use to it: dropped, but not
+  // counted as a delivery (only a real one clears the red "No pudo avisar…" line in Ajustes).
+  return answer && answer.ignored ? { skipped: true } : { ok: true };
+}
+
+// `segments` (apiVersion 7): where a title's intro and credits are, for "Saltar intro" / "Saltar outro" on ANY
+// movie or episode Kino knows by id, the way an intro-skipper plugin of a media server knows them. Asked in the
+// background once the file plays; `durationMs` is that file's length, so the server answers for that cut.
+// For an episode `ids` are the episode's own and may be empty: the show's ids + season + episode then.
+// (This plugin's own files carry `skip` in their Stream instead, which wins over any segments answer.)
+export async function segments({ kind, ids, show, season, episode, durationMs }) {
+  const q = new URLSearchParams();
+  let known = false;
+  if (ids.imdb) { q.set("imdb", ids.imdb); known = true; }
+  if (ids.tmdb) { q.set("tmdb", String(ids.tmdb)); known = true; }
+  if (kind === "episode" && show) {
+    if (show.ids.imdb) { q.set("showImdb", show.ids.imdb); known = true; }
+    if (show.ids.tmdb) { q.set("showTmdb", String(show.ids.tmdb)); known = true; }
+    q.set("season", String(season));
+    q.set("episode", String(episode));
+  }
+  if (!known) return null;
+  if (durationMs) q.set("duration", String(durationMs));
+  const found = await api("/segments?" + q);
+  return found.map((s) => ({ type: s.type, startMs: Math.round(s.startMs), endMs: Math.round(s.endMs) }));
+}
+```
+
+Try it under Node against the bundled server (`node server.mjs`), with
+`C="--config server=http://192.168.1.10:8096 --config user=ana --config password=s3cr3t"` (or `sdk/config.json`, kept out of git), from your
+computer's LAN address, not `127.0.0.1`: a loopback address is refused even as the person's own server.
+`node sdk/run.mjs $C . home`, `… . resolve doblaje`, `… . live categories`, `… . track watched` and
+`… . segments tt1254207 45000` then show what Kino would get; the repository's README lists every
+command, and `node --test test/*.test.mjs` runs its tests offline.
 
 ## A Widevine-protected stream (apiVersion 2) { #widevine }
 

@@ -462,6 +462,9 @@ node sdk/run.mjs . live categories
 node sdk/run.mjs . live channels destacados
 ```
 
-El demo publicado [Tu servidor](cookbook.md#own-server) usa las tres formas a la vez (canales con
-`ref`, canales con `stream` en línea y una lista M3U con guía XMLTV), todo en el servidor propio de la
-persona.
+El demo publicado [Tu servidor](cookbook.md#own-server) (1.5.0) usa las tres formas a la vez (canales
+con `ref`, canales con `stream` en línea y una lista M3U con guía XMLTV), más una segunda lista con
+`resolve: true` cuyos enlaces necesitan su token, `liveSearch` y `liveChannels` paginado
+([Las funciones de canales](#live-contract)), todo en el servidor propio de la persona: mira
+`liveCategories`, `channel`, `liveChannels`, `liveSearch` y `resolveListEntry` en su
+[`plugin.js`](https://github.com/kinotvapp/kino-plugin-own-server/blob/main/plugin.js#L357-L436).

@@ -63,8 +63,8 @@ Before writing anything:
    kino.d.ts). If you cannot open URLs, tell me and I will paste them.
 3. Start from a template, with "Use this template" (never Fork): kinotvapp/kino-plugin-archive if my
    plugin is simple, kinotvapp/kino-plugin-own-server if it needs settings, a session, downloads or
-   live channels (its plugin.js and kino-plugin.json are the complete API reference). The template's
-   sdk/ folder is the Node test kit.
+   live channels (its plugin.js and kino-plugin.json, "Tu servidor" 1.5.0, are the complete API
+   reference, up to apiVersion 7). The template's sdk/ folder is the Node test kit.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -126,7 +126,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
 - apiVersion: the lowest that works (3 for channels, 4 only for secrets, "streamHosts": "any" or a
   "list" setting, 5 only for a signed plugin, 6 only if you use an apiVersion 6 feature: status lines
   and buttons in the settings, a section of its own, colors, telemetry, migrate, request signing,
-  userMessage, adult, channels in Home rows; 6 needs Kino 0.9.50 or newer). A new id of my own (never
+  userMessage, adult, channels in Home rows; 6 needs Kino 0.9.50 or newer; 7 only for "tracking" or
+  "segments", and it needs Kino 0.9.51 or newer). A new id of my own (never
   "archive-org").
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
   switch in Kino's Ajustes, and "debug": true only turns it on by default for everyone. "telemetry" only if I agree that the

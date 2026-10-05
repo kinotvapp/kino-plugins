@@ -9,8 +9,8 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
 
 - **Start from an example:** [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
   (Internet Archive; the simplest starting template, with the `sdk/` kit) and
-  [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) ("Tu servidor",
-  the complete API demo: your own media server and every feature end to end).
+  [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) ("Tu servidor"
+  1.5.0, the complete API demo: your own media server and every feature up to apiVersion 7 end to end).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

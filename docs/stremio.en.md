@@ -34,6 +34,14 @@ as a password in the Keystore). The consent sheet says so: "Guarda la configurac
 incluir tu clave) solo en tus aparatos". That part may be at most 2,048 characters ("La configuración
 de ese addon es demasiado larga para guardarla en Kino").
 
+<span id="detail-links"></span>**Title links.** From Kino 0.9.51 a Stremio *detail* link opens the title in Kino
+instead of being ignored: `stremio:///detail/movie/<imdb>` or
+`stremio:///detail/series/<imdb>[/<imdb>:<season>:<episode>]` (a tracker's "Open in Stremio", like
+Seenr's). Kino finds the title through TMDB and opens its sources -- the screen a Home card opens, phone
+and TV; an episode opens its series. Only an IMDb id (`tt` and 5 to 10 digits) is accepted; another type
+or id, an extra segment, a query or a link over 200 characters is ignored, and a title TMDB does not know
+shows "No encontré ese título". Addon links (`stremio://…/manifest.json`) work as before.
+
 ## What the conversion builds { #conversion }
 
 - One plugin per addon, id `stremio-<name>-<hash>`: the same on every device for the same address. In
@@ -115,7 +123,10 @@ With `meta`, your catalog's titles get an info page and episodes (`videos` with 
 above 0; seasons up to 999). An addon with `meta` also **describes other sources' titles** (the
 [`meta`](contract.md#meta) capability): when TMDB and AniList leave something empty on an info page,
 Kino asks you with the id your `meta` resource covers (`tt…`, `tmdb:`, `kitsu:`, `mal:`, `anilist:`).
-A meta-only addon is useful for that and installs too.
+A meta-only addon is useful for that and installs too. From Kino 0.9.51 a meta's `logo`, its IMDb
+rating (`imdbRating`, or the name of its `imdb` link, where AIOMetadata-style addons put it) and its
+cast (`app_extras.cast`, else `cast`, else its `Cast` links) become the info page's
+[logo, ratings and cast](contract.md#meta).
 
 ### Live channels { #live }
 
@@ -155,7 +166,11 @@ only) are merged: at most 30, one per address, their three-letter language turne
 
 An addon with `subtitles` also answers the player's **"Buscar subtítulos en línea"** for any title Kino
 knows by IMDb or TMDB id, from any source ([subtitles for any title](contract.md#subtitles)): the
-person's languages first, named by release (`movieReleaseName` or `subtitleFileName`). An addon with
+person's languages first, named by release (`movieReleaseName` or `subtitleFileName`). From Kino 0.9.51
+the request carries what Kino knows of the playing file as Stremio's own extras,
+`/subtitles/{type}/{id}/videoHash=…&videoSize=…&filename=….json` (each only when known, URL-encoded;
+`videoSize=0` beside a `filename` whose size is unknown; never the video's URL), so the addon can rank
+the exact release first; with nothing known the path stays the plain one. An addon with
 **only** `subtitles` (OpenSubtitles v3) installs as a subtitle provider: nothing on Home, in search or
 En vivo, and its sheet says "Agrega subtítulos a tus películas y series".
 
@@ -168,7 +183,7 @@ configure page gives, with the language in the path).
 
 | What | What the person reads |
 | --- | --- |
-| A **torrent or P2P** addon: `behaviorHints.p2p`, or "torrent", "magnet" or "p2p" in its id, name or description. **Also with debrid.** | "Kino no admite addons de torrents, ni siquiera con debrid" |
+| A **torrent or P2P** addon: `behaviorHints.p2p`, or "torrent", "magnet" or "p2p" in its id, name or description (from Kino 0.9.51 a description that names them only to deny them, "no incluye streams, torrents ni contenido P2P", does not count; the id and name stay strict). **Also with debrid.** | "Kino no admite addons de torrents, ni siquiera con debrid" |
 | A manifest without `id` or `name`, or that is not JSON | "Esto no es un addon de Stremio (no encontré su manifest.json)" |
 | An addon with no `catalog`, `meta`, `stream` or `subtitles` | "Este addon no ofrece nada que Kino pueda usar" |
 | An address that is not an addon's | "Esa dirección no es la de un addon de Stremio" |

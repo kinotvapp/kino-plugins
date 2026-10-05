@@ -11,7 +11,7 @@ guide has everything you need: the file layout, the manifest, the contract your 
 API Kino gives you, every limit, the quirks of the JavaScript engine, and how to publish.
 
 The complete API demo is [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
-("Tu servidor": every feature working end to end); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
+("Tu servidor" 1.5.0: every feature up to apiVersion 7 working end to end); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
 (Internet Archive) is the simplest starting template. Both carry the `sdk/` folder, the Node
 kit. Two more files describe the contract for machines (both on the [Reference](reference/index.md)
 page): `contract.json` holds every number and rule the app enforces (the tables in this guide are

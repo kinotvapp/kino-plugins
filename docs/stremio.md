@@ -37,6 +37,15 @@ ruta, guardado como contraseña en el Keystore). La hoja de consentimiento lo di
 configuración del addon (puede incluir tu clave) solo en tus aparatos". Esa parte puede tener máximo
 2.048 caracteres ("La configuración de ese addon es demasiado larga para guardarla en Kino").
 
+<span id="detail-links"></span>**Enlaces a un título.** Desde Kino 0.9.51 un enlace *detail* de Stremio
+abre el título en Kino en vez de ignorarse: `stremio:///detail/movie/<imdb>` o
+`stremio:///detail/series/<imdb>[/<imdb>:<temporada>:<capítulo>]` (el "Open in Stremio" de un servicio
+de seguimiento, como el de Seenr). Kino encuentra el título con TMDB y abre sus fuentes -- la pantalla
+que abre una tarjeta de Inicio, en celular y TV; un capítulo abre su serie. Solo se acepta un id de IMDb
+(`tt` y de 5 a 10 dígitos); otro tipo o id, un segmento de más, una consulta o un enlace de más de 200
+caracteres se ignora, y un título que TMDB no conoce muestra "No encontré ese título". Los enlaces de
+addons (`stremio://…/manifest.json`) funcionan como antes.
+
 ## Qué arma la conversión { #conversion }
 
 - Un plugin por addon, con id `stremio-<nombre>-<hash>`: el mismo en todos los aparatos para la misma
@@ -119,7 +128,10 @@ Con `meta`, los títulos de tu catálogo tienen ficha y capítulos (`videos` con
 mayores que 0; temporadas hasta 999). Un addon que tiene `meta` también **describe títulos de otras
 fuentes** (la capacidad [`meta`](contract.md#meta)): cuando TMDB y AniList dejan algo vacío en una
 ficha, Kino te pregunta con el id que cubre tu recurso `meta` (`tt…`, `tmdb:`, `kitsu:`, `mal:`,
-`anilist:`). Un addon que solo tiene `meta` sirve para eso y se instala igual.
+`anilist:`). Un addon que solo tiene `meta` sirve para eso y se instala igual. Desde Kino 0.9.51 el
+`logo` de un meta, su nota de IMDb (`imdbRating`, o el nombre de su enlace `imdb`, donde lo ponen los
+addons al estilo de AIOMetadata) y su reparto (`app_extras.cast`, si no `cast`, si no sus enlaces
+`Cast`) pasan a ser el [logo, las notas y el reparto](contract.md#meta) de la ficha.
 
 ### Canales en vivo { #live }
 
@@ -163,7 +175,12 @@ capítulos) se juntan: máximo 30, uno por dirección, con su idioma de tres let
 Un addon con `subtitles` también responde la **"Buscar subtítulos en línea"** del reproductor para
 cualquier título que Kino conozca por IMDb o TMDB, de cualquier fuente
 ([subtítulos para cualquier título](contract.md#subtitles)): primero los idiomas de la persona, con el
-nombre de la versión (`movieReleaseName` o `subtitleFileName`). Un addon que **solo** tiene
+nombre de la versión (`movieReleaseName` o `subtitleFileName`). Desde Kino 0.9.51 el pedido lleva
+lo que Kino sabe del archivo que suena como los extras propios de Stremio,
+`/subtitles/{type}/{id}/videoHash=…&videoSize=…&filename=….json` (cada uno solo cuando se conoce,
+codificado para URL; `videoSize=0` junto a un `filename` cuyo tamaño no se conoce; nunca la URL del
+video), para que el addon ponga primero la versión exacta; sin nada conocido la ruta queda la de
+siempre. Un addon que **solo** tiene
 `subtitles` (OpenSubtitles v3) se instala como proveedor de subtítulos: no aparece en Inicio, en la
 búsqueda ni en En vivo, y su hoja dice "Agrega subtítulos a tus películas y series".
 
@@ -176,7 +193,7 @@ página de configuración, con el idioma en la ruta).
 
 | Qué | Lo que lee la persona |
 | --- | --- |
-| Un addon de **torrents o P2P**: `behaviorHints.p2p`, o "torrent", "magnet" o "p2p" en su id, nombre o descripción. **También con debrid.** | "Kino no admite addons de torrents, ni siquiera con debrid" |
+| Un addon de **torrents o P2P**: `behaviorHints.p2p`, o "torrent", "magnet" o "p2p" en su id, nombre o descripción (desde Kino 0.9.51 una descripción que los nombra solo para negarlos, "no incluye streams, torrents ni contenido P2P", no cuenta; el id y el nombre siguen estrictos). **También con debrid.** | "Kino no admite addons de torrents, ni siquiera con debrid" |
 | Un manifiesto sin `id` o `name`, o que no es JSON | "Esto no es un addon de Stremio (no encontré su manifest.json)" |
 | Un addon sin `catalog`, `meta`, `stream` ni `subtitles` | "Este addon no ofrece nada que Kino pueda usar" |
 | Una dirección que no es la de un addon | "Esa dirección no es la de un addon de Stremio" |

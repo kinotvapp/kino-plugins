@@ -23,10 +23,12 @@ you use one of those, because Kino 0.9.49 and older refuse an apiVersion 6 plugi
 | 18+ entries | everywhere, only with the 18+ code unlocked | `adult: true` | 6 | [18+ content](contract.md#adult) |
 | Names of the copies of a video | the player's Servidor menu | `Stream.label`, `alternatives` with `label` | 6 | [Labelled and lazy copies](contract.md#lazy-copies) |
 | Skip buttons | "Saltar intro", "Saltar outro" | `Stream.skip` | any | [The contract](contract.md#stream) |
+| Skip buttons on any title, from any source | "Saltar intro", "Saltar outro" | `segments` | 7 | [Where the intro and credits are](contract.md#segments) |
 | Audio and subtitle names | the player's "Audio y subtítulos" menu | `audioTracks[].label`, `subtitles[].lang` | 1 | [The contract](contract.md#stream) |
 | Your own sentence on an error | "Mensaje de &lt;your plugin&gt;: …" | `kino.error(code, detail, { userMessage })` | 6 | [Your own sentence](contract.md#user-message) |
 | Subtitles for any title | "Buscar subtítulos en línea" | the `subtitles` export | any | [Subtitles for any title](contract.md#subtitles) |
-| Info pages of other plugins' titles | a title's info page, where TMDB had nothing | `meta` | 6 | [Describing other titles](contract.md#meta) |
+| Info pages of other plugins' titles | a title's info page, where TMDB had nothing; from Kino 0.9.51 a logo instead of the name, other sites' ratings and the cast | `meta` (`logo`, `ratings`, `cast`) | 6 | [Describing other titles](contract.md#meta) |
+| A tracker's switch and its status | "Enviar lo que veo" and "No pudo avisar a …" in your Ajustes tab | `tracking` | 7 | [Telling a tracker](contract.md#tracking) |
 | Channels, logos, numbers, guide | En vivo, TV guide, channel drawer | `channels` | 3 | [Live channels](live-channels.md) |
 
 ## Your plugin's identity { #identity }

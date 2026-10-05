@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 6)
+# The contract (apiVersion 1 to 7)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -13,7 +13,9 @@ export async function liveCategories() { /* -> Array<LiveCategory | Playlist> or
 export async function liveChannels({ categoryId, cursor }) { /* -> { items: LiveChannel[], next? } */ }
 export async function guide({ channelIds, from, to }) { /* -> GuideEntry[] */ }
 export async function liveSearch({ query }) { /* -> { items: LiveChannel[] } */ }
-export async function subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages }) { /* -> { lang, url, format?, label?, translated? }[] */ }
+export async function subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages, file }) { /* -> { lang, url, format?, label?, translated? }[] */ }
+export async function track(event) { /* -> { ok: true } or { skipped: true }, or throw kino.error(code) (apiVersion 7) */ }
+export async function segments(query) { /* -> { type, startMs, endMs }[] (apiVersion 7) */ }
 ```
 
 From `"apiVersion": 6` (Kino 0.9.50) there are more optional exports, each with its own page:
@@ -21,7 +23,8 @@ From `"apiVersion": 6` (Kino 0.9.50) there are more optional exports, each with 
 `section` and `categories` ([Section, categories and colors](section-theme.md)), and `settingsStatus`,
 `action` and `validateSettings` ([The settings form](settings-form.md)), and `meta`
 ([Describing other titles](#meta)). `subtitles` ([Subtitles for any title](#subtitles)) needs no new
-`apiVersion`.
+`apiVersion`. From `"apiVersion": 7` (Kino 0.9.51): `track` ([Telling a tracker what the person
+watches](#tracking)) and `segments` ([Where the intro and credits are](#segments)).
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
 
@@ -56,7 +59,7 @@ The live-channel functions (`liveCategories`, `liveChannels`, and the optional `
   `ref` of a `live` item. `options` is `undefined` on a normal call; only an apiVersion 6 plugin with a
   [request-signed](signed-streams.md#retry) stream ever gets it, as `{ retry }`. From apiVersion 6 it
   also gets the `ref` of one of your [lazy copies](#lazy-copies), when that copy is needed.
-- `subtitles(arg)` gets `{ imdbId?, tmdbId?, kind, season?, episode?, title?, year?, languages }` (see
+- `subtitles(arg)` gets `{ imdbId?, tmdbId?, kind, season?, episode?, title?, year?, languages, file? }` (see
   [Subtitles for any title](#subtitles)) and returns an array shaped like a `Stream`'s `subtitles`,
   each entry with an optional `label` and `translated`.
 
@@ -398,7 +401,7 @@ CDN should still declare it.
 
 ## Subtitles for any title { #subtitles }
 
-Export `subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages })` and Kino lists
+Export `subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages, file })` and Kino lists
 what you answer in the player's "Buscar subtítulos en línea" (phone and TV), under your plugin's name,
 next to OpenSubtitles and SubDL: for **any** movie or episode the person plays -- your titles, another
 plugin's, a Stremio addon's -- as long as Kino knows its IMDb or TMDB id (a title known only by name is
@@ -418,7 +421,14 @@ Two ways to offer it:
 The argument: `imdbId` (`tt…`) and/or `tmdbId` (a number), at least one of them; `kind` `"movie"` or
 `"series"` -- for an episode the ids are the **series'** and `season`/`episode` are set; `title` and
 `year` are hints; `languages` are the person's subtitle languages, ISO 639-1, best first (`["es",
-"en"]`). Return an array of `{ lang, url, format?, label?, translated? }`: a `Stream`'s `subtitles`
+"en"]`). `file` (Kino 0.9.51) is what Kino knows of the file playing, when the person searches from the
+player: `{ hash?, size?, name? }`, each only when known, and absent when nothing is. `hash` is the
+16-hex OpenSubtitles hash and `size` the bytes it was computed with (only for a plain, stable file);
+`name` is the file's name with its extension ("The.Matrix.1999.1080p.mkv", at most 200 characters),
+taken only from a URL that ends in a video file name, otherwise a release-style name Kino builds from
+the title ("Oppenheimer.2023.mkv", "Breaking.Bad.S01E05.mkv"). Never the video's URL. Use it to rank the
+release that matches the exact file first; older Kino versions never send it, so treat it as a hint.
+Return an array of `{ lang, url, format?, label?, translated? }`: a `Stream`'s `subtitles`
 entries plus an optional `label` and `translated: true` for a machine translation (the menu then says
 "Español (traducido)" and lists it after the person-made tracks of that language). Kino keeps 30, then
 lists only those in the person's languages, in that order, 15 per plugin: put the asked languages first.
@@ -446,16 +456,153 @@ export async function meta(query) {
   return {
     title, overview, poster, backdrop, year: "2011", genres: ["Drama"], runtimeMinutes: 57,
     episodes: [{ season: 1, number: 1, title, overview, still, airDate: "2011-04-17", id: "tt0944947:1:1" }],
+    logo: "https://img.example.org/got-logo.png",                    // Kino 0.9.51+
+    ratings: [{ source: "imdb", value: "9.2" }, { source: "rottentomatoes", value: "89%" }],
+    cast: [{ name: "Emilia Clarke", character: "Daenerys Targaryen", photo: "https://img.example.org/ec.jpg" }],
   };
 }
 ```
 
-Every field is optional. Images follow the same rules as an item's. `episodes[].id` is the episode's
+Every field is optional. Images follow the same rules as an item's. From Kino 0.9.51 three more (older
+versions ignore them; no new `apiVersion`):
+
+- `logo`: a clear-logo of the title (its name drawn as art, transparent background). The info page
+  shows it instead of the title's name at the top (phone and TV; the name stays for TalkBack and comes
+  back if the image fails to load). Same image rules as a `poster`.
+- `ratings`: at most 6 `{ source, value }`, one per source. `source` is one of `imdb`, `tmdb`,
+  `rottentomatoes`, `metacritic`, `letterboxd`, `mal`, `anilist`, `trakt`; `value` a number as the site
+  writes it, up to 3 digits with up to 2 decimals, optionally followed by `%` or a scale (`"8.8"`,
+  `"94%"`, `"4.1/5"`; a JSON number works too). Shown next to the page's ★ score ("IMDb 8.8 ·
+  Rotten Tomatoes 94%"). Unlike the other fields they add up: TMDB's own score stays, and a `tmdb`
+  rating is dropped when the page already has a score. A bad entry is dropped, the rest kept.
+- `cast`: at most 20 `{ name, character?, photo? }` (`name` and `character` 60 characters; `photo` an
+  image like a `poster`). Like every other field it only fills a gap: Kino shows TMDB's cast when TMDB
+  has one. Kino shows the names; `character` and `photo` are kept for later.
+
+`episodes[].id` is the episode's
 Stremio-style video id: a Stremio addon's title whose own listing failed can then play those episodes
 by it. Kino asks every `meta` plugin of the person at once, at most 6 s each, uses the first answer in
 install order, and remembers it for 30 minutes; a failure or a timeout is just no answer, and the page
 never waits for you. The Node kit has no `meta` command and does not check that you export it: test it
 in the app, on the info page of a title TMDB does not know.
+
+## Telling a tracker what the person watches (`tracking`, apiVersion 7) { #tracking }
+
+A plugin for a tracking service -- Seenr, Trakt, Simkl, a Plex-style webhook, the person's own server --
+declares `"capabilities": ["tracking"]` (alone, with `subtitles`/`segments`, or next to a source's
+capabilities) and `"apiVersion": 7`, and exports `track(event)`. Kino calls it for every movie or
+episode the person plays **on that device**, from any source. Kino 0.9.50 and older refuse such a
+manifest with "Este plugin necesita una versión más nueva de Kino".
+
+- **Consent.** The install sheet says, in red, "Le contará a `<your hosts>` qué ves y cuándo lo
+  terminas" (the first 3 hosts, then "y N más"; with no host, "al servidor que escribas en su
+  configuración"). An update that adds `tracking` always waits for the person, even when Kino approves
+  other updates on its own.
+- **The switch.** Your Ajustes tab gets "Enviar lo que veo" (on by default, synced to the person's other
+  devices). Off, Kino stops calling `track` and deletes what was waiting; disabling or uninstalling the
+  plugin does the same.
+- **What is never sent.** Live channels and radio, 18+ titles, anything a Chromecast or DLNA TV plays
+  (the phone is only a remote then), a title that is not in the person's library, and an episode whose
+  number Kino does not know.
+
+**When.** `start` once the video really plays (and again when it resumes after a pause); `progress` at
+most every 5 minutes of playback and on every pause (with `paused: true`); `stop` with the position
+when the person leaves the title (or plays another one); `watched` **once**, when the position crosses
+Kino's own "visto" rule: 3 minutes or less left **and** at least 90% played. A title opened already past
+that point (resumed at the credits on another device) does not send `watched` again, and each device
+sends a title's `watched` to your plugin at most once.
+
+```js
+{
+  id: "6f1c…",            // stable: the same on every retry of this event, use it to ignore a repeat
+  type: "start" | "progress" | "stop" | "watched",
+  at: 1759670000000,      // when it happened on the device (epoch ms), not when it reached you
+  kind: "movie" | "episode",
+  ids: { imdb?, tmdb?, tvdb?, anilist?, mal? },   // a movie's; an episode's OWN (see below)
+  title?: "…",            // the movie's name; an episode's own name when TMDB has one
+  year?: 1999,            // a movie's year
+  show?: { title: "…", year?: 2008, ids: { imdb?, tmdb?, tvdb?, anilist?, mal? } },   // episodes only
+  season?: 1, episode?: 2,                          // episodes only (season 1 when the source gave none)
+  positionMs?: 1234000, durationMs?: 8160000, progress?: 0.151,   // where the person was, 0..1
+  paused?: true           // a progress sent because the person paused
+}
+```
+
+**Which ids.** For an **episode**, `ids` are the **episode's own** (TMDB's episode id, and its IMDb and
+TVDB ids when TMDB knows them) and the **show's** are in `show.ids`: never use `show.ids` where a service
+expects an episode id, or the check-in lands on the wrong item. Kino fills the ids it lacks from TMDB
+when it delivers (at most 8 s); when TMDB doesn't answer the event still goes, and an episode's `ids`
+may be `{}`: fall back to `show.ids` + `season` + `episode`. `anilist`/`mal` appear only when the title's
+own source named them. Every key is absent when unknown; `imdb` is a `tt…` string, the rest numbers.
+
+**What to return.** Anything (`{ ok: true }` by convention) means delivered. Return `{ skipped: true }`
+for an event your service has no use for (a tracker that keeps no `progress`, a title it does not have):
+Kino drops it the same way, but only a real delivery clears the red "No pudo avisar…" line, so a wrong
+link stays visible until it is fixed. To fail, throw `kino.error(code)`:
+
+- `timeout`, `network`, `unavailable`, `rate_limited` (and a timeout of the call itself, or an error
+  thrown without a code): Kino tries the same event again later -- 30 s, doubling up to 6 h, 12 tries at
+  most -- and your later events wait behind it, in order;
+- `auth_required`, `invalid_request`, `not_found`, `geo_blocked`, `host_not_allowed`, `too_large`: the
+  event is dropped at once.
+
+A dropped event, or three failures in a row, shows "No pudo avisar a `<your plugin>`: …" in red in your
+Ajustes tab and in Gestionar, until a delivery succeeds. The call is a background one (10 s, never "No
+responde"), never on the player's thread. Kino keeps at most 200 events waiting per plugin (the oldest
+`progress` goes first, a `watched` never) and drops one still undelivered after 7 days; a newer
+`progress` replaces a waiting one of the same title, and a `stop` or `watched` replaces its waiting
+`progress`. Nothing is lost offline or when the app is closed: Kino delivers once there is network.
+
+Kino's own logs never carry what the person watched; with "Modo debug" on, your Registro shows each
+event sent. A converted Stremio addon never gets `tracking` (Stremio has no scrobble protocol). Try it
+with `node sdk/run.mjs <plugin dir> track start` (or `progress`, `stop`, `watched`, plus a JSON object to
+change the sample).
+
+## Where the intro and credits are (`segments`, apiVersion 7) { #segments }
+
+A plugin that knows where a title's intro and credits are -- an IntroDB-like database, an AniSkip-like
+one, the person's own server -- declares `"capabilities": ["segments"]` (alone, with
+`subtitles`/`tracking`, or next to a source's capabilities) and `"apiVersion": 7`, and exports
+`segments(query)`. Kino then shows its "Saltar intro" and "Saltar outro" buttons, and "Saltar
+automáticamente" jumps the intro, for **any** movie or episode the person plays, from any source, on
+phone and TV. Kino 0.9.50 and older refuse such a manifest.
+
+- **Consent.** "Agrega el botón para saltar la intro y los créditos", not in red (like `subtitles`, your
+  plugin only learns which title plays). An update that adds `segments` needs no approval of its own.
+- **When.** Once a movie or episode really plays (Kino knows the file's length), in the background:
+  playback never waits for you. Never for live channels or radio, 18+ titles, or a title Kino knows by
+  no id. Every installed `segments` plugin is asked at once; Kino keeps an answer (an empty one too) for
+  the session per title, episode and length (rounded to 10 s), and asks again after 2 minutes only when
+  every plugin failed.
+
+```js
+{
+  kind: "movie" | "episode",
+  ids: { imdb?, tmdb?, tvdb?, anilist?, mal? },   // a movie's; an episode's OWN, as track() gets them
+  show?: { ids: { imdb?, tmdb?, tvdb?, anilist?, mal? } },   // episodes only: the show's
+  season?: 1, episode?: 2,                          // episodes only
+  durationMs?: 1440000                              // the playing file's length: answer for THAT cut
+}
+```
+
+No title, year or URL is sent; an episode's `ids` may be `{}`, so fall back to `show.ids` + `season` +
+`episode`. **Return** an array of `{ type, startMs, endMs }` (`[]` or `null` when you know nothing):
+`type` one of `intro`, `outro`, `recap`, `credits`, `preview`, times in whole ms of the file. Kino checks
+each entry on its own and drops a bad one without losing the rest: an unknown `type`, a time that is not
+a whole number, a start below 0, an end not at least 1 s after the start, and -- with `durationMs`
+known -- a start at or past the end or an end more than 5 s past it (within that it is cut). Of
+overlapping entries of the same type the earlier one stays. Kino reads the first 100 entries and keeps
+10. The earliest `intro` is the intro, the earliest `outro` or `credits` after it is where the ending
+starts; `recap` and `preview` are accepted and have no button yet.
+
+**Who wins.** The person's own correction (the marker editor) always does, and so does the
+[`skip`](#stream) of the plugin serving the file. For anime, AniSkip (when "Saltar intro en anime" is on)
+wins part by part: your answer fills only the intro or ending it lacks. Between two `segments` plugins,
+the first in Ajustes ▸ Plugins' order with a usable answer wins. Nothing you answer is stored or synced.
+The call is a background one (8 s, never "No responde"); Kino waits for it at most 12 s. Try it with
+`node sdk/run.mjs <plugin dir> segments tt0133093 8160000` (a movie and its length) or
+`segments tmdb:1396 1 2 2880000` (an episode, by the show's id): it prints what Kino keeps, what it
+dropped and why, and the button it makes of it.
 
 ## Errors people understand { #errors }
 

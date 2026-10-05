@@ -71,7 +71,8 @@ crear tu plugin a partir de una plantilla, y así el kit ya viene adentro.
 
 1. Entra a la plantilla que más se parezca a lo que quieres hacer:
     - [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server): el
-      ejemplo completo (ajustes, usuario y contraseña, descargas, canales en vivo).
+      ejemplo completo, "Tu servidor" 1.5.0 (ajustes, usuario y contraseña, descargas, canales en vivo, y
+      cada función hasta apiVersion 7).
     - [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive): el más
       simple, para un sitio con búsqueda y videos.
 2. Arriba a la derecha, oprime el botón verde **Use this template → Create a new repository**.

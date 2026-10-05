@@ -39,8 +39,10 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) -- raw at
    <https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/plugin.js> and
    <https://raw.githubusercontent.com/kinotvapp/kino-plugin-own-server/main/kino-plugin.json> -- use
-   nearly every apiVersion 2/3 feature a plugin can have: settings, a session, `kino.storage`,
-   downloads, `live` items and `channels`. Study it whenever the plugin needs settings, auth,
+   nearly every feature up to apiVersion 7 a plugin can have ("Tu servidor" 1.5.0): every setting type
+   and the settings form, a session, `kino.storage`, downloads, copies, request signing, `live` items
+   and `channels` in every shape, a section, `migrate`, `meta`, `subtitles`, `tracking` and
+   `segments`. Study it whenever the plugin needs settings, auth,
    downloads or live channels. For a plain plugin with no settings or login, read
    `plugin.js` in [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
    instead, the simpler reference for the five basic capabilities.
@@ -508,7 +510,7 @@ people. See
 - [ ] `id`s are stable and match the pattern; `ref`s keep working when replayed later.
 - [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
-      it needs Kino 0.9.50+).
+      it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+).
 - [ ] No `"debug": true` in the manifest unless the person asked for it (every plugin has a
       "Modo debug" switch in Kino's Ajustes; `true` only turns it on by default for everyone). If `telemetry` is declared, the person agreed and
       the logs hold codes and counts only.

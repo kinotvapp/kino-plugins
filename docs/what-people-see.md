@@ -18,7 +18,10 @@
   "Comparte registros detallados de reproducción y errores con Kino para corregir fallas"; `"browser": true`
   agrega, en rojo, "Puede abrir páginas web ocultas para encontrar el video" y `"browser": "pages"`, en
   rojo, "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video"
-  ([Navegador oculto](browser.md#permission)). En una actualización, lo nuevo lleva un chip
+  ([Navegador oculto](browser.md#permission)). Desde apiVersion 7, `tracking` agrega, en rojo, "Le
+  contará a &lt;tus hosts&gt; qué ves y cuándo lo terminas" ([Contarle a un servicio de
+  seguimiento](contract.md#tracking)) y `segments` agrega "Agrega el botón para saltar la intro y los
+  créditos" ([Dónde están la intro y los créditos](contract.md#segments)). En una actualización, lo nuevo lleva un chip
   "nuevo". Nada tuyo corre antes de que acepten.
 - **Una lista larga de hosts se pliega.** Con más de 3 hosts la hoja dice "Se va a conectar con N
   servidores:", lista los 3 primeros (en una actualización, primero los nuevos) y "y N más (M

@@ -6,7 +6,7 @@
 | --- | --- |
 | Manifiesto / archivo de entrada / ícono | 16 KB / 1 MB / 128 KB |
 | Memoria / pila, por plugin | 64 MB / 1 MB |
-| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin que genera el propio Kino, desde un scraper de Nuvio o un addon de Stremio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; `liveSearch` 15 s; `subtitles` 10 s; `section`, `categories` 20 s cada una (apiVersion 6); `migrate` 10 s; `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `sign` 1,5 s (y 3 s contando su espera); cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
+| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin que genera el propio Kino, desde un scraper de Nuvio o un addon de Stremio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; `liveSearch` 15 s; `subtitles` 10 s; `track` 10 s (apiVersion 7); `segments` 8 s (apiVersion 7); `section`, `categories` 20 s cada una (apiVersion 6); `migrate` 10 s; `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `sign` 1,5 s (y 3 s contando su espera); cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
@@ -19,6 +19,7 @@
 | Lo que devuelve una función | máximo 2.000.000 caracteres ya convertido a JSON |
 | Resultados | `search` 100 ítems; `home` 20 filas de 60; `browse` 100 por página; `episodes` 5.000 (y 50 `seasons`); `ref` 4.096 caracteres; `next` 2.048 caracteres; `id` cumple `^[A-Za-z0-9._~-]{1,128}$` |
 | Canales en vivo (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 por página, 10 páginas al comienzo y 5 más por desplazamiento, 10.000 canales (200 páginas) por categoría; `liveSearch` 100 canales, pedido desde 2 caracteres; `guide` 50 canales y 24 h por llamada, 100 entradas por canal; `number` 1..9999 |
+| Seguimiento (apiVersion 7) | `progress` como mucho cada 5 minutos de reproducción; `watched` una vez, con 3 minutos o menos por delante y al menos el 90 % visto; máximo 200 eventos en espera por plugin; un evento sin entregar en 7 días se descarta; una falla reintentable espera 30 s, duplicando hasta 6 h, máximo 12 intentos |
 | Ajustes | máximo 12 con valor, más máximo 16 `section`/`status`/`action` (apiVersion 6); `text` 500, `url` 2.048, `password` 500 caracteres |
 | Mensajes de error | tu mensaje de `kino.error` es un detalle para el log, cortado a 200 caracteres; un `userMessage` para la persona tiene máximo 160 |
 | `hosts` | al menos 1 entrada, sin límite máximo desde Kino 0.9.45 (solo lo acota el manifiesto de 16 KB; Kino 0.9.44 y anteriores rechazan más de 20); desde apiVersion 2, ninguna (`[]`) cuando hay un ajuste `url` |
@@ -32,7 +33,8 @@ Desde apiVersion 6, además:
 | Copias perezosas | el cambio automático espera máximo 20 s el `resolve` de una copia; una copia que la persona escogió tiene todo el límite de `resolve`; la elección de copia de una descarga prueba dentro de 30 s en total |
 | Navegador oculto (`"browser": true` o `"pages"`) | `resolve` 75 s; una página a la vez en toda la app; `kino.browser.capture` `timeoutMs` 1..25.000 (18.000 por defecto), máximo 8 media y 10 subtítulos, 12 encabezados por media; `kino.browser.page` (solo `"pages"`) `timeoutMs` 1..25.000 (15.000 por defecto), 20 lecturas por minuto por plugin, HTML de máximo 2.000.000 caracteres. Ver [Navegador oculto](browser.md) |
 | `subtitles()` (cualquier apiVersion) | 10 s; se conservan 30 pistas, se listan 15 por plugin; `label` 60 caracteres |
-| `meta()` | 6 s por plugin; la primera respuesta en orden de instalación se guarda 30 minutos |
+| `meta()` | 6 s por plugin; la primera respuesta en orden de instalación se guarda 30 minutos; desde Kino 0.9.51, `ratings` 6 (una por fuente), `cast` 20 (`name` y `character` de 60 caracteres) |
+| `segments()` (apiVersion 7) | 8 s, y Kino espera máximo 12 s; se leen 100 entradas y se conservan 10; cada una de al menos 1 s, con un final de máximo 5 s pasado de la duración; respuesta guardada en la sesión por título, capítulo y duración (10 s); reintento tras 2 minutos si fallaron todos. Ver [`segments`](contract.md#segments) |
 | Formulario de ajustes | `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `status` 200 caracteres, `message` de una acción 300, `confirm` 120, error de un campo 200; `clearSettings` 12 claves |
 | Campos de ajustes (cualquier apiVersion) | `key` `^[a-z][a-zA-Z0-9_]{0,31}$`; `label` 40 caracteres; `hint` 80 (300 en una `section` desde Kino 0.9.51); `select` de 1 a 20 `options`, cada `value` y `label` de 40; `list` (apiVersion 4) `max` de 1 a 50 entradas (20 por defecto), de 1 a 4 `fields` de tipo `text` o `url`. Ver [Formulario de ajustes](settings-form.md#types) |
 | Sección y categorías | etiqueta de la sección 20 caracteres; 8 pestañas de 24 caracteres; texto del destacado 300; `categories` 24 mosaicos con títulos de 40 caracteres |

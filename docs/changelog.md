@@ -3,9 +3,41 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Kino 0.9.51 (aún sin publicar) { #v0951 }
+## Kino 0.9.51: `apiVersion` 7 { #v0951 }
 
-<span id="next"></span>Sin `apiVersion` nuevo: sigue siendo 6, y nada de esta lista te obliga a cambiar tu plugin.
+<span id="next"></span>**`apiVersion` 7 = Kino 0.9.51.** El contrato (`contract.json`) dice ahora `maxApiVersion` 7 y
+`kino.apiVersion` reporta 7. Un manifiesto con `"apiVersion": 7` se rechaza en Kino 0.9.50 y anteriores
+("Este plugin necesita una versión más nueva de Kino"), así que declara 7 solo si usas `tracking` o
+`segments`. Nada más de esta lista te obliga a cambiar tu plugin.
+
+- **`tracking`** (apiVersion 7): tu plugin exporta `track(event)` y Kino le cuenta qué película o
+  capítulo suena en ese aparato, de cualquier fuente: `start`, `progress`, `stop` y `watched`, con los
+  ids propios del capítulo y los de la serie aparte. Se aprueba en rojo ("Le contará a … qué ves y
+  cuándo lo terminas"), trae el interruptor "Enviar lo que veo" en tu pestaña de Ajustes, y los eventos
+  esperan en una cola que sobrevive sin conexión y con la app cerrada (reintentos ordenados, 200 por
+  plugin, 7 días). Devuelve `{ skipped: true }` para un evento que a tu servicio no le sirve.
+  [Contarle a un servicio de seguimiento qué ve la persona](contract.md#tracking).
+- **`segments`** (apiVersion 7): tu plugin exporta `segments(query)` y le dice a Kino dónde están la
+  intro y los créditos de cualquier película o capítulo; los botones "Saltar intro" y "Saltar outro" y
+  el salto automático los usan en celular y TV. Sin aprobación en rojo.
+  [Dónde están la intro y los créditos](contract.md#segments).
+- **Subtítulos por archivo**: `subtitles()` recibe `file: { hash?, size?, name? }`, lo que Kino sabe del
+  archivo que suena (el hash de OpenSubtitles, su tamaño, su nombre, o uno al estilo de un release armado
+  con el título), para poner primero la versión exacta. Un addon de Stremio lo recibe como los extras
+  `videoHash`, `videoSize` y `filename`. Sin `apiVersion` nuevo.
+  [Subtítulos para cualquier título](contract.md#subtitles), [Addons de Stremio](stremio.md#subtitles).
+- **`meta` con logo, notas y reparto**: la respuesta de `meta` puede traer `logo` (se muestra en lugar
+  del nombre en la ficha), `ratings` (hasta 6, de IMDb, Rotten Tomatoes, Letterboxd…) y `cast` (hasta
+  20); un addon de Stremio al estilo de AIOMetadata los da con su `logo`, `imdbRating` y
+  `app_extras.cast`. Sin `apiVersion` nuevo: las versiones anteriores los ignoran.
+  [Describir otros títulos](contract.md#meta).
+- **Los enlaces `stremio:///detail/…` abren el título en Kino** (el "Open in Stremio" de Seenr y
+  similares), en vez de ignorarse. [Addons de Stremio](stremio.md#detail-links).
+- **"Tu servidor" 1.5.0**, el plugin de referencia, ahora muestra todo lo que un servidor propio puede
+  usar hasta apiVersion 7: `tracking`, `segments`, `subtitles` con `file`, `meta` con logo, notas y
+  reparto, y lo de apiVersion 6 (sección, categorías, firma por petición, copias, el formulario de
+  ajustes completo, una lista con `resolve: true`, `liveSearch` y paginación de canales).
+  [Plugins de ejemplo](examples.md#reference-plugin).
 
 - **Compatibilidad de Nuvio v2**: Kino convierte muchos más scrapers de Nuvio. Scrapers de varios
   archivos (los hermanos se leen del mismo repositorio, máximo 16 archivos y 1 MiB), un subconjunto de
@@ -32,6 +64,8 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   [Addons de Stremio](stremio.md#subtitles).
 - **La tarjeta de tu plugin ya no lleva la insignia "Kino"** (parecía hecho por Kino); los addons de
   Stremio y los scrapers de Nuvio conservan la suya.
+- **Un addon de Stremio cuya descripción niega los torrents ya no se oculta** ("no incluye streams,
+  torrents ni contenido P2P"); el id y el nombre siguen estrictos. [Lo que Kino rechaza](stremio.md#refused).
 
 ## Kino 0.9.50: `apiVersion` 6 { #v0950 }
 

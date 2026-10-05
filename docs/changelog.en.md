@@ -3,9 +3,38 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Kino 0.9.51 (not released yet) { #v0951 }
+## Kino 0.9.51: `apiVersion` 7 { #v0951 }
 
-<span id="next"></span>No new `apiVersion`: it is still 6, and nothing on this list makes you change your plugin.
+<span id="next"></span>**`apiVersion` 7 = Kino 0.9.51.** The contract (`contract.json`) now says `maxApiVersion` 7 and
+`kino.apiVersion` reports 7. A manifest with `"apiVersion": 7` is refused by Kino 0.9.50 and older ("Este
+plugin necesita una versión más nueva de Kino"), so declare 7 only if you use `tracking` or `segments`.
+Nothing else on this list makes you change your plugin.
+
+- **`tracking`** (apiVersion 7): your plugin exports `track(event)` and Kino tells it which movie or
+  episode plays on that device, from any source: `start`, `progress`, `stop` and `watched`, with the
+  episode's own ids and the show's apart. Approved in red ("Le contará a … qué ves y cuándo lo
+  terminas"), with a "Enviar lo que veo" switch in your Ajustes tab; events wait in a queue that survives
+  offline and a closed app (ordered retries, 200 per plugin, 7 days). Return `{ skipped: true }` for an
+  event your service has no use for. [Telling a tracker what the person watches](contract.md#tracking).
+- **`segments`** (apiVersion 7): your plugin exports `segments(query)` and tells Kino where any movie's
+  or episode's intro and credits are; the "Saltar intro" and "Saltar outro" buttons and auto-skip use
+  them on phone and TV. No red approval. [Where the intro and credits are](contract.md#segments).
+- **Subtitles for the exact file**: `subtitles()` gets `file: { hash?, size?, name? }`, what Kino knows
+  of the playing file (its OpenSubtitles hash, its size, its name, or a release-style one built from the
+  title), to rank the exact release first. A Stremio addon gets it as the `videoHash`, `videoSize` and
+  `filename` extras. No new `apiVersion`. [Subtitles for any title](contract.md#subtitles),
+  [Stremio addons](stremio.md#subtitles).
+- **`meta` with a logo, ratings and cast**: a `meta` answer may carry `logo` (shown instead of the name
+  on the info page), `ratings` (up to 6, from IMDb, Rotten Tomatoes, Letterboxd…) and `cast` (up to
+  20); an AIOMetadata-style Stremio addon gives them through its `logo`, `imdbRating` and
+  `app_extras.cast`. No new `apiVersion`: older versions ignore them.
+  [Describing other titles](contract.md#meta).
+- **`stremio:///detail/…` links open the title in Kino** (Seenr's "Open in Stremio" and the like)
+  instead of being ignored. [Stremio addons](stremio.md#detail-links).
+- **"Tu servidor" 1.5.0**, the reference plugin, now shows everything a server of one's own can use up
+  to apiVersion 7: `tracking`, `segments`, `subtitles` with `file`, `meta` with logo, ratings and cast,
+  and the apiVersion 6 features (section, categories, request signing, copies, the full settings form, a
+  `resolve: true` playlist, `liveSearch` and channel paging). [Example plugins](examples.md#reference-plugin).
 
 - **Nuvio compatibility v2**: Kino converts many more Nuvio scrapers. Multi-file scrapers (siblings
   read from the same repository, at most 16 files and 1 MiB), a Node subset (`path`, `url`, `util`,
@@ -27,6 +56,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   no longer published on npm: Kino reads it from this repository on GitHub, then from archive.org,
   then from jsDelivr's copy of the same GitHub file. An addon that plays video is still never
   recommended. [Stremio addons](stremio.md#subtitles).
+- **A Stremio addon whose description denies torrents is no longer hidden** ("no incluye streams,
+  torrents ni contenido P2P"); the id and name stay strict. [What Kino refuses](stremio.md#refused).
 - **Your plugin's card no longer wears a "Kino" badge** (it read as made by Kino); Stremio addons and
   Nuvio scrapers keep theirs.
 

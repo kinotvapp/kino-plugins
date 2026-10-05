@@ -23,10 +23,12 @@ declara 6 solo si usas algo de eso, porque Kino 0.9.49 y anteriores rechazan un 
 | Entradas +18 | en todas partes, solo con el código +18 desbloqueado | `adult: true` | 6 | [Contenido +18](contract.md#adult) |
 | Nombres de las copias de un video | el menú Servidor del reproductor | `Stream.label`, `alternatives` con `label` | 6 | [Copias con etiqueta y perezosas](contract.md#lazy-copies) |
 | Botones para saltar | "Saltar intro", "Saltar outro" | `Stream.skip` | cualquiera | [Contrato](contract.md#stream) |
+| Botones para saltar en cualquier título, de cualquier fuente | "Saltar intro", "Saltar outro" | `segments` | 7 | [Dónde están la intro y los créditos](contract.md#segments) |
 | Nombres de audio y subtítulos | el menú "Audio y subtítulos" del reproductor | `audioTracks[].label`, `subtitles[].lang` | 1 | [Contrato](contract.md#stream) |
 | Tu propia frase en un error | "Mensaje de &lt;tu plugin&gt;: …" | `kino.error(code, detalle, { userMessage })` | 6 | [Tu propia frase](contract.md#user-message) |
 | Subtítulos para cualquier título | "Buscar subtítulos en línea" | la función `subtitles` | cualquiera | [Subtítulos para cualquier título](contract.md#subtitles) |
-| Fichas de títulos de otros plugins | la ficha de un título, donde TMDB no tenía nada | `meta` | 6 | [Describir otros títulos](contract.md#meta) |
+| Fichas de títulos de otros plugins | la ficha de un título, donde TMDB no tenía nada; desde Kino 0.9.51 un logo en lugar del nombre, notas de otros sitios y el reparto | `meta` (`logo`, `ratings`, `cast`) | 6 | [Describir otros títulos](contract.md#meta) |
+| El interruptor de un servicio de seguimiento y su estado | "Enviar lo que veo" y "No pudo avisar a …" en tu pestaña de Ajustes | `tracking` | 7 | [Contarle a un servicio de seguimiento](contract.md#tracking) |
 | Canales, logos, números, guía | En vivo, guía de TV, cajón de canales | `channels` | 3 | [Canales en vivo](live-channels.md) |
 
 ## La identidad de tu plugin { #identity }
