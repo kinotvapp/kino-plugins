@@ -22,8 +22,9 @@ quieres saber por qué un plugin convertido se porta distinto de uno escrito a m
 3. Un selector a pantalla completa lista **todos** los scrapers del manifiesto, con su logo, tipos,
    idioma, versión y autor, y filtra por tipo (Todas, Películas, Series, Anime) y por idioma. Cada
    tarjeta dice "Agregar", "Instalado" o "No disponible" (un scraper que el manifiesto desactiva, o
-   desactiva en Android). Un repositorio sin nada instalable dice "Este repositorio de Nuvio no tiene
-   scrapers instalables en Android".
+   desactiva en Android) o "No compatible" (un scraper de fuentes P2P, con o sin debrid: "Kino no admite
+   scrapers de torrents, ni siquiera con debrid", desde Kino 0.9.51). Un repositorio sin nada instalable
+   dice "Este repositorio de Nuvio no tiene scrapers instalables en Android".
 4. "Agregar" convierte ese scraper y abre la [hoja de consentimiento](what-people-see.md) de siempre;
    después de "Instalar" el selector sigue abierto para agregar otro. Cada scraper queda como su
    propio plugin, listado en Ajustes ▸ Plugins como cualquier otro.
@@ -37,8 +38,10 @@ original GPL-3.0").
 El JavaScript del scraper se conserva byte por byte, envuelto con una capa de compatibilidad y un
 pequeño adaptador, y se instala con un manifiesto generado:
 
-- `apiVersion` 4, `version` `1.<revisión del convertidor>.0` (hoy `1.2.0`, mira
-  [Actualizaciones](#updates)), capacidades `search`, `episodes`, `resolve` y `download`.
+- `apiVersion` 6 (4 antes de Kino 0.9.51), `version` `1.<revisión del convertidor>.0` (hoy `1.4.0`,
+  mira [Actualizaciones](#updates)), capacidades `search`, `episodes`, `resolve` y `download`.
+- Los `settings` del plugin, cuando el scraper tiene `onSettings` (Kino 0.9.51): ver
+  [Ajustes del scraper](#settings).
 - Los tipos que sirve el scraper salen de su `supportedTypes`, con las formas de escribirlos más
   comunes unificadas: `movie`, `movies`, `film`, `films` son películas; `tv`, `series`, `show`,
   `shows` son series; `anime` es anime (sin importar mayúsculas). Un scraper que declara
@@ -78,11 +81,17 @@ de TMDB". Así que el adaptador trabaja desde TMDB:
   hasta que la persona escoge una. Si TMDB falla, la búsqueda no responde nada, en vez de un error.
 - **`episodes`** lista las temporadas y capítulos desde TMDB, sin la temporada 0 (especiales) y sin
   los capítulos que todavía no se han emitido.
-- **`resolve`** llama al `getStreams` del scraper exactamente como lo hace Nuvio, descarta los
-  resultados que solo son torrent (Kino no tiene cliente BitTorrent) y escoge por calidad: primero
-  1080p, luego 720p, luego cualquier otra, y 2160p/4K de último (la mayoría de celulares y televisores
-  de acá no decodifican 4K HEVC). Cuando no queda nada, la persona lee por qué: "sin resultados",
-  "solo torrents" o "error del scraper: …" con lo que el scraper dejó en el log.
+- **`resolve`** llama al `getStreams` del scraper exactamente como lo hace Nuvio y se queda solo con
+  las copias `http`/`https` (Kino no tiene cliente BitTorrent). Desde Kino 0.9.51 **cada copia
+  reproducible** se ofrece: la primera se reproduce y hasta 8 más van como
+  [copias alternativas con etiqueta](contract.md#lazy-copies) en el menú **Servidor**, en este orden:
+  archivos de video antes que páginas de embed, y dentro de eso primero 1080p, luego 720p, luego
+  cualquier otra y 2160p/4K de último (la mayoría de celulares y televisores de acá no decodifican 4K
+  HEVC). La etiqueta es la calidad con el nombre del servidor ("1080p · Servidor X"), así que dos copias
+  de la misma calidad se distinguen. Una dirección al estilo Kodi, `url|User-Agent=…&Referer=…`, se
+  parte: lo que va después de `|` se vuelve encabezados de la petición. Cuando no queda nada, la persona
+  lee por qué: "sin resultados", "solo enlaces P2P" o "error del scraper: …" con lo que el scraper dejó
+  en el log.
 - **Las descargas** funcionan en celulares como en cualquier plugin con `download`
   ([Descargas](manifest.md#downloads)), con las mismas reglas de hosts que al reproducir.
 
@@ -105,9 +114,27 @@ La capa de compatibilidad reconstruye, encima de `kino`, lo que espera un scrape
 `global`, `setTimeout`/`clearTimeout`, `AbortController`/`AbortSignal`, `require("crypto")` (el de
 Node, en lo que usan los scrapers), la API Web Crypto del navegador (`crypto.subtle`,
 `crypto.getRandomValues`, `crypto.randomUUID`), `TMDB_API_KEY`, y los `cheerio-without-node-native`,
-`crypto-js` y `Buffer` reales, incluidos solo cuando el código del scraper los necesita. Un scraper que
-hace `require` de cualquier otra cosa falla con "Nuvio compat: require('…') was not bundled with this
-scraper".
+`crypto-js` y `Buffer` reales, incluidos solo cuando el código del scraper los necesita.
+
+Desde Kino 0.9.51 (compatibilidad de Nuvio v2) también:
+
+- **Los globales de Nuvio**: `window`, `self` y `SCRAPER_ID`; `getStreams` se encuentra en
+  `module.exports`, `exports.getStreams`, `default` o como global; el código async compilado con
+  regenerator funciona, y un `require` dentro de un `try` o un `if` también.
+- **Un subconjunto de Node**: `path`, `url`, `util`, `events`, `querystring`, `timers`, `buffer` y
+  `http`/`https`/`undici` (sobre `kino.fetch`), más `setInterval`, `setImmediate` y `queueMicrotask`.
+  `fs`, `child_process`, `net`, `os`, `stream` y parecidos cargan como módulos vacíos: todo miembro se
+  lee como `undefined`, así que la propia revisión del scraper cae a `fetch`, y llamarlo igual es un
+  `TypeError`.
+- **Scrapers de varios archivos**: los archivos hermanos que pide con `require` se leen del mismo
+  repositorio y por el mismo camino (ningún destino nuevo). Máximo 16 archivos y 1 MiB en total; `../`
+  dentro del repositorio sirve, una ruta que se sale de él (también codificada con `%`) se rechaza. Un
+  hermano que falla al cargar se reintenta.
+- **Tiempos**: 30 s por petición. Un temporizador que el scraper deja corriendo se borra apenas
+  `getStreams` termina, así que la llamada no lo espera.
+
+Un `require` de algo que no está en esa lista ni es un archivo hermano falla con "Nuvio compat:
+require('…') was not bundled with this scraper".
 
 La clave de TMDB de Kino nunca se escribe en el código del plugin convertido: `TMDB_API_KEY` tiene
 una marca fija, y Kino pone la clave real en su lugar solo en peticiones `https` a
@@ -119,10 +146,26 @@ Todo eso existe **solo** dentro de un scraper convertido. Un plugin que escribes
 Kino tal cual: ninguno de esos globales ([Límites y trampas del motor](engine-limits.md#not-node)). Lo
 mismo pasa con el arreglo de los ayudantes async de [la trampa del rechazo](engine-limits.md#rejection-trap).
 
+## Ajustes del scraper { #settings }
+
+Desde Kino 0.9.51, el `onSettings` de un scraper se vuelve el [formulario de ajustes](settings-form.md)
+del plugin convertido, en su propia pestaña de Ajustes, y lo que la persona escoge se sincroniza entre
+sus aparatos como cualquier ajuste de plugin. El scraper lo recibe en `SCRAPER_SETTINGS`, con sus
+propias llaves. Si el formulario del scraper no cabe en los límites de Kino, la hoja de consentimiento
+avisa "Algunos ajustes del scraper no caben y quedaron fuera". Un ajuste que pide una cuenta de debrid
+hace que el scraper se rechace (ver arriba).
+
+## Qué se rechaza { #refused }
+
+**Los scrapers de fuentes P2P, con o sin debrid** (Kino 0.9.51): Kino no maneja torrents, así que su
+tarjeta dice "No compatible" y "Kino no admite scrapers de torrents, ni siquiera con debrid"; se juzga
+igual que un [addon P2P de Stremio](stremio.md). Uno instalado antes se apaga en su siguiente revisión
+de actualizaciones.
+
 ## Actualizaciones { #updates }
 
 La versión de un plugin convertido es `1.<revisión del convertidor>.0`: solo cambia cuando cambia el
-convertidor de Kino (hoy `1.2.0`), porque los campos `version` de Nuvio no son confiables. Para
+convertidor de Kino (hoy `1.4.0`), porque los campos `version` de Nuvio no son confiables. Para
 encontrar actualizaciones Kino no compara versiones: "Buscar actualizaciones" (y la revisión en
 segundo plano) vuelve a hacer toda la conversión desde el repositorio y compara el código y el
 manifiesto que salen con los instalados, así que un cambio en el scraper se encuentra aunque la
@@ -137,5 +180,7 @@ aprobación una vez por lo que agregan las conversiones nuevas (`fetchHosts`, de
   `name`, `filename` e idealmente `supportedTypes`, `contentLanguage`, `version`, `author`,
   `description` y `logo`: el selector los muestra y filtra por ellos.
 - Usa `enabled: false` o `disabledPlatforms: ["android"]` para los scrapers que no se deben ofrecer.
+- Devuelve direcciones `http`/`https` de video directo cuando las tengas: van antes que las páginas de
+  embed. Ponle `quality` y `name` a cada copia, que son su etiqueta en el menú Servidor.
 - Escribe la dirección del propio sitio como un literal en el código (o en una lista remota de
   dominios): así es como Kino encuentra los hosts que va a declarar.

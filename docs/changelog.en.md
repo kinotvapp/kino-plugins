@@ -3,9 +3,36 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Kino 0.9.50: `apiVersion` 6 (not released yet) { #v0950 }
+## Kino 0.9.51 (not released yet) { #v0951 }
 
-<span id="next"></span>**`apiVersion` 6 = Kino 0.9.50.** The contract (`contract.json`) now says `maxApiVersion` 6 and
+<span id="next"></span>No new `apiVersion`: it is still 6, and nothing on this list makes you change your plugin.
+
+- **Nuvio compatibility v2**: Kino converts many more Nuvio scrapers. Multi-file scrapers (siblings
+  read from the same repository, at most 16 files and 1 MiB), a Node subset (`path`, `url`, `util`,
+  `events`, `querystring`, `timers`, `buffer` and `http`/`https`/`undici` over `kino.fetch`;
+  `setInterval`, `queueMicrotask`), each scraper's `onSettings` as a settings form synced across
+  devices, and every playable copy offered as a labelled alternative in the Servidor menu (embed pages
+  last). A Kodi-style `url|User-Agent=…` address becomes headers. Peer-to-peer and debrid scrapers are
+  refused ("No compatible"). None of it is for your own plugin: it is what a Nuvio scraper may rely on.
+  [Nuvio scrapers](nuvio.md#runtime).
+- **Settings form**: a `section`'s `hint` may be up to 300 characters and wraps
+  (`sectionHintMaxChars` in `contract.json`). Builds before 0.9.51 refuse one over 80, so keep it
+  short if your plugin must install on them. [The settings form](settings-form.md#types).
+- **A `%` in an error's text no longer crashes the app.** Up to 0.9.50, an error from your plugin
+  whose text carried a `%` (a percent-encoded URL such as `?q=Inception%20s` in a "fetch failed")
+  could kill Kino outright. Now an error's text can be anything; if your plugin must run on 0.9.50 and
+  older, keep encoded addresses out of its error messages. [Errors your code can catch](kino-api.md#catch).
+- **Recomendados** gains Stremio utility addons (subtitles such as OpenSubtitles v3 and Subtis,
+  catalogs such as Cinemeta, TMDB and IMDb) and free, legal channels (Pluto TV, Radios). The list is
+  no longer published on npm: Kino reads it from this repository on GitHub, then from archive.org,
+  then from jsDelivr's copy of the same GitHub file. An addon that plays video is still never
+  recommended. [Stremio addons](stremio.md#subtitles).
+- **Your plugin's card no longer wears a "Kino" badge** (it read as made by Kino); Stremio addons and
+  Nuvio scrapers keep theirs.
+
+## Kino 0.9.50: `apiVersion` 6 { #v0950 }
+
+**`apiVersion` 6 = Kino 0.9.50.** The contract (`contract.json`) now says `maxApiVersion` 6 and
 `kino.apiVersion` reports 6. A manifest with `"apiVersion": 6` is refused by Kino 0.9.49 and older
 ("Este plugin necesita una versión más nueva de Kino"), so declare 6 only if you use something on this
 list. Everything a plugin can now change in how Kino shows it is gathered on

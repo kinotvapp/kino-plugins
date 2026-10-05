@@ -224,7 +224,7 @@ card falls back to the neutral look. The app keeps each card's colour and icon f
 
 When the search fails (no network to GitHub, a rate limit, a TLS error from a wrong clock) or finds
 nothing valid, and the device has no search list of its own saved, the app reads a backup community
-list that the Kino team publishes on the same CDNs as the recommended plugins. It holds only
+list that the Kino team publishes on jsDelivr, unpkg and archive.org. It holds only
 `owner/repo` and a star count: each repository's `kino-plugin.json` is still read from GitHub and
 checked with every rule above. The app asks GitHub again as soon as the spacing and any backoff
 allow.

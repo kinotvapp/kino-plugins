@@ -235,8 +235,8 @@ tarjeta durante un día.
 
 Cuando la búsqueda falla (no hay red hacia GitHub, un límite de peticiones, un error TLS por un reloj
 mal puesto) o no encuentra nada válido, y el dispositivo no tiene guardada una lista de búsqueda
-propia, la app lee una lista de respaldo de la comunidad que publica el equipo de Kino en los mismos
-CDN que los plugins recomendados. Solo trae `owner/repo` y un número de estrellas: el
+propia, la app lee una lista de respaldo de la comunidad que publica el equipo de Kino en jsDelivr,
+unpkg y archive.org. Solo trae `owner/repo` y un número de estrellas: el
 `kino-plugin.json` de cada repositorio igual se lee desde GitHub y se revisa con todas las reglas de
 arriba. La app vuelve a preguntarle a GitHub en cuanto lo permiten la espera mínima y cualquier
 bloqueo por límites.
