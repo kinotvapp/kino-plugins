@@ -1,14 +1,17 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 7; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 8; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
 
 // ---------- what your functions receive and return ----------
 
-/** `search(query)`: `type` is a hint, never a filter. `cursor` is null on the first page. */
+/**
+ * `search(query)`: `type` is a hint, never a filter. `cursor` is null on the first page. `"music"` and `"podcast"`
+ * (apiVersion 8) when Kino leans towards audio; `"any"` includes them.
+ */
 interface KinoSearchQuery {
   q: string;
-  type: "movie" | "series" | "any";
+  type: "movie" | "series" | "music" | "podcast" | "any";
   year: number;
   season: number;
   episode: number;
@@ -37,8 +40,21 @@ interface KinoItem {
    * `ref` goes to `resolve` and plays as live straight from its card, with an "EN VIVO" badge; it
    * has no `runtimeMinutes` (ignored) and no episodes, is never saved to the library, never resumed
    * and never downloaded.
+   *
+   * `"music"` (an album, playlist or single track) and `"podcast"` (a show or an audiobook) need `"apiVersion": 8`
+   * (below it they are dropped, with a log line, and the rest of the answer stays) and NOT the `episodes` capability.
+   * With `episodes` declared, Kino calls `episodes(ref)` with an audio item's `ref` for its tracks or episodes (a single
+   * track answers one entry: `number` = track number, `still` = cover, `runtimeMinutes`), each entry's `ref` going to
+   * `resolve`; without it, the item's own `ref` goes straight to `resolve` and plays as one track, like a movie's.
+   * `runtimeMinutes` is kept.
    */
-  kind: "movie" | "series" | "live";
+  kind: "movie" | "series" | "live" | "music" | "podcast";
+  /**
+   * apiVersion 8, `music` and `podcast` only: the artist (music) or the host/author (podcast). Trimmed, at most 200
+   * characters; ignored on any other kind. The album or podcast page shows it as the line under the title; without it
+   * there is no such line (Kino never guesses one from `overview` or `genres`).
+   */
+  artist?: string;
   year?: string | number;
   /** http or https, at most 2048 characters; a public name or a public IPv4 address, never the home network or a local name (over http not even a name without a dot), except the person's own server. */
   poster?: string;
@@ -109,9 +125,14 @@ interface KinoSeriesInfo {
   poster?: string;
   backdrop?: string;
   overview?: string;
-  ids?: { tmdb?: number; imdb?: string };
   genres?: string[];
   year?: string | number;
+  /** Kino 0.9.54: 0 to 10, like an item's. */
+  rating?: number;
+  /** `tmdb`, `imdb`; Kino 0.9.54: also an anime's `mal`, `anilist`, `kitsu` (whole numbers), for AniList and meta plugins. */
+  ids?: { tmdb?: number; imdb?: string; mal?: number; anilist?: number; kitsu?: number };
+  /** Kino 0.9.54: a movie's length (in a `details` answer); a series' is per episode and ignored. */
+  runtimeMinutes?: number;
 }
 
 /**
@@ -331,9 +352,14 @@ type KinoMigrateInput =
   | { kind: "chapter"; ref: string; season: number | null; episode: number | null }
   | { kind: "live"; provider: string; code: string };
 
-/** Your answer: the same id/ref you would return from search() today. `ref` never starts with "plg1:". */
+/**
+ * Your answer: the same id/ref you would return from search() today. `ref` never starts with "plg1:".
+ * "music" and "podcast" need apiVersion 8 (below it such an answer is no claim). They move in the shape your
+ * plugin saves them in: with the "episodes" capability as an album or show, chapter by chapter like a series;
+ * without it as a lone track, like a movie, and only when one row is saved.
+ */
 type KinoMigrateAnswer =
-  | { kind: "movie" | "series"; id: string; ref: string }
+  | { kind: "movie" | "series" | "music" | "podcast"; id: string; ref: string }
   | { kind: "episode"; ref: string; season?: number; number: number }
   | { kind: "live"; code: string };
 
@@ -363,7 +389,7 @@ interface KinoCategory {
   adult?: boolean;
 }
 
-/** Your module's exports. `resolve` is required, and at least one of `search`/`home`. */
+/** Your module's exports. `resolve` is required, and at least one of `search`/`home` (a catalog-only plugin: see [KinoCatalogOnlyPlugin]). */
 interface KinoPlugin {
   /** apiVersion 6, capability "migrate". Return null for anything that is not yours. 10 s per call. */
   migrate?(input: KinoMigrateInput): Promise<KinoMigrateAnswer | null>;
@@ -376,6 +402,8 @@ interface KinoPlugin {
   home?(): Promise<KinoRow[]>;
   browse?(ref: string, cursor: string | null): Promise<KinoPage>;
   episodes?(ref: string): Promise<KinoEpisodes>;
+  /** Kino 0.9.54, optional, no capability, asked only from apiVersion 8 (a RESERVED export name from apiVersion 8): a movie item's details for its title page. 20 s. */
+  details?(ref: string): Promise<KinoSeriesInfo | null>;
   /** `options.retry` (apiVersion 6) only when Kino resolves again after the origin refused your stream. `attempt` is 1 to 3; `status` is the origin's HTTP status when Kino heard one. */
   resolve(ref: string, options?: { retry?: { reason: "conflict" | "expired"; attempt: number; status?: 401 | 403 | 409 } }): Promise<KinoStream>;
   /**
@@ -504,8 +532,25 @@ interface KinoTracker { track: KinoTrackFn; subtitles?: KinoSubtitlesFn; segment
 /** A segment source: capabilities only "segments" (and maybe "subtitles" or "tracking"). */
 interface KinoSegmentSource { segments: KinoSegmentsFn; subtitles?: KinoSubtitlesFn; track?: KinoTrackFn }
 
+/**
+ * Kino 0.9.54, `"catalogOnly": true` in kino-plugin.json (additive: no new apiVersion, an older Kino ignores the field): a
+ * catalog that lists and describes titles and plays none. Kino sends its titles to the person's other sources ("Buscar
+ * dónde verlo"), never lists it as a source of a title and never calls its `resolve`. Needs one of `home`, `browse`,
+ * `search`, `meta`; refuses `download`, `drm`, `channels`, `streamHosts` and `"browser": true` (`"pages"` is fine). To install
+ * on Kino 0.9.53 and older too, keep declaring and exporting `resolve` (throw `kino.error("not_found", …, { userMessage })`)
+ * and declare `search` or `home`: those apps ignore the field and require both.
+ */
+interface KinoCatalogOnlyPlugin extends Omit<KinoPlugin, "resolve" | "sign" | "liveCategories" | "liveChannels" | "liveSearch" | "guide"> {
+  /** Only for Kino 0.9.53 and older (which require it): never called from Kino 0.9.54 on. */
+  resolve?: KinoPlugin["resolve"];
+  subtitles?: KinoSubtitlesFn;
+  track?: KinoTrackFn;
+  segments?: KinoSegmentsFn;
+  meta?: KinoMetaFn;
+}
+
 /** Your module's exports: one of these. */
-type KinoPluginModule = KinoPlayingPlugin | KinoSubtitleProvider | KinoTracker | KinoSegmentSource;
+type KinoPluginModule = KinoPlayingPlugin | KinoCatalogOnlyPlugin | KinoSubtitleProvider | KinoTracker | KinoSegmentSource;
 
 // ---------- the kino API ----------
 
@@ -663,8 +708,24 @@ interface KinoBrowserCaptureOptions {
   headers?: Record<string, string>;
   /** A regular expression (case-insensitive, up to 500 characters) for what counts as the video request; default: m3u8, mpd, mp4, `master.txt`, `videoplayback`, `/hls/`. */
   match?: string;
-  /** Default true: mute and start the page's player, click common play buttons, tap the middle. */
+  /** Default true: mute and start the page's player, click common play buttons, tap the middle. Off with `waitForCookie`. */
   autoplay?: boolean;
+  /**
+   * Kino 0.9.54 (check `kino.browser.captureAll` first; older Kino ignores it): collect EVERY request matching `match`
+   * (or the default media pattern) or one of `alsoMatch`, deduplicated by URL, at most 20, until the page settles (the
+   * first match was seen and nothing new matched for 1 s) or `timeoutMs`. The answer then has `requests`.
+   */
+  captureAll?: boolean;
+  /** Kino 0.9.54, only with `captureAll`: 1..10 more patterns (up to 500 characters each, case-insensitive) whose requests are collected too, never held back from the page. */
+  alsoMatch?: (string | RegExp)[];
+  /**
+   * Kino 0.9.54: a cookie name (an HTTP token, e.g. `"cf_clearance"`) the page must also hold for its current host.
+   * Without `match` no request is needed: the page ends as soon as the cookie is there (a cookie-only page). Kino never
+   * autoplays or taps a page that waits for a cookie. With `captureAll` it needs a `match`.
+   */
+  waitForCookie?: string;
+  /** Kino 0.9.54: a page that runs out of time answers what it had, with `timedOut: true`, instead of throwing `timeout`. */
+  returnCookiesOnTimeout?: boolean;
 }
 
 /** apiVersion 6: what `kino.browser.capture` saw. */
@@ -675,6 +736,18 @@ interface KinoBrowserCapture {
   subtitles: { url: string; lang?: string }[];
   /** The top page's last address. */
   finalUrl: string;
+  /**
+   * Kino 0.9.54, only when the call used `captureAll`, `waitForCookie` or `returnCookiesOnTimeout`: the matching requests
+   * (at most 20) with the method and headers the page sent, the first match first. On a timeout answer without a match,
+   * only `alsoMatch` hits (or none): check each URL against your own patterns.
+   */
+  requests?: { url: string; method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS"; headers: Record<string, string> }[];
+  /** Kino 0.9.54, same condition: the final page's cookies (at most 64, 16,384 characters in all, Cloudflare's `cf_*`/`__cf*` kept first). */
+  cookies?: Record<string, string>;
+  /** Kino 0.9.54, same condition: the hidden page's user agent (the one Cloudflare ties `cf_clearance` to). */
+  userAgent?: string;
+  /** Kino 0.9.54, same condition: true only for a `returnCookiesOnTimeout` page that ran out of time. */
+  timedOut?: boolean;
 }
 
 /** apiVersion 6, `"browser": "pages"`: `kino.browser.page` options. */
@@ -702,6 +775,54 @@ interface KinoBrowserPage {
   status: number;
   /** True when `html` was cut at 2,000,000 characters. */
   truncated: boolean;
+}
+
+/** `kino.cloudstream` (converted plugins only): one result of a CloudStream provider's search or main page. */
+interface CsItem {
+  name: string;
+  url: string;
+  type?: string;
+  poster?: string;
+  posterHeaders?: Record<string, string>;
+  year?: number;
+  quality?: string;
+  provider?: string;
+}
+
+/** `kino.cloudstream` (converted plugins only): what a CloudStream provider's `load` says about a title. */
+interface CsTitle {
+  name: string;
+  url: string;
+  type?: string;
+  plot?: string;
+  poster?: string;
+  background?: string;
+  year?: number;
+  tags?: string[];
+  rating?: number;
+  durationMin?: number;
+  kind?: string;
+}
+
+/** `kino.cloudstream` (converted plugins only): one episode of a title; `data` is what `loadLinks` takes. */
+interface CsEpisode {
+  data: string;
+  season?: number;
+  episode?: number;
+  name?: string;
+  poster?: string;
+  description?: string;
+  date?: number;
+  dubStatus?: string;
+}
+
+/** `kino.cloudstream` (converted plugins only): a playable link, already filtered (public https only) and ranked by Kino. */
+interface CsLink {
+  url: string;
+  name: string;
+  quality: number;
+  linkType: "VIDEO" | "M3U8" | "DASH";
+  headers: Record<string, string>;
 }
 
 declare namespace kino {
@@ -764,6 +885,8 @@ declare namespace kino {
    */
   namespace browser {
     function capture(url: string, options?: KinoBrowserCaptureOptions): Promise<KinoBrowserCapture>;
+    /** Kino 0.9.54+: `true` when `capture` takes `captureAll`, `alsoMatch`, `waitForCookie` and `returnCookiesOnTimeout`; absent before. */
+    const captureAll: true | undefined;
     /**
      * apiVersion 6, with `"browser": "pages"` in the manifest (`true` is capture-only and answers `not_allowed` here; the
      * person approves "Puede abrir páginas web ocultas para mostrar contenido y
@@ -781,10 +904,23 @@ declare namespace kino {
     function page(url: string, options?: KinoBrowserPageOptions): Promise<KinoBrowserPage>;
   }
 
+  /**
+   * Present only in plugins Kino generates from a CloudStream repository. Hand-written plugins never have it.
+   * Each call runs the CloudStream provider at index `provider` inside the CloudStream bridge app. Throws a typed
+   * error: `not_found` (the provider itself failed), `unavailable` (no bridge, an incompatible plugin, a timeout or a
+   * refused request; the message says which), `invalid_request` (the request is over 1 MB).
+   */
+  namespace cloudstream {
+    function search(provider: number, query: string): Promise<{ items: CsItem[] }>;
+    function mainPage(provider: number, index: number, page: number): Promise<{ rows: { name: string; items: CsItem[] }[]; hasNext: boolean }>;
+    function load(provider: number, url: string): Promise<{ title: CsTitle; episodes: CsEpisode[] }>;
+    function loadLinks(provider: number, data: string): Promise<{ links: CsLink[]; subtitles: { lang: string; url: string }[] }>;
+  }
+
   /** apiVersion 4: a marker for a secret the manifest's `secrets` declares (throws for any other name). Kino swaps it for the value in `kino.fetch`, toward the manifest's own hosts only; your code never sees the value. apiVersion 6: a secret declared `{ seal, use: "cipher-key", encoding }` is accepted as the whole `key` of any `kino.crypto.encrypt`/`decrypt` (des-ede3 included), read with the manifest's encoding; it is refused everywhere else, including `kino.fetch`. */
   function secret(name: string): string;
 
-  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a plugin whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) fails (a plugin that does not declare it never sends a line; a later Kino build adds a per-device "Enviar registros de errores" switch, on by default, that stops them) (sign and the settings exports included), the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
+  /** Writes to Kino's log (and console.* does the same); lines are cut at 2000 characters. When a call of a plugin whose manifest says `"telemetry": true` or `"verbose"` (apiVersion 6) fails (a plugin that does not declare it never sends a line; a later Kino build adds a per-device "Enviar registros de errores y de reproducción" switch, on by default, that stops them) (sign and the settings exports included), the last 30 lines it logged (cut at 300 characters, scrubbed of URLs, hosts, ids, secrets and the person's text, 2 KB in all) go with the failure report; never for a call that succeeds. Log what happened, never what the person typed. */
   function log(...args: unknown[]): void;
   namespace log {
     /** apiVersion 6, with `"telemetry": true`: a log line that also tells Kino's error tracker your plugin served a degraded result (a fallback account, a backup source). The line's first word is its area (`[a-z0-9_:]`, with a `_` or `:`, up to 24 characters; anything else is filed as "other"); at most one report per area an hour and 3 per plugin per session, scrubbed like any line. Without telemetry (or, once the per-device switch exists, with it off) it is only a log line. With `"telemetry": "verbose"` a plugin's playback metrics, live/cast problems and edge cases also reach the board (see the README). In a debug build, or while the plugin's "Modo debug" switch is on (every plugin has one in Ajustes; `"debug": true` only makes it on by default), every line is in logcat under `KinoPlugin/<id>` and Kino's playback lines under `KinoPlay`. */
