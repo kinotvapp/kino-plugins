@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 7)
+# The contract (apiVersion 1 to 8)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -9,6 +9,7 @@ export async function home() { /* -> Row[] */ }
 export async function browse(ref, cursor) { /* -> Page */ }
 export async function episodes(ref) { /* -> { series?: SeriesInfo, episodes: Episode[], seasons?: Season[] } */ }
 export async function resolve(ref) { /* -> Stream */ }
+export async function details(ref) { /* -> SeriesInfo or null (apiVersion 8, Kino 0.9.54) */ }
 export async function liveCategories() { /* -> Array<LiveCategory | Playlist> or Playlist */ }
 export async function liveChannels({ categoryId, cursor }) { /* -> { items: LiveChannel[], next? } */ }
 export async function guide({ channelIds, from, to }) { /* -> GuideEntry[] */ }
@@ -24,7 +25,11 @@ From `"apiVersion": 6` (Kino 0.9.50) there are more optional exports, each with 
 `action` and `validateSettings` ([The settings form](settings-form.md)), and `meta`
 ([Describing other titles](#meta)). `subtitles` ([Subtitles for any title](#subtitles)) needs no new
 `apiVersion`. From `"apiVersion": 7` (Kino 0.9.51): `track` ([Telling a tracker what the person
-watches](#tracking)) and `segments` ([Where the intro and credits are](#segments)).
+watches](#tracking)) and `segments` ([Where the intro and credits are](#segments)). From
+`"apiVersion": 8` (Kino 0.9.54, not released yet): the audio item kinds `music` and `podcast`
+([Music and podcasts](#music-podcasts)) and the optional `details` export ([A title's own
+details](#details)). And at every `apiVersion`, from Kino 0.9.54, a plugin that lists titles but plays
+none can say so with `"catalogOnly": true` ([Catalog-only plugins](#catalog-only)).
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
 
@@ -38,7 +43,8 @@ The live-channel functions (`liveCategories`, `liveChannels`, and the optional `
 
 - `search(query)` gets `{ q, type, season, episode, tmdbId, year, originalTitle, altTitles, cursor }`:
     - `q` is the text the person typed (it can be empty; return `[]`).
-    - `type` is `"movie"` or `"series"` when Kino leans towards that kind, and `"any"` otherwise. It is
+    - `type` is `"movie"` or `"series"` (or, apiVersion 8, `"music"` or `"podcast"`) when Kino leans
+      towards that kind, and `"any"` otherwise. It is
       a hint, not a filter: Kino derives it from TMDB's movie/tv split, which rarely lines up with a
       source's own catalogue, and a title can exist as both. Return every plausible match; use `type`
       at most to put the kind it names first.
@@ -54,9 +60,13 @@ The live-channel functions (`liveCategories`, `liveChannels`, and the optional `
 - `home()` gets `null`.
 - `browse(ref, cursor)` gets the `ref` of one of your Home rows (or a `ref` a previous page gave),
   and `cursor` `null` for the first page or the `next` of the page before.
-- `episodes(ref)` gets the `ref` of a `series` item, as you returned it.
-- `resolve(ref, options)` gets the `ref` of a `movie` item, the `ref` of an episode, or (apiVersion 2) the
-  `ref` of a `live` item. `options` is `undefined` on a normal call; only an apiVersion 6 plugin with a
+- `episodes(ref)` gets the `ref` of a `series` item, as you returned it, or (apiVersion 8) the `ref`
+  of a `music` or `podcast` item, for its tracks or episodes.
+- `details(ref)` (apiVersion 8, Kino 0.9.54) gets the `ref` of a `movie` item when its page opens: see
+  [A title's own details](#details).
+- `resolve(ref, options)` gets the `ref` of a `movie` item, the `ref` of an episode, (apiVersion 2) the
+  `ref` of a `live` item, or (apiVersion 8) the `ref` of a `music` or `podcast` item from a plugin
+  without `episodes`. `options` is `undefined` on a normal call; only an apiVersion 6 plugin with a
   [request-signed](signed-streams.md#retry) stream ever gets it, as `{ retry }`. From apiVersion 6 it
   also gets the `ref` of one of your [lazy copies](#lazy-copies), when that copy is needed.
 - `subtitles(arg)` gets `{ imdbId?, tmdbId?, kind, season?, episode?, title?, year?, languages, file? }` (see
@@ -66,16 +76,19 @@ The live-channel functions (`liveCategories`, `liveChannels`, and the optional `
 ## What you return { #returns }
 
 ```ts
-Item       = { id: string, ref: string, title: string, kind: "movie" | "series" | "live",
+Item       = { id: string, ref: string, title: string, kind: "movie" | "series" | "live" | "music" | "podcast",
                year?: string, poster?: string, backdrop?: string, overview?: string,
                lang?: string, quality?: string, originalTitle?: string,
                genres?: string[], rating?: number, runtimeMinutes?: number,
-               ids?: { tmdb?: number, imdb?: string }, badges?: string[], adult?: boolean }
+               ids?: { tmdb?: number, imdb?: string }, badges?: string[], adult?: boolean,
+               artist?: string }                         // music, podcast, artist: apiVersion 8 (Kino 0.9.54)
 Row        = { id: string, title: string, items: Item[], ref?: string, genre?: Genre }
 Genre      = "peliculas" | "series" | "anime" | "infantil" | "documentales" | "deportes" | "noticias" | "musica" | "entretenimiento" | "otros"
 Page       = { items: Item[], next?: string }
 SeriesInfo = { title?: string, poster?: string, backdrop?: string, overview?: string,
-               ids?: { tmdb?: number, imdb?: string }, genres?: string[], year?: string }
+               ids?: { tmdb?: number, imdb?: string, mal?: number, anilist?: number, kitsu?: number },
+               genres?: string[], year?: string,
+               rating?: number, runtimeMinutes?: number }   // rating, runtimeMinutes, ids.mal/anilist/kitsu: Kino 0.9.54
 Episode    = { season: number, number: number, ref: string, title?: string,
                still?: string, overview?: string, airDate?: string, runtimeMinutes?: number }
 Season     = { id: string, ref: string, title: string, number?: number, current?: boolean }
@@ -98,7 +111,10 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
 A `movie` item's `ref` goes to `resolve`. A `series` item's `ref` goes to
 `episodes`, and each episode's `ref` goes to `resolve`. A `live` item's `ref` (apiVersion 2, see
 [Live channels](live-channels.md#live-items)) goes to `resolve` too, and its Stream plays as live. A
-row's `ref` goes to `browse`, and so does each page's `next`.
+`music` or `podcast` item's `ref` (apiVersion 8) goes to `episodes` when you declare it (its tracks
+or episodes, each `ref` to `resolve`), else straight to `resolve` (see
+[Music and podcasts](#music-podcasts)). A row's `ref` goes to `browse`, and so does each page's
+`next`. A movie's `ref` also goes to `details` when you export it (apiVersion 8, [below](#details)).
 
 ### Seasons { #seasons }
 
@@ -122,6 +138,53 @@ de &lt;name&gt;" under your results, and Kino calls `search` again with the same
 A `next` (and a row's `ref`) is only kept when you declare `browse`; without it Kino drops them with a
 line in the log. Cursors are opaque to Kino: a page number, an offset, a URL, at most 2048
 characters.
+
+### A title's own details (`details`, apiVersion 8, Kino 0.9.54) { #details }
+
+A search or Home item often carries only a name and a poster. The title page shows whatever the item
+carries (`overview`, `backdrop`, `genres`, `year`, `rating`, `runtimeMinutes`) and, for a series, what
+`episodes(ref).series` adds. For a **movie** there is no `episodes` call, so you may export
+`details(ref)`: it gets the movie item's `ref` and answers one `SeriesInfo` object (or `null`: nothing to
+add).
+
+```js
+export async function details(ref) {
+  const page = await loadPage(ref);           // your own helper, ideally cached per ref
+  return { overview: page.plot, backdrop: page.fanart, genres: page.tags, year: String(page.year),
+           rating: page.score, runtimeMinutes: page.minutes };
+}
+```
+
+- **From `apiVersion` 8, `details` is a reserved export name**: export a function by that name only with
+  this meaning (a helper of yours called `details` must be renamed or left unexported). There is no
+  capability to declare: Kino calls it only if your plugin exports it and declares `apiVersion` 8 or
+  more, so an older Kino never calls it, and an older plugin's own helper named `details` is never
+  called either.
+- Kino calls it when the page opens, alongside its TMDB lookup (never in front of it), with a 20 s
+  limit (`timeoutsMs.details`). It may use [`kino.browser.page`](browser.md#page) like `episodes`.
+- When the item carried no `ids`, the `ids` of your answer pin the movie on TMDB. Besides `tmdb` and
+  `imdb`, `ids` (in `details` and in `episodes().series`) may carry an anime's `mal`, `anilist` and
+  `kitsu` (Kino 0.9.54): AniList and the person's [`meta`](#meta) plugins are then asked by them.
+- `rating` is 0 to 10 (like an item's); `runtimeMinutes` is the movie's length (a series'
+  `runtimeMinutes` is ignored: it is per episode). `episodes(ref).series` takes `rating` and
+  `runtimeMinutes` too from Kino 0.9.54; older versions ignore them.
+- If your `resolve` needs the same page `details` read, keep it in a small cache in your module: the
+  person usually presses play right after the page opens.
+
+The page is built from every answer with one fixed order per field, whatever order the answers arrive
+in:
+
+| Field | First → last |
+| --- | --- |
+| synopsis, year, genres | TMDB → your item → `details` → AniList → meta plugins |
+| poster, backdrop | your item → `details` → AniList → meta plugins |
+| score | TMDB → your item → `details` (a series page too: TMDB → your item → `episodes().series`) |
+| runtime | TMDB → meta plugins → your item → `details` |
+| cast; tagline, directors, certification | TMDB (cast then meta plugins) |
+| logo, other sites' ratings | your item → meta plugins |
+
+While `details` has not answered (up to its limit), AniList's and the meta plugins' synopsis, year,
+genres and art wait for it, since it outranks them; everything else shows at once.
 
 ### Searching inside a "Ver más" page (`scopedSearch`, apiVersion 6) { #scoped-search }
 
@@ -183,7 +246,7 @@ all or nothing.
 | `seasons` (in the `episodes` result) | Optional; at most 50. Each needs an `id` (same pattern as an item id; a repeated one is dropped), a non-empty `ref` of at most 4096 characters and a non-blank `title` (up to 200 characters), or it is dropped. `number` from 1 to 999 and `current` a boolean; a wrong one is ignored, not the season. Anything that is not a list is ignored. |
 | `id` | `^[A-Za-z0-9._~-]{1,128}$`. Anything else drops the item, so if your source's own ids have other characters (spaces, `/`, `:`, `%`), derive a stable id yourself, such as a slug. Repeated ids in one list are dropped. |
 | `ref` | A non-empty string of at most 4096 characters. |
-| `kind` | `"movie"`, `"series"` or (apiVersion 2) `"live"`; a `live` item stays in a `home` row only from apiVersion 6 (below it, it is dropped from Home: see [Channels in your Home rows](live-channels.md#home-rows)). A `series` item from a plugin that does not declare `episodes` is dropped: it could never be opened; a `live` item from an apiVersion 1 plugin is dropped too (see [Live channels](live-channels.md#live-items)). |
+| `kind` | `"movie"`, `"series"`, (apiVersion 2) `"live"` or (apiVersion 8) `"music"` or `"podcast"`; a `live` item stays in a `home` row only from apiVersion 6 (below it, it is dropped from Home: see [Channels in your Home rows](live-channels.md#home-rows)). A `series` item from a plugin that does not declare `episodes` is dropped: it could never be opened; a `live` item from an apiVersion 1 plugin is dropped too (see [Live channels](live-channels.md#live-items)), and a `music` or `podcast` item from a plugin below apiVersion 8 (see [Music and podcasts](#music-podcasts)), which needs no `episodes`. |
 | Text fields | `title` is required and non-blank, up to 200 characters. `overview` up to 2000; `lang` and `quality` up to 20 (for example `"es"`, `"1080p"`); `year` up to 10 (a number is accepted and converted). Longer text is cut; the text of `SeriesInfo` and `Episode` is cut the same way (200 characters for titles, 2000 for overviews). |
 | Extra item fields | All optional; a wrong one is ignored, not the item. `genres` at most 5, each at most 30 characters; `badges` (shown as chips, e.g. `"HD"`, `"Latino"`) at most 3 of at most 20; `rating` from 0 to 10; `runtimeMinutes` from 1 to 1000; `ids.tmdb` a positive integer (Kino uses it to match your title with TMDB, to find it again from search, and to enrich its info page -- see below); `ids.imdb` matches `^tt\d{5,10}$` (also enriches a movie's info page when you have no `ids.tmdb`). An episode's `airDate` is `YYYY-MM-DD`. |
 | `adult` | From apiVersion 6, `adult: true` marks an 18+ entry: Kino shows it only while the person's 18+ code is unlocked on that device (Ajustes ▸ Adultos), and hides it again when they lock it; below apiVersion 6 it is dropped. It applies on Home, in search, "Ver más", your section and Categorías. See [18+ content](#adult). |
@@ -207,6 +270,12 @@ field, each filled in differently:
 
 It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exactly what your
 `Item`/`SeriesInfo`/`episodes` answer gave, or blank if you left them out.
+
+**Kino 0.9.54 changes the third group.** From 0.9.54 TMDB comes first for the synopsis, the year, the
+genres, the score and a movie's runtime too, on movie and series pages alike: your own values are the
+fallback for what TMDB left blank. The full order per field, with the new `details` export, AniList and
+`meta` plugins, is in [A title's own details](#details). Music and podcast titles are never matched with
+TMDB.
 
 ### The `Stream` rules { #stream }
 
@@ -263,7 +332,14 @@ It does **not** add a poster, a backdrop or seasons from TMDB -- those stay exac
   rest still count. They share the stream's `subtitles` and `audioTracks`. Ignored next to `drm`, with
   `signing` (`alternateHosts` is a signed stream's failover) and for a live channel. Return them when
   your source offers several files of one title (other servers, resolutions, encodes): a device that
-  cannot decode the first one still gets to watch. From apiVersion 6 an alternative may carry a
+  cannot decode the first one still gets to watch. Every alternative must be **the same video in the
+  same language** (same dub, same subtitles burned in or not): Kino switches between them by itself, so
+  a dubbed copy listed next to the original would change the language under the person. Offer another
+  language as another stream (another search result or episode source), never as an alternative. From
+  Kino 0.9.54, after repeated stalls Kino also moves once, by itself, to a clearly lighter copy (at most
+  three quarters of the height on screen) when the labels say so: name the resolution in the label
+  (`"Streamwish · 720p"`, `"4K"`, `"Full HD"`); a bare `HD` or `SD` is never enough for that. From
+  apiVersion 6 an alternative may carry a
   `label`, or be a lazy `{ label, ref }` resolved only when needed: see
   [Labelled and lazy copies](#lazy-copies).
 - `label` (apiVersion 6): the Stream's own short name, and each alternative may carry one too -- e.g.
@@ -399,6 +475,72 @@ never covers:
 It exists for sources whose hosters change domain per video or mid-playback; a plugin with a fixed
 CDN should still declare it.
 
+## Music and podcasts (apiVersion 8, Kino 0.9.54) { #music-podcasts }
+
+With `"apiVersion": 8` an item may be audio: `kind: "music"` (an album, a playlist or a single
+track) or `kind: "podcast"` (a show or an audiobook), in `search`, `browse`, `home` rows and your
+section, next to your movies and series. Nothing to declare beyond the version: an audio item does
+**not** need the `episodes` capability. Kino 0.9.54 is not released yet; an older Kino refuses an
+apiVersion 8 plugin with "Este plugin necesita una versión más nueva de Kino", so declare 8 only when
+you return audio items or export `details`.
+
+```js
+export async function search(q) {
+  return [
+    { id: "album-42", ref: "album:42", title: "Un álbum", kind: "music", artist: "Los Artistas", poster: "https://cdn.example.org/a42.jpg" },
+    { id: "show-7", ref: "show:7", title: "Un podcast", kind: "podcast", overview: "Una charla por semana" },
+  ];
+}
+
+export async function episodes(ref) {            // only with the "episodes" capability
+  if (ref.startsWith("album:")) return { episodes: [
+    { season: 1, number: 1, ref: "track:1", title: "Primera canción", runtimeMinutes: 4 },
+    { season: 1, number: 2, ref: "track:2", title: "Segunda canción", runtimeMinutes: 5 },
+  ] };
+  // ...a podcast's episodes, a series' chapters
+}
+```
+
+How the pieces connect:
+
+- **With `episodes` declared**, Kino calls `episodes(ref)` with the item's `ref`, for every `music` and
+  `podcast` item: an album's or playlist's tracks, a podcast's episodes, an audiobook's chapters, in your
+  order (a single track answers one entry). `number` is the track or episode number, `title`, `still`
+  (the cover) and `runtimeMinutes` work as for any episode, and each entry's `ref` goes to `resolve`. If
+  you declare `episodes` (for your series, say), your `episodes` must also answer for every `music` and
+  `podcast` ref, even a lone track: there is no per-item way to skip it.
+- **Without `episodes`**, the item's own `ref` goes straight to `resolve` and plays as one track,
+  exactly like a movie's.
+- `artist` (optional, `music` and `podcast` only) is the artist (music) or the host/author (podcast):
+  trimmed, at most 200 characters, ignored on any other kind. The album or podcast page shows it as the
+  line under the title (and Kino names it as the artist where it plays the audio). Without it there is no
+  such line: Kino never takes one from `overview` or `genres`.
+- `runtimeMinutes` is kept on an audio item (unlike a `live` one). `search` may get `type: "music"` or
+  `type: "podcast"` when Kino leans that way; `"any"` includes them, and it stays a hint.
+- The `Stream` is a normal one: progressive audio (MP3, M4A, AAC, OGG) or an HLS/DASH manifest. The kind
+  is a hint: a stream that turns out to carry video still plays as video.
+- [`migrate`](migrate.md) may answer a saved title as `{ kind: "music" | "podcast", id, ref }` (below
+  apiVersion 8 that answer is no claim).
+
+What the person gets with them in Kino 0.9.54:
+
+- Audio titles on **square covers**, in Home rows of their own, after the video in search, and in their
+  own section of the library. They are kept away from TMDB and from recommendations.
+- An **album or podcast page** on phone and TV, with "Reproducir", "Aleatorio" and the track list,
+  instead of the video title page.
+- An **audio player** for on-demand music and podcasts: the track's name and cover, seek and
+  previous/next (also from the notification and headphones), and the next track after 2 s. A podcast
+  resumes exactly where it was left and counts as finished only in its last 30 s.
+- **"Seguir escuchando"**, a Home row for podcasts (audio leaves "Continuar viendo").
+- **Downloads**, when you declare `download` (apiVersion 2): progressive audio files and audio-only HLS
+  are saved like a video, and a downloaded album plays offline in the audio player.
+- **Cast**: a track goes to a Chromecast as music, with its title, artist, album and cover, and to a DLNA
+  TV as an audio item; an 18+ track sends only the app's name.
+
+Limits: a `music` or `podcast` item from a plugin below `"apiVersion": 8` is dropped (with a line in
+the log), and the rest of the answer stays. Audio items count against the same row and page sizes as
+any item, and `adult: true` follows the same 18+ lock.
+
 ## Subtitles for any title { #subtitles }
 
 Export `subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages, file })` and Kino lists
@@ -483,8 +625,103 @@ versions ignore them; no new `apiVersion`):
 Stremio-style video id: a Stremio addon's title whose own listing failed can then play those episodes
 by it. Kino asks every `meta` plugin of the person at once, at most 6 s each, uses the first answer in
 install order, and remembers it for 30 minutes; a failure or a timeout is just no answer, and the page
-never waits for you. The Node kit has no `meta` command and does not check that you export it: test it
-in the app, on the info page of a title TMDB does not know.
+never waits for you.
+
+What Kino reads, field by field (the rest of an answer is ignored, and each part is dropped on its own):
+
+- Text fields (`title`, `overview`, an episode's `title`/`overview`/`id`, a cast member's
+  `name`/`character`) may be strings or numbers, are trimmed and cut at their limit. `title` is read but
+  never shown: the page keeps the source's own.
+- `year`: only its first 9 characters are read, and their first four digits are the year (`1999`,
+  `"1999-2003"`; not `"estrenada 1999"`). `runtimeMinutes`: 1 to 1000 (a numeric string or a decimal is
+  read as Android's JSON does), shown only for a movie.
+- `genres`: strings only, the first 5 non-empty ones, each cut at 30 characters.
+- `episodes`: the first 5000 entries are read, invalid ones included; `season` 0 to 999 (0 is kept but
+  the page never lists it), `number` 1 to 99999, one per season and number (the first wins), sorted.
+- Images (`poster`, `backdrop`, `logo`, an episode's `still`, a cast `photo`): an item's image rule. A
+  URL is read as text first, and one longer than 2048 characters is dropped (never cut into a broken
+  address).
+- An answer whose only usable parts are `year` and/or `runtimeMinutes` counts as no answer, like `null`.
+
+Try it with `node sdk/run.mjs <plugin dir> meta tt0133093` (or `tmdb:603`, `kitsu:1376 series`, several
+ids, or the whole query as JSON): it prints your answer, Kino's verdict for every field (kept, cut,
+dropped and why), what Kino keeps, and how the info page would use it (see
+[Test it locally](test-locally.md)). `node sdk/validate.mjs . --run search <text>` (or `home`, `browse`)
+also asks your `meta` about the first title of the answer that carries `ids.imdb` or `ids.tmdb`, the way
+Kino builds the query. The other way round, any plugin can ask Kino what it knows about a title:
+[`kino.meta`](kino-api.md#meta) (Kino 0.9.53).
+
+## Catalog-only plugins (`catalogOnly`, Kino 0.9.54) { #catalog-only }
+
+A plugin that lists and describes titles but has no video of its own -- a TMDB catalog, a list of
+what's new, ratings -- says so with `"catalogOnly": true` in its manifest (Kino 0.9.54, not released
+yet):
+
+```json
+{
+  "id": "tmdb", "name": "TMDB", "version": "1.2.0", "apiVersion": 7, "entry": "plugin.js",
+  "hosts": ["image.tmdb.org"],
+  "capabilities": ["search", "home", "browse", "episodes", "resolve", "meta"],
+  "catalogOnly": true
+}
+```
+
+What Kino 0.9.54 and later do with it:
+
+- **Its titles take the "Buscar dónde verlo" route.** The info page's main button reads "Buscar dónde
+  verlo" instead of "Reproducir", and every other way into the player (Home and its quick play,
+  "Continuar viendo", the hero, a deep link, the TV's quick play) looks the title up in the person's
+  other plugins first: one source that has it plays, several open the sources list, none says "Ninguno
+  de tus plugins tiene este título…". The same detour [Stremio addons](stremio.md) without streams get.
+- **It is never a source of a title.** Its `search` is not asked when Kino lists the sources of a title
+  (the search screen, the player's "Ver otras fuentes", "Buscar dónde verlo"), it is not offered in
+  "Buscar por fuente", and it never shows up in the player's "Servidor" list. Inside its own pages (its
+  section, "Ver más", searching inside a "Ver más" page) its catalog is browsed and searched as always.
+- **Its `resolve` is never called.** If a title of it reaches the player anyway, the player says
+  "&lt;name&gt; solo muestra el catálogo: no reproduce videos. Busca este título en tus otras fuentes."
+  (or its English version), with "Ver otras fuentes" under it.
+- **It is not a source in "Elige tus fuentes"**, and Kino files it under Utilidades when the manifest
+  has no `categories`.
+- The consent sheet says "Solo catálogo: no reproduce videos" ("Catalog only: doesn't play videos"). It
+  is no grant: an update that adds or drops the field applies without asking.
+
+The rules (the install is refused otherwise, with the message in quotes):
+
+| Rule | Refusal |
+| --- | --- |
+| `true` or `false` only | "El campo \"catalogOnly\" debe ser true o false" |
+| At least one of `home`, `browse`, `search`, `meta` (instead of `resolve` plus `search` or `home`) | "Un plugin \"catalogOnly\" debe declarar \"home\", \"browse\", \"search\" o \"meta\"" |
+| No `download`, `drm` or `channels`: they only serve playback | "Un plugin \"catalogOnly\" no puede declarar \"download\": no reproduce videos" (the first one found) |
+| No `streamHosts` (from apiVersion 4) and no `"browser": true` (from apiVersion 6); `"browser": "pages"` is fine, it reads pages for the catalog | "Un plugin \"catalogOnly\" no puede declarar \"streamHosts\": no reproduce videos" |
+
+`resolve` may still be declared and exported: every capability you declare must be exported, as
+always, and Kino 0.9.54+ simply never calls it. `subtitles`, `tracking`, `segments`, `meta`, `episodes`,
+`scopedSearch`, `migrate`, `section`, `categories()` and settings all work as for any plugin.
+
+**No new apiVersion.** The field is additive, like `discoverable` and `kino.meta`: valid at every
+`apiVersion`, and an older Kino ignores it as it ignores any key it does not know. That is what lets one
+manifest serve both:
+
+- **Kino 0.9.53 and older** ignore `catalogOnly` and apply their own rules, which require `resolve` and
+  `search` or `home`. So, to stay installable there, **keep declaring and exporting `resolve`** -- one
+  that always fails with a sentence for the person -- **and declare `search` or `home`**:
+
+    ```js
+    export async function resolve() {
+      // Only Kino 0.9.53 and older call this: 0.9.54+ sends the person to their other sources first.
+      throw kino.error("not_found", "catalog only", { userMessage: "Este catálogo no reproduce: busca el título en tus otras fuentes." });
+    }
+    ```
+
+    Without them, Kino 0.9.53 and older refuse the plugin ("El plugin debe declarar \"resolve\""), and
+    an installed older version simply stops updating there. `sdk/validate.mjs` tells you which case you
+    are in.
+
+- **Kino 0.9.54 and later** read the field and never call that `resolve`.
+
+`sdk/validate.mjs` prints the consent line and a note about older Kino; `sdk/run.mjs . resolve <ref>`
+still runs your `resolve` (for the older Kino it serves) and reminds you that 0.9.54+ never calls it. A
+complete catalog that uses it: [A TMDB catalog](cookbook.md#tmdb-catalog).
 
 ## Telling a tracker what the person watches (`tracking`, apiVersion 7) { #tracking }
 

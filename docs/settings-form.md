@@ -148,7 +148,8 @@ objetos.
   la de cualquier otra función ([Registro y telemetría](diagnostics.md)).
 
 Pruébalos con el kit (imprime lo que la app conservaría): `node sdk/run.mjs . settingsStatus`,
-`node sdk/run.mjs . action logout`, `node sdk/run.mjs . validateSettings '{"email":"ana@x.co"}'` (`--raw`
+`node sdk/run.mjs . action logout`, `node sdk/run.mjs . validateSettings '{"email":"ana@x.co"}'` (o `node sdk/validate.mjs . --run …` con
+los mismos argumentos, que además dice lo que muestra Kino y marca una llamada que Kino nunca hace; `--raw`
 imprime tu respuesta sin tocar). El kit no aplica el tapado de secretos de la app, y `validateSettings`
 recibe exactamente el JSON que escribes: la app solo envía los ajustes con valor, sin espacios en los
 extremos. Un ejemplo que funciona es `plugins/sdk/test/settings-demo` en el repositorio de Kino.

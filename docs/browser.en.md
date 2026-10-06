@@ -141,6 +141,41 @@ Accept-Language, a token header…, at most 12; never `Range`, `Accept-Encoding`
 **plus the page's cookies for that address**. Return them as the Stream's `headers` and the player is
 served what the page would have been. Without them most of these servers answer 403.
 
+### Every match, a cookie, an answer on timeout (Kino 0.9.54) { #capture-all }
+
+Four more options, with no new `apiVersion`: Kino 0.9.54 (not released yet) and later take them, older Kino ignores
+them and runs a plain capture. Check `kino.browser.captureAll === true` before relying on them (`node sdk/validate.mjs`
+warns when you don't).
+
+```js
+if (kino.browser.captureAll) {
+  const page = await kino.browser.capture(embed, {
+    match: "master\\.m3u8", captureAll: true, alsoMatch: ["\\.key", "/subs/"], timeoutMs: 15000,
+  });
+  const master = page.requests[0];                 // the first request matching `match`
+  const key = page.requests.find((r) => /\.key/.test(r.url));
+}
+```
+
+| option | |
+| --- | --- |
+| `captureAll` | Collect every request whose URL matches `match` (or the default media pattern) or one of `alsoMatch`, deduplicated by URL, at most 20, and end once the first match was seen and nothing new matched for 1 s (or at 20, or at `timeoutMs`). |
+| `alsoMatch` | Only with `captureAll`: 1 to 10 more regular expressions (case-insensitive, 1-500 characters each; a string or a RegExp's source). Their requests are collected and still reach the page (only `match`'s are held back). |
+| `waitForCookie` | A cookie name (an HTTP token, such as `cf_clearance`) the page must also hold for its current host. Without `match` no request is needed: the page ends as soon as the cookie is there. With `match`, only when both hold (with `captureAll`, the 1 s settle starts then). A page that waits for a cookie is never autoplayed or tapped. `captureAll` with `waitForCookie` needs a `match`. |
+| `returnCookiesOnTimeout` | A page that runs out of time answers what it had, with `timedOut: true`, instead of throwing `timeout`. |
+
+A call that used any of them also gets `requests` (`[{ url, method, headers }]`, the first match first, each with the
+method and the headers the page sent), `cookies` (the final page's, as an object: at most 64 and 16,384 characters in
+all, Cloudflare's `cf_*`/`__cf*` kept first), `userAgent` (the hidden page's, the one Cloudflare ties `cf_clearance`
+to: send it with those cookies) and `timedOut`. On a timeout answer with no match seen, `requests` holds only
+`alsoMatch` hits (or nothing): check each URL against your own patterns. A call without these options gets exactly the
+answer above. Patterns are searched anywhere in the URL, the top page's own address and its redirects included;
+start one with `(?-i)` to make it case-sensitive.
+
+These four names were ignored before Kino 0.9.54 (the capture simply dropped them); from 0.9.54 on they are checked, and
+a value of the wrong type (`captureAll: 1`, `alsoMatch: "x"`, a cookie name with a space) is `invalid_request`. No
+plugin in Kino's catalog sends them today.
+
 ## A complete example { #example }
 
 A source whose episode page lists several servers, each an embed. The list is read with
@@ -237,7 +272,7 @@ start-host rule, same proxy and home-network refusal, fresh cookies and storage,
 the whole app -- and returns the page's HTML once it is loaded, is **no longer the site's check page**
 (Cloudflare's "Just a moment…", its `cf-chl` markers) and matches `waitFor`.
 
-**Where.** From `search`, `home`, `browse`, `episodes`, `section` or `resolve`, only while the person
+**Where.** From `search`, `home`, `browse`, `episodes`, [`details`](contract.md#details) (Kino 0.9.54, apiVersion 8), `section` or `resolve`, only while the person
 is using the app: their own search, the Home row or section they opened, a list, a title, their play (a
 `resolve` also for a download they started). A call Kino makes on its own gets `not_allowed`: "Para ti"
 checking its suggestions after an episode ends, **`categories`** (always Kino's own call, even while the
@@ -282,7 +317,7 @@ export async function search(query) {
 
 | option | |
 | --- | --- |
-| `timeoutMs` | 1 to 25000 ms; default 15000. It counts inside your call's own limit (`search` 15 s, your other fetches included; `home`, `browse`, `episodes`, `section` 20 s; `resolve` 75 s for a browser plugin). Kino cuts it to what is left of that limit **minus 1.5 s** for you to use the HTML, so the read ends with its own `timeout` instead of the whole call being cancelled; still, pass about **12000 in `search`** and leave room for your other fetches. |
+| `timeoutMs` | 1 to 25000 ms; default 15000. It counts inside your call's own limit (`search` 15 s, your other fetches included; `home`, `browse`, `episodes`, `details`, `section` 20 s; `resolve` 75 s for a browser plugin). Kino cuts it to what is left of that limit **minus 1.5 s** for you to use the HTML, so the read ends with its own `timeout` instead of the whole call being cancelled; still, pass about **12000 in `search`** and leave room for your other fetches. |
 | `waitFor` | A JavaScript regular expression (a string or a `RegExp`, 1-500 characters, matched case-insensitively against the HTML inside the page; a `RegExp` keeps its `m` and `s` flags, the others change nothing for a test): the page is returned only once it matches. Without it, as soon as the page is loaded and past its check page. Use it for pages that fill in their list with scripts. |
 
 The answer is `{ html, finalUrl, status, truncated }`: the doctype and the DOM's `outerHTML` after the

@@ -77,6 +77,36 @@ read, 2 s) but that costs a request. Prefer links that need no `headers` (the li
 host involved must be one your plugin may reach (declared, typed, or covered by an "any" permission), over
 https. While casting, the phone itself stays silent.
 
+From Kino 0.9.54 (not released yet), an apiVersion 8 [`music` or `podcast`](contract.md#music-podcasts)
+track goes to a Chromecast as music, with its title, artist, album and cover, and to a DLNA TV as an audio
+item; an 18+ track sends only the app's name.
+
+## From Kino 0.9.54 { #v0954 }
+
+Not released yet. With nothing new in your manifest, except where said:
+
+- **Kino in Spanish or English.** The person picks the app's language in Ajustes ▸ App ▸ Idioma
+  ("Automático" follows the device: Spanish on a Spanish device, English on any other). Kino's own texts
+  follow it, the consent sheet and the messages Kino words for your plugin's failures included. What your
+  plugin returns (titles, row names, settings labels, a `userMessage`) is shown as you wrote it: read
+  [`kino.lang`](kino-api.md#lang), now `"es-CO"` or `"en-US"`, to word it in the person's language.
+- **Catalog-only plugins.** With [`"catalogOnly": true`](contract.md#catalog-only) the consent sheet
+  adds "Solo catálogo: no reproduce videos", the title page's button reads "Buscar dónde verlo", and
+  the plugin is never offered as a source of a title.
+- **Music and podcasts** (apiVersion 8, [the contract](contract.md#music-podcasts)): square covers in
+  rows of their own, album and podcast pages with "Reproducir" and "Aleatorio", an audio player, a
+  "Seguir escuchando" row for podcasts on Home, audio downloads and audio cast.
+- **The title page is the same whatever order its sources answer.** TMDB comes first for the synopsis,
+  year, genres, score and runtime; your item and the new [`details`](contract.md#details) export come
+  before AniList and `meta` plugins for the synopsis and art.
+- **A lighter copy after repeated stalls.** When playback keeps stopping to load, the player can say
+  the connection is slow and, once, move by itself to a clearly lighter copy among your
+  [alternatives](contract.md#stream) when their labels name the resolution.
+- **Finding plugins.** "De la comunidad" lists 100 plugins a page, sorted by "Populares" or
+  "Recientes", with "Cargar más" and "Buscar en GitHub" ([Publishing](publish.md#discovery-0954)).
+- **CloudStream plugins.** People can add a CloudStream repository and install its plugins through a
+  separate complement app ([CloudStream plugins](cloudstream.md)).
+
 ## From Kino 0.9.50 { #v0950 }
 
 With nothing new in your manifest, except where said:

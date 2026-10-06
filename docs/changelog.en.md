@@ -3,11 +3,34 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Kino 0.9.54: catalog-only plugins { #v0954 }
+## Kino 0.9.54: `apiVersion` 8, music and podcasts, catalog-only plugins { #v0954 }
 
-<span id="next"></span>(Not released yet.) No new `apiVersion`: it is still 7, and nothing on this list makes you change your
-plugin.
+<span id="next"></span>(Not released yet.) **`apiVersion` 8 = Kino 0.9.54.** The contract (`contract.json`) now says
+`maxApiVersion` 8 and `kino.apiVersion` reports 8. A manifest with `"apiVersion": 8` is refused by Kino 0.9.53 and older
+("Este plugin necesita una versión más nueva de Kino"), so declare 8 only if you return `music` or `podcast` items or
+export `details`. Everything else on this list is additive (valid at any `apiVersion`, ignored by older Kino), and
+nothing on it makes you change your plugin. How to use each one and still run on older Kino:
 
+| Feature | From | How to tell |
+| --- | --- | --- |
+| `music` / `podcast` items, `details` export | Kino 0.9.54, `apiVersion` 8 | declare `"apiVersion": 8` (older Kino refuses the plugin) |
+| `"catalogOnly": true` | Kino 0.9.54, any `apiVersion` | older Kino ignores it: keep `resolve` and `search` or `home` |
+| `kino.browser.capture`'s `captureAll`, `alsoMatch`, `waitForCookie`, `returnCookiesOnTimeout` | Kino 0.9.54, `apiVersion` 6 with `"browser": true` | `kino.browser.captureAll === true` |
+| `episodes().series.rating`/`runtimeMinutes`, `ids.mal`/`anilist`/`kitsu` | Kino 0.9.54, any `apiVersion` | nothing to check: older Kino ignores them |
+| `kino.lang` in the app's language | Kino 0.9.54 | read `kino.lang`; it was always `"es-CO"` before |
+
+- **Music and podcasts** (apiVersion 8): an item may be `kind: "music"` (an album, a playlist or a single track) or
+  `kind: "podcast"` (a show or an audiobook), with an optional `artist`. With `episodes` declared, Kino asks it for the
+  tracks or episodes; without it, the item's `ref` goes straight to `resolve`. People get square covers in rows of
+  their own, album and podcast pages with "Reproducir" and "Aleatorio", an audio player, "Seguir escuchando" for
+  podcasts on Home, audio downloads (with `download`) and audio cast to Chromecast and DLNA. `search` may get
+  `type: "music"` or `"podcast"`, and `migrate` may answer one. [Music and podcasts](contract.md#music-podcasts).
+- **`details(ref)`** (apiVersion 8, optional, no capability): your own synopsis, art, genres, year, score and runtime
+  for a movie's page, asked alongside TMDB under its own 20 s and allowed to use `kino.browser.page`. From apiVersion 8
+  **`details` is a reserved export name**: rename a helper of yours that has it. `episodes().series` takes `rating` and
+  `runtimeMinutes` too, and `ids` may carry an anime's `mal`, `anilist` and `kitsu`, which AniList and `meta` plugins
+  are then asked by. The title page now follows one fixed order per field whatever answers first, with TMDB first for
+  the synopsis, year, genres, score and runtime. [A title's own details](contract.md#details).
 - **`"catalogOnly": true`** in `kino-plugin.json`: your plugin lists and describes titles but plays none (a TMDB
   catalog, a list of new releases, ratings). Kino 0.9.54 sends its titles to "Buscar dónde verlo" (the person's other
   sources) instead of opening the player, never uses it as a source of a title (the search, "Ver otras fuentes",
@@ -20,6 +43,41 @@ plugin.
   `resolve`** (failing with `kino.error("not_found", …, { userMessage })`) **and `search` or `home`**: those versions
   require them. `node sdk/validate.mjs` tells you whether your manifest also works there, and
   `node sdk/run.mjs . resolve <ref>` reminds you that Kino 0.9.54 no longer calls it.
+  [Catalog-only plugins](contract.md#catalog-only).
+- **`kino.browser.capture` catches every match**: `captureAll` collects every matching request (at most 20) until
+  the page settles, `alsoMatch` adds up to 10 more patterns, `waitForCookie` waits for a cookie such as
+  `cf_clearance` (with no `match`, a cookie-only page), and `returnCookiesOnTimeout` answers what the page had instead
+  of throwing `timeout`. The answer then adds `requests`, `cookies`, `userAgent` and `timedOut`. No new apiVersion:
+  check `kino.browser.captureAll === true` first; older Kino ignored these names, 0.9.54 checks their types
+  (`invalid_request`). [Hidden browser](browser.md#capture-all).
+- **`kino.lang` follows the app's language.** Kino 0.9.54 speaks Spanish or English (Ajustes ▸ App ▸ Idioma), and
+  `kino.lang` is `"es-CO"` or `"en-US"` accordingly (always `"es-CO"` before). A language switch closes your sandbox
+  and the next call opens one with the new value; `kino.meta`'s cache is cleared and Home's plugin rows are asked
+  again. Word your row titles and `userMessage` in that language. [The `kino` API](kino-api.md#lang).
+- **Kino's error messages to your code are English** (`e.message` of a `kino.fetch` failure, `kino.storage`,
+  `kino.html`, the signing rules) and may change: match on `e.code`, never on the text. The manifest refusals the
+  person reads at install stay as they were. [Errors your code can catch](kino-api.md#catch).
+- **`telemetry: true`** has a new consent line, "Comparte con Kino registros de errores y datos técnicos de algunas
+  reproducciones para corregir fallas", and also sends a small sample of playbacks that went well (one in twenty, at
+  most 6 until Kino restarts), only once the person agreed to that wording. Your plugin's tab in Ajustes has an
+  "Enviar registros de errores y de reproducción" switch, on by default. Playback records add the codec, the delivery,
+  each stall's likely cause and the network type. [Logs and telemetry](diagnostics.md#telemetry).
+- **Copies: same video, same language.** Every `alternatives` entry must be the same video in the same language
+  (Kino switches between them by itself). After repeated stalls Kino may move once, by itself, to a clearly lighter
+  copy when the labels name the resolution (`"720p"`, `"Full HD"`). [The `Stream` rules](contract.md#stream).
+- **Downloads** that cannot be saved now end as "Este contenido no se puede descargar" (was "Este video no se puede
+  descargar"). [Downloads](manifest.md#downloads).
+- **"De la comunidad"** reads 100 plugins a page (was the 30 most-starred), sorted by "Populares" or "Recientes",
+  with "Cargar más" and "Buscar en GitHub" for the typed text: a clear repository name and description help people
+  find you. [Publishing](publish.md#discovery-0954).
+- **CloudStream plugins**: people can add a CloudStream repository and Kino turns each plugin they pick into a Kino
+  plugin that runs through a separate complement app; Music/Audio become `music` and Podcast/AudioBook `podcast`.
+  Nothing for you to write: it is what a CloudStream repository maintainer may rely on. Generated plugins get a
+  `kino.cloudstream` object yours never has. [CloudStream plugins](cloudstream.md).
+- **Fixed: `kino.tmdb` and `kino.meta` after an abandoned call.** When Kino abandoned a call of yours (a screen
+  closed, a time limit) but still used its late answer, every `kino.tmdb` or `kino.meta` that call made afterwards
+  failed with `not_allowed`, so a TMDB catalog could show one Home row instead of all of them until a restart. From
+  0.9.54 they keep answering until that call's evaluation ends. [The `kino` API](kino-api.md#tmdb).
 
 ## Kino 0.9.53: `kino.meta` and `kino.tmdb` { #v0953 }
 

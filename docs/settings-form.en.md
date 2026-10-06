@@ -140,8 +140,9 @@ settings: strings trimmed, toggles as booleans, lists as arrays of objects.
   like any other function's ([Logs and telemetry](diagnostics.md)).
 
 Try them with the kit (it prints what the app would keep): `node sdk/run.mjs . settingsStatus`,
-`node sdk/run.mjs . action logout`, `node sdk/run.mjs . validateSettings '{"email":"ana@x.co"}'` (`--raw`
-prints your answer untouched). The kit does not apply the app's secret scrubbing, and
+`node sdk/run.mjs . action logout`, `node sdk/run.mjs . validateSettings '{"email":"ana@x.co"}'` (or `node sdk/validate.mjs . --run …` with
+the same arguments, which also says what Kino shows and flags a call it never makes; `--raw` prints your answer
+untouched). The kit does not apply the app's secret scrubbing, and
 `validateSettings` receives exactly the JSON you type: the app sends only valued settings, trimmed. A
 working example is `plugins/sdk/test/settings-demo` in Kino's repository.
 

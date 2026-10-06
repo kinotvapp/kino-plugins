@@ -6,7 +6,7 @@ in the background for every value it has saved and can no longer open:
 
 | `input` | What it is | Expected answer |
 | --- | --- | --- |
-| `{ kind: "title", ref }` | a library title | `{ kind: "movie" \| "series", id, ref }` |
+| `{ kind: "title", ref }` | a library title | `{ kind: "movie" \| "series", id, ref }`, or (apiVersion 8, Kino 0.9.54) `{ kind: "music" \| "podcast", id, ref }` |
 | `{ kind: "chapter", ref, season, episode }` | each of its chapters | `{ kind: "episode", ref, season, number }` |
 | `{ kind: "live", provider, code }` | a channel in favorites or recents | `{ kind: "live", code }` |
 
@@ -39,6 +39,12 @@ export async function migrate(input) {
   approval like any new reach: your plugin sees what they saved.
 - Kino asks the installed plugins with `migrate` in order of their id; the first answer wins.
 - A series moves only when every saved chapter is answered as an `episode`.
+- A `music` or `podcast` title (apiVersion 8, Kino 0.9.54; below 8 that answer is no claim) moves in the
+  shape your plugin saves it in from then on. If you declare `episodes`, it is an album or show: every
+  saved row is asked about as a chapter and must be answered as an `episode` (a saved row with no ref
+  and no number can't be one, so the title stays). Without `episodes`, it is a lone track: it moves like
+  a movie, with no chapter asked, and only when one row is saved (with more, the title stays). Either
+  refusal is logged and remembered like a `null`. See [Music and podcasts](contract.md#music-podcasts).
 - Watched progress, intro/outro marks, downloads and favorites move with the title.
 - A `null` is remembered until your plugin's next version, so returning `null` is cheap. So is a throw
   from your own code, or a `kino.error` with any code but `timeout`, `network`, `host_not_allowed`,

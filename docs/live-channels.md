@@ -62,7 +62,7 @@ Lo que hace Kino con un ítem `live`:
   "Se cortó la señal de &lt;canal&gt; y no volvió". `expiresInSeconds` no juega ningún papel en un
   canal: un corte siempre vuelve a resolver.
 - Un canal nunca se guarda: no tiene fila en la biblioteca, ni posición para retomar, nunca sale en
-  "Continuar viendo" y nunca se puede descargar (un plugin que declara `download` recibe "Este video
+  "Continuar viendo" y nunca se puede descargar (un plugin que declara `download` recibe "Este contenido
   no se puede descargar" para él). `runtimeMinutes` en el ítem se ignora; un canal no tiene
   `episodes`.
 

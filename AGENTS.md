@@ -58,13 +58,20 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   HLS/DASH segments and keys, and redirects land on. Look at real responses (`curl -sIL`) to find
   redirect targets and CDNs.
 - **What it offers**: movies, series (with `episodes`), Home rows (`home`, and `browse` for "Ver más"),
-  live channels (`live` items at apiVersion 2, or the En vivo tab with `channels` at apiVersion 3).
+  live channels (`live` items at apiVersion 2, or the En vivo tab with `channels` at apiVersion 3), music
+  and podcasts (`kind: "music"` / `"podcast"` items, apiVersion 8). A catalog with **no video of its own**
+  (a TMDB list, ratings) declares `"catalogOnly": true` (Kino 0.9.54, any apiVersion; older Kino ignores
+  it), and still declares and exports a `resolve` that throws `kino.error("not_found", …, { userMessage })`
+  plus `search` or `home`, so Kino 0.9.53 and older keep installing it.
 - **The lowest `apiVersion` that works**: `1` unless you need `download`, `drm`, `insecureHttp`,
   `"hosts": []`, or `live` items (`2`), `channels`/`liveStreamHosts` (`3`), or a `list` setting,
   `"streamHosts": "any"` or sealed `secrets` (`4`), or an author `signature` (`5`, Kino 0.9.45+), or
   anything in "apiVersion 6" in section 4 (`6`, **Kino 0.9.50+**; Kino 0.9.49 and older refuse the
   whole plugin with "Este plugin necesita una versión más nueva de Kino"). `apiVersion` 6 = Kino
-  0.9.50: never declare 6 "just in case".
+  0.9.50: never declare 6 "just in case". `7` only for `tracking` or `segments` (Kino 0.9.51+); `8` only
+  for `music`/`podcast` items or the optional `details(ref)` export (a movie's own details for its title
+  page; Kino 0.9.54+, not released yet; Kino 0.9.53 and older refuse an apiVersion 8 plugin). From
+  apiVersion 8 `details` is a reserved export name: never export a helper called `details`.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -90,6 +97,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `migrate` when the plugin replaces an older one. Each has a cost (approval prompts, more code): ask.
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
+- If the person wants a **CloudStream plugin** in Kino, stop too: from Kino 0.9.54 Kino installs the plugins of a
+  CloudStream repository directly, through its CloudStream complement
+  ([CloudStream plugins](https://kinotvapp.github.io/kino-plugins/en/cloudstream/)); `kino.cloudstream` exists only in
+  those generated plugins, never in one you write.
 - If the person wants a **Stremio addon** in Kino, stop too: Kino installs it from its `manifest.json`
   URL ([Stremio addons](https://kinotvapp.github.io/kino-plugins/en/stremio/)). Write a Kino plugin only
   for what an addon cannot do there (torrents and P2P are refused either way).
@@ -436,8 +447,14 @@ only when you use one of these.
   over a `tmdbKey` setting (keep the setting only as the fallback for older Kino). Catch `no_tmdb_key` where an empty
   answer is better than an error (Home rows); uncaught, the person reads Kino's own sentence telling them where to add
   the key. [The `kino` API](https://kinotvapp.github.io/kino-plugins/en/kino-api/#tmdb).
+- **Kino 0.9.54 (not released yet), no new apiVersion**: `kino.browser.capture` takes `captureAll`, `alsoMatch`,
+  `waitForCookie` and `returnCookiesOnTimeout`, only behind `if (kino.browser.captureAll)` (older Kino ignores them).
+  `kino.lang` follows the app's language (`"es-CO"` or `"en-US"`; before 0.9.54 always `"es-CO"`): word your
+  `userMessage` and send `Accept-Language` from it. Kino's own error messages become English and may change: match on
+  `e.code`, never on the text. [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/#v0954).
 - **Any apiVersion**: `Stream.alternatives` (≤ 8 `{ url, mime?, headers? }`, other copies of the same
-  video, best first; Kino switches when one cannot decode or is gone; ignored with `drm`, `signing` and
+  video **in the same language** (never a dub next to the original: offer another language as another stream), best
+  first; name the resolution in a `label` ("720p", "4K") so Kino 0.9.54 can move to a lighter copy after stalls; Kino switches when one cannot decode or is gone; ignored with `drm`, `signing` and
   for live). `Stream.skip` (`{ openingStartMs?, openingEndMs?, endingStartMs? }` for this exact file:
   "Saltar intro"/"Saltar outro"; wins over AniSkip, a hand correction wins over it). The `subtitles`
   export (10 s, background): tracks for any title Kino knows by IMDb/TMDB id, alongside your videos or
@@ -518,7 +535,8 @@ people. See
 - [ ] `id`s are stable and match the pattern; `ref`s keep working when replayed later.
 - [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
-      it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+).
+      it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+; 8 only for
+      `music`/`podcast` items or `details`: it needs Kino 0.9.54+).
 - [ ] No `"debug": true` in the manifest unless the person asked for it (every plugin has a
       "Modo debug" switch in Kino's Ajustes; `true` only turns it on by default for everyone). If `telemetry` is declared, the person agreed and
       the logs hold codes and counts only.

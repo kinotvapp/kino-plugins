@@ -3,13 +3,32 @@
 `kino` es un objeto global, congelado, que siempre está. Nada más del mundo exterior está.
 
 ```js
-kino.apiVersion   // 7 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
-kino.lang         // "es-CO"
+kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
 ```
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
 manifiesto; `kino.appVersion` es la versión de Kino.)
+
+### `kino.lang`: el idioma de la persona { #lang }
+
+`kino.lang` es el idioma en que Kino le habla a la persona. Hasta Kino 0.9.53 es siempre `"es-CO"`. Desde **Kino 0.9.54**
+(todavía no publicada) sigue el idioma de la app: `"es-CO"` mientras Kino está en español, `"en-US"` mientras está en
+inglés. La persona lo elige en Ajustes ▸ App ▸ Idioma (Automático, Español o English, sincronizado entre sus aparatos);
+Automático habla español en un aparato configurado en cualquier variante de español, e inglés en cualquier otro. Sin
+`apiVersion` nuevo y sin nada que comprobar: léelo donde lo necesites.
+
+- **Un sandbox conserva el `kino.lang` con que se abrió.** Cuando la persona cambia de idioma, Kino cierra el sandbox de
+  tu plugin y la siguiente llamada abre uno nuevo con el valor nuevo (el nivel superior de tu módulo vuelve a correr;
+  `kino.storage` se conserva). El sandbox que corre [`sign()`](signed-streams.md) sigue abierto, así que un video que se
+  está reproduciendo sigue firmándose.
+- Con el cambio, Kino también vacía la caché de [`kino.meta`](#meta) y vuelve a pedir tus filas de Inicio, sin usar su
+  caché.
+- **Escribe en ese idioma lo que lee la persona**: los títulos de tus filas, tu `userMessage`, un encabezado
+  `Accept-Language`. Kino muestra tu texto tal como lo escribiste. El `lang` de `kino.meta` acepta la etiqueta tal cual
+  (`lang: kino.lang`) o su código corto (`kino.lang.split("-")[0]`).
+- En el kit de Node, `kino.lang` es siempre `"es-CO"` ([Probar en local](test-locally.md#differences)).
 
 Kino también pone los globales web que le faltan a QuickJS, escritos en JavaScript y congelados:
 `URL`, `URLSearchParams`, `atob`, `btoa`, `TextEncoder` y `TextDecoder` (solo UTF-8). Se comportan
@@ -91,6 +110,8 @@ tiempo de tu llamada. Pide la forma que tiene el contenido.
 | `network` | la conexión falló, o hubo demasiadas redirecciones |
 | `too_large` | la petición pasa del tope de tamaño, o un cuerpo de más de 5 MB |
 | `invalid_request` | una URL, método, `redirect` o `body` inválidos, o más peticiones de las que permite una llamada |
+
+Desde Kino 0.9.54 los mensajes de error de Kino (`e.message`) están en inglés y pueden cambiar; compara el `code`.
 
 - **Límites:** 15 s por petición por defecto (30 s como máximo), un cuerpo de máximo 5 MB
   (decodificado con el charset de su `Content-Type`, UTF-8 por defecto), y máximo 60 peticiones en una
@@ -283,7 +304,20 @@ devuelve las peticiones de video que hizo, con los encabezados y cookies para re
 `kino.browser.page(url, options?)` devuelve el HTML de una página cuando ya pasó la revisión automática
 del sitio. Kino nunca resuelve un captcha: una página que pide una persona termina la llamada con
 `blocked`. Prefiere `kino.fetch` siempre que funcione. Todo -- dónde se puede llamar cada una, el modelo
-de seguridad, los tiempos, los errores y un ejemplo completo -- está en [Navegador oculto](browser.md).
+de seguridad, los tiempos, los errores y un ejemplo completo -- está en [Navegador oculto](browser.md). Desde
+Kino 0.9.54 una captura también puede juntar todas las peticiones que coinciden, esperar una cookie y responder lo que
+tenía cuando se acaba el tiempo ([`captureAll` y compañía](browser.md#capture-all); comprueba antes
+`kino.browser.captureAll === true`), y `kino.browser.page` también se puede llamar desde la exportación
+[`details`](contract.md#details) (apiVersion 8).
+
+## `kino.cloudstream` (solo plugins generados) { #cloudstream }
+
+Solo existe en los plugins que Kino mismo genera cuando la persona instala un plugin desde un repositorio de CloudStream
+(Kino 0.9.54); un plugin que escribes tú nunca lo tiene (`typeof kino.cloudstream` es `"undefined"`), diga lo que diga su
+manifiesto. Sus cuatro funciones (`search`, `mainPage`, `load`, `loadLinks`, con sus tipos en
+[`kino.d.ts`](reference/index.md)) corren un proveedor de CloudStream dentro de la app complemento de CloudStream, que va
+aparte. Lanzan `not_found` cuando el propio proveedor falló y `unavailable` en todo lo demás (no hay complemento, un
+plugin incompatible, se acabó el tiempo, una petición rechazada; el mensaje dice cuál).
 
 ## `await kino.meta(query)`: preguntarle a Kino por un título (Kino 0.9.53) { #meta }
 
@@ -300,7 +334,7 @@ if (typeof kino.meta === "function") {                       // Kino 0.9.53 o su
 
 Kino responde lo que sabe de un título, y tu plugin nunca toca una llave de TMDB para eso. La respuesta se arma igual
 que la ficha de Kino arma la página de un título: primero **la consulta de TMDB de Kino** (una función de la app, con la
-llave de Kino, en español es-MX; ninguna llave llega a tu código), luego **AniList** para un anime (con el mapeo de ids
+llave de Kino, en español es-MX, o desde Kino 0.9.54 en el idioma de la app: es-MX o en-US; ninguna llave llega a tu código), luego **AniList** para un anime (con el mapeo de ids
 de anime, así que también sirve un id `kitsu`, `mal` o `anilist`), y luego **los plugins `meta` que la persona tiene
 instalados** (por ejemplo un addon de metadatos de Stremio configurado con su propia llave). Cada fuente siguiente solo
 llena lo que las anteriores dejaron vacío; las notas se suman. `null` quiere decir que nadie conocía el título: nunca es
@@ -394,6 +428,11 @@ registros la llevan. No declaras `api.themoviedb.org` en `hosts` para esto.
   cuenta en las 60 peticiones por llamada de `kino.fetch`. No desde `sign()` (`not_allowed`). La telemetría de Kino solo
   cuenta llamadas según cómo se respondieron (caché, llave de Kino, llave de la persona) y códigos de error, nunca una
   ruta ni una llave.
+- **Una llamada que Kino dejó de esperar** (una falla corregida en Kino 0.9.54): cuando Kino abandona una de tus llamadas
+  (la persona salió de la pantalla, se acabó el tiempo) pero igual le pasa su respuesta tardía a una llamada idéntica que
+  la está esperando, `kino.tmdb` y `kino.meta` siguen respondiendo hasta que tu código termina. Kino 0.9.53 respondía
+  `not_allowed` desde ese momento, así que un Inicio armado con muchas llamadas a `kino.tmdb` podía quedarse solo con su
+  primera fila hasta reiniciar.
 - **Sin `apiVersion` nuevo**: Kino 0.9.53 o superior; compruébala (`typeof kino.tmdb === "function"`) y deja tu propio
   ajuste de llave solo como respaldo para versiones anteriores de Kino, como arriba. Un plugin que arma su catálogo con
   TMDB ya no necesita pedirle una llave a cada persona. Un ejemplo completo: [Un catálogo de TMDB sin llave en el
@@ -416,7 +455,8 @@ propia frase para la persona, que se muestra bajo [sus reglas](contract.md#user-
 
 Toda falla que reporta una llamada `kino.*` es un `Error` normal que recibe tu `try`/`catch` (tus
 propios `throw` siguen teniendo [la trampa del rechazo](engine-limits.md#rejection-trap)). Compara
-`e.code`, nunca el texto de `e.message`: ese texto es para el log y puede cambiar.
+`e.code`, nunca el texto de `e.message`: ese texto es para el log y puede cambiar (en español hasta Kino 0.9.53, en
+inglés desde Kino 0.9.54).
 
 | Dónde | `e.code` |
 | --- | --- |
@@ -425,7 +465,7 @@ propios `throw` siguen teniendo [la trampa del rechazo](engine-limits.md#rejecti
 | `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
 | `kino.browser.page` | los mismos, más `rate_limited` ([Navegador oculto](browser.md#page)) |
 | dentro de [`sign()`](signed-streams.md#rules) | `host_not_allowed` desde `kino.fetch`; `not_allowed` desde `kino.storage`, `kino.cookies` y `kino.sleep` |
-| `kino.storage` por encima de 256 KB o con un `ttlMs` inválido, `kino.html.select` por encima de sus límites, `kino.secret` con un nombre no declarado | sin `code`: un `Error` simple con un mensaje en español |
+| `kino.storage` por encima de 256 KB o con un `ttlMs` inválido, `kino.html.select` por encima de sus límites, `kino.secret` con un nombre no declarado | sin `code`: un `Error` simple con un mensaje (en español hasta Kino 0.9.53, en inglés desde Kino 0.9.54) |
 
 Desde Kino 0.9.50 una llamada `kino.*` **síncrona** que falla (un `kino.storage` lleno, una clave de
 cifrado mala, un selector demasiado largo) la atrapa tu `try`/`catch` como cualquier otro error. Kino
@@ -478,7 +518,8 @@ Analiza `html` y devuelve `[{ text, html, attrs }]` por cada elemento que cumple
 con sus atributos. Solo se leen los primeros 2.000.000 caracteres de `html`, vuelven máximo 500
 elementos, y lanza un error si el texto y el HTML de las coincidencias juntos pasan de 5.242.880
 caracteres (5 MB). Un selector de más de 10.000 caracteres lanza
-`Error("selector CSS demasiado largo (más de 10000 caracteres)")`. **Solo existe dentro de Kino**: la
+`Error("CSS selector too long (over 10000 characters)")` (Kino 0.9.53 y anteriores:
+`"selector CSS demasiado largo (más de 10000 caracteres)"`). **Solo existe dentro de Kino**: la
 versión del kit de Node lanza un error, así que prueba en la app todo lo que lo use.
 
 ## `kino.storage` { #storage }
@@ -494,7 +535,8 @@ kino.storage.keys()                              // every key, as an array (expi
 `get` devuelve el texto o `null`; `set` convierte los valores a texto; `keys()` devuelve todas las
 claves como arreglo (las vencidas ya no están). Es síncrono, privado de tu plugin, y sobrevive a los
 reinicios del sandbox y de la app. Máximo 256 KB en total (medido como el JSON de todas las claves y
-valores); pasarse lanza `Error("almacenamiento del plugin lleno (256 KB)")`. Se borra cuando la
+valores); pasarse lanza `Error("plugin storage full (256 KB)")` (Kino 0.9.53 y anteriores:
+`"almacenamiento del plugin lleno (256 KB)"`). Se borra cuando la
 persona desinstala el plugin, y **no** se borra cuando cambia tus ajustes.
 
 El tercer argumento de `set` es opcional: déjalo por fuera para una entrada permanente, exactamente
@@ -531,9 +573,10 @@ antes del `throw` es como ves por qué falló en el celular de otra persona. Cad
 el id y la versión de tu plugin; máximo un reporte por función y tipo de falla por hora. No se envía
 nada de una llamada que sale bien, ni ninguna línea de un plugin que no declara `telemetry` (recomendado o
 no, un scraper de Nuvio convertido): de esos Kino solo anota que la llamada falló (tu id y versión, la
-función, el tipo de falla). Hoy las líneas de un plugin que lo declara se envían siempre; una versión
-posterior de Kino dejará que la persona apague "Enviar registros de errores" en cada aparato, y entonces
-no se envía nada mientras esté apagado. Antes de salir del aparato, a cada línea se le
+función, el tipo de falla). Hasta Kino 0.9.53 las líneas de un plugin que lo declara se envían
+siempre; desde Kino 0.9.54 la persona puede apagar "Enviar registros de errores y de reproducción" en la pestaña de tu
+plugin en Ajustes (mira [Registro y telemetría](diagnostics.md#telemetry)), y entonces no se envía nada mientras esté
+apagado. Antes de salir del aparato, a cada línea se le
 quitan URL, nombres de host, IP, correos, ids largos, tiras largas de hex/base64, texto con forma de
 credencial, los valores de los ajustes de la persona y el texto de su búsqueda o del título, y el
 total se limita a 2 KB (ganan las líneas más nuevas). Aun así: registra lo que pasó (un estado, un

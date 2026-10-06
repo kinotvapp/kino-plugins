@@ -13,7 +13,9 @@ you what to do at each step. This site publishes the rules in the shapes those t
 
 !!! tip "Want to use a Nuvio scraper?"
     You do not need this prompt: Kino installs the scrapers of a Nuvio repository directly,
-    converting them on the device. See [Nuvio scrapers](nuvio.md).
+    converting them on the device. See [Nuvio scrapers](nuvio.md). The same goes for a Stremio addon
+    ([Stremio addons](stremio.md)) and, from Kino 0.9.54, for the plugins of a CloudStream repository
+    ([CloudStream plugins](cloudstream.md)).
 
 ## Before you start { #before }
 
@@ -127,7 +129,9 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "list" setting, 5 only for a signed plugin, 6 only if you use an apiVersion 6 feature: status lines
   and buttons in the settings, a section of its own, colors, telemetry, migrate, request signing,
   userMessage, adult, channels in Home rows; 6 needs Kino 0.9.50 or newer; 7 only for "tracking" or
-  "segments", and it needs Kino 0.9.51 or newer). A new id of my own (never
+  "segments", and it needs Kino 0.9.51 or newer; 8 only for "music" or "podcast" items or the details
+  export, and it needs Kino 0.9.54 or newer). A catalog that plays nothing declares "catalogOnly": true
+  (Kino 0.9.54) and still exports a resolve that fails with not_found, for older Kino. A new id of my own (never
   "archive-org").
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
   switch in Kino's Ajustes, and "debug": true only turns it on by default for everyone. "telemetry" only if I agree that the

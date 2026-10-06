@@ -18,7 +18,8 @@ quieres saber por qué un plugin convertido se porta distinto de uno escrito a m
    objeto con un arreglo `scrapers`), la dirección es un repositorio de Nuvio; si no, Kino la trata
    como un plugin de Kino (`kino-plugin.json`). Si la rama principal tiene un `manifest.json` que no
    está en ese formato (algunos repositorios guardan ahí una plantilla), Kino prueba también la rama
-   `main` y luego la `master`.
+   `main` y luego la `master`. El repositorio no tiene que estar en GitHub: mira
+   [Dónde puede estar el repositorio](#where).
 3. Un selector a pantalla completa lista **todos** los scrapers del manifiesto, con su logo, tipos,
    idioma, versión y autor, y filtra por tipo (Todas, Películas, Series, Anime) y por idioma. Cada
    tarjeta dice "Agregar", "Instalado" o "No disponible" (un scraper que el manifiesto desactiva, o
@@ -32,6 +33,26 @@ quieres saber por qué un plugin convertido se porta distinto de uno escrito a m
 El selector avisa que los scrapers se convierten desde Nuvio y que su código original tiene licencia
 GPL-3.0; la descripción del plugin dice lo mismo ("Convertido desde el plugin de Nuvio …; código
 original GPL-3.0").
+
+### Dónde puede estar el repositorio (Kino 0.9.53) { #where }
+
+- **En GitHub**: `owner/repo`, una página de github.com, o su `manifest.json` en
+  raw.githubusercontent.com o en jsDelivr (`/gh/`). El `filename` de cada scraper es una ruta dentro
+  del repositorio, que se lee de raw.githubusercontent.com.
+- **En cualquier servidor público por https** (desde Kino 0.9.53): pega la URL de su `manifest.json`.
+  Una URL pegada se lee una sola vez y se juzga por lo que contiene, en la pestaña que sea: una lista
+  `scrapers` (entradas con `id` y `filename`) es un repositorio de Nuvio, `resources` es un addon de
+  Stremio, si tiene las dos se abre lo que diga la pestaña elegida, y si no tiene ninguna se rechaza.
+  La dirección debe ser `https` con un nombre público: `http`, una dirección IP, `localhost`, un nombre
+  local (`.local`, `.lan`…) o un nombre que apunta a la red de la persona se rechazan, y también las
+  credenciales dentro de la URL. El manifiesto pesa como máximo 256 KiB.
+- **Archivos de los scrapers**: un `filename` relativo se resuelve contra la URL del manifiesto; uno
+  absoluto `https://` puede estar en otro servidor público (un CDN), con las mismas reglas. Los
+  `filename` `http://`, de un servidor local, `/relativos-a-la-raíz`, `//relativos-al-protocolo` o con
+  `../` se rechazan con un mensaje que dice por qué. Los archivos hermanos de un scraper se leen del
+  servidor donde está su propio archivo.
+
+Kino 0.9.52 y anteriores solo leen repositorios en GitHub.
 
 ## Qué arma la conversión { #conversion }
 
@@ -127,9 +148,10 @@ Desde Kino 0.9.51 (compatibilidad de Nuvio v2) también:
   lee como `undefined`, así que la propia revisión del scraper cae a `fetch`, y llamarlo igual es un
   `TypeError`.
 - **Scrapers de varios archivos**: los archivos hermanos que pide con `require` se leen del mismo
-  repositorio y por el mismo camino (ningún destino nuevo). Máximo 16 archivos y 1 MiB en total; `../`
-  dentro del repositorio sirve, una ruta que se sale de él (también codificada con `%`) se rechaza. Un
-  hermano que falla al cargar se reintenta.
+  repositorio (o, si el archivo del scraper está en otro servidor, de ese servidor) y por el mismo
+  camino (ningún destino nuevo). Máximo 16 archivos y 1 MiB en total; `../` dentro del repositorio
+  sirve, una ruta que se sale del repositorio o de la raíz del servidor (también codificada con `%`)
+  se rechaza. Un hermano que falla al cargar se reintenta.
 - **Tiempos**: 30 s por petición. Un temporizador que el scraper deja corriendo se borra apenas
   `getStreams` termina, así que la llamada no lo espera.
 
@@ -179,7 +201,8 @@ aprobación una vez por lo que agregan las conversiones nuevas (`fetchHosts`, de
 
 ## Para quienes mantienen un repositorio de Nuvio { #maintainers }
 
-- Deja `manifest.json` en la raíz de la rama principal, con entradas `scrapers[]` que tengan `id`,
+- Deja `manifest.json` en la raíz de la rama principal (o, desde Kino 0.9.53, en cualquier dirección
+  pública por https: [dónde puede estar](#where)), con entradas `scrapers[]` que tengan `id`,
   `name`, `filename` e idealmente `supportedTypes`, `contentLanguage`, `version`, `author`,
   `description` y `logo`: el selector los muestra y filtra por ellos.
 - Usa `enabled: false` o `disabledPlatforms: ["android"]` para los scrapers que no se deben ofrecer.

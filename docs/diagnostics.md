@@ -7,7 +7,7 @@ sale del aparato. Todas desde `"apiVersion": 6` (Kino 0.9.50); por debajo, los c
 | --- | --- | --- |
 | [`kino.log`](kino-api.md#log) | `adb logcat` | siempre |
 | [Modo debug](#debug) | panel de error en pantalla, página "Registro" | la persona, con el interruptor que tiene todo plugin (`"debug": true` lo deja encendido de entrada) |
-| [`"telemetry": true`](#telemetry) / `"verbose"` | el registro de errores de quienes mantienen Kino | tú lo pides y la persona lo aprueba (todavía no hay interruptor para apagarlo) |
+| [`"telemetry": true`](#telemetry) / `"verbose"` | el registro de errores de quienes mantienen Kino | tú lo pides y la persona lo aprueba (desde Kino 0.9.54 lo puede apagar) |
 
 ## Logcat { #logcat }
 
@@ -66,11 +66,17 @@ tipo de falla, nunca una línea de log.
 
 - **Consentimiento.** La hoja de consentimiento dice "Comparte registros de errores con Kino para
   corregir fallas". Una actualización que lo declara por primera vez espera la aprobación de la persona,
-  como un host nuevo (queda en "Actualización disponible — requiere tu aprobación").
-- **Todavía sin interruptor.** Por ahora, mientras se estabilizan los plugins, las líneas de un plugin
-  que lo declara se envían siempre. Una versión posterior de Kino agrega un interruptor "Enviar registros
-  de errores" en la pestaña de tu plugin en Ajustes, encendido por defecto, que la persona puede apagar
-  en cada aparato; entonces no sale nada mientras esté apagado.
+  como un host nuevo (queda en "Actualización disponible — requiere tu aprobación"). Desde **Kino
+  0.9.54** (todavía no publicada) la línea dice "Comparte con Kino registros de errores y datos técnicos
+  de algunas reproducciones para corregir fallas", porque entonces `true` también envía una pequeña
+  muestra de las reproducciones que salen bien ([abajo](#playback)).
+- **El interruptor.** Hasta Kino 0.9.53, mientras se estabilizan los plugins, las líneas de un plugin
+  que lo declara se envían siempre y no hay interruptor. Desde **Kino 0.9.54** la pestaña de tu plugin
+  en Ajustes tiene un interruptor "Enviar registros de errores y de reproducción", en celular y
+  televisor, encendido por defecto; se sincroniza con los otros aparatos de la persona (gana el último
+  cambio) y se conserva entre actualizaciones. Mientras está apagado no sale nada de tu plugin: ni
+  líneas, ni `kino.log.report`, ni resúmenes de reproducción. Un interruptor apagado en una versión
+  anterior vuelve a contar.
 - **Qué se envía.** Cuando una llamada falla (lanza un error, se pasa del tiempo, devuelve algo
   inservible, incluidos `sign`, `settingsStatus`, `action` y `validateSettings`), las líneas que registró
   durante esa llamada (las últimas 30, cada una de máximo 300 caracteres, 2 KB en total) como
@@ -112,7 +118,7 @@ kino.log.report("myplugin:session", "shared_fallback", "tries=2");   // área my
   sumando todos los plugins, en esa misma corrida de Kino); se envía como advertencia. Ese tope deja espacio
   a los fallos de verdad, que tienen sus propios topes.
 - La línea entera se depura como cualquier línea de log, incluido el texto de la llamada en curso.
-- Sin `telemetry` (o, cuando exista ese interruptor, con él apagado) es solo una línea de log.
+- Sin `telemetry` (o, desde Kino 0.9.54, con el interruptor de la persona apagado) es solo una línea de log.
 - Reporta lo que pasó en códigos y conteos, nunca valores que vinieron de una respuesta.
 
 ## Métricas de reproducción y reportes de problemas { #playback }
@@ -126,6 +132,14 @@ del reproductor por clase con su estado HTTP, los reintentos y su motivo (`expir
 `network`, `cut`…), y para un [stream firmado por petición](signed-streams.md) el p50/p95/máximo de
 `sign` y sus tiempos agotados por playlist y segmento, y el p50/p95 de las peticiones y sus errores por
 **índice** de host (0 = el host propio del stream, 1… = sus `alternateHosts`).
+
+Desde **Kino 0.9.54** el registro también dice el códec, cómo se entrega el stream (`hls`, `dash`,
+`ts`, `progressive`), la causa probable de cada pausa por carga (`stall_cause`:
+`network_slower_than_bitrate`, `network_buffer_dry`, `decoder_or_device`, `memory_brake`, `seek` (la
+carga propia de un salto) o `unknown`, juzgada con la estimación de ancho de banda del aparato, el
+bitrate en reproducción, el búfer al empezar la pausa, los cuadros tardíos o perdidos y el freno de
+memoria de Kino), el tipo de red (`wifi`, `ethernet`, `cellular`, `other`; nunca su nombre), los avisos
+de "conexión lenta" que se mostraron y un cambio a una copia más liviana.
 
 Unos detectores buscan lo que nota quien mira: ningún primer cuadro en 10 s, imagen congelada, pausas
 largas, ráfagas de cuadros perdidos, cortes o errores de audio, audio y video que se desfasan, la pista
@@ -141,9 +155,14 @@ Adónde va:
   resumen;
 - a **logcat** con la etiqueta `KinoPlay` en una compilación de depuración de Kino, o en cualquiera
   mientras ese interruptor está encendido;
-- al **registro de errores**, solo con `telemetry` (y, cuando exista ese interruptor, mientras la persona lo deje encendido): con `true`,
-  un resumen por reproducción que terminó en un error que la persona vio; con `"verbose"`, además un
-  cuarto de las reproducciones que salieron bien y un evento por problema o caso especial (máximo 60 por
+- al **registro de errores**, solo con `telemetry` (y, desde Kino 0.9.54, mientras la persona deje encendido su interruptor): con `true`,
+  un resumen por reproducción que terminó en un error que la persona vio, y desde Kino 0.9.54 también
+  una de cada veinte reproducciones que salieron bien (máximo 6 hasta que Kino se reinicia, una por hora
+  por tipo), solo con un consentimiento dado a la redacción que nombra los datos de reproducción: un
+  plugin instalado antes de Kino 0.9.54 envía solo las fallas hasta que la persona aprueba una hoja de
+  actualización que muestra la línea nueva (marcada "nuevo" ahí; una actualización nunca se retiene por
+  eso) o vuelve a encender el interruptor; con `"verbose"`, en cambio un cuarto de las reproducciones que
+  salieron bien, y un evento por problema o caso especial (máximo 60 por
   plugin hasta que Kino se reinicia, uno por minuto por área). Los eventos de falla llevan la pila de la
   excepción de Kotlin y, cuando tu script lanzó el error, sus propios marcos de pila
   (`at fn (plugin.js:12:5)`, solo los marcos).

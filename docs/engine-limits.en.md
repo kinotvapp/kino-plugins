@@ -50,12 +50,21 @@ From apiVersion 6, also:
 | `kino.log.report` | one report per plugin and area an hour, 3 per plugin until Kino restarts; area at most 24 characters |
 | `telemetry: "verbose"` | 60 events per plugin until Kino restarts, one a minute per area |
 
+From Kino 0.9.54 (not released yet), also:
+
+| What | Limit |
+| --- | --- |
+| `details()` (apiVersion 8) | 20 s; it may read pages with `kino.browser.page`. See [A title's own details](contract.md#details) |
+| Audio items (apiVersion 8) | `artist` at most 200 characters; `music` and `podcast` items count against the same row and page sizes as any item. See [Music and podcasts](contract.md#music-podcasts) |
+| `kino.browser.capture` with `captureAll` (check `kino.browser.captureAll`) | at most 20 requests, ended 1 s after nothing new matched; `alsoMatch` 1..10 patterns of 1..500 characters; at most 64 headers per request; `cookies` at most 64, 16,384 characters in all. See [Every match, a cookie, an answer on timeout](browser.md#capture-all) |
+
 ## How your code lives { #lifecycle }
 
 - **One call at a time.** Calls to the same plugin run one after another. The sandbox is reused
   between calls, but Kino throws it away after 5 idle minutes, after a timeout, when a call is
-  cancelled (for example a newer search replaces an older one), and when the plugin is updated or
-  disabled. Module-level variables are a cache at best: keep anything that must survive in
+  cancelled (for example a newer search replaces an older one), when the plugin is updated or
+  disabled, and (Kino 0.9.54) when the person switches the app's language, so the next call gets the new
+  [`kino.lang`](kino-api.md#lang). Module-level variables are a cache at best: keep anything that must survive in
   `kino.storage`.
 - **Load-time code.** When it installs your plugin, Kino loads the module once in a throwaway sandbox
   without network access, to check that every declared capability is an exported function. Keep the

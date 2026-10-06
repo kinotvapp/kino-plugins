@@ -29,30 +29,35 @@ llama `sign()` y envía sus headers, mezclados sobre los `headers` propios del s
   los `headers` propios del stream, como los subtítulos de cualquier stream, pero nunca pasan por
   `sign()`). El `stream` en línea de un ítem de `liveChannels` no lo puede pedir: un canal que también
   tiene `ref` se reproduce con `resolve(ref)` (el stream en línea se deja de lado), y uno sin `ref` se
-  descarta. Un stream que rompe esto se rechaza con `La firma por petición solo funciona con video HLS
-  (.m3u8)`, `Un video firmado por petición no puede llevar drm ni pistas de audio aparte` o
-  `Un canal con firma por petición debe reproducirse con resolve()`. Un video firmado no se puede
-  descargar: su descarga termina con `Este video no se puede descargar`.
+  descarta. Un stream que rompe esto se rechaza con `per-request signing only works with HLS video
+  (.m3u8)`, `a video signed per request can't carry drm or separate audio tracks` o `a channel signed
+  per request must play through resolve()` (el detalle del log; la persona lee la línea propia de
+  Kino). Un video firmado no se puede descargar: su descarga termina con `Este contenido no se puede
+  descargar` (Kino 0.9.53 y anteriores: `Este video no se puede descargar`).
 - **`sign()` corre aparte de tus otras funciones** (el "carril de firma"), así que un `home` lento nunca
   demora un segmento. Tiene `kino.crypto`, `kino.secret`, `kino.config`, `kino.html` y `kino.log`, y nada
-  más: `kino.fetch` responde un error `host_not_allowed` ("sign no puede usar la red"), y
-  `kino.storage`, `kino.cookies` y `kino.sleep` fallan con el código `not_allowed` y "sign() no puede usar
-  kino.storage: lo que necesites debe venir en signContext" (igual para los demás). Tampoco ve nada de lo
+  más: `kino.fetch` responde un error `host_not_allowed` ("sign can't use the network"), y
+  `kino.storage`, `kino.cookies` y `kino.sleep` fallan con el código `not_allowed` y "sign() can't use
+  kino.storage: whatever you need must come in signContext" (igual para los demás). Tampoco ve nada de lo
   que el runtime principal tiene en memoria (ni las llaves privadas de
   [`generateKeyPair`](kino-api.md#key-pairs)).
 - Lo que necesita viaja en `context`, el `signContext` que devolvió tu `resolve()` (un texto de máximo
-  4096 caracteres; uno más largo o que no es texto rechaza el stream con `El dato "signContext" no es
-  válido`). Un marcador de `kino.secret()` ahí no significa nada (un marcador solo sirve en el runtime que
+  4096 caracteres; uno más largo o que no es texto rechaza el stream con `the "signContext" value is not
+  valid`). Un marcador de `kino.secret()` ahí no significa nada (un marcador solo sirve en el runtime que
   lo creó): llama `kino.secret()` dentro de `sign()` mismo; un `signContext` que lleva uno se rechaza
-  con "signContext no puede llevar un kino.secret(): llámalo dentro de sign()".
-- Un stream que pide `signing: "request"` de un plugin que no exporta `sign` se rechaza con "El plugin
-  pide firmar el video pero no exporta sign()".
+  con "signContext can't carry a kino.secret(): call it inside sign()".
+- Un stream que pide `signing: "request"` de un plugin que no exporta `sign` se rechaza con "the plugin
+  asks to sign the video but doesn't export sign()".
 - **1,5 s por llamada** (3 s contando su espera). Una respuesta lenta cuenta como firma fallida.
 - Responde `{ headers }`, filtrados como los `headers` de un stream (mismos nombres y reglas de tamaño).
-  Un valor que contiene un marcador de `kino.secret()` se rechaza ("sign no puede devolver datos
-  sellados"): un marcador solo sirve dentro de `kino.crypto`, así que calcula el header ahí.
+  Un valor que contiene un marcador de `kino.secret()` se rechaza ("sign can't return sealed
+  data"): un marcador solo sirve dentro de `kino.crypto`, así que calcula el header ahí.
 - Tres firmas fallidas seguidas detienen el video.
 - Por debajo de apiVersion 6, `signing` y `signContext` se ignoran.
+- **Los mensajes de arriba son los de Kino 0.9.54** (todavía no publicada): desde esa versión el detalle
+  técnico que ven tu código y el log está en inglés y puede cambiar, así que compara el `code` del error,
+  nunca su texto. Kino 0.9.53 y anteriores los escriben en español (`La firma por petición solo funciona
+  con video HLS (.m3u8)`, "sign no puede usar la red", `El dato "signContext" no es válido`…).
 - Un stream firmado no usa [`alternatives`](contract.md#stream): su conmutación son los `alternateHosts`
   de abajo.
 
@@ -88,7 +93,8 @@ return { url: "http://cdn1.example/live/ch.m3u8", signing: "request",
   declarado `insecureHttp`), o cualquier host público con `liveStreamHosts: "any"`, nunca uno local.
 - Una entrada que no la cumple, que repite el host de `url` u otra entrada, o que viene después de la
   sexta se descarta (`run.mjs` y `validate.mjs` la muestran como `[dropped by Kino]`); un valor que no es
-  un arreglo de textos rechaza el stream con `El dato "alternateHosts" no es válido`.
+  un arreglo de textos rechaza el stream con `the "alternateHosts" value is not valid` (Kino 0.9.53 y anteriores: `El dato
+  "alternateHosts" no es válido`).
 - Con ellos, el stream cuenta como `"expired"` solo cuando **todos** los hosts rechazaron la firma, y
   como `"conflict"` solo cuando el último respondió 409; un host que responde 404 o no responde solo
   hace que Kino siga con el siguiente.

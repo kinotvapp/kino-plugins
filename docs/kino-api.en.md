@@ -3,10 +3,27 @@
 `kino` is a global object, frozen, always there. Nothing else from the outside world is.
 
 ```js
-kino.apiVersion   // 7 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
-kino.lang         // "es-CO"
+kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
 ```
+
+### `kino.lang`: the person's language { #lang }
+
+`kino.lang` is the language Kino speaks to the person. Up to Kino 0.9.53 it is always `"es-CO"`. From **Kino 0.9.54**
+(not released yet) it follows the app's language: `"es-CO"` while Kino is in Spanish, `"en-US"` while it is in English.
+The person picks it in Ajustes ▸ App ▸ Idioma (Automático, Español or English, synced between their devices);
+Automático speaks Spanish on a device set to any Spanish and English on any other. No new `apiVersion` and nothing to
+feature-detect: read it where you need it.
+
+- **A sandbox keeps the `kino.lang` it opened with.** When the person switches language, Kino closes your plugin's
+  sandbox and the next call opens a fresh one with the new value (your module's top level runs again; `kino.storage`
+  survives). The sandbox that runs [`sign()`](signed-streams.md) stays open, so a stream that is playing keeps being signed.
+- On a switch Kino also clears [`kino.meta`](#meta)'s cache and asks your Home rows again, past their cache.
+- **Word what the person reads in that language**: your row titles, your `userMessage`, an `Accept-Language` header.
+  Kino shows your text as you wrote it. `kino.meta`'s `lang` takes the tag as it is (`lang: kino.lang`) or its bare code
+  (`kino.lang.split("-")[0]`).
+- The Node kit's `kino.lang` is always `"es-CO"` ([Test it locally](test-locally.md#differences)).
 
 Kino also provides the web globals QuickJS lacks, written in JavaScript and frozen: `URL`,
 `URLSearchParams`, `atob`, `btoa`, `TextEncoder` and `TextDecoder` (UTF-8 only). They behave like the
@@ -76,6 +93,8 @@ seconds of your call's time. Ask for the form the content is.
 | `too_large` | the request over the size cap, or a body over 5 MB |
 | `invalid_request` | a bad URL, method, `redirect` or `body`, or more requests than a call allows |
 <!-- contract:fetchErrors:end -->
+
+From Kino 0.9.54 Kino's own error messages (`e.message`) are English and may change; match on `code`.
 
 - **Limits:** 15 s per request by default (30 s at most), a body of at most 5 MB (decoded with the
   charset of its `Content-Type`, UTF-8 by default), and at most 60 requests in one call to your
@@ -259,7 +278,19 @@ video requests it made, with the headers and cookies to play them; `kino.browser
 returns a page's HTML once it is past the site's automatic check. Kino never solves a captcha: a page
 that asks for a human ends the call with `blocked`. Prefer `kino.fetch` whenever it works. Everything
 -- where each may be called, the safety model, timeouts, errors and a complete example -- is on
-[Hidden browser](browser.md).
+[Hidden browser](browser.md). From Kino 0.9.54 a capture can also collect every matching request, wait for a
+cookie and answer what it had on a timeout ([`captureAll` and friends](browser.md#capture-all); check
+`kino.browser.captureAll === true` first), and `kino.browser.page` may also be called from the
+[`details`](contract.md#details) export (apiVersion 8).
+
+## `kino.cloudstream` (generated plugins only) { #cloudstream }
+
+Present only in the plugins Kino itself generates when the person installs a plugin from a CloudStream repository
+(Kino 0.9.54); a plugin you write never has it (`typeof kino.cloudstream` is `"undefined"`), whatever its manifest says.
+Its four functions (`search`, `mainPage`, `load`, `loadLinks`, typed in [`kino.d.ts`](reference/index.md)) run a
+CloudStream provider inside the separate CloudStream bridge app. They throw `not_found` when the provider itself failed
+and `unavailable` for everything else (no bridge, an incompatible plugin, a timeout, a refused request; the message says
+which).
 
 ## `await kino.meta(query)`: asking Kino about a title (Kino 0.9.53) { #meta }
 
@@ -276,7 +307,7 @@ if (typeof kino.meta === "function") {                       // Kino 0.9.53+: ab
 
 Kino answers what it knows about a title, and your plugin never touches a TMDB key for it. The answer is built exactly
 the way Kino's own info page builds a title's page: **Kino's own TMDB lookup** first (an app feature of Kino, on Kino's
-own key, in Spanish es-MX; no key ever reaches your code), **AniList** for an anime (through the anime id mapping, so a
+own key, in Spanish es-MX, or from Kino 0.9.54 in the app's language: es-MX or en-US; no key ever reaches your code), **AniList** for an anime (through the anime id mapping, so a
 `kitsu`, `mal` or `anilist` id works too), then **the person's installed `meta` plugins** (a Stremio metadata addon
 configured with their own key, for example). Each later source only fills what the earlier ones left empty; ratings add
 up. `null` means nobody knew the title: it is never an error.
@@ -361,6 +392,10 @@ never sees any key, Kino's or the person's, and answers, errors and logs never c
   for `/find` and `/genre`), whichever key fetched it. Not counted in `kino.fetch`'s 60 requests per call. Not from
   `sign()` (`not_allowed`). Kino's telemetry counts calls by how they were served (cache, Kino's key, the person's key) and
   error codes, never a path or a key.
+- **A call Kino stopped waiting for** (a bug fixed in Kino 0.9.54): when Kino gives up on one of your calls (the person
+  left the screen, it timed out) but still hands its late answer on to an identical call that is waiting for it,
+  `kino.tmdb` and `kino.meta` keep answering until your code finishes. Kino 0.9.53 answered `not_allowed` from that
+  moment, so a Home built from many `kino.tmdb` calls could come back with only its first row until a restart.
 - **No new apiVersion**: Kino 0.9.53 and later; feature-detect it (`typeof kino.tmdb === "function"`) and keep your own
   key setting only as the fallback for older Kino, as above. A plugin that builds its catalog from TMDB no longer needs
   to ask each person for a key. A complete example: [A TMDB catalog with no key in the
@@ -383,7 +418,7 @@ plugin&gt;: …".
 
 Every failure a `kino.*` call reports is an ordinary `Error` your `try`/`catch` receives (your own
 `throw`s still have [the rejection trap](engine-limits.md#rejection-trap)). Test `e.code`, never the
-text of `e.message`: that is Spanish, for the log, and may change.
+text of `e.message`: that is for the log, and may change (Spanish up to Kino 0.9.53, English from Kino 0.9.54).
 
 | Where | `e.code` |
 | --- | --- |
@@ -392,7 +427,7 @@ text of `e.message`: that is Spanish, for the log, and may change.
 | `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
 | `kino.browser.page` | the same, plus `rate_limited` ([Hidden browser](browser.md#page)) |
 | inside [`sign()`](signed-streams.md#rules) | `host_not_allowed` from `kino.fetch`; `not_allowed` from `kino.storage`, `kino.cookies` and `kino.sleep` |
-| `kino.storage` over 256 KB or a bad `ttlMs`, `kino.html.select` over its limits, `kino.secret` with an undeclared name | no `code`: a plain `Error` with a Spanish message |
+| `kino.storage` over 256 KB or a bad `ttlMs`, `kino.html.select` over its limits, `kino.secret` with an undeclared name | no `code`: a plain `Error` with a message (Spanish up to Kino 0.9.53, English from Kino 0.9.54) |
 
 From Kino 0.9.50 a **synchronous** `kino.*` call that fails (a full `kino.storage`, a bad cipher key, a
 selector that is too long) is caught by your `try`/`catch` like any other error. Kino 0.9.49 and older
@@ -441,7 +476,8 @@ Parses `html` and returns `[{ text, html, attrs }]` for every element matching t
 (Jsoup's selector syntax): `text` is its text, `html` its inner HTML, `attrs` an object of its
 attributes. Only the first 2,000,000 characters of `html` are read, at most 500 elements come back,
 and it throws if the combined text and HTML of the matches goes over 5,242,880 characters (5 MB). A
-selector longer than 10,000 characters throws `Error("selector CSS demasiado largo (más de 10000 caracteres)")`. **It
+selector longer than 10,000 characters throws `Error("CSS selector too long (over 10000 characters)")` (Kino 0.9.53 and
+older: `"selector CSS demasiado largo (más de 10000 caracteres)"`). **It
 exists only inside Kino**: the Node kit's version throws, so test anything that uses it in the app.
 
 ## `kino.storage` { #storage }
@@ -456,7 +492,7 @@ kino.storage.keys()                              // every key, as an array (expi
 
 Synchronous, private to your plugin, and it survives restarts of the sandbox and of the app. At most
 256 KB in total (measured as the JSON of all keys and values); going over throws
-`Error("almacenamiento del plugin lleno (256 KB)")`. It is deleted when the person uninstalls the
+`Error("plugin storage full (256 KB)")` (Kino 0.9.53 and older: `"almacenamiento del plugin lleno (256 KB)"`). It is deleted when the person uninstalls the
 plugin, and it is **not** cleared when they change your settings.
 
 `set`'s third argument is optional: leave it out for a permanent entry, exactly as before this option
@@ -492,9 +528,9 @@ characters) travel with the failure report to the maintainers' error tracker as 
 phone. Each report is tagged with your plugin's id and version; at most one report per function and
 kind of failure an hour. Nothing is sent for a call that succeeds, and no line of any plugin that does
 not declare `telemetry` (recommended or not, a converted Nuvio scraper): for those Kino only notes that
-the call failed (your id and version, the function, the kind of failure). Today a declared plugin's lines
-are always sent; a later Kino build will let the person turn "Enviar registros de errores" off on each
-device, and then nothing is sent while it is off. Before it leaves the device
+the call failed (your id and version, the function, the kind of failure). Up to Kino 0.9.53 a declared plugin's lines
+are always sent; from Kino 0.9.54 the person can turn "Enviar registros de errores y de reproducción" off in your
+plugin's tab in Ajustes (see [Logs and telemetry](diagnostics.md#telemetry)), and then nothing is sent while it is off. Before it leaves the device
 every line has URLs, hostnames, IPs, e-mails, long ids, long hex/base64 runs, credential-shaped text,
 the person's setting values and the text of their search or title removed, and the whole is capped at
 2 KB (the newest lines win). Still: log what happened (a status, a step, a count), never what the

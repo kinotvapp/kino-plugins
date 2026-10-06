@@ -145,6 +145,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, Widevine, `http` plano |
 | [Scrapers de Nuvio](nuvio.md) | Cómo instala la gente los scrapers de Nuvio, qué arma la conversión y sus límites |
 | [Addons de Stremio](stremio.md) | Cómo instala la gente un addon de Stremio, cómo se traduce cada recurso, qué se rechaza y sus límites |
+| [Plugins de CloudStream](cloudstream.md) | Kino 0.9.54: cómo instala la gente los plugins de un repositorio de CloudStream, el complemento, cómo se traduce cada parte y sus límites |
 | [Plugins de ejemplo](examples.md) | Los dos ejemplos publicados, y cómo está hecho el plugin de referencia |
 | [Reclamos y retiro de plugins](claims.md) | Cómo pedir que un plugin de la comunidad salga del índice, qué hace Kino y cómo apelar |
 | [Referencia](reference/index.md) | `contract.json` y `kino.d.ts`, para leer o descargar |

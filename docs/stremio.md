@@ -302,7 +302,7 @@ instalado sigue como estaba.
 | "El addon tardó demasiado en responder. Intenta de nuevo en un rato." | El manifiesto no llegó en 15 s. |
 | "No pude conectarme con el addon. Revisa la dirección y tu conexión." | El nombre no resuelve o el servidor no contesta. |
 | "El servidor del addon respondió con un error (N)…" | Un estado de error al leer el manifiesto. |
-| "<addon> solo trae el catálogo. Busca este título en tus otras fuentes." | El addon no tiene `stream`: es solo catálogo. |
+| "<addon> solo trae el catálogo. Busca este título en tus otras fuentes." | El addon no tiene `stream`: es solo catálogo. Un plugin de Kino toma el mismo camino con [`"catalogOnly": true`](contract.md#catalog-only) (Kino 0.9.54). |
 | "<addon> no reproduce este título. Búscalo en tus otras fuentes." | El tipo o el id del título está por fuera de los `types`/`idPrefixes` de tu `stream`. |
 | "Esta fuente ya no tiene este título (<addon>)" | Tu `/stream` respondió una lista vacía, o nada reproducible. |
 | "<addon> solo tiene enlaces P2P de este título" | Todos los streams eran P2P. |

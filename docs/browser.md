@@ -147,6 +147,42 @@ Origin, User-Agent, Accept-Language, un encabezado con token…, máximo 12; nun
 Devuélvelos como los `headers` del Stream y al reproductor le sirven lo mismo que le habrían servido a
 la página. Sin ellos, la mayoría de estos servidores responden 403.
 
+### Todas las coincidencias, una cookie, una respuesta al acabarse el tiempo (Kino 0.9.54) { #capture-all }
+
+Cuatro opciones más, sin `apiVersion` nuevo: Kino 0.9.54 (todavía no publicada) y posteriores las aceptan, un Kino
+anterior las ignora y hace una captura normal. Comprueba `kino.browser.captureAll === true` antes de contar con ellas
+(`node sdk/validate.mjs` avisa cuando no lo haces).
+
+```js
+if (kino.browser.captureAll) {
+  const page = await kino.browser.capture(embed, {
+    match: "master\\.m3u8", captureAll: true, alsoMatch: ["\\.key", "/subs/"], timeoutMs: 15000,
+  });
+  const master = page.requests[0];                 // the first request matching `match`
+  const key = page.requests.find((r) => /\.key/.test(r.url));
+}
+```
+
+| opción | |
+| --- | --- |
+| `captureAll` | Junta todas las peticiones cuya URL cumple `match` (o el patrón de media por defecto) o alguno de `alsoMatch`, sin repetir URL, máximo 20, y termina cuando ya vio la primera coincidencia y nada nuevo coincidió durante 1 s (o al llegar a 20, o en `timeoutMs`). |
+| `alsoMatch` | Solo con `captureAll`: de 1 a 10 expresiones regulares más (sin distinguir mayúsculas, de 1 a 500 caracteres cada una; un texto o el `source` de un RegExp). Sus peticiones se juntan y aun así le llegan a la página (solo se retienen las de `match`). |
+| `waitForCookie` | El nombre de una cookie (un token HTTP, como `cf_clearance`) que la página también debe tener para su host actual. Sin `match` no hace falta ninguna petición: la página termina en cuanto la cookie está. Con `match`, solo cuando se cumplen las dos (con `captureAll`, el segundo de calma empieza ahí). A una página que espera una cookie nunca se le da play ni se le toca. `captureAll` con `waitForCookie` necesita un `match`. |
+| `returnCookiesOnTimeout` | Una página a la que se le acaba el tiempo responde lo que tenía, con `timedOut: true`, en vez de lanzar `timeout`. |
+
+Una llamada que usó alguna de ellas también recibe `requests` (`[{ url, method, headers }]`, la primera coincidencia
+primero, cada una con el método y los encabezados que mandó la página), `cookies` (las de la página final, como objeto:
+máximo 64 y 16.384 caracteres en total, primero las `cf_*`/`__cf*` de Cloudflare), `userAgent` (el de la página oculta,
+al que Cloudflare ata `cf_clearance`: mándalo junto con esas cookies) y `timedOut`. En una respuesta por tiempo sin
+ninguna coincidencia vista, `requests` solo trae lo que encontró `alsoMatch` (o nada): revisa cada URL con tus propios
+patrones. Una llamada sin estas opciones recibe exactamente la respuesta de arriba. Los patrones se buscan en cualquier
+parte de la URL, incluidas la dirección de la página principal y sus redirecciones; empieza uno con `(?-i)` para que
+distinga mayúsculas.
+
+Antes de Kino 0.9.54 estos cuatro nombres se ignoraban (la captura simplemente los descartaba); desde 0.9.54 se revisan,
+y un valor del tipo equivocado (`captureAll: 1`, `alsoMatch: "x"`, un nombre de cookie con un espacio) es
+`invalid_request`. Ningún plugin del catálogo de Kino los manda hoy.
+
 ## Un ejemplo completo { #example }
 
 Una fuente cuya página de capítulo lista varios servidores, cada uno un embed. La lista se lee con
@@ -246,7 +282,7 @@ almacenamiento nuevos, una sola página a la vez en toda la app -- y devuelve el
 ya cargó, **ya no es la página de revisión del sitio** (el "Just a moment…" de Cloudflare, sus marcas
 `cf-chl`) y coincide con `waitFor`.
 
-**Dónde.** Desde `search`, `home`, `browse`, `episodes`, `section` o `resolve`, solo mientras la
+**Dónde.** Desde `search`, `home`, `browse`, `episodes`, [`details`](contract.md#details) (Kino 0.9.54, apiVersion 8), `section` o `resolve`, solo mientras la
 persona está usando la app: su propia búsqueda, la fila de Inicio o la sección que abrió, una lista, un
 título, su play (un `resolve` también para una descarga que ella empezó). Una llamada que Kino hace por
 su cuenta recibe `not_allowed`: "Para ti" revisando sus sugerencias cuando termina un capítulo,
@@ -294,7 +330,7 @@ export async function search(query) {
 
 | opción | |
 | --- | --- |
-| `timeoutMs` | 1 a 25000 ms; por defecto 15000. Cuenta dentro del límite de tu propia llamada (`search` 15 s, tus otros fetch incluidos; `home`, `browse`, `episodes`, `section` 20 s; `resolve` 75 s para un plugin con navegador). Kino lo recorta a lo que queda de ese límite **menos 1,5 s** para que alcances a usar el HTML, así la lectura termina con su propio `timeout` en vez de cancelarse toda la llamada; igual, pasa unos **12000 en `search`** y deja espacio para tus otros fetch. |
+| `timeoutMs` | 1 a 25000 ms; por defecto 15000. Cuenta dentro del límite de tu propia llamada (`search` 15 s, tus otros fetch incluidos; `home`, `browse`, `episodes`, `details`, `section` 20 s; `resolve` 75 s para un plugin con navegador). Kino lo recorta a lo que queda de ese límite **menos 1,5 s** para que alcances a usar el HTML, así la lectura termina con su propio `timeout` en vez de cancelarse toda la llamada; igual, pasa unos **12000 en `search`** y deja espacio para tus otros fetch. |
 | `waitFor` | Una expresión regular de JavaScript (texto o `RegExp`, 1 a 500 caracteres, sin distinguir mayúsculas, contra el HTML dentro de la página; un `RegExp` conserva sus banderas `m` y `s`, las demás no cambian nada en una prueba): la página se devuelve solo cuando coincide. Sin ella, apenas carga la página y pasa su revisión. Úsala con páginas que llenan su lista con scripts. |
 
 La respuesta es `{ html, finalUrl, status, truncated }`: el doctype y el `outerHTML` del DOM después de

@@ -6,7 +6,7 @@ llama en segundo plano por cada valor que tiene guardado y que ya no puede abrir
 
 | `input` | Qué es | Respuesta esperada |
 | --- | --- | --- |
-| `{ kind: "title", ref }` | un título de la biblioteca | `{ kind: "movie" \| "series", id, ref }` |
+| `{ kind: "title", ref }` | un título de la biblioteca | `{ kind: "movie" \| "series", id, ref }`, o (apiVersion 8, Kino 0.9.54) `{ kind: "music" \| "podcast", id, ref }` |
 | `{ kind: "chapter", ref, season, episode }` | cada uno de sus capítulos | `{ kind: "episode", ref, season, number }` |
 | `{ kind: "live", provider, code }` | un canal en favoritos o recientes | `{ kind: "live", code }` |
 
@@ -40,6 +40,13 @@ export async function migrate(input) {
 - Kino les pregunta a los plugins instalados con `migrate` en el orden de su id; gana la primera
   respuesta.
 - Una serie solo se pasa cuando cada capítulo guardado se responde como `episode`.
+- Un título `music` o `podcast` (apiVersion 8, Kino 0.9.54; por debajo de 8 esa respuesta no reclama
+  nada) se pasa con la forma en que tu plugin lo guarda desde entonces. Si declaras `episodes`, es un
+  álbum o un programa: cada fila guardada se pregunta como capítulo y tiene que responderse como
+  `episode` (una fila guardada sin ref y sin número no puede serlo, así que el título se queda). Sin
+  `episodes`, es una pista suelta: se pasa como una película, sin preguntar capítulos, y solo cuando hay
+  una sola fila guardada (con más, el título se queda). Cualquiera de los dos rechazos se anota en el log
+  y se recuerda como un `null`. Mira [Música y podcasts](contract.md#music-podcasts).
 - El progreso visto, las marcas de intro/final, las descargas y los favoritos se pasan con el título.
 - Un `null` se recuerda hasta la siguiente versión de tu plugin, así que devolver `null` es barato. Lo
   mismo un error lanzado por tu propio código, o un `kino.error` con cualquier código menos `timeout`,

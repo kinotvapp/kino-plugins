@@ -152,9 +152,12 @@ To be listed:
    description, colour and icon, and skips a repository whose manifest is missing or invalid, needs a
    newer `apiVersion` than the person's Kino, or says `"discoverable": false`. A plugin in a subfolder
    can be installed by address but is not searched.
-3. Kino keeps the 30 most-starred matches, searches at most every 12 hours per device (and when the
-   person taps "Actualizar"), and shows them in their own tab of the Plugins screen, "De la comunidad"
-   (beside Recomendados; in "Elige tus fuentes", after the recommended plugins).
+3. Kino searches at most every 12 hours per device (and when the person taps "Actualizar"), and shows
+   the matches in their own tab of the Plugins screen, "De la comunidad" (beside Recomendados; in
+   "Elige tus fuentes", after the recommended plugins). Up to Kino 0.9.53 it keeps only the 30
+   most-starred matches. From **Kino 0.9.54** (not released yet) it reads them 100 at a time, the
+   person picks the order ("Populares" or "Recientes"), "Cargar más" reads the next 100, and "Buscar
+   en GitHub" finds a plugin by name: see [From Kino 0.9.54](#discovery-0954).
    Installing one goes through the same consent sheet as any other plugin.
 
 To stay out of the search while keeping the topic, set `"discoverable": false`;
@@ -173,10 +176,10 @@ The rest of this section spells out every rule the app applies, with its exact v
 | 5 | **`kino-plugin.json` at the root, on the default branch** | The app reads `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` is the default branch). A manifest in a subfolder or only on another branch is not found. |
 | 6 | **At most 16 KB** | A bigger manifest (16,384 bytes) is dropped. |
 | 7 | **A valid manifest** | The same parser as the installer: every rule of [The manifest](manifest.md). `node sdk/validate.mjs .` checks it with the same messages. (Discovery reads only the manifest; the entry file and its exports are checked when someone installs.) |
-| 8 | **An `apiVersion` the person's Kino supports** | A manifest whose `apiVersion` is higher than the build supports is invalid for that build ("Este plugin necesita una versión más nueva de Kino"), so it does not show on devices with an older Kino. Kino 0.9.50 supports up to `6`; 0.9.45 to 0.9.49, up to `5`. |
+| 8 | **An `apiVersion` the person's Kino supports** | A manifest whose `apiVersion` is higher than the build supports is invalid for that build ("Este plugin necesita una versión más nueva de Kino"), so it does not show on devices with an older Kino. Kino 0.9.54 supports up to `8`; 0.9.51 to 0.9.53, up to `7`; 0.9.50, up to `6`; 0.9.45 to 0.9.49, up to `5`. |
 | 9 | **Not `"discoverable": false`** | Leave it out or set `true`. Any value that is not a boolean makes the whole manifest invalid. |
 | 10 | **An `id` nobody else owns** | See [Why a valid plugin can still be hidden](#discovery-hidden). |
-| 11 | **Enough stars to be in the top 30** | See [How the app searches](#discovery-search). |
+| 11 | **Enough stars to be in the top 30** (Kino 0.9.53 and older) | See [How the app searches](#discovery-search). From Kino 0.9.54 every match can be reached: see [From Kino 0.9.54](#discovery-0954). |
 
 The card shows your manifest's `name` and `description`, the tag "por &lt;owner&gt;", and your `color`
 (`#RRGGBB`) and `icon`: the path the manifest names, which must be a real PNG (it starts with the PNG
@@ -219,6 +222,35 @@ card falls back to the neutral look. The app keeps each card's colour and icon f
 - **The empty states** the person may read: "Buscando plugins de la comunidad…", "Por ahora no hay
   plugins de la comunidad para mostrar." and "Todos los plugins de la comunidad que encontramos ya
   están en Recomendados."
+
+What the list above describes is Kino 0.9.53 and older.
+
+#### From Kino 0.9.54 { #discovery-0954 }
+
+(Not released yet.) The rules a repository must meet do not change; what changes is how many
+matches the app reads and in which order:
+
+- **100 at a time, in the order the person picks.** The app reads one page of GitHub's search, 100
+  results, sorted by GitHub: "Populares" (the default) asks for the most-starred first
+  (`sort=stars`), "Recientes" for the most recently updated first (`sort=updated`: any push to your
+  repository counts; GitHub's search cannot sort by creation date). The first page of each order is:
+
+    ```
+    https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=100
+    https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=updated&order=desc&per_page=100
+    ```
+
+    An answer bigger than 2 MB is not read. The manifests of a page are read 4 at a time, 10 s each,
+    and 40 s for the whole page; the cards show up as their manifests arrive.
+- **"Cargar más".** When there are more than 100, a "Cargar más" button at the end of the list reads
+  the next 100 (`&page=2` and on), only when the person taps it, up to the 1000 results GitHub's
+  search returns (page 10). So a plugin with no stars is still found.
+- **"Buscar en GitHub".** When the text typed in "Buscar plugins" matches nothing in the list, the
+  person can ask GitHub for it. The search stays `topic:kino-plugin fork:false` and adds the typed
+  words matched against your repository's **name and description** (`in:name,description`); the
+  words are cleaned first (letters, digits, `.`, `_` and `-` only, at most 50 characters, no GitHub
+  qualifiers or operators). A clear repository name and GitHub description help people find you.
+- **"Elige tus fuentes"** has the same tabs as the Plugins screen, "De la comunidad" among them.
 
 ### When GitHub cannot answer { #discovery-fallback }
 
@@ -266,8 +298,9 @@ The list drops, whatever the stars:
     - wait: GitHub indexes a new topic or a newly public repository on its own schedule, usually
       within minutes but with no promised delay;
     - if there are more than 50 results, yours is not in the first page: see the next point.
-2. **Is it in the top 30?** Count the well-formed results above yours in that answer. Below 30, it
-   is not listed; stars are the only ranking.
+2. **Is it in the top 30?** (Kino 0.9.53 and older.) Count the well-formed results above yours in
+   that answer. Below 30, it is not listed; stars are the only ranking. From Kino 0.9.54, "Recientes",
+   "Cargar más" and "Buscar en GitHub" reach it anyway ([From Kino 0.9.54](#discovery-0954)).
 3. **Is the manifest there?** Open
    `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`. A 404 means it is not at
    the root of the default branch.

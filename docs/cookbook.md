@@ -543,11 +543,14 @@ propio del plugin queda solo para Kino 0.9.52 y anteriores.
   "id": "tmdb-catalog", "name": "Catálogo TMDB", "version": "1.0.0", "apiVersion": 1, "entry": "plugin.js",
   "hosts": ["api.themoviedb.org"],
   "capabilities": ["home", "search", "episodes", "resolve"],
+  "catalogOnly": true,
   "settings": [{ "key": "tmdbKey", "type": "password", "label": "Llave de TMDB (Kino 0.9.52 o anterior)" }]
 }
 ```
 
-(`api.themoviedb.org` está en `hosts` solo para el `kino.fetch` de respaldo en versiones anteriores de Kino; `kino.tmdb` no lo necesita.)
+(`api.themoviedb.org` está en `hosts` solo para el `kino.fetch` de respaldo en versiones anteriores de Kino; `kino.tmdb` no lo necesita.
+`"catalogOnly": true` manda sus títulos a las otras fuentes de la persona en Kino 0.9.54 y posteriores; `resolve` se queda
+para los Kino anteriores, mira [Plugins de solo catálogo](contract.md#catalog-only).)
 
 ```js
 const IMG = "https://image.tmdb.org/t/p/w500";
@@ -607,7 +610,8 @@ export async function episodes(ref) {
 }
 
 export async function resolve(ref) {
-  throw kino.error("not_found", "este catálogo no reproduce: solo lista títulos");   // aquí va el resolve de tu fuente
+  // Solo lo llaman Kino 0.9.53 y anteriores (ahí "catalogOnly" se ignora): lo dice con palabras para la persona.
+  throw kino.error("not_found", "catalog only", { userMessage: "Este catálogo no reproduce: busca el título en tus otras fuentes." });
 }
 ```
 
@@ -673,7 +677,7 @@ Lo que hace Kino con él, y lo que no:
   había pasado `expiresInSeconds`, como con cualquier stream). Un canal en vivo protegido dice lo mismo
   de una vez en un dispositivo sin L3; sus otras fallas de licencia son cortes, que se vuelven a
   resolver como cualquier otro (mira [Canales en vivo](live-channels.md#live-items)). Un título
-  protegido **nunca se puede descargar** ("Este video no se puede descargar"), aunque se declare
+  protegido **nunca se puede descargar** ("Este contenido no se puede descargar"), aunque se declare
   `download`, y tampoco se puede enviar a una TV ([Enviar a la TV](what-people-see.md#cast)).
 - La hoja de consentimiento agrega "Reproduce video protegido (DRM)" cuando se declara `drm`, y una
   actualización que lo declare por primera vez espera la aprobación de la persona

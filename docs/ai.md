@@ -14,7 +14,9 @@ esas herramientas:
 
 !!! tip "¿Quieres usar un scraper de Nuvio?"
     No necesitas este prompt: Kino instala directamente los scrapers de un repositorio de Nuvio,
-    convirtiéndolos en el dispositivo. Mira [Scrapers de Nuvio](nuvio.md).
+    convirtiéndolos en el dispositivo. Mira [Scrapers de Nuvio](nuvio.md). Lo mismo con un addon de
+    Stremio ([Addons de Stremio](stremio.md)) y, desde Kino 0.9.54, con los plugins de un repositorio de
+    CloudStream ([Plugins de CloudStream](cloudstream.md)).
 
 ## Antes de empezar { #before }
 
@@ -130,7 +132,10 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   ajuste de tipo "list", 5 solo para un plugin firmado, 6 solo si usas algo de apiVersion 6: estados y
   botones en los ajustes, una sección propia, colores, telemetry, migrate, firma por petición,
   userMessage, adult, canales en filas de Inicio; 6 necesita Kino 0.9.50 o más nuevo; 7 solo para
-  "tracking" o "segments", y necesita Kino 0.9.51 o más nuevo). Un id nuevo y
+  "tracking" o "segments", y necesita Kino 0.9.51 o más nuevo; 8 solo para elementos "music" o
+  "podcast" o el export details, y necesita Kino 0.9.54 o más nuevo). Un catálogo que no reproduce
+  nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
+  para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
 - Nada de "debug": true en un plugin publicado salvo que yo lo pida: todo plugin ya tiene un
   interruptor "Modo debug" en Ajustes de Kino, y "debug": true solo lo deja encendido de entrada para todos. "telemetry" solo si yo acepto que

@@ -6,7 +6,7 @@
 | --- | --- |
 | Manifiesto / archivo de entrada / ícono | 16 KB / 1 MB / 128 KB |
 | Memoria / pila, por plugin | 64 MB / 1 MB |
-| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin que genera el propio Kino, desde un scraper de Nuvio o un addon de Stremio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; `liveSearch` 15 s; `subtitles` 10 s; `track` 10 s (apiVersion 7); `segments` 8 s (apiVersion 7); `section`, `categories` 20 s cada una (apiVersion 6); `migrate` 10 s; `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `sign` 1,5 s (y 3 s contando su espera); cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
+| Tiempo por llamada | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s cada una (`resolve` de un plugin que genera el propio Kino, desde un scraper de Nuvio o un addon de Stremio: 75 s); `liveCategories`, `liveChannels`, `guide` 20 s cada una; `liveSearch` 15 s; `subtitles` 10 s; `track` 10 s (apiVersion 7); `segments` 8 s (apiVersion 7); `meta` 6 s (apiVersion 6; pasado ese tiempo, no hay respuesta); `section`, `categories` 20 s cada una (apiVersion 6); `migrate` 10 s; `settingsStatus` 10 s, `action` 30 s, `validateSettings` 20 s; `sign` 1,5 s (y 3 s contando su espera); cuentan todos tus fetch y sleep juntos, pero no el tiempo que la persona tarda en responder una pregunta de host de esa llamada |
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
@@ -44,12 +44,21 @@ Desde apiVersion 6, además:
 | `kino.log.report` | un reporte por plugin y área por hora, 3 por plugin hasta que Kino se reinicia; área de máximo 24 caracteres |
 | `telemetry: "verbose"` | 60 eventos por plugin hasta que Kino se reinicia, uno por minuto por área |
 
+Desde Kino 0.9.54 (todavía no publicada), además:
+
+| Qué | Límite |
+| --- | --- |
+| `details()` (apiVersion 8) | 20 s; puede leer páginas con `kino.browser.page`. Ver [Los detalles propios de un título](contract.md#details) |
+| Ítems de audio (apiVersion 8) | `artist` de máximo 200 caracteres; los ítems `music` y `podcast` cuentan en los mismos tamaños de fila y de página que cualquier ítem. Ver [Música y podcasts](contract.md#music-podcasts) |
+| `kino.browser.capture` con `captureAll` (comprueba `kino.browser.captureAll`) | máximo 20 peticiones, termina 1 s después de que nada nuevo coincide; `alsoMatch` de 1 a 10 patrones de 1 a 500 caracteres; máximo 64 encabezados por petición; `cookies` máximo 64, 16.384 caracteres en total. Ver [Todas las coincidencias, una cookie, una respuesta al acabarse el tiempo](browser.md#capture-all) |
+
 ## Cómo vive tu código { #lifecycle }
 
 - **Una llamada a la vez.** Las llamadas a un mismo plugin corren una detrás de otra. El sandbox se
   reutiliza entre llamadas, pero Kino lo bota después de 5 minutos inactivo, después de un tiempo
   agotado, cuando se cancela una llamada (por ejemplo, una búsqueda nueva reemplaza a una vieja) y
-  cuando el plugin se actualiza o se desactiva. Las variables a nivel de módulo son, como mucho, un
+  cuando el plugin se actualiza o se desactiva, y (Kino 0.9.54) cuando la persona cambia el idioma de la app, para que
+  la siguiente llamada reciba el [`kino.lang`](kino-api.md#lang) nuevo. Las variables a nivel de módulo son, como mucho, un
   caché: guarda en `kino.storage` lo que tenga que sobrevivir.
 - **Código al cargar.** Cuando instala tu plugin, Kino carga el módulo una vez en un sandbox
   desechable sin acceso a la red, para revisar que cada capacidad declarada sea una función exportada.

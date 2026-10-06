@@ -290,7 +290,7 @@ it was.
 | "El addon tardó demasiado en responder. Intenta de nuevo en un rato." | The manifest did not arrive within 15 s. |
 | "No pude conectarme con el addon. Revisa la dirección y tu conexión." | The name does not resolve or the server does not answer. |
 | "El servidor del addon respondió con un error (N)…" | An error status reading the manifest. |
-| "<addon> solo trae el catálogo. Busca este título en tus otras fuentes." | The addon has no `stream`: it is catalog-only. |
+| "<addon> solo trae el catálogo. Busca este título en tus otras fuentes." | The addon has no `stream`: it is catalog-only. A Kino plugin gets the same route with [`"catalogOnly": true`](contract.md#catalog-only) (Kino 0.9.54). |
 | "<addon> no reproduce este título. Búscalo en tus otras fuentes." | The title's type or id is outside your `stream`'s `types`/`idPrefixes`. |
 | "Esta fuente ya no tiene este título (<addon>)" | Your `/stream` answered an empty list, or nothing playable. |
 | "<addon> solo tiene enlaces P2P de este título" | Every stream was P2P. |

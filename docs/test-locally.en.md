@@ -31,7 +31,8 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
 - `--record fixtures.json` saves every `kino.fetch` answer; `--replay fixtures.json` answers from that
   file only, with no network. Record once, then your tests run offline and always the same (the
   scaffold's `test/plugin.test.mjs` does exactly that).
-- `KINO_TYPE=movie|series|any` sets the `type` of the search (default `any`).
+- `KINO_TYPE=movie|series|music|podcast|any` sets the `type` of the search (default `any`; `music` and `podcast` are
+  [apiVersion 8](contract.md#music-podcasts), Kino 0.9.54).
 - To fill the other fields of the query, pass the whole query as JSON:
   `node sdk/run.mjs ./plugin.js search '{"q":"dragnet","type":"series","year":1951}'`
   (`season`, `episode`, `tmdbId` and `year` are `0` otherwise).
@@ -47,7 +48,13 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
   sealed for);
   `--run <function> [argument]` also runs it and lists what Kino would drop. With
   `--run liveCategories`, every declared playlist is downloaded and parsed too: one that cannot be
-  downloaded or parses to 0 channels is a problem, and its discarded entries are listed. Exit code 0
+  downloaded or parses to 0 channels is a problem, and its discarded entries are listed. With
+  `--run meta <ids>` it asks your `meta` ([below](#meta)). `--run section [tab]`, `--run categories`,
+  `--run settingsStatus`, `--run action <key>` and `--run validateSettings '<json>'` (apiVersion 6) run them as `run.mjs`
+  does and as the app reads them: the section and categories with their drops, each status line and its missing ones,
+  what an action shows (and whether it refreshes or clears settings), and whether the save is accepted. A call the app
+  never makes is a problem: no `"section"` in the manifest, `categories` without apiVersion 6 and `browse`, an action
+  key no `action` setting has, a function not exported, or a `validateSettings` answer Kino cannot read. Exit code 0
   means Kino would accept it.
 - The `sdk/` folder does not have to live in your repository. Copy it anywhere and run
   `node /path/to/sdk/run.mjs ./plugin.js ...`.
@@ -143,6 +150,55 @@ shown), and `validate.mjs` warns about `debug` before publishing, about a `scope
 [Moving saved titles](migrate.md), [Section, categories and colors](section-theme.md),
 [Logs and telemetry](diagnostics.md).
 
+## Describing titles (`meta`) { #meta }
+
+```
+node sdk/run.mjs . meta tt1254207 tmdb:10378        # apiVersion 6, "meta": Kino's verdict field by field and the info page
+node sdk/validate.mjs . --run meta tt1254207        # the same, as a check; null is a note, not a problem
+```
+
+`meta <ids> [movie|series]` calls your `meta()` with the query Kino builds for a title another source listed,
+`{ type, ids: { imdb?, tmdb?, kitsu?, mal?, anilist? }, id?, lang? }`: `tt…` is `ids.imdb`, `tmdb:N` `ids.tmdb`, and
+`kitsu:N`, `mal:N`, `anilist:N` set that id and the query's `id` (the source's own id, as for a Stremio anime);
+`lang=xx` (default `KINO_LANG`, else `es`), `id=<source id>`, or the whole query as JSON. It never takes a `ref`: Kino
+describes a title by its ids, whatever plugin listed it, and asks nobody about a title with none. The call gets Kino's
+6 s; past them the kit stops waiting, as the app does. On stderr: the query, your answer as you returned it, Kino's
+verdict field by field (`✓` kept, `~` cut or partly kept, `✗` dropped, `·` absent, `-` ignored, with the reason for each
+dropped entry), then how the info page would use it; on stdout, what Kino keeps (`null` when it is no answer). If the
+manifest declares `meta` and the entry does not export it, the runner says Kino refuses the install. A shortened run
+against the [own-server reference plugin](examples.md#reference-plugin) (Tu servidor 1.5.0, its `server.mjs` running):
+
+```
+$ node sdk/run.mjs --config server=http://192.168.2.13:18096 --config user=ana --config password=s3cr3t . meta tt1254207 tmdb:10378
+meta({"type":"movie","ids":{"imdb":"tt1254207","tmdb":10378},"lang":"es"})
+the plugin answered:
+{ … }
+Kino's verdict, field by field:
+  ✓ title           kept: 14 characters; the page keeps the source's own title, this one is not shown
+  ✓ overview        kept: 73 characters; shown as the synopsis when TMDB and AniList have none (HTML tags stripped)
+  ✓ poster          kept: http://192.168.2.13:18096/img/poster/bbb.png (a server the person typed); used when the page has no poster
+  ✓ year            kept: 2008
+  ✓ genres          kept: 2 of 2: Animación, Comedia
+  ✓ runtimeMinutes  kept: 10; shown only for a movie (a series' runtime is per episode)
+  · episodes        absent: not given
+  ✓ ratings         kept: 2 of 2: imdb 6.4, letterboxd 3.4/5
+  ✓ cast            kept: 2 of 2
+{ … }
+How the info page would use it (only where TMDB and AniList left the part blank; their values always win):
+  info line: ★ <the page's score>  ·  IMDb 6.4  ·  Letterboxd 3.4/5  ·  2008  ·  10 min
+  synopsis: Un conejo enorme y tranquilo contra tres roedores que no lo dejan en paz.
+  …
+```
+
+A dropped part reads like `✗ backdrop        dropped: 192.168.1.4 is a private, local or reserved IP address: never the home network`,
+and a list with bad entries like `~ ratings         partly kept: 3 of 4: …` followed by one line per entry. The same rules
+run on the app's own test vectors (`docs/plugins/fixtures/meta/vectors.json` in Kino's repository), so what the kit keeps
+is what Kino keeps.
+
+`validate.mjs --run` also chains `meta`: with `--run search`, `browse`, `home` or `section` and the `meta` capability, your
+`meta` is asked about the first title of the answer that carries `ids.imdb` or `ids.tmdb` (the way Kino builds the
+query); what it drops is listed, and a throw or a timeout past 6 s is a problem.
+
 ## `kino.meta` and `kino.tmdb` (Kino 0.9.53) { #kino-services }
 
 Both work in every function the runner calls, through the kit's stand-ins (any apiVersion):
@@ -189,7 +245,10 @@ differences:
   `resolve` or `episodes`, where the app could [ask the person](kino-api.md#fetch). It has no broad
   video permission either; `"streamHosts": "any"` it does apply.
 - The per-call time limits, the memory limit and the size caps on requests, answers and selectors
-  are not enforced.
-- There is no `meta` command, and `validate.mjs` does not check that a plugin declaring `meta` exports
-  it: try [`meta`](contract.md#meta) in the app. `kino.browser.capture` and `kino.browser.page` always
-  answer `browser_unavailable` ([Hidden browser](browser.md)).
+  are not enforced, except `meta`'s 6 s (Kino gives up silently there, so the kit says so).
+- `kino.browser.capture` and `kino.browser.page` always answer `browser_unavailable` ([Hidden browser](browser.md)).
+  The kit's `kino.browser.captureAll` is `true` and it checks the [Kino 0.9.54 capture options](browser.md#capture-all)
+  as the app does (`invalid_request`) before answering that.
+- `kino.lang` is always `"es-CO"`; the app's follows its language from Kino 0.9.54 ([`kino.lang`](kino-api.md#lang)).
+- There is no `details` command: try the [`details`](contract.md#details) export (apiVersion 8, Kino 0.9.54) on a movie
+  page in the app.

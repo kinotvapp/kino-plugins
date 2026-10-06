@@ -7,7 +7,7 @@ one that leaves the device. All from `"apiVersion": 6` (Kino 0.9.50); below it t
 | --- | --- | --- |
 | [`kino.log`](kino-api.md#log) | `adb logcat` | always |
 | [Modo debug](#debug) | error panel on screen, "Registro" page | the person, with the switch every plugin has (`"debug": true` makes it on by default) |
-| [`"telemetry": true`](#telemetry) / `"verbose"` | the maintainers' error tracker | you ask and the person approves (no switch to turn it off yet) |
+| [`"telemetry": true`](#telemetry) / `"verbose"` | the maintainers' error tracker | you ask and the person approves (from Kino 0.9.54 they can switch it off) |
 
 ## Logcat { #logcat }
 
@@ -62,10 +62,16 @@ of failure, never a log line.
 
 - **Consent.** The consent sheet says "Comparte registros de errores con Kino para corregir fallas". An
   update that newly declares it waits for the person's approval, like a new host ("Actualización
-  disponible — requiere tu aprobación").
-- **No switch yet.** For now, while plugins are being stabilized, a declared plugin's lines are always
-  sent. A later Kino build adds an "Enviar registros de errores" switch to your plugin's tab in Ajustes,
-  on by default, that the person can turn off on each device; then nothing leaves while it is off.
+  disponible — requiere tu aprobación"). From **Kino 0.9.54** (not released yet) the line reads
+  "Comparte con Kino registros de errores y datos técnicos de algunas reproducciones para corregir
+  fallas" ("Shares error reports and technical data from some playbacks with Kino to fix problems"),
+  because `true` then also sends a small sample of good playbacks ([below](#playback)).
+- **The switch.** Up to Kino 0.9.53, while plugins are being stabilized, a declared plugin's lines are
+  always sent and there is no switch. From **Kino 0.9.54** your plugin's tab in Ajustes has an "Enviar
+  registros de errores y de reproducción" switch ("Send error and playback reports"), on phone and TV,
+  on by default; it syncs to the person's other devices (the last change wins) and is kept across
+  updates. While it is off, nothing of your plugin leaves: no lines, no `kino.log.report`, no playback
+  summary. A switch turned off in an earlier build counts again.
 - **What is sent.** When a call fails (it throws, times out, returns something unusable, including
   `sign`, `settingsStatus`, `action` and `validateSettings`), the lines it logged during that call (the
   last 30, each at most 300 characters, 2 KB in all) as `plugin_log`, tagged with your plugin's id and
@@ -103,7 +109,7 @@ kino.log.report("myplugin:session", "shared_fallback", "tries=2");   // area myp
   every plugin together, in that same run of Kino), sent as a warning. That cap leaves room for
   real failures, which have caps of their own.
 - The whole line is scrubbed like any log line, the text of the call running at the time included.
-- Without `telemetry` (or, once that switch exists, with it off) it is just a log line.
+- Without `telemetry` (or, from Kino 0.9.54, with the person's switch off) it is just a log line.
 - Report what happened in codes and counts, never values that came from a response.
 
 ## Playback metrics and problem reports { #playback }
@@ -117,6 +123,14 @@ reason (`expired`, `conflict`, `network`, `cut`…), and for a [request-signed s
 `sign` p50/p95/max and timeouts per playlist and segment, fetch p50/p95 and errors per host **index**
 (0 = the stream's own host, 1… = its `alternateHosts`).
 
+From **Kino 0.9.54** the record also says the codec, how the stream is delivered (`hls`, `dash`, `ts`,
+`progressive`), each stall's likely cause (`stall_cause`: `network_slower_than_bitrate`,
+`network_buffer_dry`, `decoder_or_device`, `memory_brake`, `seek` (a seek's own buffering) or
+`unknown`, judged from the device's bandwidth estimate, the playing bitrate, the buffer at the stall's
+start, late or dropped frames and Kino's memory brake), the network type (`wifi`, `ethernet`,
+`cellular`, `other`; never its name), the "slow connection" notices shown, and a move to a lighter
+copy.
+
 Detectors watch for what a viewer feels: no first frame in 10 s, a frozen picture, long stalls,
 dropped-frame bursts, audio underruns or sink errors, audio and video drifting apart, the audio track
 lost, decoder errors, falling behind the live window, HTTP errors per segment class; and for a cast the
@@ -129,8 +143,12 @@ Where it goes:
 - your plugin's **Registro** (while its Modo debug switch is on), one `kino:play …` line per milestone and a summary
   line;
 - **logcat** under the tag `KinoPlay` in a debug build of Kino, or in any build while that switch is on;
-- the **error tracker**, only with `telemetry` (and, once that switch exists, while the person leaves it on): with `true`, one summary per
-  playback that ended on an error the person saw; with `"verbose"`, also a quarter of the playbacks that
-  went well, and one event per problem or edge case (at most 60 per plugin until Kino restarts, one a
+- the **error tracker**, only with `telemetry` (and, from Kino 0.9.54, while the person leaves its switch on): with `true`, one summary per
+  playback that ended on an error the person saw, and from Kino 0.9.54 also one in twenty of the
+  playbacks that went well (at most 6 until Kino restarts, one an hour per kind), only under a consent
+  given to the wording that names playback data: a plugin installed before Kino 0.9.54 sends failures
+  only until the person approves an update sheet that shows the new line (marked "nuevo" there; an
+  update is never held back for it) or turns the switch back on; with `"verbose"`, a quarter of the
+  playbacks that went well instead, and one event per problem or edge case (at most 60 per plugin until Kino restarts, one a
   minute per area). Failure events carry the Kotlin exception's stack and, when your script threw, its
   own stack frames (`at fn (plugin.js:12:5)`, frames only).

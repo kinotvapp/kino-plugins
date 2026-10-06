@@ -96,6 +96,39 @@ petición. Prefiere enlaces que no necesiten `headers` (la ruta más liviana); c
 tiene que ser uno al que tu plugin puede llegar (declarado, escrito por la persona, o cubierto por un
 permiso "any"), por https. Mientras se envía, el celular se queda en silencio.
 
+Desde Kino 0.9.54 (todavía no publicada), una pista [`music` o `podcast`](contract.md#music-podcasts) de
+apiVersion 8 va a un Chromecast como música, con su título, artista, álbum y portada, y a una TV DLNA como
+ítem de audio; una pista +18 solo envía el nombre de la app.
+
+## Desde Kino 0.9.54 { #v0954 }
+
+Todavía no publicada. Sin nada nuevo en tu manifiesto, salvo donde se diga:
+
+- **Kino en español o en inglés.** La persona elige el idioma de la app en Ajustes ▸ App ▸ Idioma
+  ("Automático" sigue al aparato: español en un aparato en español, inglés en cualquier otro). Los textos
+  propios de Kino lo siguen, incluidos la hoja de consentimiento y los mensajes con los que Kino cuenta las
+  fallas de tu plugin. Lo que devuelve tu plugin (títulos, nombres de filas, etiquetas de ajustes, un
+  `userMessage`) se muestra tal como lo escribiste: lee [`kino.lang`](kino-api.md#lang), ahora `"es-CO"`
+  o `"en-US"`, para escribirlo en el idioma de la persona.
+- **Plugins de solo catálogo.** Con [`"catalogOnly": true`](contract.md#catalog-only) la hoja de
+  consentimiento agrega "Solo catálogo: no reproduce videos", el botón de la página del título dice
+  "Buscar dónde verlo" y el plugin nunca se ofrece como fuente de un título.
+- **Música y podcasts** (apiVersion 8, [el contrato](contract.md#music-podcasts)): portadas cuadradas
+  en filas propias, páginas de álbum y de podcast con "Reproducir" y "Aleatorio", un reproductor de
+  audio, una fila "Seguir escuchando" para podcasts en el Inicio, descargas de audio y envío de audio a
+  la TV.
+- **La página del título es la misma sin importar en qué orden respondan sus fuentes.** TMDB va primero
+  para la sinopsis, el año, los géneros, la nota y la duración; tu ítem y el nuevo export
+  [`details`](contract.md#details) van antes que AniList y los plugins `meta` para la sinopsis y el arte.
+- **Una copia más liviana después de varias pausas.** Cuando la reproducción se sigue deteniendo para
+  cargar, el reproductor puede avisar que la conexión está lenta y, una vez, pasar por su cuenta a una
+  copia claramente más liviana entre tus [alternativas](contract.md#stream) cuando sus etiquetas
+  nombran la resolución.
+- **Encontrar plugins.** "De la comunidad" lista 100 plugins por página, ordenados por "Populares" o
+  "Recientes", con "Cargar más" y "Buscar en GitHub" ([Publicar](publish.md#discovery-0954)).
+- **Plugins de CloudStream.** La persona puede agregar un repositorio de CloudStream e instalar sus
+  plugins a través de una app complemento aparte ([Plugins de CloudStream](cloudstream.md)).
+
 ## Desde Kino 0.9.50 { #v0950 }
 
 Sin nada nuevo en tu manifiesto, salvo donde se dice:

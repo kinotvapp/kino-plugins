@@ -3,11 +3,36 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Kino 0.9.54: plugins de solo catálogo { #v0954 }
+## Kino 0.9.54: `apiVersion` 8, música y podcasts, plugins de solo catálogo { #v0954 }
 
-<span id="next"></span>(Todavía no publicada.) Sin `apiVersion` nuevo: sigue siendo 7, y nada de esta lista te obliga a cambiar
-tu plugin.
+<span id="next"></span>(Todavía no publicada.) **`apiVersion` 8 = Kino 0.9.54.** El contrato (`contract.json`) ahora dice
+`maxApiVersion` 8 y `kino.apiVersion` informa 8. Kino 0.9.53 y anteriores rechazan un manifiesto con `"apiVersion": 8`
+(«Este plugin necesita una versión más nueva de Kino»), así que declara 8 solo si devuelves ítems `music` o `podcast`
+o exportas `details`. Todo lo demás de esta lista es aditivo (vale en cualquier `apiVersion` y un Kino anterior lo
+ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y seguir corriendo en un Kino anterior:
 
+| Novedad | Desde | Cómo saberlo |
+| --- | --- | --- |
+| Ítems `music` / `podcast`, export `details` | Kino 0.9.54, `apiVersion` 8 | declara `"apiVersion": 8` (un Kino anterior rechaza el plugin) |
+| `"catalogOnly": true` | Kino 0.9.54, cualquier `apiVersion` | un Kino anterior lo ignora: conserva `resolve` y `search` o `home` |
+| `captureAll`, `alsoMatch`, `waitForCookie`, `returnCookiesOnTimeout` en `kino.browser.capture` | Kino 0.9.54, `apiVersion` 6 con `"browser": true` | `kino.browser.captureAll === true` |
+| `rating`/`runtimeMinutes` en `episodes().series`, `ids.mal`/`anilist`/`kitsu` | Kino 0.9.54, cualquier `apiVersion` | nada que revisar: un Kino anterior los ignora |
+| `kino.lang` en el idioma de la app | Kino 0.9.54 | lee `kino.lang`; antes siempre era `"es-CO"` |
+
+- **Música y podcasts** (apiVersion 8): un ítem puede ser `kind: "music"` (un álbum, una lista o una sola pista) o
+  `kind: "podcast"` (un programa o un audiolibro), con un `artist` opcional. Con `episodes` declarada, Kino le pide
+  las pistas o los episodios; sin ella, el `ref` del ítem va directo a `resolve`. La persona recibe portadas
+  cuadradas en filas propias, páginas de álbum y de podcast con «Reproducir» y «Aleatorio», un reproductor de audio,
+  «Seguir escuchando» para podcasts en el Inicio, descargas de audio (con `download`) y envío de audio a Chromecast y
+  DLNA. `search` puede recibir `type: "music"` o `"podcast"`, y `migrate` puede responder uno.
+  [Música y podcasts](contract.md#music-podcasts).
+- **`details(ref)`** (apiVersion 8, opcional, sin capacidad): tu propia sinopsis, arte, géneros, año, nota y duración
+  para la página de una película, pedida junto con TMDB con sus propios 20 s y con permiso para usar
+  `kino.browser.page`. Desde apiVersion 8 **`details` es un nombre de export reservado**: renombra una función tuya que
+  lo tenga. `episodes().series` también acepta `rating` y `runtimeMinutes`, y los `ids` pueden llevar los `mal`,
+  `anilist` y `kitsu` de un anime, con los que se consultan AniList y los plugins `meta`. La página del título sigue
+  ahora un orden fijo por campo sin importar quién responda primero, con TMDB primero para la sinopsis, el año, los
+  géneros, la nota y la duración. [Los detalles propios de un título](contract.md#details).
 - **`"catalogOnly": true`** en `kino-plugin.json`: tu plugin muestra y describe títulos, pero no reproduce ninguno (un
   catálogo de TMDB, una lista de estrenos, calificaciones). Kino 0.9.54 manda sus títulos a «Buscar dónde verlo» (las
   otras fuentes de la persona) en vez de abrir el reproductor, nunca lo usa como fuente de un título (la búsqueda, «Ver
@@ -20,6 +45,47 @@ tu plugin.
   exportando `resolve`** (que falle con `kino.error("not_found", …, { userMessage })`) **y `search` o `home`**: esas
   versiones los exigen. `node sdk/validate.mjs` te dice si tu manifiesto sirve también para ellas, y
   `node sdk/run.mjs . resolve <ref>` recuerda que Kino 0.9.54 ya no lo llama.
+  [Plugins de solo catálogo](contract.md#catalog-only).
+- **`kino.browser.capture` atrapa cada coincidencia**: `captureAll` junta cada petición que coincide (máximo 20)
+  hasta que la página se calma, `alsoMatch` agrega hasta 10 patrones más, `waitForCookie` espera una cookie como
+  `cf_clearance` (sin `match`, una página solo de cookie) y `returnCookiesOnTimeout` responde lo que la página tenía
+  en vez de lanzar `timeout`. La respuesta agrega entonces `requests`, `cookies`, `userAgent` y `timedOut`. Sin
+  apiVersion nuevo: revisa primero `kino.browser.captureAll === true`; un Kino anterior ignoraba estos nombres, 0.9.54
+  revisa sus tipos (`invalid_request`). [Navegador oculto](browser.md#capture-all).
+- **`kino.lang` sigue el idioma de la app.** Kino 0.9.54 habla español o inglés (Ajustes ▸ App ▸ Idioma), y
+  `kino.lang` es `"es-CO"` o `"en-US"` según eso (antes siempre `"es-CO"`). Un cambio de idioma cierra tu sandbox y
+  la siguiente llamada abre uno con el valor nuevo; la caché de `kino.meta` se vacía y las filas de los plugins en el
+  Inicio se vuelven a pedir. Escribe los títulos de tus filas y tu `userMessage` en ese idioma.
+  [La API `kino`](kino-api.md#lang).
+- **Los mensajes de error de Kino para tu código están en inglés** (el `e.message` de una falla de `kino.fetch`,
+  `kino.storage`, `kino.html`, las reglas de la firma) y pueden cambiar: compara con `e.code`, nunca con el texto. Los
+  rechazos del manifiesto que la persona lee al instalar quedan como estaban.
+  [Errores que tu código puede atrapar](kino-api.md#catch).
+- **`telemetry: true`** tiene una nueva línea de consentimiento, «Comparte con Kino registros de errores y datos
+  técnicos de algunas reproducciones para corregir fallas», y también envía una pequeña muestra de reproducciones que
+  salieron bien (una de cada veinte, máximo 6 hasta que Kino se reinicie), solo después de que la persona aceptó esa
+  redacción. La pestaña de tu plugin en Ajustes tiene un interruptor «Enviar registros de errores y de reproducción»,
+  encendido por defecto. Los registros de reproducción agregan el códec, la forma de entrega, la causa probable de
+  cada pausa y el tipo de red. [Registro y telemetría](diagnostics.md#telemetry).
+- **Copias: el mismo video, el mismo idioma.** Cada entrada de `alternatives` tiene que ser el mismo video en el mismo
+  idioma (Kino cambia entre ellas por su cuenta). Después de varias pausas para cargar, Kino puede pasar una vez, por
+  su cuenta, a una copia claramente más liviana cuando las etiquetas nombran la resolución (`"720p"`, `"Full HD"`).
+  [Las reglas del `Stream`](contract.md#stream).
+- **Las descargas** que no se pueden guardar ahora terminan como «Este contenido no se puede descargar» (antes «Este
+  video no se puede descargar»). [Descargas](manifest.md#downloads).
+- **«De la comunidad»** lee 100 plugins por página (antes los 30 con más estrellas), ordenados por «Populares» o
+  «Recientes», con «Cargar más» y «Buscar en GitHub» para el texto escrito: un nombre y una descripción claros en tu
+  repositorio ayudan a que te encuentren. [Publicar](publish.md#discovery-0954).
+- **Plugins de CloudStream**: la persona puede agregar un repositorio de CloudStream y Kino convierte cada plugin que
+  elige en un plugin de Kino que corre a través de una app complemento aparte; Music/Audio pasan a `music` y
+  Podcast/AudioBook a `podcast`. No tienes nada que escribir: es lo que puede esperar quien mantiene un repositorio de
+  CloudStream. Los plugins generados reciben un objeto `kino.cloudstream` que el tuyo nunca tiene.
+  [Plugins de CloudStream](cloudstream.md).
+- **Corregido: `kino.tmdb` y `kino.meta` después de una llamada abandonada.** Cuando Kino abandonaba una llamada tuya
+  (una pantalla que se cerró, un límite de tiempo) pero igual usaba su respuesta tardía, cada `kino.tmdb` o
+  `kino.meta` que esa llamada hacía después fallaba con `not_allowed`, así que un catálogo de TMDB podía mostrar una
+  sola fila en el Inicio en vez de todas hasta reiniciar. Desde 0.9.54 siguen respondiendo hasta que termina la
+  evaluación de esa llamada. [La API `kino`](kino-api.md#tmdb).
 
 ## Kino 0.9.53: `kino.meta` y `kino.tmdb` { #v0953 }
 

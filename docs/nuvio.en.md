@@ -16,6 +16,7 @@ repository, or you want to know why a converted plugin behaves differently from 
    a `scrapers` array) the address is a Nuvio repository; otherwise Kino treats it as a Kino plugin
    (`kino-plugin.json`). If the default branch has a `manifest.json` that is not in that format (some
    repositories keep a template there), Kino also tries the `main` and then the `master` branch.
+   The repository does not have to be on GitHub: see [Where the repository may live](#where).
 3. A full-screen picker lists **every** scraper of the manifest, with its logo, types, language,
    version and author, and filters by type (Todas, Películas, Series, Anime) and language. Each card
    says "Agregar", "Instalado", or "No disponible" (a scraper the manifest disables, or disables on
@@ -29,6 +30,25 @@ repository, or you want to know why a converted plugin behaves differently from 
 The picker notes that the scrapers are converted from Nuvio and that their original code is under the
 GPL-3.0 license; the plugin's description says the same ("Convertido desde el plugin de Nuvio …;
 código original GPL-3.0").
+
+### Where the repository may live (Kino 0.9.53) { #where }
+
+- **On GitHub**: `owner/repo`, a github.com page, or its `manifest.json` on raw.githubusercontent.com
+  or jsDelivr (`/gh/`). Each scraper's `filename` is a path inside the repository, read from
+  raw.githubusercontent.com.
+- **On any public https server** (from Kino 0.9.53): paste the URL of its `manifest.json`. A pasted
+  URL is read once and judged by what it contains, whichever tab it was pasted in: a `scrapers` list
+  (entries with `id` and `filename`) is a Nuvio repository, `resources` is a Stremio addon, both
+  opens what the selected tab says, neither is refused. The address must be `https` on a public
+  name: `http`, an IP address, `localhost`, a local name (`.local`, `.lan`…) or a name that resolves
+  into the person's network is refused, and so are credentials in the URL. The manifest is at most
+  256 KiB.
+- **Scraper files**: a relative `filename` is resolved against the manifest's URL; an absolute
+  `https://` one may be on another public server (a CDN), under the same rules. `http://`, a local
+  server, `/root-relative`, `//protocol-relative` or `../` filenames are refused with a message
+  saying why. A scraper's sibling files are read from the server its own file is on.
+
+Kino 0.9.52 and older only read repositories on GitHub.
 
 ## What the conversion builds { #conversion }
 
@@ -117,10 +137,11 @@ From Kino 0.9.51 (Nuvio compatibility v2) also:
   `fs`, `child_process`, `net`, `os`, `stream` and the like load as empty modules: every member reads
   as `undefined`, so a scraper's own feature check falls back to `fetch`, and calling one anyway is a
   `TypeError`.
-- **Multi-file scrapers**: the sibling files it `require`s are read from the same repository, through
-  the same fetcher (no new destination). At most 16 files and 1 MiB in total; `../` inside the
-  repository is fine, a path that escapes the repository (also `%`-encoded) is refused. A sibling that
-  throws on load is retried.
+- **Multi-file scrapers**: the sibling files it `require`s are read from the same repository (or, for
+  a scraper whose file is on another server, from that server), through the same fetcher (no new
+  destination). At most 16 files and 1 MiB in total; `../` inside the repository is fine, a path that
+  escapes the repository or the server's root (also `%`-encoded) is refused. A sibling that throws on
+  load is retried.
 - **Timing**: 30 s per request. A timer a scraper leaves running is cleared once `getStreams` settles,
   so the call does not wait for it.
 
@@ -168,7 +189,8 @@ newer conversions add (`fetchHosts`, downloads).
 
 ## For Nuvio repository maintainers { #maintainers }
 
-- Keep `manifest.json` at the root of the default branch, with `scrapers[]` entries that have `id`,
+- Keep `manifest.json` at the root of the default branch (or, from Kino 0.9.53, at any public https
+  address: [where it may live](#where)), with `scrapers[]` entries that have `id`,
   `name`, `filename`, and ideally `supportedTypes`, `contentLanguage`, `version`, `author`,
   `description` and `logo`: the picker shows and filters by them.
 - Use `enabled: false` or `disabledPlatforms: ["android"]` for scrapers that should not be offered.

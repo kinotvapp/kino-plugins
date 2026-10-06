@@ -539,11 +539,14 @@ when Kino's fails. The plugin carries none and declares no TMDB host for it. The
   "id": "tmdb-catalog", "name": "Catálogo TMDB", "version": "1.0.0", "apiVersion": 1, "entry": "plugin.js",
   "hosts": ["api.themoviedb.org"],
   "capabilities": ["home", "search", "episodes", "resolve"],
+  "catalogOnly": true,
   "settings": [{ "key": "tmdbKey", "type": "password", "label": "Llave de TMDB (Kino 0.9.52 o anterior)" }]
 }
 ```
 
-(`api.themoviedb.org` is in `hosts` only for the fallback's `kino.fetch` on older Kino; `kino.tmdb` itself needs none.)
+(`api.themoviedb.org` is in `hosts` only for the fallback's `kino.fetch` on older Kino; `kino.tmdb` itself needs none.
+`"catalogOnly": true` sends its titles to the person's other sources on Kino 0.9.54+; `resolve` stays for older Kino, see
+[Catalog-only plugins](contract.md#catalog-only).)
 
 ```js
 const IMG = "https://image.tmdb.org/t/p/w500";
@@ -603,7 +606,8 @@ export async function episodes(ref) {
 }
 
 export async function resolve(ref) {
-  throw kino.error("not_found", "este catálogo no reproduce: solo lista títulos");   // your source's resolve goes here
+  // Only Kino 0.9.53 and older call it ("catalogOnly" is ignored there): it says so in the person's words.
+  throw kino.error("not_found", "catalog only", { userMessage: "Este catálogo no reproduce: busca el título en tus otras fuentes." });
 }
 ```
 
@@ -666,7 +670,7 @@ What Kino does with it, and what it does not:
 - When the license is refused, unreachable or expired, or the device has no Widevine (or no L3), the
   person reads "No se pudo abrir este video protegido" (after one more `resolve` if `expiresInSeconds`
   had passed, like any stream). A protected live channel reads the same at once on a device with no
-  L3; its other license failures are cuts, re-resolved like any other (see [Live channels](live-channels.md#live-items)). A protected title is **never downloadable** ("Este video no se puede
+  L3; its other license failures are cuts, re-resolved like any other (see [Live channels](live-channels.md#live-items)). A protected title is **never downloadable** ("Este contenido no se puede
   descargar"), even with `download` declared, and cannot be sent to a TV either ([Sending to the TV](what-people-see.md#cast)).
 - The consent sheet adds "Reproduce video protegido (DRM)" when `drm` is declared, and an update that
   newly declares it waits for the person's approval ([Publishing](publish.md#updates)).

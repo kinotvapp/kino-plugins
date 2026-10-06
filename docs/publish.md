@@ -157,11 +157,14 @@ Para aparecer:
    inválido, necesita un `apiVersion` más nuevo que el Kino de la persona, o dice
    `"discoverable": false`. Un plugin en una subcarpeta se puede instalar por dirección pero no se
    busca.
-3. Kino se queda con los 30 resultados con más estrellas, busca máximo cada 12 horas por dispositivo
-   (y cuando la persona toca "Actualizar"), y los muestra en su propia pestaña de la pantalla Plugins,
-   "De la comunidad" (junto a Recomendados; en "Elige tus fuentes", después de los plugins
-   recomendados). Instalar uno pasa por la misma hoja de consentimiento que cualquier
-   otro plugin.
+3. Kino busca máximo cada 12 horas por dispositivo (y cuando la persona toca "Actualizar"), y muestra
+   los resultados en su propia pestaña de la pantalla Plugins, "De la comunidad" (junto a
+   Recomendados; en "Elige tus fuentes", después de los plugins recomendados). Hasta Kino 0.9.53 se
+   queda solo con los 30 resultados con más estrellas. Desde **Kino 0.9.54** (todavía no publicada)
+   los lee de a 100, la persona elige el orden ("Populares" o "Recientes"), "Cargar más" lee los 100
+   siguientes y "Buscar en GitHub" encuentra un plugin por su nombre: mira
+   [Desde Kino 0.9.54](#discovery-0954). Instalar uno pasa por la misma hoja de consentimiento que
+   cualquier otro plugin.
 
 Para quedarte por fuera de la búsqueda sin quitar el topic, pon `"discoverable": false`;
 `node sdk/validate.mjs .` imprime entonces "No aparecerá en la búsqueda de Kino".
@@ -179,10 +182,10 @@ El resto de esta sección explica cada regla que aplica la app, con su valor exa
 | 5 | **`kino-plugin.json` en la raíz, en la rama por defecto** | La app lee `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json` (`HEAD` es la rama por defecto). Un manifiesto en una subcarpeta o solo en otra rama no se encuentra. |
 | 6 | **Máximo 16 KB** | Un manifiesto más grande (16.384 bytes) se descarta. |
 | 7 | **Un manifiesto válido** | El mismo analizador del instalador: todas las reglas de [el manifiesto](manifest.md). `node sdk/validate.mjs .` lo revisa con los mismos mensajes. (El descubrimiento solo lee el manifiesto; el archivo de entrada y sus exports se revisan cuando alguien instala.) |
-| 8 | **Un `apiVersion` que soporte el Kino de la persona** | Un manifiesto cuyo `apiVersion` es más alto del que soporta esa versión de la app es inválido para ella ("Este plugin necesita una versión más nueva de Kino"), así que no aparece en dispositivos con un Kino más viejo. Kino 0.9.50 soporta hasta `6`; de 0.9.45 a 0.9.49, hasta `5`. |
+| 8 | **Un `apiVersion` que soporte el Kino de la persona** | Un manifiesto cuyo `apiVersion` es más alto del que soporta esa versión de la app es inválido para ella ("Este plugin necesita una versión más nueva de Kino"), así que no aparece en dispositivos con un Kino más viejo. Kino 0.9.54 soporta hasta `8`; de 0.9.51 a 0.9.53, hasta `7`; 0.9.50, hasta `6`; de 0.9.45 a 0.9.49, hasta `5`. |
 | 9 | **Que no diga `"discoverable": false`** | Déjalo por fuera o ponlo en `true`. Cualquier valor que no sea booleano vuelve inválido todo el manifiesto. |
 | 10 | **Un `id` que no sea de nadie más** | Mira [Por qué un plugin válido igual puede quedar oculto](#discovery-hidden). |
-| 11 | **Suficientes estrellas para estar entre los 30 primeros** | Mira [Cómo busca la app](#discovery-search). |
+| 11 | **Suficientes estrellas para estar entre los 30 primeros** (Kino 0.9.53 y anteriores) | Mira [Cómo busca la app](#discovery-search). Desde Kino 0.9.54 se puede llegar a cualquier resultado: mira [Desde Kino 0.9.54](#discovery-0954). |
 
 La tarjeta muestra el `name` y la `description` de tu manifiesto, la etiqueta "por &lt;owner&gt;", y tu
 `color` (`#RRGGBB`) y tu `icon`: la ruta que nombra el manifiesto, que tiene que ser un PNG de verdad
@@ -230,6 +233,38 @@ tarjeta durante un día.
 - **Los estados vacíos** que puede leer la persona: "Buscando plugins de la comunidad…", "Por ahora no
   hay plugins de la comunidad para mostrar." y "Todos los plugins de la comunidad que encontramos ya
   están en Recomendados."
+
+Lo que describe la lista de arriba es Kino 0.9.53 y anteriores.
+
+#### Desde Kino 0.9.54 { #discovery-0954 }
+
+(Todavía no publicada.) Las reglas que tiene que cumplir un repositorio no cambian; cambia cuántos
+resultados lee la app y en qué orden:
+
+- **De a 100, en el orden que elige la persona.** La app lee una página de la búsqueda de GitHub, 100
+  resultados, ordenados por GitHub: "Populares" (el orden por defecto) pide primero los de más
+  estrellas (`sort=stars`), "Recientes" primero los actualizados más recientemente (`sort=updated`:
+  cuenta cualquier push a tu repositorio; la búsqueda de GitHub no puede ordenar por fecha de
+  creación). La primera página de cada orden es:
+
+    ```
+    https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=100
+    https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=updated&order=desc&per_page=100
+    ```
+
+    Una respuesta de más de 2 MB no se lee. Los manifiestos de una página se leen de a 4, 10 s cada
+    uno, y 40 s para toda la página; las tarjetas van apareciendo a medida que llegan sus manifiestos.
+- **"Cargar más".** Cuando hay más de 100, un botón "Cargar más" al final de la lista lee los 100
+  siguientes (`&page=2` en adelante), solo cuando la persona lo toca, hasta los 1000 resultados que
+  devuelve la búsqueda de GitHub (página 10). Así un plugin sin estrellas igual se encuentra.
+- **"Buscar en GitHub".** Cuando el texto escrito en "Buscar plugins" no coincide con nada de la
+  lista, la persona puede pedírselo a GitHub. La búsqueda sigue siendo `topic:kino-plugin fork:false`
+  y le suma las palabras escritas, comparadas con el **nombre y la descripción** de tu repositorio
+  (`in:name,description`); antes se limpian (solo letras, dígitos, `.`, `_` y `-`, máximo 50
+  caracteres, sin calificadores ni operadores de GitHub). Un nombre de repositorio y una descripción
+  de GitHub claros ayudan a que te encuentren.
+- **"Elige tus fuentes"** tiene las mismas pestañas que la pantalla Plugins, entre ellas "De la
+  comunidad".
 
 ### Cuando GitHub no responde { #discovery-fallback }
 
@@ -279,8 +314,10 @@ La lista descarta, tenga las estrellas que tenga:
     - espera: GitHub indexa un topic nuevo o un repositorio que se acaba de volver público a su propio
       ritmo, normalmente en minutos pero sin un plazo prometido;
     - si hay más de 50 resultados, el tuyo no está en la primera página: mira el siguiente punto.
-2. **¿Está entre los 30 primeros?** Cuenta los resultados bien formados que hay por encima del tuyo en
-   esa respuesta. Por debajo del 30 no se lista; las estrellas son el único orden.
+2. **¿Está entre los 30 primeros?** (Kino 0.9.53 y anteriores.) Cuenta los resultados bien formados
+   que hay por encima del tuyo en esa respuesta. Por debajo del 30 no se lista; las estrellas son el
+   único orden. Desde Kino 0.9.54, "Recientes", "Cargar más" y "Buscar en GitHub" igual llegan a él
+   ([Desde Kino 0.9.54](#discovery-0954)).
 3. **¿Está el manifiesto?** Abre
    `https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`. Un 404 significa que no
    está en la raíz de la rama por defecto.

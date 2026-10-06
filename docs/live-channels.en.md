@@ -58,7 +58,7 @@ What Kino does with a `live` item:
   reopen does the person read "Se cortó la señal de &lt;canal&gt; y no volvió". `expiresInSeconds` plays
   no part for a channel: a cut always re-resolves.
 - A channel is never saved: no library row, no resume position, never in "Continuar viendo", and
-  never downloadable (a plugin that declares `download` gets "Este video no se puede descargar"
+  never downloadable (a plugin that declares `download` gets "Este contenido no se puede descargar"
   for it). `runtimeMinutes` on the item is ignored; a channel has no `episodes`.
 
 Limits: a `live` item from a plugin on `"apiVersion": 1` is dropped silently, like any invalid
