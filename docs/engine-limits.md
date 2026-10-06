@@ -14,6 +14,8 @@
 | Cookies | 50 por dominio, 64 KB en total por plugin |
 | `kino.storage` | 256 KB por plugin; el `ttlMs` opcional de una entrada va de 1 a 2.592.000.000 ms (30 días) |
 | `kino.sleep` | de 0 a 5.000 ms por llamada |
+| `kino.meta` (Kino 0.9.53) | máximo 30 llamadas por minuto por plugin; como mucho 8 s (cada uno de los otros plugins `meta`, 6 s), dentro del límite de tu propia llamada; la consulta máximo 4.096 caracteres; la respuesta máximo 1.000.000 de caracteres; en caché 30 minutos |
+| `kino.tmdb` (Kino 0.9.53) | máximo 40 llamadas cada 10 s por plugin; 15 s por llamada; un cuerpo de máximo 2 MB; máximo 20 parámetros de máximo 500 caracteres; en caché 10 minutos (cuerpos de hasta 512 KB); no cuenta en las peticiones por llamada de `kino.fetch` |
 | `kino.crypto` | datos de máximo 5 MB por llamada; PBKDF2 máximo 100.000 iteraciones y llaves de 64 bytes; `randomBytes` máximo 1.024 |
 | `kino.log` / `console.*` | 2.000 caracteres por mensaje; cuando falla una llamada de un plugin cuyo manifiesto declara `telemetry`, sus últimas 30 líneas (cada una cortada a 300 caracteres, depuradas, 2.048 caracteres en total) van con el reporte de la falla |
 | Lo que devuelve una función | máximo 2.000.000 caracteres ya convertido a JSON |

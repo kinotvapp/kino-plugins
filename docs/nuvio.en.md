@@ -132,6 +132,8 @@ marker, and Kino puts the real key in its place only in `https` requests to `api
 (the same [sealed-secret](manifest.md#secrets) mechanism a plugin's own keys use). A request that
 carries the marker anywhere else is refused before it leaves, and the key is blanked out of every
 answer, error and log the plugin sees.
+That is Kino's own key, for converted scrapers only. A plugin you write yourself asks TMDB with the person's own key
+through [`kino.tmdb`](kino-api.md#tmdb) (Kino 0.9.53), never with Kino's.
 
 All of that exists **only** inside a converted scraper. A plugin you write gets the plain Kino
 engine: none of those globals ([Limits and engine quirks](engine-limits.md#not-node)). The same goes

@@ -40,7 +40,7 @@ interface KinoItem {
    */
   kind: "movie" | "series" | "live";
   year?: string | number;
-  /** https, at most 2048 characters; never an IP or a local name (except the person's own server). */
+  /** http or https, at most 2048 characters; a public name or a public IPv4 address, never the home network or a local name (over http not even a name without a dot), except the person's own server. */
   poster?: string;
   backdrop?: string;
   overview?: string;
@@ -493,7 +493,7 @@ interface KinoSegment { type: "intro" | "outro" | "recap" | "credits" | "preview
 type KinoSegmentsFn = (query: KinoSegmentsQuery) => Promise<KinoSegment[] | null>;
 
 /** A plugin that plays (`resolve` required, as above), optionally finding subtitles, tracking or segments too. */
-interface KinoPlayingPlugin extends KinoPlugin { subtitles?: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn }
+interface KinoPlayingPlugin extends KinoPlugin { subtitles?: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn; meta?: KinoMetaFn }
 
 /** A subtitle provider: capabilities only "subtitles" (and maybe "tracking" or "segments"), so `subtitles` is its export. */
 interface KinoSubtitleProvider { subtitles: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn }
@@ -511,6 +511,55 @@ type KinoPluginModule = KinoPlayingPlugin | KinoSubtitleProvider | KinoTracker |
 
 type KinoErrorCode = "auth_required" | "not_found" | "geo_blocked" | "rate_limited" | "unavailable";
 type KinoFetchErrorCode = "host_not_allowed" | "timeout" | "network" | "too_large" | "invalid_request";
+/** Kino 0.9.53: what `kino.meta` and `kino.tmdb` throw besides the fetch codes (see contract.json `kinoMeta`/`kinoTmdb`). */
+type KinoServiceErrorCode = "rate_limited" | "not_allowed" | "no_tmdb_key" | "not_found" | "unavailable";
+
+/**
+ * Kino 0.9.53, `kino.meta(query)`: the title to ask about. `type` and at least one id; ids are positive integers up to
+ * 2147483647 (a number or a digit string) except `imdb` ("tt0133093"). `lang` ("es", "es-MX") goes to the person's meta
+ * plugins. Anything else is `invalid_request`; the whole query as JSON is at most 4096 characters.
+ */
+interface KinoMetaRequest {
+  type: "movie" | "series";
+  ids: { imdb?: string; tmdb?: number | string; tvdb?: number | string; kitsu?: number | string; mal?: number | string; anilist?: number | string };
+  lang?: string;
+}
+
+/**
+ * Kino 0.9.53, what `kino.meta` answers (or null: nobody knew the title). Merged the way Kino's info page merges: Kino's
+ * own TMDB lookup first (Spanish, es-MX), AniList for an anime, then the person's other `meta` plugins, each only filling
+ * what the earlier ones left empty (ratings add up). Every field but `ids` and `sources` appears only when known.
+ */
+interface KinoMetaAnswer {
+  title?: string;
+  /** Up to 2000 characters, HTML stripped. */
+  overview?: string;
+  /** "1999". */
+  year?: string;
+  poster?: string;
+  backdrop?: string;
+  /** A clear-logo of the title (its name drawn as art). */
+  logo?: string;
+  /** At most 5. */
+  genres?: string[];
+  /** A movie's runtime, 1..1000 (never a series'). */
+  runtimeMinutes?: number;
+  tagline?: string;
+  /** Age rating ("12+", "PG-13"). */
+  certification?: string;
+  /** A movie's directors, or a series' creators. */
+  directors?: string[];
+  /** A series' episodes, at most 5000 (trimmed from the end to keep the answer under 1,000,000 characters); `id` is the Stremio-style video id ("tt0944947:1:1"). */
+  episodes?: { season: number; number: number; title?: string; overview?: string; still?: string; airDate?: string; id?: string }[];
+  /** Every id Kino knows for the title, the ones you asked with included. */
+  ids: { imdb?: string; tmdb?: number; tvdb?: number; kitsu?: number; mal?: number; anilist?: number };
+  /** At most 6, one per source; TMDB's own vote is `{ source: "tmdb" }`. */
+  ratings?: { source: "imdb" | "tmdb" | "rottentomatoes" | "metacritic" | "letterboxd" | "mal" | "anilist" | "trakt"; value: string }[];
+  /** At most 20. */
+  cast?: { name: string; character?: string; photo?: string }[];
+  /** Who contributed to this answer. */
+  sources: ("tmdb" | "anilist" | "plugin")[];
+}
 type KinoEncoding = "utf8" | "hex" | "base64";
 type KinoKeyType = "ec" | "ed25519" | "x25519";
 /** A public key as a JWK, in WebCrypto's key order: EC `{ crv, kty: "EC", x, y }`, OKP `{ crv: "Ed25519" | "X25519", kty: "OKP", x }` (base64url, no padding). */
@@ -523,8 +572,11 @@ interface KinoPublicKey { readonly type: KinoKeyType; readonly namedCurve?: "P-2
 interface KinoError extends Error {
   /** `KinoError_<code>` (e.g. `KinoError_not_found`). */
   readonly name: string;
-  readonly code: KinoErrorCode | KinoFetchErrorCode | "crypto_error" | "unknown";
-  /** The sentence you passed as `{ userMessage }`, cut at 161 characters; absent when you passed none. */
+  readonly code: KinoErrorCode | KinoFetchErrorCode | KinoServiceErrorCode | "crypto_error" | "unknown";
+  /**
+   * The sentence you passed as `{ userMessage }`, cut at 161 characters; absent when you passed none. On a `no_tmdb_key`
+   * from `kino.tmdb` (Kino 0.9.53) it is Kino's own sentence for the person, in their language: show it as is.
+   */
   readonly userMessage?: string;
 }
 
@@ -669,6 +721,29 @@ declare namespace kino {
 
   /** 0..5000 ms, counts inside the call's own timeout. */
   function sleep(ms: number): Promise<void>;
+
+  /**
+   * Kino 0.9.53 (no new apiVersion: absent on older Kino, so check `typeof kino.meta === "function"` first). Asks Kino about
+   * a title and answers what it knows, without your plugin ever touching a TMDB key: Kino's own TMDB lookup (its app
+   * feature, the one its info page uses), AniList for an anime, then the person's installed `meta` plugins (never yours,
+   * and none at all when called from your own `meta` export). Null when nobody knows the title (never an error).
+   * At most 30 calls a minute per plugin (`rate_limited`); 8 s at most, inside your call's own time limit; cached 30 min.
+   * Throws `invalid_request` (a bad query), `rate_limited`, `not_allowed` (from `sign()`).
+   */
+  function meta(query: KinoMetaRequest): Promise<KinoMetaAnswer | null>;
+
+  /**
+   * Kino 0.9.53 (no new apiVersion: check `typeof kino.tmdb === "function"` first). A GET to TMDB's v3 API
+   * (`https://api.themoviedb.org/3` + `path`) with the PERSON'S OWN TMDB key, never Kino's: the one they typed in
+   * Ajustes ("Tu llave de TMDB"), else the one they configured in an installed Stremio addon (once they agree). Your
+   * plugin never sees the key and needs no `hosts` entry for TMDB. `path` starts with /discover, /trending, /search,
+   * /movie, /tv, /find, /genre, /configuration, /person or /collection, without the version and without a query string;
+   * `params` (at most 20; never `api_key` or a session) become the query. Answers the parsed JSON body. At most 40 calls
+   * per 10 s per plugin; bodies up to 2 MiB; cached 10 min by path and params. Throws `no_tmdb_key` (no key, or TMDB
+   * refused it: `e.userMessage` is Kino's sentence telling the person what to do), `invalid_request`, `rate_limited`,
+   * `not_found`, `too_large`, `timeout`, `network`, `unavailable`, `not_allowed` (from `sign()`).
+   */
+  function tmdb(path: string, params?: Record<string, string | number | boolean>): Promise<any>;
 
   /**
    * apiVersion 6, with `"browser": true` (or `"pages"`) in the manifest (the person approves it in red): from `resolve` only, and only
@@ -819,30 +894,65 @@ declare namespace kino {
  */
 type KinoManifestCategory = "movies" | "series" | "anime" | "live" | "radio" | "subtitles" | "utilities" | "adult";
 
-/** apiVersion 6, capability "meta": what `meta(query)` is asked about a title another source listed. */
+/**
+ * apiVersion 6, capability "meta": what `meta(query)` is asked about a title ANOTHER source listed (never one of your own),
+ * as the app's TitleMetaQuery builds it. Keys appear only when known; Kino asks nobody about a title with no id at all.
+ */
 interface KinoMetaQuery {
   type: "movie" | "series";
+  /** Every id Kino knows for the title (from the card, TMDB or its anime mapping); each one only when known, never 0 or "". */
   ids: { imdb?: string; tmdb?: number; kitsu?: number; mal?: number; anilist?: number };
-  /** The title's own Stremio-style id in its source ("kitsu:1376"), when it has one. */
+  /** The title's own Stremio-style id in its source ("kitsu:1376", "tt0944947"), only for a Stremio addon's title. */
   id?: string;
   /** The person's language ("es"). */
   lang?: string;
 }
 
-/** `meta`'s answer (or null: a title you do not know). Every field optional; Kino only fills what TMDB and AniList left empty. */
+/**
+ * `meta`'s answer (or null: a title you do not know -- not a failure). Every field optional; Kino only fills what TMDB and
+ * AniList left empty, and an answer with only `year` and/or `runtimeMinutes` counts as none. Text fields may also be numbers
+ * (read as text); each is trimmed and cut, and anything Kino cannot use is dropped on its own (`node sdk/run.mjs . meta`
+ * says which and why). Images follow an item's poster rule: http(s), a public name or IPv4 (http never to a name without
+ * a dot), or the person's own server; a URL longer than 2048 characters is dropped, so keep them shorter. Fields not
+ * listed here are ignored.
+ */
 interface KinoTitleMeta {
-  title?: string;
-  overview?: string;
+  /** Read (up to 200 characters) but not shown: the page keeps the source's own title. */
+  title?: string | number;
+  /** Up to 2000 characters; HTML tags are stripped on the page. */
+  overview?: string | number;
   poster?: string;
   backdrop?: string;
-  year?: string;
+  /** Only its first 9 characters are read, and their first four digits are the year: 1999, "1999", "1999-2003". */
+  year?: string | number;
+  /** Strings only, trimmed, up to 30 characters each; the first 5 non-empty ones. */
   genres?: string[];
-  runtimeMinutes?: number;
-  episodes?: { season: number; number: number; title?: string; overview?: string; still?: string; airDate?: string; id?: string }[];
+  /** 1..1000 (a numeric string or a decimal is read as Android's JSON optInt does). Shown only for a movie. */
+  runtimeMinutes?: number | string;
+  /**
+   * At most 5000 entries read (invalid ones count); `season` 0..999 (0 kept, but never listed on the page), `number`
+   * 1..99999, one per season and number (the first wins), sorted. Texts as an item's; `airDate` "YYYY-MM-DD";
+   * `id` (up to 4096 characters) the episode's Stremio-style video id.
+   */
+  episodes?: { season: number | string; number: number | string; title?: string | number; overview?: string | number; still?: string; airDate?: string; id?: string | number }[];
   /** Kino 0.9.51+: a clear-logo of the title, shown instead of its name on the info page. */
   logo?: string;
-  /** Kino 0.9.51+: at most 6, one per source; added to the page's score, never replacing it. */
+  /**
+   * Kino 0.9.51+: one per source (the first valid one wins; `source` is case-insensitive), at most 6 kept; added to the
+   * page's score, never replacing it (a `tmdb` one is left out when the page has a score). `value`: up to 3 digits, up to 2
+   * decimals with "." or ",", then optionally "%" or "/N" ("8.8", "94%", "4.1/5", "72/100"); a number >= 0 is written
+   * without trailing zeros (8.80 is "8.8").
+   */
   ratings?: { source: "imdb" | "tmdb" | "rottentomatoes" | "metacritic" | "letterboxd" | "mal" | "anilist" | "trakt"; value: string | number }[];
-  /** Kino 0.9.51+: at most 20; shown only when TMDB has no cast for the title. */
-  cast?: { name: string; character?: string; photo?: string }[];
+  /**
+   * Kino 0.9.51+: at most 20 with a name, one per name (the first wins); `name` and `character` up to 60 characters.
+   * Shown only when TMDB has no cast, as "Reparto:" with the first 5 names; `character` and `photo` are kept, not shown.
+   */
+  cast?: { name: string | number; character?: string | number; photo?: string }[];
 }
+
+/**
+ * `meta` -- required with the capability "meta" (apiVersion 6). Asked with every other meta plugin at once; the first
+ * answer in install order wins, within 6 s (a timeout or a throw is just no answer, never shown), remembered 30 minutes.
+ */
+type KinoMetaFn = (query: KinoMetaQuery) => Promise<KinoTitleMeta | null>;

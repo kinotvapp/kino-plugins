@@ -141,6 +141,8 @@ una marca fija, y Kino pone la clave real en su lugar solo en peticiones `https`
 `api.themoviedb.org` (el mismo mecanismo de [secretos sellados](manifest.md#secrets) que usan las
 claves de un plugin). Una petición que lleve la marca a cualquier otro lado se rechaza antes de salir,
 y la clave se borra de toda respuesta, error y log que el plugin vea.
+Esa es la llave de Kino, solo para scrapers convertidos. Un plugin que escribes tú le pregunta a TMDB con la llave de
+la propia persona por medio de [`kino.tmdb`](kino-api.md#tmdb) (Kino 0.9.53), nunca con la de Kino.
 
 Todo eso existe **solo** dentro de un scraper convertido. Un plugin que escribes tú recibe el motor de
 Kino tal cual: ninguno de esos globales ([Límites y trampas del motor](engine-limits.md#not-node)). Lo

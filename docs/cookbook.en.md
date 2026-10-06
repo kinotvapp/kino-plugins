@@ -526,6 +526,93 @@ computer's LAN address, not `127.0.0.1`: a loopback address is refused even as t
 `… . segments tt1254207 45000` then show what Kino would get; the repository's README lists every
 command, and `node --test test/*.test.mjs` runs its tests offline.
 
+## A TMDB catalog with the person's own key (Kino 0.9.53) { #tmdb-catalog }
+
+A plugin whose Home rows and search come from TMDB (trending, discover by genre, a title's seasons) used to ask every
+person for a TMDB key in its own settings. With [`kino.tmdb`](kino-api.md#tmdb) Kino brings the person's key (the one in
+Ajustes, or the one of their Stremio TMDB addon, once they agree): the plugin carries none and declares no TMDB host for
+it. The plugin's own setting stays only for Kino 0.9.52 and older.
+
+```json
+{
+  "id": "tmdb-catalog", "name": "Catálogo TMDB", "version": "1.0.0", "apiVersion": 1, "entry": "plugin.js",
+  "hosts": ["api.themoviedb.org"],
+  "capabilities": ["home", "search", "episodes", "resolve"],
+  "settings": [{ "key": "tmdbKey", "type": "password", "label": "Llave de TMDB (Kino 0.9.52 o anterior)" }]
+}
+```
+
+(`api.themoviedb.org` is in `hosts` only for the fallback's `kino.fetch` on older Kino; `kino.tmdb` itself needs none.)
+
+```js
+const IMG = "https://image.tmdb.org/t/p/w500";
+
+async function tmdb(path, params = {}) {
+  if (typeof kino.tmdb === "function") return kino.tmdb(path, params);
+  const key = kino.config.get("tmdbKey");                     // Kino 0.9.52 and older: the plugin's own setting
+  if (!key) throw kino.error("auth_required", "falta la llave de TMDB");
+  const r = await kino.fetch(`https://api.themoviedb.org/3${path}?${new URLSearchParams({ ...params, api_key: key })}`);
+  if (!r.ok) throw kino.error(r.status === 404 ? "not_found" : "unavailable", "TMDB respondió " + r.status);
+  return r.json();
+}
+
+const item = (m, kind) => ({
+  id: `${kind}-${m.id}`, ref: JSON.stringify({ kind, id: m.id }), kind: kind === "tv" ? "series" : "movie",
+  title: m.title || m.name, year: (m.release_date || m.first_air_date || "").slice(0, 4),
+  poster: m.poster_path ? IMG + m.poster_path : undefined, overview: m.overview || undefined, ids: { tmdb: m.id },
+});
+
+export async function home() {
+  try {
+    const [movies, shows] = await Promise.all([
+      tmdb("/trending/movie/week", { language: "es-MX" }),
+      tmdb("/trending/tv/week", { language: "es-MX" }),
+    ]);
+    return [
+      { id: "movies", title: "Películas en tendencia", items: movies.results.map((m) => item(m, "movie")) },
+      { id: "shows", title: "Series en tendencia", items: shows.results.map((m) => item(m, "tv")) },
+    ];
+  } catch (e) {
+    // No key yet: Home shows no rows for this plugin instead of an error.
+    if (e.code === "no_tmdb_key") return [];
+    throw e;
+  }
+}
+
+export async function search(query) {
+  if (!query.q) return [];
+  // Uncaught, no_tmdb_key reaches the person as Kino's own sentence ("Agrega tu llave de TMDB en Ajustes, o instala un
+  // addon de TMDB de Stremio configurado con tu llave."): nothing to word yourself.
+  const r = await tmdb("/search/multi", { query: query.q, language: "es-MX", include_adult: false });
+  return r.results.filter((m) => m.media_type === "movie" || m.media_type === "tv").map((m) => item(m, m.media_type));
+}
+
+export async function episodes(ref) {
+  const { id } = JSON.parse(ref);
+  const show = await tmdb(`/tv/${id}`, { language: "es-MX" });
+  const out = [];
+  for (const s of show.seasons.filter((x) => x.season_number > 0).slice(0, 10)) {
+    const season = await tmdb(`/tv/${id}/season/${s.season_number}`, { language: "es-MX" });
+    for (const e of season.episodes) {
+      out.push({ season: e.season_number, number: e.episode_number, title: e.name, ref: JSON.stringify({ kind: "tv", id, s: e.season_number, e: e.episode_number }) });
+    }
+  }
+  return { episodes: out };
+}
+
+export async function resolve(ref) {
+  throw kino.error("not_found", "este catálogo no reproduce: solo lista títulos");   // your source's resolve goes here
+}
+```
+
+Try it without a key, then with yours:
+
+```
+node sdk/run.mjs . home                                   # [] : no_tmdb_key is caught
+KINO_TMDB_KEY=<your v3 key> node sdk/run.mjs . home       # the two rows
+node sdk/run.mjs . search matrix                          # [no_tmdb_key] … and the sentence the person reads
+```
+
 ## A Widevine-protected stream (apiVersion 2) { #widevine }
 
 Your source serves DASH or HLS encrypted with Widevine and hands out a license from its own server.

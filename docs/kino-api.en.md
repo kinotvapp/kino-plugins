@@ -3,7 +3,7 @@
 `kino` is a global object, frozen, always there. Nothing else from the outside world is.
 
 ```js
-kino.apiVersion   // 6 -- the highest apiVersion this build of Kino understands, not your manifest's
+kino.apiVersion   // 7 -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"
 ```
@@ -260,6 +260,104 @@ returns a page's HTML once it is past the site's automatic check. Kino never sol
 that asks for a human ends the call with `blocked`. Prefer `kino.fetch` whenever it works. Everything
 -- where each may be called, the safety model, timeouts, errors and a complete example -- is on
 [Hidden browser](browser.md).
+
+## `await kino.meta(query)`: asking Kino about a title (Kino 0.9.53) { #meta }
+
+```js
+if (typeof kino.meta === "function") {                       // Kino 0.9.53+: absent before, so check first
+  const m = await kino.meta({ type: "series", ids: { imdb: "tt0944947" }, lang: kino.lang });
+  if (m) {
+    // { title, overview, year, poster, backdrop, logo, genres, runtimeMinutes, tagline, certification, directors,
+    //   episodes: [{ season, number, title, overview, still, airDate, id: "tt0944947:1:1" }],
+    //   ids: { imdb, tmdb, tvdb, kitsu, mal, anilist }, ratings, cast, sources: ["tmdb", ...] }
+  }
+}
+```
+
+Kino answers what it knows about a title, and your plugin never touches a TMDB key for it. The answer is built exactly
+the way Kino's own info page builds a title's page: **Kino's own TMDB lookup** first (an app feature of Kino, on Kino's
+own key, in Spanish es-MX; no key ever reaches your code), **AniList** for an anime (through the anime id mapping, so a
+`kitsu`, `mal` or `anilist` id works too), then **the person's installed `meta` plugins** (a Stremio metadata addon
+configured with their own key, for example). Each later source only fills what the earlier ones left empty; ratings add
+up. `null` means nobody knew the title: it is never an error.
+
+- **The query**: `type` (`"movie"` or `"series"`) and at least one id: `imdb` (`"tt0133093"`), or `tmdb`, `tvdb`, `kitsu`,
+  `mal`, `anilist` as positive integers (a number or a digit string, up to 2147483647). `lang` (`"es"`, `"es-MX"`) goes to
+  the person's meta plugins. A bad query throws `invalid_request`; the whole query is at most 4,096 characters as JSON.
+- **The answer**: every field appears only when known, except `ids` (every id Kino knows for the title, yours included:
+  ask with an IMDb id and get the TMDB and TVDB ones) and `sources` (`"tmdb"`, `"anilist"`, `"plugin"`: who contributed).
+  `episodes` only for a series (at most 5,000; trimmed from the end so the whole answer stays under 1,000,000
+  characters), each with its Stremio-style `id`. `ratings` at most 6 (TMDB's vote is `{ source: "tmdb" }`), `cast` at
+  most 20, `genres` at most 5.
+- **Never yourself**: your own `meta` export is never asked on your behalf, and a `kino.meta` called from inside a `meta`
+  export asks no plugin at all (only TMDB and AniList), so two meta plugins cannot ask each other in a loop.
+- **Limits**: at most 30 calls a minute per plugin (then `rate_limited`, a token bucket: it refills one call every 2 s);
+  8 s at most (6 s for each meta plugin; what is known by then is answered), counted inside your call's own time limit;
+  the TMDB/AniList part is cached 30 minutes per query and the meta plugins' answers share the info page's own 30-minute
+  cache. Not from `sign()` (`not_allowed`). No new network destination: TMDB and AniList are Kino's own, and each meta
+  plugin uses its own approved hosts. Kino's telemetry counts calls and error codes, never the ids.
+- **No new apiVersion**: `kino.meta` is in every plugin on Kino 0.9.53 and later, whatever its manifest says; older Kino
+  has no such function, so feature-detect it (`typeof kino.meta === "function"`). `node sdk/validate.mjs` warns when your
+  code calls it without that check.
+
+The other way round -- your plugin describing titles for Kino's info page -- is the [`meta` capability](contract.md#meta).
+Under the Node kit, `kino.meta` answers `null` unless you point `KINO_META_FIXTURE` at a JSON file of answers (keys
+`"movie:imdb:tt0133093"` or `"tmdb:1399"`; see [Test it locally](test-locally.md)).
+
+## `await kino.tmdb(path, params?)`: TMDB with the person's own key (Kino 0.9.53) { #tmdb }
+
+```js
+async function tmdb(path, params) {
+  if (typeof kino.tmdb === "function") return kino.tmdb(path, params);   // Kino 0.9.53+: the person's key, never in your code
+  // Older Kino: your own "tmdbKey" setting, as before.
+  const key = kino.config.get("tmdbKey");
+  if (!key) throw kino.error("auth_required", "falta la llave de TMDB");
+  const q = new URLSearchParams({ ...params, api_key: key });
+  const r = await kino.fetch(`https://api.themoviedb.org/3${path}?${q}`);
+  if (!r.ok) throw kino.error(r.status === 404 ? "not_found" : "unavailable", "TMDB respondió " + r.status);
+  return r.json();
+}
+
+const week = await tmdb("/trending/movie/week", { language: "es-MX" });
+```
+
+A read-only door to TMDB's v3 API that uses **only the person's own TMDB key, never Kino's**. Kino looks for it in this
+order:
+
+1. the key the person typed in **Ajustes ▸ App ▸ Tu llave de TMDB** (a v3 API key, 32 hexadecimal characters, or a v4
+   read access token), synced between their devices;
+2. otherwise, a key they already configured in an **installed Stremio addon**: Kino looks in each addon's saved
+   configuration for a field whose name contains "tmdb" (any addon, nothing is listed by name), and uses it only after
+   the person said yes once to "Usar la llave de TMDB de tu addon &lt;name&gt;" (also synced);
+3. otherwise it throws `no_tmdb_key`, and `e.userMessage` is Kino's own sentence for the person, in their language: "Agrega
+   tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave." / "Add your TMDB key in
+   Settings, or install a Stremio TMDB addon set up with your key." Uncaught, the person reads that same sentence. A key
+   TMDB refuses (401) is `no_tmdb_key` too.
+
+Kino adds the key itself (as `api_key` for a v3 key, as an `Authorization: Bearer` header for a v4 token): your code
+never sees it, and errors and logs never carry it. You do not declare `api.themoviedb.org` in `hosts` for it.
+
+- **`path`**: starts with `/discover`, `/trending`, `/search`, `/movie`, `/tv`, `/find`, `/genre`, `/configuration`,
+  `/person` or `/collection` (`"/movie"` or `"/movie/603/credits"`), without the `/3` version, without a query string,
+  no `..` and no `//`. Anything else (an account, a list, a rating: what writes or reads the person's account) is
+  `invalid_request`. GET only.
+- **`params`**: a plain object of at most 20 strings, numbers or booleans, each at most 500 characters as text, names
+  like `language`, `page`, `with_genres`, `vote_count.gte`, `append_to_response`. Never `api_key`, `session_id`,
+  `guest_session_id`, `request_token` or `access_token` (`invalid_request`).
+- **The answer**: the body as parsed JSON. `404` is `not_found`, `429` and Kino's own limit are `rate_limited`, a body
+  over 2 MiB is `too_large`, no answer in 15 s is `timeout`, a failed connection is `network`, anything else that is not a
+  2xx with JSON is `unavailable`.
+- **Limits**: at most 40 calls per 10 s per plugin (a token bucket); cached 10 minutes by path and params (so per
+  `language`; only bodies up to 512 KiB); not counted in `kino.fetch`'s 60 requests per call. Not from `sign()`
+  (`not_allowed`). Kino's telemetry counts calls and error codes, never a path or a key.
+- **No new apiVersion**: Kino 0.9.53 and later; feature-detect it (`typeof kino.tmdb === "function"`) and keep your own
+  key setting only as the fallback for older Kino, as above. A plugin that builds its catalog from TMDB no longer needs
+  to ask each person for a key in its own settings. A complete example: [A TMDB catalog with the person's own
+  key](cookbook.md#tmdb-catalog).
+
+Under the Node kit, `kino.tmdb` uses your key from `KINO_TMDB_KEY` (or `"tmdbKey"` in `sdk/config.json`), and with
+`KINO_TMDB_FIXTURE` it answers offline from a JSON file keyed `"<path>?<params sorted by name>"` or `"<path>"`. Without
+either, it throws `no_tmdb_key` just as Kino does for a person without a key.
 
 ## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 

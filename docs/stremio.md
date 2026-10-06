@@ -221,6 +221,11 @@ enlaces P2P, el reproductor dice "<addon> solo tiene enlaces P2P de este título
   vieja tenga una: eso nunca borra su clave).
 - Para que esto funcione, **tu página de configuración debe terminar en un enlace
   `stremio://…/manifest.json`** con la configuración en la ruta, como lo espera Stremio.
+- **Una llave de TMDB en la configuración** (Kino 0.9.53): cuando la configuración trae un campo cuyo nombre contiene
+  "tmdb" con una llave de TMDB (una v3 de 32 caracteres o un token de lectura v4; en texto, JSON, base64 o codificada
+  en la URL), Kino le ofrece a la persona, una sola vez, usarla para [`kino.tmdb`](kino-api.md#tmdb) ("Usar la llave
+  de TMDB de tu addon <nombre>"). Solo si dice que sí, y la llave nunca sale del aparato salvo hacia TMDB. Una
+  configuración guardada en tu servidor (solo un id opaco en la dirección) simplemente no se encuentra.
 
 ## Addons +18 { #adult }
 

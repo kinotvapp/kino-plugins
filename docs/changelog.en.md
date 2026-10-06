@@ -3,9 +3,31 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.53 (not released yet) { #v0953 }
+
+<span id="next"></span>No new `apiVersion`: it is still 7, and nothing on this list makes you change your plugin. Both new
+calls exist only from Kino 0.9.53, so feature-detect them (`typeof kino.meta === "function"`,
+`typeof kino.tmdb === "function"`); `node sdk/validate.mjs` warns when your code calls one without that check.
+
+- **`kino.meta(query)`**: ask Kino what it knows about a title (`{ type, ids: { imdb, tmdb, tvdb, kitsu, mal, anilist },
+  lang }`) and get synopsis, year, poster, backdrop, logo, genres, runtime, episodes with their ids, the cross-reference
+  of every id, ratings and cast, or `null`. Kino answers from its own TMDB lookup, AniList for anime, and the person's
+  other `meta` plugins, merged the way its info page merges them; your plugin never touches a TMDB key, and it is never
+  asked on its own behalf. 30 calls a minute, 8 s at most, cached 30 minutes.
+  [The `kino` API](kino-api.md#meta).
+- **`kino.tmdb(path, params)`**: TMDB's read-only v3 API with **the person's own key, never Kino's**: the one they type
+  in Ajustes ("Tu llave de TMDB", synced between their devices), else the one they configured in an installed Stremio
+  addon, once they agree. Kino adds the key; your code never sees it, and TMDB needs no entry in your `hosts`. Without a
+  key it throws `no_tmdb_key` with Kino's sentence for the person in `e.userMessage` ("Agrega tu llave de TMDB en
+  Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave."). Allowlisted read paths only, 40 calls per
+  10 s, cached 10 minutes. A TMDB-based catalog no longer needs its own key setting (keep it only as a fallback for
+  older Kino). [The `kino` API](kino-api.md#tmdb), [a complete example](cookbook.md#tmdb-catalog).
+- **The Node kit** runs both: `KINO_META_FIXTURE`, `KINO_TMDB_KEY` (or `"tmdbKey"` in `sdk/config.json`) and
+  `KINO_TMDB_FIXTURE`. [Test it locally](test-locally.md#kino-services).
+
 ## Kino 0.9.51: `apiVersion` 7 { #v0951 }
 
-<span id="next"></span>**`apiVersion` 7 = Kino 0.9.51.** The contract (`contract.json`) now says `maxApiVersion` 7 and
+**`apiVersion` 7 = Kino 0.9.51.** The contract (`contract.json`) now says `maxApiVersion` 7 and
 `kino.apiVersion` reports 7. A manifest with `"apiVersion": 7` is refused by Kino 0.9.50 and older ("Este
 plugin necesita una versión más nueva de Kino"), so declare 7 only if you use `tracking` or `segments`.
 Nothing else on this list makes you change your plugin.

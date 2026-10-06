@@ -211,6 +211,11 @@ tiene enlaces P2P de este título".
   configuration and the old one does: that never wipes their key).
 - For this to work, **your configure page must end in a `stremio://…/manifest.json` link** with the
   configuration in the path, as Stremio expects.
+- **A TMDB key in the configuration** (Kino 0.9.53): when the configuration carries a field whose name contains
+  "tmdb" with a TMDB key (a 32-character v3 key or a v4 read token; plain, JSON, base64 or URL-encoded), Kino offers
+  the person, once, to use it for [`kino.tmdb`](kino-api.md#tmdb) ("Usar la llave de TMDB de tu addon <name>"). Only
+  with their yes, and the key never leaves the device except toward TMDB. A configuration kept on your server (only
+  an opaque id in the address) is simply not found.
 
 ## 18+ addons { #adult }
 

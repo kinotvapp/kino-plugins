@@ -428,6 +428,13 @@ only when you use one of these.
   below.
 - **`meta`** (capability + export `meta(query)`, no consent line, 6 s): fill a title's info page when
   TMDB/AniList have nothing (e.g. `kitsu:` anime); return `null` for titles you do not know.
+- **Kino 0.9.53, no new apiVersion, always behind `typeof kino.<name> === "function"`**: `kino.meta(query)` asks Kino
+  what it knows about a title (its own TMDB lookup, AniList, the person's other `meta` plugins; 30/min; `null` when
+  unknown). `kino.tmdb(path, params)` is read-only TMDB v3 with **the person's own key, never Kino's** (Ajustes, or a
+  Stremio addon's key they agreed to share): never put a TMDB key in the code, and for a TMDB-based catalog prefer it
+  over a `tmdbKey` setting (keep the setting only as the fallback for older Kino). Catch `no_tmdb_key` where an empty
+  answer is better than an error (Home rows); uncaught, the person reads Kino's own sentence telling them where to add
+  the key. [The `kino` API](https://kinotvapp.github.io/kino-plugins/en/kino-api/#tmdb).
 - **Any apiVersion**: `Stream.alternatives` (≤ 8 `{ url, mime?, headers? }`, other copies of the same
   video, best first; Kino switches when one cannot decode or is gone; ignored with `drm`, `signing` and
   for live). `Stream.skip` (`{ openingStartMs?, openingEndMs?, endingStartMs? }` for this exact file:
