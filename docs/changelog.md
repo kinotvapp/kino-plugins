@@ -3,7 +3,7 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Kino 0.9.53 (todavía no publicada) { #v0953 }
+## Kino 0.9.53: `kino.meta` y `kino.tmdb` { #v0953 }
 
 <span id="next"></span>Sin `apiVersion` nuevo: sigue siendo 7, y nada de esta lista te obliga a cambiar tu plugin. Las dos
 llamadas nuevas existen solo desde Kino 0.9.53, así que compruébalas antes de usarlas
