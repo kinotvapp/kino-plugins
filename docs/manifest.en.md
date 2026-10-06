@@ -115,12 +115,15 @@ host**, over `http` or `https`, without a question per host. It is what Kino alr
   servidor de internet"), and an update that adds it waits for the person to approve again. Without
   that approval, `kino.fetch` stays on your `hosts`.
 - **Never the home network.** Local or private addresses (`localhost`, `192.168.x.x`, `10.x.x.x`,
-  `.local`, local IPv6…) and public names that resolve into the home network stay refused with
-  `host_not_allowed`, on a redirect hop too.
+  `.local`…) and public names that resolve into the home network stay refused with
+  `host_not_allowed`, on a redirect hop too. An IPv6 address written as such (`[2001:db8::1]`) is
+  always refused, local or public: use a name.
 - **[Sealed secrets](#secrets) do not change**: a request carrying a sealed value only goes to the
   `hosts` you declared, over `https`, on every hop.
-- **Only `kino.fetch`.** What you play follows its own rules ([`streamHosts`](#stream-hosts)); images,
-  DRM licenses and downloads do not change.
+- **`kino.fetch` and your hidden pages' start address.** If you also declared [`"browser"`](browser.md),
+  the page `kino.browser.capture` or `kino.browser.page` opens may start on any public host too (what
+  the page loads afterwards was already free). What you play follows its own rules
+  ([`streamHosts`](#stream-hosts)); images, DRM licenses and downloads do not change.
 - **`kino.fetchAnyHost`** is `true` when the permission is active for this install (declared, at
   apiVersion 8, and approved), `false` otherwise, and `undefined` on an older Kino: use it to choose
   between going straight to the new host and keeping your own fallback. [The `kino` API](kino-api.md#fetch-any-host).

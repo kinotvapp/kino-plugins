@@ -363,7 +363,7 @@ type KinoMigrateAnswer =
   | { kind: "episode"; ref: string; season?: number; number: number }
   | { kind: "live"; code: string };
 
-/** apiVersion 6, with `"section": { "label" }` in the manifest: your own section (TV sidebar, chip atop Inicio on the phone). */
+/** apiVersion 6, with `"section": { "label" }` in the manifest: your own section (TV sidebar, chip atop Inicio on the phone). Kino 0.9.54: an optional `"labelEn"` (same 20-character limit) is the entry's text when the app is in English; `label` stays the Spanish default and the fallback. */
 interface KinoSectionAnswer {
   /** At most 8; each `id` matches the item id pattern, each `label` at most 24 characters. */
   tabs?: { id: string; label: string }[];
@@ -427,6 +427,12 @@ interface KinoPlugin {
   liveSearch?(arg: { query: string }): Promise<KinoLiveChannelPage | KinoLiveChannel[]>;
   /** apiVersion 3, optional with "channels". At most 50 channels and a 24 h window per call. */
   guide?(arg: { channelIds: string[]; from: number; to: number }): Promise<KinoGuideEntry[]>;
+  /**
+   * The settings form's texts (manifest, not code): since Kino 0.9.54 a setting may add `labelEn`, `hintEn` and (an action,
+   * next to `confirm`) `confirmEn`, an option and a list field `labelEn` (a field also `hintEn`), each with the base field's
+   * limits. Kino shows them when the app is in English; the base texts stay the Spanish default and the fallback. Valid at
+   * every apiVersion; an older Kino ignores them. Your code never sees them: keys and values are the same in both languages.
+   */
   /** apiVersion 6: required when a setting has `type: "status"`. One text per status setting key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. */
   settingsStatus?(): Promise<Record<string, string>>;
   /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. */
@@ -567,6 +573,22 @@ type KinoServiceErrorCode = "rate_limited" | "not_allowed" | "no_tmdb_key" | "no
 interface KinoMetaRequest {
   type: "movie" | "series";
   ids: { imdb?: string; tmdb?: number | string; tvdb?: number | string; kitsu?: number | string; mal?: number | string; anilist?: number | string };
+  lang?: string;
+}
+
+/**
+ * Kino 0.9.54 (check `kino.meta.byTitle === true` first; an older Kino answers `invalid_request`): the title to ask about by
+ * name when you have no id. `title` 1..200 characters, `year` 1870..2100 (a number or a 4-digit string; only with `title`).
+ * Kino searches TMDB (the type's own search, es-MX, first page) and keeps the hit whose es-MX or original title equals
+ * yours once both are normalised (lowercase, no accents, punctuation as spaces); with `year`, that exact year wins, else
+ * one a year off. Two hits that tie (same title and year, or same title and no year) or no match: the answer is null,
+ * never a guess. Then it answers exactly as for ids (same shape, `ids` filled in, same cache, budget and timeout). With
+ * `ids` too, the ids win.
+ */
+interface KinoMetaTitleRequest {
+  type: "movie" | "series";
+  title: string;
+  year?: number | string;
   lang?: string;
 }
 
@@ -829,8 +851,18 @@ declare namespace kino {
   const apiVersion: number;
   const appVersion: string;
   const lang: string;
+  /**
+   * Kino 0.9.54+: `true` when THIS install's `kino.fetch` may reach any public host -- the manifest declares
+   * `"fetchHosts": "any"`, the plugin qualifies (apiVersion 8 or later, or converted from a Nuvio scraper) and the
+   * person approved its red consent line. `false` otherwise; `undefined` on an older Kino (keep your own fallback).
+   */
+  const fetchAnyHost: boolean | undefined;
 
-  /** Only to the manifest's hosts over https (http only on a host declared `insecureHttp`), or to the person's own server as typed. Never throws for a non-2xx status. */
+  /**
+   * Only to the manifest's hosts over https (http only on a host declared `insecureHttp`), or to the person's own server as typed.
+   * With `fetchAnyHost` true, also any PUBLIC host over http or https (never the home network; a sealed secret still only
+   * goes to the manifest's own hosts over https). Never throws for a non-2xx status.
+   */
   function fetch(url: string, options?: KinoFetchOptions): Promise<KinoResponse>;
 
   /**
@@ -851,7 +883,11 @@ declare namespace kino {
    * At most 30 calls a minute per plugin (`rate_limited`); 8 s at most, inside your call's own time limit; cached 30 min.
    * Throws `invalid_request` (a bad query), `rate_limited`, `not_allowed` (from `sign()`).
    */
-  function meta(query: KinoMetaRequest): Promise<KinoMetaAnswer | null>;
+  function meta(query: KinoMetaRequest | KinoMetaTitleRequest): Promise<KinoMetaAnswer | null>;
+  namespace meta {
+    /** Kino 0.9.54: true when `kino.meta` takes `{ type, title, year? }` (KinoMetaTitleRequest); absent before. */
+    const byTitle: true | undefined;
+  }
 
   /**
    * Kino 0.9.53 (no new apiVersion: check `typeof kino.tmdb === "function"` first). A GET to TMDB's v3 API

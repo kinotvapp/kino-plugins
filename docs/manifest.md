@@ -116,12 +116,16 @@ hacía con los [scrapers de Nuvio](nuvio.md) que convierte:
   cualquier servidor de internet"), y una actualización que lo agrega espera a que la persona apruebe
   de nuevo. Sin esa aprobación, `kino.fetch` sigue en tus `hosts`.
 - **Nunca la red de la casa.** Las direcciones locales o privadas (`localhost`, `192.168.x.x`,
-  `10.x.x.x`, `.local`, IPv6 local…) y los nombres públicos que resuelven dentro de la red de la casa
-  siguen rechazados con `host_not_allowed`, también en un salto de redirección.
+  `10.x.x.x`, `.local`…) y los nombres públicos que resuelven dentro de la red de la casa siguen
+  rechazados con `host_not_allowed`, también en un salto de redirección. Una dirección IPv6 escrita
+  tal cual (`[2001:db8::1]`) se rechaza siempre, sea local o pública: usa un nombre.
 - **Los [secretos sellados](#secrets) no cambian**: un pedido que lleva un valor sellado solo va a los
   `hosts` que declaraste, por `https`, en cada salto.
-- **Solo `kino.fetch`.** Lo que reproduces sigue sus propias reglas ([`streamHosts`](#stream-hosts));
-  las imágenes, las licencias DRM y las descargas no cambian.
+- **`kino.fetch` y la dirección inicial de tus páginas ocultas.** Si además declaraste
+  [`"browser"`](browser.md), la página que abre `kino.browser.capture` o `kino.browser.page` también
+  puede empezar en cualquier host público (lo que la página carga después ya era libre). Lo que
+  reproduces sigue sus propias reglas ([`streamHosts`](#stream-hosts)); las imágenes, las licencias DRM
+  y las descargas no cambian.
 - **`kino.fetchAnyHost`** es `true` cuando el permiso está activo en esta instalación (declarado, con
   apiVersion 8 y aprobado), `false` si no, y `undefined` en un Kino anterior: úsalo para elegir entre
   ir directo al host nuevo o quedarte con tu propio respaldo. [La API `kino`](kino-api.md#fetch-any-host).
