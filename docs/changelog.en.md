@@ -15,12 +15,16 @@ calls exist only from Kino 0.9.53, so feature-detect them (`typeof kino.meta ===
   other `meta` plugins, merged the way its info page merges them; your plugin never touches a TMDB key, and it is never
   asked on its own behalf. 30 calls a minute, 8 s at most, cached 30 minutes.
   [The `kino` API](kino-api.md#meta).
-- **`kino.tmdb(path, params)`**: TMDB's read-only v3 API with **the person's own key, never Kino's**: the one they type
-  in Ajustes ("Tu llave de TMDB", synced between their devices), else the one they configured in an installed Stremio
-  addon, once they agree. Kino adds the key; your code never sees it, and TMDB needs no entry in your `hosts`. Without a
-  key it throws `no_tmdb_key` with Kino's sentence for the person in `e.userMessage` ("Agrega tu llave de TMDB en
-  Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave."). Allowlisted read paths only, 40 calls per
-  10 s, cached 10 minutes. A TMDB-based catalog no longer needs its own key setting (keep it only as a fallback for
+- **`kino.tmdb(path, params)`**: TMDB's read-only v3 API with **no key in your plugin**. Kino's own key goes first,
+  behind Kino's TMDB cache (on disk, shared with its own screens, a copy up to 7 days old when TMDB is down) and limits of
+  its own (20 calls per 10 s per plugin, 60 per 10 s for all plugins), so plugins cannot spend Kino's quota. Only when
+  Kino's key fails (TMDB answers 401/403/429 for it, or one of those limits is spent) does the same request go again with
+  the person's key: the one they type in Ajustes ("Tu llave de TMDB", optional, synced between their devices), else the
+  one they configured in an installed Stremio addon, once they agree. A key your plugin keeps in its own settings is never
+  used. Kino adds the key; your code never sees any, and TMDB needs no entry in your `hosts`. `no_tmdb_key` (with Kino's
+  sentence for the person in `e.userMessage`: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio
+  configurado con tu llave.") is left for a Kino build without a key of its own and a person without one. Allowlisted read
+  paths only, 40 calls per 10 s per plugin whichever key, cached 10 minutes. A TMDB-based catalog no longer needs its own key setting (keep it only as a fallback for
   older Kino). [The `kino` API](kino-api.md#tmdb), [a complete example](cookbook.md#tmdb-catalog).
 - **The Node kit** runs both: `KINO_META_FIXTURE`, `KINO_TMDB_KEY` (or `"tmdbKey"` in `sdk/config.json`) and
   `KINO_TMDB_FIXTURE`. [Test it locally](test-locally.md#kino-services).

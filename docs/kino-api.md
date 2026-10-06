@@ -332,11 +332,11 @@ Lo contrario -- que tu plugin describa títulos para la ficha de Kino -- es la [
 kit de Node, `kino.meta` responde `null` salvo que apuntes `KINO_META_FIXTURE` a un archivo JSON de respuestas (claves
 `"movie:imdb:tt0133093"` o `"tmdb:1399"`; ver [Probar en local](test-locally.md)).
 
-## `await kino.tmdb(path, params?)`: TMDB con la llave de la propia persona (Kino 0.9.53) { #tmdb }
+## `await kino.tmdb(path, params?)`: TMDB sin una llave en tu código (Kino 0.9.53) { #tmdb }
 
 ```js
 async function tmdb(path, params) {
-  if (typeof kino.tmdb === "function") return kino.tmdb(path, params);   // Kino 0.9.53+: la llave de la persona, nunca en tu código
+  if (typeof kino.tmdb === "function") return kino.tmdb(path, params);   // Kino 0.9.53+: Kino pone la llave, nunca tu código
   // Kino anterior: tu propio ajuste "tmdbKey", como antes.
   const key = kino.config.get("tmdbKey");
   if (!key) throw kino.error("auth_required", "falta la llave de TMDB");
@@ -349,23 +349,32 @@ async function tmdb(path, params) {
 const semana = await tmdb("/trending/movie/week", { language: "es-MX" });
 ```
 
-Una puerta de solo lectura a la API v3 de TMDB que usa **solo la llave de TMDB de la propia persona, nunca la de Kino**.
-Kino la busca en este orden:
+Una puerta de solo lectura a la API v3 de TMDB. Tu plugin nunca lleva una llave: Kino pone una, en este orden:
 
-1. la llave que la persona escribió en **Ajustes ▸ App ▸ Tu llave de TMDB** (una API key v3 de 32 caracteres
-   hexadecimales, o un token de lectura v4), que se sincroniza entre sus aparatos;
-2. si no hay, una llave que ya configuró en un **addon de Stremio instalado**: Kino busca en la configuración guardada de
-   cada addon un campo cuyo nombre contenga "tmdb" (cualquier addon, ninguno se nombra en el código), y la usa solo
-   después de que la persona dijo que sí una vez a "Usar la llave de TMDB de tu addon &lt;nombre&gt;" (también se
-   sincroniza);
-3. si tampoco, lanza `no_tmdb_key`, y `e.userMessage` es la frase de Kino para la persona, en su idioma: "Agrega tu llave
-   de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave." / "Add your TMDB key in Settings, or
-   install a Stremio TMDB addon set up with your key." Si no la atrapas, la persona lee esa misma frase. Una llave que
-   TMDB rechaza (401) también es `no_tmdb_key`.
+1. **La llave propia de Kino**, siempre. Sus llamadas pasan por la caché de TMDB de Kino (la misma de las pantallas de
+   Kino, guardada en disco; una petición que ya va en camino se comparte, no se repite) y por límites propios, para que
+   los plugins no gasten la cuota de TMDB de Kino: máximo 20 llamadas cada 10 s por plugin y 60 cada 10 s entre todos
+   los plugins llegan a TMDB con la llave de Kino.
+2. **La llave de la persona, solo si la de Kino falla**: TMDB rechaza la llave de Kino (401/403), TMDB la limita (429), o
+   se agotó uno de los dos límites de arriba. Entonces la misma petición sale otra vez con la llave que la persona
+   escribió en **Ajustes ▸ App ▸ Tu llave de TMDB** (opcional; una API key v3 de 32 caracteres hexadecimales, o un token
+   de lectura v4; se sincroniza entre sus aparatos) o, si no hay, con la que configuró en un **addon de Stremio
+   instalado** (Kino busca en la configuración guardada de cada addon un campo cuyo nombre contenga "tmdb", ninguno se
+   nombra en el código, y la usa solo después de que la persona dijo que sí una vez a "Usar la llave de TMDB de tu addon
+   &lt;nombre&gt;", también sincronizado).
+3. **Sin ninguna de las dos**: una copia de la caché de hasta 7 días cuando la hay; si no, `rate_limited` (el límite de
+   Kino, o el 429 de TMDB) o `unavailable` (TMDB rechazó la llave de Kino).
 
-Kino pone la llave él mismo (como `api_key` para una llave v3, como encabezado `Authorization: Bearer` para un token
-v4): tu código nunca la ve, y ni los errores ni los registros la llevan. No declaras `api.themoviedb.org` en `hosts` para
-esto.
+`no_tmdb_key` queda para una versión de Kino sin llave propia y una persona sin llave: `e.userMessage` es entonces la
+frase de Kino para la persona, en su idioma: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio
+configurado con tu llave." / "Add your TMDB key in Settings, or install a Stremio TMDB addon set up with your key." Si no
+la atrapas, la persona lee esa misma frase. En esa versión, una llave de la persona que TMDB rechaza también es
+`no_tmdb_key`.
+
+Una llave que tu plugin guarda en sus propios ajustes (un ajuste `tmdbKey`) es asunto de tu plugin: Kino nunca la lee para
+`kino.tmdb`. Kino pone la llave él mismo (como `api_key` para una llave v3, como encabezado `Authorization: Bearer` para un
+token v4): tu código nunca ve ninguna, ni la de Kino ni la de la persona, y ni las respuestas, ni los errores, ni los
+registros la llevan. No declaras `api.themoviedb.org` en `hosts` para esto.
 
 - **`path`**: empieza por `/discover`, `/trending`, `/search`, `/movie`, `/tv`, `/find`, `/genre`, `/configuration`,
   `/person` o `/collection` (`"/movie"` o `"/movie/603/credits"`), sin la versión `/3`, sin texto de consulta, sin `..` y
@@ -374,21 +383,26 @@ esto.
 - **`params`**: un objeto simple de máximo 20 textos, números o booleanos, cada uno de máximo 500 caracteres como texto,
   con nombres como `language`, `page`, `with_genres`, `vote_count.gte`, `append_to_response`. Nunca `api_key`,
   `session_id`, `guest_session_id`, `request_token` ni `access_token` (`invalid_request`).
-- **La respuesta**: el cuerpo ya convertido desde JSON. `404` es `not_found`, `429` y el límite propio de Kino son
-  `rate_limited`, un cuerpo de más de 2 MiB es `too_large`, sin respuesta en 15 s es `timeout`, una conexión fallida es
-  `network`, y cualquier otra cosa que no sea un 2xx con JSON es `unavailable`.
-- **Límites**: máximo 40 llamadas cada 10 s por plugin (un balde de fichas); en caché 10 minutos por ruta y parámetros
-  (o sea, por `language`; solo cuerpos de hasta 512 KiB); no cuenta en las 60 peticiones por llamada de `kino.fetch`. No
-  desde `sign()` (`not_allowed`). La telemetría de Kino solo cuenta llamadas y códigos de error, nunca una ruta ni una
-  llave.
+- **La respuesta**: el cuerpo ya convertido desde JSON. `404` es `not_found`, un cuerpo de más de 2 MiB es `too_large`;
+  cuando TMDB no responde en 15 s (`timeout`), no se puede alcanzar (`network`) o responde 5xx (`unavailable`), llega en
+  su lugar la copia de la caché (de hasta 7 días) si la hay. Cualquier otra cosa que no sea un 2xx con JSON es
+  `unavailable`.
+- **Límites**: máximo 40 llamadas cada 10 s por plugin, conteste la llave que conteste (un balde de fichas), más los dos
+  límites de la llave de Kino de arriba; una respuesta fresca de la caché no cuenta en los de Kino. En caché 10 minutos en
+  memoria por ruta y parámetros (o sea, por `language`; solo cuerpos de hasta 512 KiB), y en disco con la caché de TMDB
+  de Kino (desde 1 hora para listas y búsquedas hasta 7 días para `/find` y `/genre`), la haya traído la llave que sea. No
+  cuenta en las 60 peticiones por llamada de `kino.fetch`. No desde `sign()` (`not_allowed`). La telemetría de Kino solo
+  cuenta llamadas según cómo se respondieron (caché, llave de Kino, llave de la persona) y códigos de error, nunca una
+  ruta ni una llave.
 - **Sin `apiVersion` nuevo**: Kino 0.9.53 o superior; compruébala (`typeof kino.tmdb === "function"`) y deja tu propio
   ajuste de llave solo como respaldo para versiones anteriores de Kino, como arriba. Un plugin que arma su catálogo con
-  TMDB ya no necesita pedirle una llave a cada persona en sus ajustes. Un ejemplo completo: [Un catálogo de TMDB con la
-  llave de la persona](cookbook.md#tmdb-catalog).
+  TMDB ya no necesita pedirle una llave a cada persona. Un ejemplo completo: [Un catálogo de TMDB sin llave en el
+  plugin](cookbook.md#tmdb-catalog).
 
-Con el kit de Node, `kino.tmdb` usa tu llave de `KINO_TMDB_KEY` (o `"tmdbKey"` en `sdk/config.json`), y con
-`KINO_TMDB_FIXTURE` responde sin red desde un archivo JSON con claves `"<path>?<params ordenados por nombre>"` o
-`"<path>"`. Sin ninguno de los dos lanza `no_tmdb_key`, igual que Kino con una persona sin llave.
+Con el kit de Node, `kino.tmdb` usa tu llave de `KINO_TMDB_KEY` (o `"tmdbKey"` en `sdk/config.json`) donde la app usa la
+de Kino, con el límite más estricto de la llave de Kino (20 cada 10 s; el kit no tiene una llave de la persona a la que
+pasar), y con `KINO_TMDB_FIXTURE` responde sin red desde un archivo JSON con claves `"<path>?<params ordenados por
+nombre>"` o `"<path>"`. Sin ninguno de los dos lanza `no_tmdb_key`, como una versión de Kino sin llave propia.
 
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 

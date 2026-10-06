@@ -149,7 +149,7 @@ Both work in every function the runner calls, through the kit's stand-ins (any a
 
 ```
 KINO_META_FIXTURE=meta.json node sdk/run.mjs . home        # kino.meta answers from meta.json; without it, null
-KINO_TMDB_KEY=<your TMDB key> node sdk/run.mjs . home      # kino.tmdb asks TMDB with YOUR key (or "tmdbKey" in sdk/config.json)
+KINO_TMDB_KEY=<your TMDB key> node sdk/run.mjs . home      # kino.tmdb asks TMDB with YOUR key where Kino uses its own (or "tmdbKey" in sdk/config.json)
 KINO_TMDB_FIXTURE=tmdb.json node sdk/run.mjs . search matrix   # kino.tmdb answers offline from tmdb.json
 ```
 
@@ -157,10 +157,12 @@ KINO_TMDB_FIXTURE=tmdb.json node sdk/run.mjs . search matrix   # kino.tmdb answe
   answer; the first id of the query with an entry answers, else `null` (Kino's own TMDB/AniList lookup and the person's
   other plugins do not exist in Node).
 - `tmdb.json` maps `"<path>?<params sorted by name, URL-encoded>"` or just `"<path>"` to TMDB's body
-  (`"/trending/movie/week?language=es-MX"`); a fixture stands in for TMDB and for the person's key, and a path it lacks
+  (`"/trending/movie/week?language=es-MX"`); a fixture stands in for TMDB and for a key, and a path it lacks
   answers `not_found`.
-- Without a key or a fixture, `kino.tmdb` throws `no_tmdb_key`, as Kino does for a person who has no key, and the
-  runner prints the sentence Kino would show. Your key is never printed.
+- Your key stands in for Kino's own, under Kino's limit for its key (20 calls per 10 s); the kit has no person's key to
+  fall back to, so past that limit it throws `rate_limited`.
+- Without a key or a fixture, `kino.tmdb` throws `no_tmdb_key`, as a Kino build without a key of its own does for a person
+  who has none, and the runner prints the sentence Kino would show. Your key is never printed.
 - Validation, rate limits, the cache and the error codes are the app's ([`kino.meta`](kino-api.md#meta),
   [`kino.tmdb`](kino-api.md#tmdb)); `node sdk/validate.mjs` warns when your code calls either without
   `typeof kino.<name> === "function"` (older Kino has neither). Samples of both files are in

@@ -734,14 +734,19 @@ declare namespace kino {
 
   /**
    * Kino 0.9.53 (no new apiVersion: check `typeof kino.tmdb === "function"` first). A GET to TMDB's v3 API
-   * (`https://api.themoviedb.org/3` + `path`) with the PERSON'S OWN TMDB key, never Kino's: the one they typed in
-   * Ajustes ("Tu llave de TMDB"), else the one they configured in an installed Stremio addon (once they agree). Your
-   * plugin never sees the key and needs no `hosts` entry for TMDB. `path` starts with /discover, /trending, /search,
-   * /movie, /tv, /find, /genre, /configuration, /person or /collection, without the version and without a query string;
-   * `params` (at most 20; never `api_key` or a session) become the query. Answers the parsed JSON body. At most 40 calls
-   * per 10 s per plugin; bodies up to 2 MiB; cached 10 min by path and params. Throws `no_tmdb_key` (no key, or TMDB
-   * refused it: `e.userMessage` is Kino's sentence telling the person what to do), `invalid_request`, `rate_limited`,
-   * `not_found`, `too_large`, `timeout`, `network`, `unavailable`, `not_allowed` (from `sign()`).
+   * (`https://api.themoviedb.org/3` + `path`) with no key in your plugin. Kino's own TMDB key goes first, behind Kino's
+   * TMDB cache, a shared in-flight request and its own limits (at most 20 calls per 10 s per plugin and 60 per 10 s for
+   * all plugins on Kino's key). Only when Kino's key fails (TMDB answers 401/403/429 for it, or one of those limits is
+   * spent) does the same request go again with the PERSON'S key: the one they typed in Ajustes ("Tu llave de TMDB",
+   * optional), else the one they configured in an installed Stremio addon (once they agree). With neither, a cached copy
+   * up to 7 days old, else `rate_limited`. A key your plugin keeps in its own settings is never used. Your plugin never
+   * sees any key and needs no `hosts` entry for TMDB. `path` starts with /discover, /trending, /search, /movie, /tv,
+   * /find, /genre, /configuration, /person or /collection, without the version and without a query string; `params` (at
+   * most 20; never `api_key` or a session) become the query. Answers the parsed JSON body (a cached copy when TMDB is down
+   * or unreachable). At most 40 calls per 10 s per plugin whichever key; bodies up to 2 MiB; cached 10 min in memory by
+   * path and params, and on disk with Kino's TMDB cache. Throws `no_tmdb_key` (only on a Kino build without a key of its
+   * own and a person without one: `e.userMessage` is Kino's sentence telling the person what to do), `invalid_request`,
+   * `rate_limited`, `not_found`, `too_large`, `timeout`, `network`, `unavailable`, `not_allowed` (from `sign()`).
    */
   function tmdb(path: string, params?: Record<string, string | number | boolean>): Promise<any>;
 

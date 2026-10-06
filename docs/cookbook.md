@@ -530,12 +530,13 @@ propio de la persona. `node sdk/run.mjs $C . home`, `… . resolve doblaje`, `�
 `… . track watched` y `… . segments tt1254207 45000` muestran entonces lo que Kino recibiría; el README
 del repositorio lista todos los comandos, y `node --test test/*.test.mjs` corre sus pruebas sin red.
 
-## Un catálogo de TMDB con la llave de la persona (Kino 0.9.53) { #tmdb-catalog }
+## Un catálogo de TMDB sin llave en el plugin (Kino 0.9.53) { #tmdb-catalog }
 
 Un plugin cuyas filas de Inicio y búsqueda salen de TMDB (tendencias, descubrir por género, las temporadas de un título)
 antes le pedía a cada persona una llave de TMDB en sus propios ajustes. Con [`kino.tmdb`](kino-api.md#tmdb) Kino pone la
-llave de la persona (la de Ajustes, o la de su addon de TMDB de Stremio, si acepta): el plugin no lleva ninguna ni
-declara un host de TMDB para eso. El ajuste propio del plugin queda solo para Kino 0.9.52 y anteriores.
+llave: primero la suya, detrás de su caché y sus límites, y la de la persona (la de Ajustes, o la de su addon de TMDB de
+Stremio, si acepta) solo cuando la de Kino falla. El plugin no lleva ninguna ni declara un host de TMDB para eso. El ajuste
+propio del plugin queda solo para Kino 0.9.52 y anteriores.
 
 ```json
 {
@@ -577,7 +578,7 @@ export async function home() {
       { id: "shows", title: "Series en tendencia", items: shows.results.map((m) => item(m, "tv")) },
     ];
   } catch (e) {
-    // Todavía sin llave: Inicio no muestra filas de este plugin en vez de un error.
+    // Sin ninguna llave (una versión de Kino sin la suya, y la persona sin la propia): Inicio no muestra filas en vez de un error.
     if (e.code === "no_tmdb_key") return [];
     throw e;
   }
@@ -585,8 +586,9 @@ export async function home() {
 
 export async function search(query) {
   if (!query.q) return [];
-  // Sin atraparlo, no_tmdb_key le llega a la persona como la frase de Kino ("Agrega tu llave de TMDB en Ajustes, o instala un
-  // addon de TMDB de Stremio configurado con tu llave."): no tienes que redactar nada.
+  // La llave de Kino contesta primero, así que esto es raro. Sin atraparlo, no_tmdb_key le llega a la persona como la
+  // frase de Kino ("Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu
+  // llave."): no tienes que redactar nada.
   const r = await tmdb("/search/multi", { query: query.q, language: "es-MX", include_adult: false });
   return r.results.filter((m) => m.media_type === "movie" || m.media_type === "tv").map((m) => item(m, m.media_type));
 }
@@ -609,7 +611,7 @@ export async function resolve(ref) {
 }
 ```
 
-Pruébalo sin llave y luego con la tuya:
+Pruébalo sin llave (como una versión de Kino sin la suya) y luego con la tuya en el lugar de la de Kino:
 
 ```
 node sdk/run.mjs . home                                   # [] : no_tmdb_key se atrapa

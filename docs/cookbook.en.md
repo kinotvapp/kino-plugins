@@ -526,12 +526,13 @@ computer's LAN address, not `127.0.0.1`: a loopback address is refused even as t
 `… . segments tt1254207 45000` then show what Kino would get; the repository's README lists every
 command, and `node --test test/*.test.mjs` runs its tests offline.
 
-## A TMDB catalog with the person's own key (Kino 0.9.53) { #tmdb-catalog }
+## A TMDB catalog with no key in the plugin (Kino 0.9.53) { #tmdb-catalog }
 
 A plugin whose Home rows and search come from TMDB (trending, discover by genre, a title's seasons) used to ask every
-person for a TMDB key in its own settings. With [`kino.tmdb`](kino-api.md#tmdb) Kino brings the person's key (the one in
-Ajustes, or the one of their Stremio TMDB addon, once they agree): the plugin carries none and declares no TMDB host for
-it. The plugin's own setting stays only for Kino 0.9.52 and older.
+person for a TMDB key in its own settings. With [`kino.tmdb`](kino-api.md#tmdb) Kino brings the key: its own first, behind
+its cache and limits, and the person's (the one in Ajustes, or the one of their Stremio TMDB addon, once they agree) only
+when Kino's fails. The plugin carries none and declares no TMDB host for it. The plugin's own setting stays only for Kino
+0.9.52 and older.
 
 ```json
 {
@@ -573,7 +574,7 @@ export async function home() {
       { id: "shows", title: "Series en tendencia", items: shows.results.map((m) => item(m, "tv")) },
     ];
   } catch (e) {
-    // No key yet: Home shows no rows for this plugin instead of an error.
+    // No key at all (a Kino build without one, and no key of the person's): Home shows no rows instead of an error.
     if (e.code === "no_tmdb_key") return [];
     throw e;
   }
@@ -581,8 +582,9 @@ export async function home() {
 
 export async function search(query) {
   if (!query.q) return [];
-  // Uncaught, no_tmdb_key reaches the person as Kino's own sentence ("Agrega tu llave de TMDB en Ajustes, o instala un
-  // addon de TMDB de Stremio configurado con tu llave."): nothing to word yourself.
+  // Kino's key answers first, so this is rare. Uncaught, no_tmdb_key reaches the person as Kino's own sentence
+  // ("Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave."): nothing to
+  // word yourself.
   const r = await tmdb("/search/multi", { query: query.q, language: "es-MX", include_adult: false });
   return r.results.filter((m) => m.media_type === "movie" || m.media_type === "tv").map((m) => item(m, m.media_type));
 }
@@ -605,7 +607,7 @@ export async function resolve(ref) {
 }
 ```
 
-Try it without a key, then with yours:
+Try it without a key (as a Kino build with none), then with yours standing in for Kino's:
 
 ```
 node sdk/run.mjs . home                                   # [] : no_tmdb_key is caught

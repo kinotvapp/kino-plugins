@@ -154,7 +154,7 @@ Las dos funcionan en cualquier función que corra el runner, con los sustitutos 
 
 ```
 KINO_META_FIXTURE=meta.json node sdk/run.mjs . home        # kino.meta responde desde meta.json; sin él, null
-KINO_TMDB_KEY=<tu llave de TMDB> node sdk/run.mjs . home   # kino.tmdb le pregunta a TMDB con TU llave (o "tmdbKey" en sdk/config.json)
+KINO_TMDB_KEY=<tu llave de TMDB> node sdk/run.mjs . home   # kino.tmdb le pregunta a TMDB con TU llave donde Kino usa la suya (o "tmdbKey" en sdk/config.json)
 KINO_TMDB_FIXTURE=tmdb.json node sdk/run.mjs . search matrix   # kino.tmdb responde sin red desde tmdb.json
 ```
 
@@ -162,10 +162,12 @@ KINO_TMDB_FIXTURE=tmdb.json node sdk/run.mjs . search matrix   # kino.tmdb respo
   respuesta; responde el primer id de la consulta que tenga entrada, o `null` (la consulta de TMDB y AniList de Kino y los
   demás plugins de la persona no existen en Node).
 - `tmdb.json` asocia `"<path>?<params ordenados por nombre, codificados>"` o solo `"<path>"` al cuerpo de TMDB
-  (`"/trending/movie/week?language=es-MX"`); el archivo hace las veces de TMDB y de la llave de la persona, y una ruta que
+  (`"/trending/movie/week?language=es-MX"`); el archivo hace las veces de TMDB y de una llave, y una ruta que
   no tenga responde `not_found`.
-- Sin llave ni archivo, `kino.tmdb` lanza `no_tmdb_key`, como hace Kino con una persona sin llave, y el runner muestra la
-  frase que Kino mostraría. Tu llave nunca se imprime.
+- Tu llave hace las veces de la de Kino, con el límite de la llave de Kino (20 llamadas cada 10 s); el kit no tiene una
+  llave de la persona a la que pasar, así que pasado ese límite lanza `rate_limited`.
+- Sin llave ni archivo, `kino.tmdb` lanza `no_tmdb_key`, como hace una versión de Kino sin llave propia con una persona sin
+  llave, y el runner muestra la frase que Kino mostraría. Tu llave nunca se imprime.
 - La validación, los límites, la caché y los códigos de error son los de la app ([`kino.meta`](kino-api.md#meta),
   [`kino.tmdb`](kino-api.md#tmdb)); `node sdk/validate.mjs` avisa si tu código llama cualquiera de las dos sin
   `typeof kino.<nombre> === "function"` (las versiones anteriores de Kino no tienen ninguna). Hay ejemplos de los dos

@@ -16,12 +16,17 @@ alguna sin esa comprobación.
   demás plugins `meta` de la persona, combinados igual que en la ficha; tu plugin nunca toca una llave de TMDB, y nunca
   se le pregunta a sí mismo. 30 llamadas por minuto, máximo 8 s, en caché 30 minutos.
   [La API `kino`](kino-api.md#meta).
-- **`kino.tmdb(path, params)`**: la API v3 de TMDB, solo lectura, con **la llave de la propia persona, nunca la de
-  Kino**: la que escribe en Ajustes ("Tu llave de TMDB", sincronizada entre sus aparatos) o, si no hay, la que configuró
-  en un addon de Stremio instalado, si acepta usarla. Kino pone la llave; tu código nunca la ve, y TMDB no necesita una
-  entrada en tus `hosts`. Sin llave lanza `no_tmdb_key` con la frase de Kino para la persona en `e.userMessage` ("Agrega
-  tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave."). Solo rutas de lectura
-  permitidas, 40 llamadas cada 10 s, en caché 10 minutos. Un catálogo hecho con TMDB ya no necesita su propio ajuste de
+- **`kino.tmdb(path, params)`**: la API v3 de TMDB, solo lectura, **sin una llave en tu plugin**. Primero va la llave
+  propia de Kino, detrás de la caché de TMDB de Kino (en disco, la misma de sus pantallas, con una copia de hasta 7 días
+  cuando TMDB no responde) y de límites propios (20 llamadas cada 10 s por plugin, 60 cada 10 s entre todos los plugins),
+  para que los plugins no gasten la cuota de Kino. Solo cuando la llave de Kino falla (TMDB le responde 401/403/429, o se
+  agota uno de esos límites) la misma petición sale otra vez con la llave de la persona: la que escribe en Ajustes ("Tu
+  llave de TMDB", opcional, sincronizada entre sus aparatos) o, si no hay, la que configuró en un addon de Stremio
+  instalado, si acepta usarla. Una llave que tu plugin guarda en sus propios ajustes nunca se usa. Kino pone la llave; tu
+  código nunca ve ninguna, y TMDB no necesita una entrada en tus `hosts`. `no_tmdb_key` (con la frase de Kino para la
+  persona en `e.userMessage`: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con
+  tu llave.") queda para una versión de Kino sin llave propia y una persona sin llave. Solo rutas de lectura permitidas,
+  40 llamadas cada 10 s por plugin conteste la llave que conteste, en caché 10 minutos. Un catálogo hecho con TMDB ya no necesita su propio ajuste de
   llave (déjalo solo como respaldo para versiones anteriores). [La API `kino`](kino-api.md#tmdb),
   [un ejemplo completo](cookbook.md#tmdb-catalog).
 - **El kit de Node** corre las dos: `KINO_META_FIXTURE`, `KINO_TMDB_KEY` (o `"tmdbKey"` en `sdk/config.json`) y

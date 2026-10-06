@@ -430,8 +430,9 @@ only when you use one of these.
   TMDB/AniList have nothing (e.g. `kitsu:` anime); return `null` for titles you do not know.
 - **Kino 0.9.53, no new apiVersion, always behind `typeof kino.<name> === "function"`**: `kino.meta(query)` asks Kino
   what it knows about a title (its own TMDB lookup, AniList, the person's other `meta` plugins; 30/min; `null` when
-  unknown). `kino.tmdb(path, params)` is read-only TMDB v3 with **the person's own key, never Kino's** (Ajustes, or a
-  Stremio addon's key they agreed to share): never put a TMDB key in the code, and for a TMDB-based catalog prefer it
+  unknown). `kino.tmdb(path, params)` is read-only TMDB v3 with **no key in your code**: Kino's own key first (behind its
+  cache and limits: 20/10 s per plugin, 60/10 s for all), the person's key (Ajustes, or a Stremio addon's key they agreed
+  to share) only when Kino's fails: never put a TMDB key in the code, and for a TMDB-based catalog prefer it
   over a `tmdbKey` setting (keep the setting only as the fallback for older Kino). Catch `no_tmdb_key` where an empty
   answer is better than an error (Home rows); uncaught, the person reads Kino's own sentence telling them where to add
   the key. [The `kino` API](https://kinotvapp.github.io/kino-plugins/en/kino-api/#tmdb).

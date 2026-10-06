@@ -16,7 +16,7 @@
 | `kino.storage` | 256 KB per plugin; an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
 | `kino.sleep` | 0 to 5,000 ms per call |
 | `kino.meta` (Kino 0.9.53) | at most 30 calls a minute per plugin; 8 s at most (each other `meta` plugin 6 s), inside your call's own limit; the query at most 4,096 characters; the answer at most 1,000,000 characters; cached 30 minutes |
-| `kino.tmdb` (Kino 0.9.53) | at most 40 calls per 10 s per plugin; 15 s per call; a body at most 2 MB; at most 20 params of at most 500 characters; cached 10 minutes (bodies up to 512 KB); not counted in `kino.fetch`'s requests per call |
+| `kino.tmdb` (Kino 0.9.53) | at most 40 calls per 10 s per plugin; on Kino's own key at most 20 per 10 s per plugin and 60 per 10 s for all plugins (then the person's key, else the cache or `rate_limited`); 15 s per call; a body at most 2 MB; at most 20 params of at most 500 characters; cached 10 minutes (bodies up to 512 KB); not counted in `kino.fetch`'s requests per call |
 | `kino.crypto` | data at most 5 MB per call; PBKDF2 at most 100,000 iterations and 64-byte keys; `randomBytes` at most 1,024 |
 | `kino.log` / `console.*` | 2,000 characters per message; when a call of a plugin whose manifest declares `telemetry` fails, its last 30 lines (each cut at 300 characters, scrubbed, 2,048 characters in all) go with the failure report |
 | What a function returns | at most 2,000,000 characters once turned into JSON |
