@@ -3,9 +3,27 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Kino 0.9.54: plugins de solo catálogo { #v0954 }
+
+<span id="next"></span>(Todavía no publicada.) Sin `apiVersion` nuevo: sigue siendo 7, y nada de esta lista te obliga a cambiar
+tu plugin.
+
+- **`"catalogOnly": true`** en `kino-plugin.json`: tu plugin muestra y describe títulos, pero no reproduce ninguno (un
+  catálogo de TMDB, una lista de estrenos, calificaciones). Kino 0.9.54 manda sus títulos a «Buscar dónde verlo» (las
+  otras fuentes de la persona) en vez de abrir el reproductor, nunca lo usa como fuente de un título (la búsqueda, «Ver
+  otras fuentes», «Buscar por fuente», el «Servidor» del reproductor), nunca llama su `resolve`, no lo cuenta como fuente
+  en «Elige tus fuentes» y la ventana de instalación dice «Solo catálogo: no reproduce videos». Con el campo, `resolve`
+  deja de ser obligatorio y basta una de `home`, `browse`, `search` o `meta`; se rechazan `download`, `drm`, `channels`,
+  `streamHosts` y `"browser": true` (`"pages"` sí vale).
+- **Es aditivo**: vale en cualquier `apiVersion`, y un Kino anterior ignora el campo como ignora cualquier clave que no
+  conoce. Para que tu plugin se siga instalando y actualizando en Kino 0.9.53 y anteriores, **sigue declarando y
+  exportando `resolve`** (que falle con `kino.error("not_found", …, { userMessage })`) **y `search` o `home`**: esas
+  versiones los exigen. `node sdk/validate.mjs` te dice si tu manifiesto sirve también para ellas, y
+  `node sdk/run.mjs . resolve <ref>` recuerda que Kino 0.9.54 ya no lo llama.
+
 ## Kino 0.9.53: `kino.meta` y `kino.tmdb` { #v0953 }
 
-<span id="next"></span>Sin `apiVersion` nuevo: sigue siendo 7, y nada de esta lista te obliga a cambiar tu plugin. Las dos
+Sin `apiVersion` nuevo: sigue siendo 7, y nada de esta lista te obliga a cambiar tu plugin. Las dos
 llamadas nuevas existen solo desde Kino 0.9.53, así que compruébalas antes de usarlas
 (`typeof kino.meta === "function"`, `typeof kino.tmdb === "function"`); `node sdk/validate.mjs` avisa si tu código llama
 alguna sin esa comprobación.

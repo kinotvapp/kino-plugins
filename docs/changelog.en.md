@@ -3,9 +3,27 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.54: catalog-only plugins { #v0954 }
+
+<span id="next"></span>(Not released yet.) No new `apiVersion`: it is still 7, and nothing on this list makes you change your
+plugin.
+
+- **`"catalogOnly": true`** in `kino-plugin.json`: your plugin lists and describes titles but plays none (a TMDB
+  catalog, a list of new releases, ratings). Kino 0.9.54 sends its titles to "Buscar dónde verlo" (the person's other
+  sources) instead of opening the player, never uses it as a source of a title (the search, "Ver otras fuentes",
+  "Buscar por fuente", the player's "Servidor"), never calls its `resolve`, does not count it as a source in "Elige tus
+  fuentes", and the install sheet says "Solo catálogo: no reproduce videos" ("Catalog only: doesn't play videos"). With
+  the field, `resolve` is no longer required and one of `home`, `browse`, `search` or `meta` is enough; `download`,
+  `drm`, `channels`, `streamHosts` and `"browser": true` are refused (`"pages"` is fine).
+- **It is additive**: valid at every `apiVersion`, and an older Kino ignores the field as it ignores any key it does
+  not know. To keep your plugin installing and updating on Kino 0.9.53 and older, **keep declaring and exporting
+  `resolve`** (failing with `kino.error("not_found", …, { userMessage })`) **and `search` or `home`**: those versions
+  require them. `node sdk/validate.mjs` tells you whether your manifest also works there, and
+  `node sdk/run.mjs . resolve <ref>` reminds you that Kino 0.9.54 no longer calls it.
+
 ## Kino 0.9.53: `kino.meta` and `kino.tmdb` { #v0953 }
 
-<span id="next"></span>No new `apiVersion`: it is still 7, and nothing on this list makes you change your plugin. Both new
+No new `apiVersion`: it is still 7, and nothing on this list makes you change your plugin. Both new
 calls exist only from Kino 0.9.53, so feature-detect them (`typeof kino.meta === "function"`,
 `typeof kino.tmdb === "function"`); `node sdk/validate.mjs` warns when your code calls one without that check.
 
