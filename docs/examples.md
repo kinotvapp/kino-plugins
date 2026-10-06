@@ -1,9 +1,10 @@
 # Plugins de ejemplo
 
-Dos plugins publicados, los dos públicos, los dos instalables en Kino y los dos usables como
-plantilla. Arranca por **Internet Archive** si quieres la plantilla más simple posible; arranca por
-**Tu servidor**, el demo completo de la API, cuando tu fuente sea un servidor de la persona o cuando
-quieras ver funcionando de punta a punta cada función hasta apiVersion 7.
+Tres plugins publicados, todos públicos, todos instalables en Kino y todos usables como plantilla.
+Arranca por **Internet Archive** si quieres la plantilla más simple posible; arranca por **Tu
+servidor**, el demo completo de la API, cuando tu fuente sea un servidor de la persona o cuando
+quieras ver funcionando de punta a punta cada función hasta apiVersion 7; arranca por **Internet
+Archive Audio** para música y podcasts ([apiVersion 8](music.md), Kino 0.9.54).
 
 <div class="grid cards" markdown>
 
@@ -33,10 +34,23 @@ quieras ver funcionando de punta a punta cada función hasta apiVersion 7.
     [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-archive/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-archive){ .md-button }
 
+-   ![](assets/archive-audio-icon.png){ .card-icon } **Internet Archive Audio** · `kinotvapp/kino-plugin-archive-audio`
+
+    ---
+
+    **El plugin de audio de referencia.** Música libre, conciertos en vivo, audiolibros y radio
+    antigua de archive.org, como ítems `music` y `podcast`: apiVersion 8, Kino 0.9.54 o más nuevo.
+    `episodes` responde por cada álbum, audiolibro y programa (aunque sea una sola pista), `resolve`
+    ofrece cada formato de audio como una copia perezosa con etiqueta, más `download`, una sección
+    propia y mosaicos de Categorías. Mira [Música y podcasts](music.md).
+
+    [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-archive-audio/generate){ .md-button .md-button--primary }
+    [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-archive-audio){ .md-button }
+
 </div>
 
-Para probar cualquiera de los dos en Kino, abre Ajustes > Plugins y escribe
-`kinotvapp/kino-plugin-archive` o `kinotvapp/kino-plugin-own-server`.
+Para probar cualquiera en Kino, abre Ajustes > Plugins y escribe `kinotvapp/kino-plugin-archive`,
+`kinotvapp/kino-plugin-own-server` o `kinotvapp/kino-plugin-archive-audio`.
 
 **Usa la plantilla, no hagas fork.** "Usar como plantilla" crea un repositorio nuevo tuyo con los
 mismos archivos. Un fork también funcionaría como plugin, pero la búsqueda de la comunidad de Kino deja

@@ -73,6 +73,8 @@ your plugin from a template, so the kit is already inside.
       every feature up to apiVersion 7).
     - [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive): the
       simplest, for a site with search and videos.
+    - [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio):
+      music and podcasts (apiVersion 8, Kino 0.9.54; see [Music and podcasts](music.md)).
 2. Top right, press the green **Use this template → Create a new repository** button. Name your
    repository and keep it **public**.
 3. Download it to your computer and check the kit works:

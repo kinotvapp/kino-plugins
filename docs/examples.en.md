@@ -1,9 +1,10 @@
 # Example plugins
 
-Two published plugins, both public, both installable in Kino, and both usable as a template. Start
+Three published plugins, all public, all installable in Kino, and all usable as a template. Start
 from **Internet Archive** for the simplest possible template; start from **Tu servidor**, the
 complete API demo, when your source is a server the person owns, or when you want to see every
-feature up to apiVersion 7 working end to end.
+feature up to apiVersion 7 working end to end; start from **Internet Archive Audio** for music and
+podcasts ([apiVersion 8](music.md), Kino 0.9.54).
 
 <div class="grid cards" markdown>
 
@@ -33,10 +34,23 @@ feature up to apiVersion 7 working end to end.
     [:octicons-repo-template-16: Use as template](https://github.com/kinotvapp/kino-plugin-archive/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: View on GitHub](https://github.com/kinotvapp/kino-plugin-archive){ .md-button }
 
+-   ![](assets/archive-audio-icon.png){ .card-icon } **Internet Archive Audio** · `kinotvapp/kino-plugin-archive-audio`
+
+    ---
+
+    **The reference audio plugin.** Free music, live concerts, audiobooks and old-time radio from
+    archive.org, as `music` and `podcast` items: apiVersion 8, Kino 0.9.54 or newer. `episodes`
+    answers for every album, audiobook and show (even a single track), `resolve` offers each audio
+    format as a labelled lazy copy, plus `download`, a section of its own and Categorías tiles. See
+    [Music and podcasts](music.md).
+
+    [:octicons-repo-template-16: Use as template](https://github.com/kinotvapp/kino-plugin-archive-audio/generate){ .md-button .md-button--primary }
+    [:octicons-mark-github-16: View on GitHub](https://github.com/kinotvapp/kino-plugin-archive-audio){ .md-button }
+
 </div>
 
-To try either one in Kino, open Ajustes > Plugins and type `kinotvapp/kino-plugin-archive` or
-`kinotvapp/kino-plugin-own-server`.
+To try one in Kino, open Ajustes > Plugins and type `kinotvapp/kino-plugin-archive`,
+`kinotvapp/kino-plugin-own-server` or `kinotvapp/kino-plugin-archive-audio`.
 
 **Use the template, don't fork.** "Use as template" creates a fresh repository of your own with the
 same files. A fork would work as a plugin too, but Kino's community search leaves forks out

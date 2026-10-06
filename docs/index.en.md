@@ -12,8 +12,10 @@ API Kino gives you, every limit, the quirks of the JavaScript engine, and how to
 
 The complete API demo is [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
 ("Tu servidor" 1.5.0: every feature up to apiVersion 7 working end to end); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
-(Internet Archive) is the simplest starting template. Both carry the `sdk/` folder, the Node
-kit. Two more files describe the contract for machines (both on the [Reference](reference/index.md)
+(Internet Archive) is the simplest starting template, and
+[kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio)
+(Internet Archive Audio) is the reference for [music and podcasts](music.md) (apiVersion 8, Kino
+0.9.54). The first two carry the `sdk/` folder, the Node kit. Two more files describe the contract for machines (both on the [Reference](reference/index.md)
 page): `contract.json` holds every number and rule the app enforces (the tables in this guide are
 generated from it, and the app's tests pin its own constants to it), and `kino.d.ts` declares the
 whole `kino` API for your editor (`/// <reference path="./kino.d.ts" />` at the top of `plugin.js`).
@@ -23,7 +25,9 @@ whole `kino` API for your editor (`/// <reference path="./kino.d.ts" />` at the 
 1. **Start from the template.** Create your repository from
    [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) -- the
    simplest one -- or from [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
-   if you need settings, a session, downloads or live channels ("Use this template" on either one,
+   if you need settings, a session, downloads or live channels, or from
+   [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio) for
+   music and podcasts ("Use this template" on any of them,
    or clone it and copy `sdk/`). Do not *fork* it: Kino's community search leaves forks
    out ([Get found](publish.md#get-found)). Or let the kit write a skeleton:
    `node sdk/init.mjs my-plugin --host example.com`.

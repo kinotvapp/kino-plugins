@@ -14,8 +14,10 @@ JavaScript y cómo publicar.
 
 La demo completa de la API es [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
 ("Tu servidor" 1.5.0: cada función hasta apiVersion 7 funcionando de punta a punta); [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
-(Internet Archive) es la plantilla de arranque más simple. Los dos traen la carpeta `sdk/`, el kit de
-Node. Otros dos archivos describen el contrato para máquinas (los dos están en la página
+(Internet Archive) es la plantilla de arranque más simple, y
+[kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio)
+(Internet Archive Audio) es la referencia para [música y podcasts](music.md) (apiVersion 8, Kino
+0.9.54). Los dos primeros traen la carpeta `sdk/`, el kit de Node. Otros dos archivos describen el contrato para máquinas (los dos están en la página
 [Referencia](reference/index.md)): `contract.json` guarda cada número y cada regla que la app hace
 cumplir (las tablas de esta guía salen de él, y las pruebas de la app amarran sus propias constantes
 a él), y `kino.d.ts` declara toda la API `kino` para tu editor
@@ -26,8 +28,9 @@ a él), y `kino.d.ts` declara toda la API `kino` para tu editor
 1. **Parte de la plantilla.** Crea tu repositorio desde
    [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive) -- la más
    simple -- o desde [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server)
-   si necesitas ajustes, sesión, descargas o canales en vivo ("Use this template" en cualquiera de
-   los dos, o clónalo y copia `sdk/`). No le hagas *fork*: la búsqueda de la comunidad de Kino deja
+   si necesitas ajustes, sesión, descargas o canales en vivo, o desde
+   [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio) para
+   música y podcasts ("Use this template" en cualquiera, o clónalo y copia `sdk/`). No le hagas *fork*: la búsqueda de la comunidad de Kino deja
    los forks por fuera ([Hazte encontrar](publish.md#get-found)). O deja que el kit te escriba un
    esqueleto: `node sdk/init.mjs mi-plugin --host example.com`.
 2. **Declara lo que necesitas** en `kino-plugin.json`: un `id`, los `hosts` a los que vas a llamar y
