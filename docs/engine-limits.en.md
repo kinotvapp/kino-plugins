@@ -29,6 +29,11 @@
 | `secrets` (apiVersion 4) | at most 16; names match `^[A-Za-z][A-Za-z0-9_]{0,31}$`; a value is 1..4,096 bytes (1..8,192 from apiVersion 6); from apiVersion 6 a cipher key may be typed: `{ seal, use: "cipher-key", encoding: "hex" | "base64" }`, 16/24/32 bytes |
 <!-- contract:limits:end -->
 
+The "Time per call" row leaves some calls out: `details` 20 s (apiVersion 8, Kino 0.9.54; see
+[A title's own details](contract.md#details)), and the settings form's `settingsStatus` 10 s, `action`
+30 s and `validateSettings` 20 s (apiVersion 6; also in the table below). They count your fetches and
+sleeps like the rest.
+
 The 60 requests of `kino.fetch` count every hop, refused ones included (a plugin converted from a
 [Nuvio scraper](nuvio.md) gets 250); at most 6 of your fetches are in flight at once, and one call
 asks the person about at most 3 hosts ([details](kino-api.md#fetch)).

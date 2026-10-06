@@ -54,7 +54,8 @@ lo va a preguntar.
 
 ```text
 Vas a escribir un plugin de Kino: un repositorio público de GitHub con kino-plugin.json y un
-módulo ES de JavaScript (plugin.js) que la app de video Kino ejecuta en un sandbox de QuickJS.
+módulo ES de JavaScript (plugin.js) que la app Kino (video, TV en vivo, música y podcasts) ejecuta
+en un sandbox de QuickJS.
 
 Puede que yo no sepa programar. Explícame cada paso en español sencillo, ejecuta tú los comandos
 (antes dime cuál y para qué), pregúntame antes de cualquier cosa que no se pueda deshacer (borrar,
@@ -68,11 +69,14 @@ Antes de escribir nada:
 3. Parte de una plantilla, con "Use this template" (nunca Fork): kinotvapp/kino-plugin-archive si mi
    plugin es simple, kinotvapp/kino-plugin-own-server si necesita ajustes, sesión, descargas o canales
    en vivo (su plugin.js y su kino-plugin.json, "Tu servidor" 1.5.0, son la referencia completa de la
-   API, hasta apiVersion 7). La carpeta sdk/ de la plantilla es el kit de pruebas de Node.
+   API, hasta apiVersion 7). La carpeta sdk/ de la plantilla es el kit de pruebas de Node. Si mi
+   plugin es de música o podcasts, lee también la sección "Música y podcasts" del contrato
+   (apiVersion 8, Kino 0.9.54: https://kinotvapp.github.io/kino-plugins/contract/#music-podcasts) y usa
+   kinotvapp/kino-plugin-archive-audio como el plugin de audio de referencia.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
-- Contenido: <<< películas / series / anime / TV en vivo; idioma y país >>>
+- Contenido: <<< películas / series / anime / TV en vivo / música / podcasts o audiolibros / un catálogo que no reproduce nada (listas o calificaciones); idioma y país >>>
 - Acceso: <<< ninguno / mi usuario y contraseña del sitio / una clave de API mía (del desarrollador) que no quiero publicar / la dirección de un servidor que escribe cada persona >>>
 - Qué le pregunta Kino a la persona al configurarlo: <<< nada / su usuario y contraseña / su región / la dirección de su servidor >>>
 - Descargas para ver sin conexión: <<< sí / no >>>
@@ -106,13 +110,26 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   256 KB de kino.storage; 100 resultados de búsqueda; Inicio con 20 filas de 60.
 - Errores para la persona: kino.error("auth_required" | "not_found" | "geo_blocked" |
   "rate_limited" | "unavailable"). Con apiVersion 6 puedes agregar una frase propia,
-  kino.error(code, detalle, { userMessage: "…" }): en español, máximo 160 caracteres, sin URL ni
+  kino.error(code, detalle, { userMessage: "…" }): en español (o en el idioma de kino.lang, mira la
+  regla del idioma), máximo 160 caracteres, sin URL ni
   dominios, sin números largos, nunca pidiendo plata, contraseñas, códigos ni contacto por fuera de
   Kino, y nunca repitiendo lo que escribió la persona (Kino la muestra como "Mensaje de <plugin>: …"
   solo si pasa todas sus reglas; un plugin que la usa para pedir plata o datos incumple las reglas y sale del índice de la comunidad).
 - Contenido +18: márcalo con adult: true (apiVersion 6; Kino lo muestra solo con el código +18
   desbloqueado). Nunca intentes saltarte ese candado.
-- Todo lo que lee la persona, en español de Bogotá con tuteo, nunca voseo.
+- Todo lo que lee la persona, en español de Bogotá con tuteo, nunca voseo, y los textos que arma el
+  código (títulos de filas, userMessage) en el idioma de kino.lang: desde Kino 0.9.54 kino.lang puede
+  ser "en-US", y entonces van en inglés (antes de 0.9.54 siempre es "es-CO").
+- Música y podcasts (apiVersion 8, Kino 0.9.54): el kind "music" es un álbum, una lista o una pista;
+  el kind "podcast" es un programa (también de radio) o un audiolibro; "artist" es opcional (el
+  artista, o quien conduce o escribe). Si el plugin declara "episodes", episodes() tiene que responder
+  por cada ref de music y podcast, aunque sea una sola pista; sin "episodes", el ref del ítem va a
+  resolve. Por debajo de apiVersion 8 esos ítems se descartan.
+- Detecta lo que a un Kino viejo le falta: kino.meta y kino.tmdb (Kino 0.9.53) solo detrás de
+  `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, y las opciones captureAll del
+  navegador oculto (Kino 0.9.54) solo cuando `kino.browser.captureAll === true`. TMDB va por
+  kino.tmdb, nunca con una llave en el código. Nunca exportes una función auxiliar llamada "details":
+  desde apiVersion 8 es un export reservado.
 - Nada secreto en el código ni en el repositorio. El usuario y la contraseña de cada persona van en
   un ajuste de tipo "password". Una clave de API mía va sellada: "secrets" en el manifiesto, sellada
   con `node sdk/seal.mjs --repo USUARIO/REPO --name nombre`, y en el código kino.secret("nombre")
@@ -153,7 +170,10 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   edición, y ningún .pem está rastreado (el `.gitignore` tiene *.pem);
 - cada host (video, subtítulos, segmentos, redirecciones) está en "hosts" o cubierto por un campo "any";
 - para que lo encuentren: el repositorio es público y no es un fork, el topic kino-plugin está puesto,
-  y el manifiesto tiene un "name" y una "description" en español.
+  y el manifiesto tiene un "name" y una "description" en español;
+- si no reproduce nada: "catalogOnly": true, y un resolve que falla con not_found para los Kino viejos;
+- si tiene música o podcasts: "apiVersion": 8, cada ítem de audio tiene kind "music" o "podcast", y
+  (con "episodes") episodes() responde por cada ref de audio, aunque sea una sola pista.
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y
@@ -185,15 +205,18 @@ Lo que quiero:
 ## Que Kino encuentre tu plugin { #listed }
 
 Instalarlo escribiendo la dirección funciona desde el primer momento. Para que además salga solo en
-Kino, en "De la comunidad" (Plugins → Recomendados), el repositorio tiene que:
+Kino, en la pestaña "De la comunidad" de la pantalla de Plugins, el repositorio tiene que:
 
 1. ser **público** y **no un fork** (créalo con "Use this template");
 2. tener `kino-plugin.json` en la raíz, válido para `node sdk/validate.mjs .`, con un `name` y una
    `description` en español (es lo que muestra la tarjeta);
 3. tener el topic **`kino-plugin`** (About → ⚙ → Topics) y, mejor, una descripción en GitHub;
-4. estar entre los 30 con más estrellas del topic.
+4. en Kino 0.9.53 y anteriores, estar entre los 30 con más estrellas del topic.
 
-Cada dispositivo busca de nuevo cada 12 horas, o al tocar "Actualizar". Los clics exactos y cómo
+Desde Kino 0.9.54 la app lee los resultados de a 100, en el orden que elige la persona ("Populares" o
+"Recientes"), "Cargar más" lee los 100 siguientes y "Buscar en GitHub" encuentra un plugin por el
+nombre y la descripción de su repositorio, así que también se encuentra un plugin sin estrellas. Cada
+dispositivo busca de nuevo cada 12 horas, o al tocar "Actualizar". Los clics exactos y cómo
 comprobarlo: [Aparecer en Kino](listed.md).
 
 ## Plugins firmados { #signed }

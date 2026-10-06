@@ -30,7 +30,7 @@ five steps and you are in.
 - Check it with the kit: `node sdk/validate.mjs .` must end in `✓ Kino would accept this plugin` and
   **without** the line "No aparecerá en la búsqueda de Kino" (printed when the manifest says
   `"discoverable": false`).
-- An `apiVersion` newer than the person's Kino hides it from them. Kino 0.9.50 goes up to `6` (0.9.45 to 0.9.49, up to `5`); use the
+- An `apiVersion` newer than the person's Kino hides it from them. Kino 0.9.54 goes up to `8` (0.9.51 to 0.9.53, up to `7`; 0.9.50, up to `6`; 0.9.45 to 0.9.49, up to `5`); use the
   lowest that works for you and older Kino builds see it too.
 - An `id` of your own: never the template's `archive-org`, a recommended plugin's
   (`internet-archive`, `own-server`). With someone else's id your plugin is hidden
@@ -84,9 +84,11 @@ GitHub search, and a clear line gets more people to try it and star it.
    [github.com/topics/kino-plugin](https://github.com/topics/kino-plugin).
 2. **Is it in Kino's search?** Open
    [this search](https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=50)
-   (exactly the one the app makes) and find your repository in `items`.
+   (exactly the one Kino 0.9.53 and older make; from Kino 0.9.54 the app asks for `per_page=100`, sorted
+   by `stars` or by `updated`, and reads further pages on "Cargar más") and find your repository in
+   `items`.
 3. **In the app.** Open Plugins (on a phone: the **☰ → Plugins** menu; on a TV: **Ajustes →
-   Plugins**), tab **Recomendados**, scroll down to **"De la comunidad"** and tap **Actualizar**. Your
+   Plugins**), tab **"De la comunidad"**, and tap **Actualizar**. Your
    card shows your name, your description and "por &lt;your user&gt;". The same list shows in "Elige tus
    fuentes", the screen Kino shows when there is no source yet.
 
@@ -101,9 +103,17 @@ GitHub search, and a clear line gets more people to try it and star it.
 
 ## The order { #ranking }
 
-Kino sorts by GitHub **stars** and keeps the **top 30** of a single search of 50 results; below that
-nothing is listed. Plugins that fail the rules still use up their slot, so the list may hold fewer
-than 30. Ask the people who use your plugin to give the repository a ⭐.
+**From Kino 0.9.54** the app reads the matches 100 at a time (`per_page=100`), in the order the person
+picks: "Populares" (most stars first, `sort=stars`, the default) or "Recientes" (most recently updated
+first, `sort=updated`). "Cargar más" reads the next 100, and "Buscar en GitHub" finds a plugin by its
+repository's name and description, so a plugin with no stars can be found too
+([details](publish.md#discovery-0954)).
+
+**Kino 0.9.53 and older** sort by GitHub **stars** and keep the **top 30** of a single search of 50
+results; below that nothing is listed. Plugins that fail the rules still use up their slot, so the
+list may hold fewer than 30.
+
+Either way, stars put you higher: ask the people who use your plugin to give the repository a ⭐.
 
 A plugin the Kino team recommends shows under "Recomendados", not "De la comunidad". Installing any
 plugin from the list goes through the same consent sheet ("Plugin no verificado…"): nothing installs

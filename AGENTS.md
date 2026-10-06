@@ -1,9 +1,10 @@
 # AGENTS.md: building a Kino plugin with an AI assistant
 
 You are helping a person write a **Kino plugin**: a public GitHub repository with one JSON manifest
-(`kino-plugin.json`) and one JavaScript ES module (`plugin.js`) that Kino, an Android video app for
-phones and TVs, runs inside a QuickJS sandbox. The plugin turns one video source into search
-results, Home rows, episodes and playable streams (and, optionally, live TV channels).
+(`kino-plugin.json`) and one JavaScript ES module (`plugin.js`) that Kino, an Android app for phones
+and TVs, runs inside a QuickJS sandbox. The plugin turns one source into search results, Home rows,
+episodes and playable streams: video, live TV channels, and (from apiVersion 8, Kino 0.9.54) music and
+podcasts; or, with `"catalogOnly": true`, a catalog that plays nothing (lists, ratings).
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
 before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
@@ -45,7 +46,11 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    `segments`. Study it whenever the plugin needs settings, auth,
    downloads or live channels. For a plain plugin with no settings or login, read
    `plugin.js` in [kinotvapp/kino-plugin-archive](https://github.com/kinotvapp/kino-plugin-archive)
-   instead, the simpler reference for the five basic capabilities.
+   instead, the simpler reference for the five basic capabilities. For **music or podcasts**, read
+   [Music and podcasts](https://kinotvapp.github.io/kino-plugins/en/contract/#music-podcasts) in the
+   contract (apiVersion 8, Kino 0.9.54) and `plugin.js` in
+   [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio), the
+   reference audio plugin (`music` and `podcast` items, `episodes` for every audio ref).
 
 Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): the contract is different.
 
@@ -115,7 +120,8 @@ exact message Kino shows, never a summary.
 1. **Start from the template, not a fork** (Kino's community search leaves forks out). Use
    `kinotvapp/kino-plugin-archive` for a plain plugin (no settings, no login); use
    `kinotvapp/kino-plugin-own-server` instead when the plugin needs settings, auth, downloads or
-   live channels:
+   live channels; for music or podcasts, follow `kinotvapp/kino-plugin-archive-audio` (the reference
+   audio plugin):
     - `gh repo create my-plugin --public --template kinotvapp/kino-plugin-archive --clone` (swap the
       template name for `kinotvapp/kino-plugin-own-server` when that fits better), or
     - `git clone https://github.com/kinotvapp/kino-plugin-archive` (or `-own-server`) somewhere
@@ -250,7 +256,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s (`resolve` 75 s for an approved `"browser": true` or `"pages"` plugin, and for one Kino generates from a Nuvio scraper or a Stremio addon); `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; `subtitles` 10 s; apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; `meta` 6 s per plugin (no answer after that); all fetches and sleeps count (not the time the person spends answering a host question) |
+| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `details` 20 s (apiVersion 8) (`resolve` 75 s for an approved `"browser": true` or `"pages"` plugin, and for one Kino generates from a Nuvio scraper or a Stremio addon); `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; `subtitles` 10 s; `track` 10 s and `segments` 8 s (apiVersion 7); apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; `meta` 6 s per plugin (no answer after that); all fetches and sleeps count (not the time the person spends answering a host question) |
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
@@ -258,6 +264,8 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Cookies | 50 per domain, 64 KB total |
 | `kino.storage` | 256 KB; `ttlMs` 1..2,592,000,000 (30 days) |
 | `kino.sleep` | 0..5,000 ms |
+| `kino.meta` (Kino 0.9.53) | 30 calls a minute per plugin; 8 s at most, inside your call's own limit; answers cached 30 minutes |
+| `kino.tmdb` (Kino 0.9.53) | 40 calls per 10 s per plugin; 15 s per call; body 2 MB; not counted in `kino.fetch`'s 60 requests |
 | `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024 |
 | Log message | 2,000 characters; for a plugin with `"telemetry"` (apiVersion 6; no other plugin sends lines), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
@@ -273,12 +281,24 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 **Data rules that silently drop things**: an item `id` outside `^[A-Za-z0-9._~-]{1,128}$` (derive a
 slug); a repeated `id`; `adult: true` below apiVersion 6 (from 6 it is kept behind the person's 18+
 code); a `series` without the `episodes` capability; a `live` item at apiVersion 1, or in a `home` row
-below apiVersion 6; an episode `number` 0; images that are not `http`/`https` or point at a local
+below apiVersion 6; a `music` or `podcast` item below apiVersion 8; an episode `number` 0; images that are not `http`/`https` or point at a local
 address; in `search`, a `live` item whose name shares too few words with the query (so never
 answer a search with your whole channel list). `id` must be stable across calls (library
 and progress hang off it); `ref` may change but must keep working later (put a stable id in it and
 look fresh links up inside `resolve`). A `Stream` is all or nothing; `mime` must look like
 `video/mp4` or be omitted.
+
+**Audio items (apiVersion 8, Kino 0.9.54)**: `kind: "music"` is an album, a playlist or a single
+track; `kind: "podcast"` a show, an audiobook or a radio program; optional `artist` (`music` and
+`podcast` only, ≤ 200 characters) is the artist, or the host or author. They need no capability. With
+`episodes` declared, `episodes(ref)` must answer for **every** `music` and `podcast` ref, even a lone
+track (one entry); without it, the item's own `ref` goes to `resolve`. Full rules:
+[Music and podcasts](https://kinotvapp.github.io/kino-plugins/en/contract/#music-podcasts).
+
+**Feature-detect what older Kino lacks**: `kino.meta` and `kino.tmdb` (Kino 0.9.53, no new apiVersion)
+only behind `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`; the hidden
+browser's `captureAll`, `alsoMatch`, `waitForCookie` and `returnCookiesOnTimeout` options (Kino 0.9.54) only when
+`kino.browser.captureAll === true`. TMDB goes through `kino.tmdb`: never put a TMDB key in the code.
 
 **Errors**: `throw kino.error(code, detail)` with one of these codes; the person reads Kino's Spanish
 sentence, your detail (cut at 200 characters) goes to the log.
@@ -322,7 +342,9 @@ Since people update late, keep `await`ing first (a fetch, or `await null;`) and 
 
 **Language**: everything the person sees (the manifest's `name` and `description`, settings `label`
 and `hint`, Home row titles, error details, badges) is **Spanish from Bogotá, with tuteo** ("Configura",
-"Escribe tu usuario"), **never voseo** ("Configurá", "Escribí" are wrong). Code, identifiers and
+"Escribe tu usuario"), **never voseo** ("Configurá", "Escribí" are wrong). From Kino 0.9.54 the app may
+speak English, and `kino.lang` is then `"en-US"` (before, always `"es-CO"`): texts your code builds
+at run time (row titles, a `userMessage`) follow `kino.lang`'s language. Code, identifiers and
 comments may be English.
 
 **Secrets**: never hardcode a password, token, API key or cookie in `plugin.js` or the repository;
@@ -400,8 +422,9 @@ only when you use one of these.
   publishing** (`validate.mjs` warns).
 - **`telemetry: true | "verbose"`**: asks the person (consent line, and an update that adds it waits
   for approval) to share the failed call's scrubbed `kino.log` lines with Kino's error tracker; only
-  plugins that declare it ever send lines (recommended or not), and for now there is no switch (a later
-  Kino adds a per-device one). `"verbose"` adds playback metrics of a sample of good plays and
+  plugins that declare it ever send lines (recommended or not). From Kino 0.9.54 each such plugin's
+  Ajustes tab has an "Enviar registros de errores y de reproducción" switch, on by default and synced
+  across the person's devices; older Kino always sends. `"verbose"` adds playback metrics of a sample of good plays and
   edge cases (60 events per run). `kino.log.report("myplugin:area", "code", "count=2")` flags a
   degraded-but-working result (area: lowercase namespaced word with `_` or `:`, ≤ 24 chars; 1/hour per
   area, 3 per run). Log codes and counts, never values from a response, never what the person typed.
@@ -533,10 +556,20 @@ people. See
 - [ ] Every declared capability is an exported async function (except `download`/`drm`); nothing
       exported that the manifest does not declare is ever called.
 - [ ] `id`s are stable and match the pattern; `ref`s keep working when replayed later.
-- [ ] User-facing text in Spanish (Bogotá, tuteo); no secrets in the repository.
+- [ ] User-facing text in Spanish (Bogotá, tuteo), and texts built at run time in `kino.lang`'s
+      language (it may be `"en-US"` from Kino 0.9.54); no secrets in the repository.
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
       it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+; 8 only for
       `music`/`podcast` items or `details`: it needs Kino 0.9.54+).
+- [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
+      that throws `not_found` (for Kino 0.9.53 and older).
+- [ ] Audio: every audio item has `kind` `"music"` or `"podcast"` and `"apiVersion": 8`; with
+      `episodes` declared, `episodes(ref)` answers every audio ref, even a single track.
+- [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
+      from apiVersion 8).
+- [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
+      (`typeof kino.meta === "function"`, `typeof kino.tmdb === "function"`,
+      `kino.browser.captureAll === true`); no TMDB key in the code.
 - [ ] No `"debug": true` in the manifest unless the person asked for it (every plugin has a
       "Modo debug" switch in Kino's Ajustes; `true` only turns it on by default for everyone). If `telemetry` is declared, the person agreed and
       the logs hold codes and counts only.
@@ -553,7 +586,7 @@ people. See
 - [ ] Public repository, manifest at the root, topic `kino-plugin` on THAT repository (mandatory: without it the
       app never finds the plugin), not a fork. Manifest `description` written (the card shows it);
       the GitHub About description is optional and not read by the app.
-- [ ] The person installed it in Kino and it searched, listed episodes and played.
+- [ ] The person installed it in Kino and it searched, listed episodes or tracks and played.
 
 ## 6. Being discovered ("De la comunidad")
 
@@ -570,15 +603,19 @@ Every rule, as the app applies it (full detail:
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (6 from Kino 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (8 from Kino 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
    `own-server`), never the template's `archive-org`; the same id installed from
    another repo hides it on that device.
-5. Stars: the app makes one unauthenticated request,
-   `https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=50`,
-   keeps the first 30 well-formed results, then drops the ones whose manifest fails (they still used a
-   slot). Below the top 30 a plugin is not listed.
+5. Order and reach. **From Kino 0.9.54** the app reads one page of 100 results at a time
+   (`https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=100`,
+   or `sort=updated`), in the order the person picks ("Populares", most stars, the default; or
+   "Recientes", most recently updated); "Cargar más" reads the next 100 (up to GitHub's 1,000), and
+   "Buscar en GitHub" adds the typed words matched against the repository's name and description
+   (`in:name,description`), so a plugin with no stars is found too. **Kino 0.9.53 and older** make one
+   request with `per_page=50` sorted by stars, keep the first 30 well-formed results, then drop the
+   ones whose manifest fails (they still used a slot): below the top 30 a plugin is not listed there.
 6. Timing: each device searches when its plugins screen opens and its copy is older than 12 hours,
    or on "Actualizar" (never twice within 60 s); 403/429 means waiting `Retry-After` /
    `X-RateLimit-Reset` / 15 min (1 min to 24 h). GitHub indexes new topics on its own schedule;
@@ -587,10 +624,11 @@ Every rule, as the app applies it (full detail:
    same search, so nothing needs requesting. A repository in `community-blocklist.json` (a claim was
    upheld) never shows, in either list.
 8. Nothing installs by itself: the person always sees the consent sheet ("Plugin no verificado…").
-9. Where to look in the app: Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), tab
-   "Recomendados" (only Internet Archive and Tu servidor), section "De la comunidad" ("Plugins de la
-   comunidad — Kino no los revisa ni responde por su contenido.") with its "Actualizar" button; also the first-run "Elige
-   tus fuentes". On the web: <https://github.com/topics/kino-plugin>.
+9. Where to look in the app: Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), the "De la
+   comunidad" tab, beside "Recomendados" ("Plugins de la comunidad — Kino no los revisa ni responde por
+   su contenido.") with its "Actualizar" button (from Kino 0.9.54 also "Populares"/"Recientes",
+   "Cargar más" and "Buscar en GitHub"); also the first-run "Elige tus fuentes", which has the same
+   tabs. On the web: <https://github.com/topics/kino-plugin>.
 
 To debug "it does not appear": open the search URL in a browser and find the repo in `items`; open
 the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualizar" after 60 s.

@@ -31,7 +31,7 @@ abajo. Si cumples los cinco pasos, apareces.
 - Revísalo con el kit: `node sdk/validate.mjs .` tiene que terminar en
   `✓ Kino would accept this plugin` y **sin** la línea "No aparecerá en la búsqueda de Kino" (esa línea
   sale cuando el manifiesto dice `"discoverable": false`).
-- Un `apiVersion` más nuevo que el Kino de la persona la deja sin verlo. Kino 0.9.50 llega hasta `6` (0.9.45 a 0.9.49, hasta `5`); usa
+- Un `apiVersion` más nuevo que el Kino de la persona la deja sin verlo. Kino 0.9.54 llega hasta `8` (0.9.51 a 0.9.53, hasta `7`; 0.9.50, hasta `6`; 0.9.45 a 0.9.49, hasta `5`); usa
   el más bajo que te sirva y llegarás también a los Kino viejos.
 - Un `id` tuyo: nunca el `archive-org` de la plantilla, ni el de un plugin recomendado
   (`internet-archive`, `own-server`). Con un id ajeno tu plugin queda oculto
@@ -85,10 +85,11 @@ y una línea clara hace que más gente lo pruebe y le dé una estrella.
    [github.com/topics/kino-plugin](https://github.com/topics/kino-plugin).
 2. **¿Está en la búsqueda que hace Kino?** Abre
    [esta búsqueda](https://api.github.com/search/repositories?q=topic:kino-plugin+fork:false&sort=stars&order=desc&per_page=50)
-   (es exactamente la que hace la app) y busca tu repositorio en `items`.
+   (es exactamente la que hacen Kino 0.9.53 y anteriores; desde Kino 0.9.54 la app pide `per_page=100`,
+   ordenado por `stars` o por `updated`, y lee más páginas con "Cargar más") y busca tu repositorio en
+   `items`.
 3. **En la app.** Abre Plugins (en el celular: el menú **☰ → Plugins**; en el televisor:
-   **Ajustes → Plugins**), pestaña **Recomendados**, baja hasta **"De la comunidad"** y toca
-   **Actualizar**. Tu tarjeta sale con tu nombre, tu descripción y "por &lt;tu usuario&gt;". La misma
+   **Ajustes → Plugins**), pestaña **"De la comunidad"**, y toca **Actualizar**. Tu tarjeta sale con tu nombre, tu descripción y "por &lt;tu usuario&gt;". La misma
    lista sale en "Elige tus fuentes", la pantalla que Kino muestra cuando no hay ninguna fuente.
 
 ## Cuánto tarda { #timing }
@@ -102,9 +103,18 @@ y una línea clara hace que más gente lo pruebe y le dé una estrella.
 
 ## En qué orden sale { #ranking }
 
-Kino ordena por **estrellas** de GitHub y se queda con los **30 primeros** de una sola búsqueda de 50
-resultados; más abajo no se lista. Los que no cumplen las reglas igual ocupan su puesto, así que la
-lista puede tener menos de 30. Pídele a la gente que usa tu plugin que le dé una ⭐ al repositorio.
+**Desde Kino 0.9.54** la app lee los resultados de a 100 (`per_page=100`), en el orden que elige la
+persona: "Populares" (más estrellas primero, `sort=stars`, el de partida) o "Recientes" (lo actualizado
+más recientemente primero, `sort=updated`). "Cargar más" lee los 100 siguientes y "Buscar en GitHub"
+encuentra un plugin por el nombre y la descripción de su repositorio, así que también se puede
+encontrar un plugin sin estrellas ([detalle](publish.md#discovery-0954)).
+
+**Kino 0.9.53 y anteriores** ordenan por **estrellas** de GitHub y se quedan con los **30 primeros** de
+una sola búsqueda de 50 resultados; más abajo no se lista. Los que no cumplen las reglas igual ocupan
+su puesto, así que la lista puede tener menos de 30.
+
+En cualquier caso, las estrellas te suben: pídele a la gente que usa tu plugin que le dé una ⭐ al
+repositorio.
 
 Un plugin que el equipo de Kino recomienda sale en "Recomendados", no en "De la comunidad". Instalar
 cualquier plugin de la lista pasa por la misma hoja de consentimiento ("Plugin no verificado…"): nada
