@@ -7,8 +7,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 
 <span id="next"></span>(Released 2026-10-06.) **`apiVersion` 8 = Kino 0.9.54.** The contract (`contract.json`) now says
 `maxApiVersion` 8 and `kino.apiVersion` reports 8. A manifest with `"apiVersion": 8` is refused by Kino 0.9.53 and older
-("Este plugin necesita una versión más nueva de Kino"), so declare 8 only if you return `music` or `podcast` items or
-export `details`. Everything else on this list is additive (valid at any `apiVersion`, ignored by older Kino), and
+("Este plugin necesita una versión más nueva de Kino"), so declare 8 only if you return `music` or `podcast` items,
+export `details` or ask for `"fetchHosts": "any"`. Everything else on this list is additive (valid at any `apiVersion`, ignored by older Kino), and
 nothing on it makes you change your plugin. How to use each one and still run on older Kino:
 
 | Feature | From | How to tell |
@@ -18,6 +18,7 @@ nothing on it makes you change your plugin. How to use each one and still run on
 | `kino.browser.capture`'s `captureAll`, `alsoMatch`, `waitForCookie`, `returnCookiesOnTimeout` | Kino 0.9.54, `apiVersion` 6 with `"browser": true` | `kino.browser.captureAll === true` |
 | `episodes().series.rating`/`runtimeMinutes`, `ids.mal`/`anilist`/`kitsu` | Kino 0.9.54, any `apiVersion` | nothing to check: older Kino ignores them |
 | `kino.lang` in the app's language | Kino 0.9.54 | read `kino.lang`; it was always `"es-CO"` before |
+| `"fetchHosts": "any"` on a hand-written plugin | Kino 0.9.54, `apiVersion` 8 | `kino.fetchAnyHost === true` (approved by the person) |
 
 - **Music and podcasts** (apiVersion 8): an item may be `kind: "music"` (an album, a playlist or a single track) or
   `kind: "podcast"` (a show or an audiobook), with an optional `artist`. With `episodes` declared, Kino asks it for the
@@ -54,6 +55,13 @@ nothing on it makes you change your plugin. How to use each one and still run on
   `kino.lang` is `"es-CO"` or `"en-US"` accordingly (always `"es-CO"` before). A language switch closes your sandbox
   and the next call opens one with the new value; `kino.meta`'s cache is cleared and Home's plugin rows are asked
   again. Word your row titles and `userMessage` in that language. [The `kino` API](kino-api.md#lang).
+- **`"fetchHosts": "any"` for your plugin** (apiVersion 8): until now Kino honoured it only on the Nuvio scrapers it
+  converts. From Kino 0.9.54 a hand-written plugin with `"apiVersion": 8` and `"fetchHosts": "any"` may reach any public
+  host with `kino.fetch` (over `http` or `https`, redirects included), for sites and extractors that rotate domains.
+  The person approves it in red ("Puede conectarse a cualquier servidor de internet") and an update that adds it waits
+  for that approval again; the home network stays refused and a sealed secret only goes to your `hosts`.
+  `kino.fetchAnyHost` is `true` when it is active (`false` otherwise; `undefined` on an older Kino). Below apiVersion 8
+  nothing changes. [Reaching any server](manifest.md#fetch-hosts).
 - **Kino's error messages to your code are English** (`e.message` of a `kino.fetch` failure, `kino.storage`,
   `kino.html`, the signing rules) and may change: match on `e.code`, never on the text. The manifest refusals the
   person reads at install stay as they were. [Errors your code can catch](kino-api.md#catch).

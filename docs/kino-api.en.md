@@ -6,6 +6,7 @@
 kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
+kino.fetchAnyHost // Kino 0.9.54+: true when this install's kino.fetch may reach any public host; undefined before
 ```
 
 ### `kino.lang`: the person's language { #lang }
@@ -24,6 +25,21 @@ feature-detect: read it where you need it.
   Kino shows your text as you wrote it. `kino.meta`'s `lang` takes the tag as it is (`lang: kino.lang`) or its bare code
   (`kino.lang.split("-")[0]`).
 - The Node kit's `kino.lang` is always `"es-CO"` ([Test it locally](test-locally.md#differences)).
+
+### `kino.fetchAnyHost`: does `kino.fetch` reach any host? { #fetch-any-host }
+
+From **Kino 0.9.54**, `kino.fetchAnyHost` is `true` only when this install's `kino.fetch` may reach any public host:
+your manifest declares [`"fetchHosts": "any"`](manifest.md#fetch-hosts), your plugin qualifies (`apiVersion` 8 or
+later, or a converted Nuvio scraper) **and** the person approved it in red. If anything is missing it is `false`, and
+on an older Kino it does not exist (`undefined`). Use it to decide before you fetch:
+
+```js
+const url = kino.fetchAnyHost === true ? extractorLink : await myFallback(extractorLink);
+```
+
+Even when `true`, the home network stays refused and a [sealed secret](manifest.md#secrets) only goes to your declared
+`hosts`. In the Node kit it is `true` when the manifest asks for `"fetchHosts": "any"` at `apiVersion` 8 (the kit
+takes the approval as given).
 
 Kino also provides the web globals QuickJS lacks, written in JavaScript and frozen: `URL`,
 `URLSearchParams`, `atob`, `btoa`, `TextEncoder` and `TextDecoder` (UTF-8 only). They behave like the
@@ -87,7 +103,7 @@ seconds of your call's time. Ask for the form the content is.
 <!-- contract:fetchErrors:start -->
 | `e.code` | When |
 | --- | --- |
-| `host_not_allowed` | the host (or a redirect hop) is not one you declared or the person typed, or it is `http` on a declared host not marked `insecureHttp` |
+| `host_not_allowed` | the host (or a redirect hop) is not one you declared or the person typed, or it is `http` on a declared host not marked `insecureHttp`; with [`fetchHosts`](manifest.md#fetch-hosts) approved, only an address on the home network |
 | `timeout` | no complete answer within `timeoutMs` |
 | `network` | the connection failed, or too many redirects |
 | `too_large` | the request over the size cap, or a body over 5 MB |

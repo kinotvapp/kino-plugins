@@ -122,7 +122,7 @@ de TMDB". Así que el adaptador trabaja desde TMDB:
 | --- | --- | --- |
 | Tiempo de `resolve` | 75 s (el reproductor muestra la espera en pantalla) | 20 s |
 | Peticiones de `kino.fetch` por llamada | 250 | 60 |
-| Hosts a los que llega `kino.fetch` | cualquier host público (`fetchHosts`) | `hosts`, servidores escritos por la persona y hosts aprobados uno por uno |
+| Hosts a los que llega `kino.fetch` | cualquier host público (`fetchHosts`) | `hosts`, servidores escritos por la persona y hosts aprobados uno por uno; cualquier host público con [`fetchHosts`](manifest.md#fetch-hosts) desde apiVersion 8 |
 | Dónde puede estar el video | cualquier host público (`streamHosts`) | `hosts`, salvo `streamHosts` o el permiso amplio de video |
 
 Todo lo demás -- memoria, tamaños de cuerpo, los rechazos de la red de la casa, los otros límites de

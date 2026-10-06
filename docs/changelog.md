@@ -7,8 +7,8 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 
 <span id="next"></span>(Publicada el 2026-10-06.) **`apiVersion` 8 = Kino 0.9.54.** El contrato (`contract.json`) ahora dice
 `maxApiVersion` 8 y `kino.apiVersion` informa 8. Kino 0.9.53 y anteriores rechazan un manifiesto con `"apiVersion": 8`
-(«Este plugin necesita una versión más nueva de Kino»), así que declara 8 solo si devuelves ítems `music` o `podcast`
-o exportas `details`. Todo lo demás de esta lista es aditivo (vale en cualquier `apiVersion` y un Kino anterior lo
+(«Este plugin necesita una versión más nueva de Kino»), así que declara 8 solo si devuelves ítems `music` o `podcast`,
+exportas `details` o pides `"fetchHosts": "any"`. Todo lo demás de esta lista es aditivo (vale en cualquier `apiVersion` y un Kino anterior lo
 ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y seguir corriendo en un Kino anterior:
 
 | Novedad | Desde | Cómo saberlo |
@@ -18,6 +18,7 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
 | `captureAll`, `alsoMatch`, `waitForCookie`, `returnCookiesOnTimeout` en `kino.browser.capture` | Kino 0.9.54, `apiVersion` 6 con `"browser": true` | `kino.browser.captureAll === true` |
 | `rating`/`runtimeMinutes` en `episodes().series`, `ids.mal`/`anilist`/`kitsu` | Kino 0.9.54, cualquier `apiVersion` | nada que revisar: un Kino anterior los ignora |
 | `kino.lang` en el idioma de la app | Kino 0.9.54 | lee `kino.lang`; antes siempre era `"es-CO"` |
+| `"fetchHosts": "any"` en un plugin escrito a mano | Kino 0.9.54, `apiVersion` 8 | `kino.fetchAnyHost === true` (aprobado por la persona) |
 
 - **Música y podcasts** (apiVersion 8): un ítem puede ser `kind: "music"` (un álbum, una lista o una sola pista) o
   `kind: "podcast"` (un programa o un audiolibro), con un `artist` opcional. Con `episodes` declarada, Kino le pide
@@ -57,6 +58,13 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
   la siguiente llamada abre uno con el valor nuevo; la caché de `kino.meta` se vacía y las filas de los plugins en el
   Inicio se vuelven a pedir. Escribe los títulos de tus filas y tu `userMessage` en ese idioma.
   [La API `kino`](kino-api.md#lang).
+- **`"fetchHosts": "any"` para tu plugin** (apiVersion 8): hasta ahora solo lo respetaba en los scrapers de Nuvio que
+  convierte. Desde Kino 0.9.54 un plugin escrito a mano con `"apiVersion": 8` y `"fetchHosts": "any"` puede llegar con
+  `kino.fetch` a cualquier host público (por `http` o `https`, redirecciones incluidas), para sitios y extractores que
+  cambian de dominio. La persona lo aprueba en rojo ("Puede conectarse a cualquier servidor de internet") y una
+  actualización que lo agrega espera su aprobación otra vez; la red de la casa sigue rechazada y un secreto sellado
+  solo va a tus `hosts`. `kino.fetchAnyHost` es `true` cuando está activo (`false` si no; `undefined` en un Kino
+  anterior). Por debajo de apiVersion 8 nada cambia. [Conectarse a cualquier servidor](manifest.md#fetch-hosts).
 - **Los mensajes de error de Kino para tu código están en inglés** (el `e.message` de una falla de `kino.fetch`,
   `kino.storage`, `kino.html`, las reglas de la firma) y pueden cambiar: compara con `e.code`, nunca con el texto. Los
   rechazos del manifiesto que la persona lee al instalar quedan como estaban.

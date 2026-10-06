@@ -87,9 +87,11 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   and redirects' (*.x does not cover x). If one is missing, Kino asks the person once when a title
   is opened or played; do not rely on it. If the video comes from changing CDNs, use
   "streamHosts": "any" (apiVersion 4; the person approves it at install); for live channels,
-  "liveStreamHosts": "any" (apiVersion 3, needs the "channels" capability). Do not use "fetchHosts":
-  it only works on plugins converted from Nuvio. There is no maximum number of hosts from Kino
-  0.9.45; Kino 0.9.44 and older refuse more than 20, so if you declare more than 20, tell me.
+  "liveStreamHosts": "any" (apiVersion 3, needs the "channels" capability). If the site or its
+  extractors rotate domains and you cannot list them, use "fetchHosts": "any" (apiVersion 8, Kino
+  0.9.54; the person approves it in red, it never reaches the home network) and check kino.fetchAnyHost.
+  There is no maximum number of hosts from Kino 0.9.45; Kino 0.9.44 and older refuse more than 20, so
+  if you declare more than 20, tell me.
 - In kino-plugin.json write "entry": "plugin.js" and "icon": "icon.png", NEVER "./plugin.js": Kino
   0.9.45 and older refuse a leading "./" and the plugin does not install.
 - It is neither Node nor a browser: no fetch, setTimeout, Buffer, process, require, crypto or Intl;

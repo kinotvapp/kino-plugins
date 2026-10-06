@@ -6,6 +6,7 @@
 kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
+kino.fetchAnyHost // Kino 0.9.54+: true when this install's kino.fetch may reach any public host; undefined before
 ```
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
@@ -29,6 +30,21 @@ Automático habla español en un aparato configurado en cualquier variante de es
   `Accept-Language`. Kino muestra tu texto tal como lo escribiste. El `lang` de `kino.meta` acepta la etiqueta tal cual
   (`lang: kino.lang`) o su código corto (`kino.lang.split("-")[0]`).
 - En el kit de Node, `kino.lang` es siempre `"es-CO"` ([Probar en local](test-locally.md#differences)).
+
+### `kino.fetchAnyHost`: ¿llega `kino.fetch` a cualquier host? { #fetch-any-host }
+
+Desde **Kino 0.9.54**, `kino.fetchAnyHost` es `true` solo cuando el `kino.fetch` de esta instalación puede llegar a
+cualquier host público: tu manifiesto declara [`"fetchHosts": "any"`](manifest.md#fetch-hosts), tu plugin califica
+(`apiVersion` 8 o más, o un scraper de Nuvio convertido) **y** la persona lo aprobó en rojo. Si falta algo es `false`,
+y en un Kino anterior no existe (`undefined`). Úsalo para decidir antes de pedir:
+
+```js
+const url = kino.fetchAnyHost === true ? enlaceDelExtractor : await miRespaldo(enlaceDelExtractor);
+```
+
+Aun en `true`, la red de la casa sigue rechazada y un [secreto sellado](manifest.md#secrets) solo va a tus `hosts`
+declarados. En el kit de Node es `true` cuando el manifiesto pide `"fetchHosts": "any"` con `apiVersion` 8 (el kit da
+la aprobación por hecha).
 
 Kino también pone los globales web que le faltan a QuickJS, escritos en JavaScript y congelados:
 `URL`, `URLSearchParams`, `atob`, `btoa`, `TextEncoder` y `TextDecoder` (solo UTF-8). Se comportan
@@ -105,7 +121,7 @@ tiempo de tu llamada. Pide la forma que tiene el contenido.
 
 | `e.code` | Cuándo |
 | --- | --- |
-| `host_not_allowed` | el host (o un salto de redirección) no es uno que declaraste o que escribió la persona, o es `http` en un host declarado que no está marcado `insecureHttp` |
+| `host_not_allowed` | el host (o un salto de redirección) no es uno que declaraste o que escribió la persona, o es `http` en un host declarado que no está marcado `insecureHttp`; con [`fetchHosts`](manifest.md#fetch-hosts) aprobado, solo una dirección de la red de la casa |
 | `timeout` | no llegó una respuesta completa dentro de `timeoutMs` |
 | `network` | la conexión falló, o hubo demasiadas redirecciones |
 | `too_large` | la petición pasa del tope de tamaño, o un cuerpo de más de 5 MB |
