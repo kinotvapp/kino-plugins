@@ -44,6 +44,7 @@ What each entry may carry:
 | `fields` | `list` only | required: 1 to 4, each `{ key, label, type, hint?, required? }` with `type` `"text"` or `"url"`, no `default` ("Solo un ajuste de tipo list tiene "fields"") |
 | `max` | `list` only | optional whole number 1..50 (default 20): how many entries |
 | `confirm` | `action` only, apiVersion 6 | optional, 1 to 120 characters: asked before the action runs, with Cancelar focused ("Solo un ajuste de tipo action tiene "confirm"") |
+| `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, Kino 0.9.54: the same text in English, with the same limits ([English texts](#english)) |
 
 Any other key in an entry is ignored. A manifest that breaks a rule is refused at install with a
 message that names the setting (`El ajuste "quality" necesita opciones`); a `list` below apiVersion 4
@@ -58,6 +59,41 @@ make them optional, and let [`validateSettings`](#validate) refuse a combination
 your code reads it, it syncs to their other devices sealed end to end. A key that belongs to **you**, the
 author (a fixed API key of the site's own player), goes in the manifest's sealed
 [`secrets`](manifest.md#secrets) instead, and your code only ever holds a marker.
+
+## English texts (Kino 0.9.54) { #english }
+
+Kino 0.9.54 speaks Spanish or English (Ajustes ▸ App ▸ Idioma). For your form to read in English too, each text can
+carry its English version next to it, under the same key with `En` at the end:
+
+| Where | English keys | Limit |
+| --- | --- | --- |
+| any setting | `labelEn`, `hintEn` | those of `label` (1 to 40) and `hint` (80; 300 on a `section`) |
+| an `action` with `confirm` | `confirmEn` | 1 to 120, and only next to `confirm` |
+| a `select`'s option | `labelEn` | 1 to 40 |
+| a `list` field | `labelEn`, `hintEn` | 1 to 40 and 80 |
+| the manifest's `section` | `labelEn` | 1 to 20 ([The manifest](manifest.md)) |
+
+```json
+{ "key": "quality", "label": "Calidad", "labelEn": "Quality", "type": "select",
+  "hint": "La más alta gasta más datos", "hintEn": "The highest uses more data",
+  "options": [{ "value": "hd", "label": "Alta", "labelEn": "High" }, { "value": "sd", "label": "Normal" }] }
+```
+
+- **The usual text is the Spanish one and the fallback**: with the app in English, Kino shows every English version
+  there is and, where one is missing, the usual text (above, the "Normal" option reads the same in both languages).
+  With the app in Spanish nothing changes.
+- **Your code never notices**: keys, types, values and `default`s are the same in both languages, and `kino.config`
+  returns the same. To know the language, read [`kino.lang`](kino-api.md#lang).
+- **Additive**: valid at every `apiVersion`, and an older Kino ignores these keys like any other key it does not know.
+  `confirmEn` is ignored wherever `confirm` is (below apiVersion 6).
+- **The same rules as the usual text**: an empty one, one over the limit or one that is not a text refuses the manifest
+  at install ("\"labelEn\" del ajuste \"quality\" debe ser un texto de 1 a 40 caracteres"; on an option, "Una opción
+  del ajuste \"quality\" no es válida"); `null` is the same as leaving it out. `confirmEn` only goes on an `action`
+  ("Solo un ajuste de tipo action tiene \"confirmEn\"") and next to `confirm` ("…necesita también \"confirm\"").
+- Kino only speaks Spanish and English: any other language key (`labelPt`, `labelFr`) is an unknown key and ignored.
+
+`node sdk/validate.mjs` checks the same limits and, once your plugin uses an English version, tells you how many texts
+have one and which do not.
 
 ## Three types that hold no value { #ui-types }
 

@@ -19,6 +19,7 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
 | `rating`/`runtimeMinutes` en `episodes().series`, `ids.mal`/`anilist`/`kitsu` | Kino 0.9.54, cualquier `apiVersion` | nada que revisar: un Kino anterior los ignora |
 | `kino.lang` en el idioma de la app | Kino 0.9.54 | lee `kino.lang`; antes siempre era `"es-CO"` |
 | `"fetchHosts": "any"` en un plugin escrito a mano | Kino 0.9.54, `apiVersion` 8 | `kino.fetchAnyHost === true` (aprobado por la persona) |
+| Textos de ajustes y de `section` en inglés (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.54, cualquier `apiVersion` | nada que revisar: un Kino anterior muestra los de siempre |
 
 - **Música y podcasts** (apiVersion 8): un ítem puede ser `kind: "music"` (un álbum, una lista o una sola pista) o
   `kind: "podcast"` (un programa o un audiolibro), con un `artist` opcional. Con `episodes` declarada, Kino le pide
@@ -65,6 +66,11 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
   actualización que lo agrega espera su aprobación otra vez; la red de la casa sigue rechazada y un secreto sellado
   solo va a tus `hosts`. `kino.fetchAnyHost` es `true` cuando está activo (`false` si no; `undefined` en un Kino
   anterior). Por debajo de apiVersion 8 nada cambia. [Conectarse a cualquier servidor](manifest.md#fetch-hosts).
+- **Tu formulario de ajustes y tu sección, también en inglés.** Cada ajuste puede llevar `labelEn` y `hintEn` (un
+  `action` con `confirm`, también `confirmEn`), cada opción de un `select` y cada campo de una `list` su `labelEn`, y
+  `section` del manifiesto su `labelEn`, con los mismos límites que el texto de siempre. Con la app en inglés Kino los
+  muestra; el texto de siempre sigue siendo el español y el de respaldo donde falte uno. Es aditivo: un Kino anterior
+  ignora estas claves. [Textos en inglés](settings-form.md#english).
 - **Los mensajes de error de Kino para tu código están en inglés** (el `e.message` de una falla de `kino.fetch`,
   `kino.storage`, `kino.html`, las reglas de la firma) y pueden cambiar: compara con `e.code`, nunca con el texto. Los
   rechazos del manifiesto que la persona lee al instalar quedan como estaban.

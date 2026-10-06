@@ -19,6 +19,7 @@ nothing on it makes you change your plugin. How to use each one and still run on
 | `episodes().series.rating`/`runtimeMinutes`, `ids.mal`/`anilist`/`kitsu` | Kino 0.9.54, any `apiVersion` | nothing to check: older Kino ignores them |
 | `kino.lang` in the app's language | Kino 0.9.54 | read `kino.lang`; it was always `"es-CO"` before |
 | `"fetchHosts": "any"` on a hand-written plugin | Kino 0.9.54, `apiVersion` 8 | `kino.fetchAnyHost === true` (approved by the person) |
+| English settings and `section` texts (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.54, any `apiVersion` | nothing to check: an older Kino shows the usual ones |
 
 - **Music and podcasts** (apiVersion 8): an item may be `kind: "music"` (an album, a playlist or a single track) or
   `kind: "podcast"` (a show or an audiobook), with an optional `artist`. With `episodes` declared, Kino asks it for the
@@ -62,6 +63,11 @@ nothing on it makes you change your plugin. How to use each one and still run on
   for that approval again; the home network stays refused and a sealed secret only goes to your `hosts`.
   `kino.fetchAnyHost` is `true` when it is active (`false` otherwise; `undefined` on an older Kino). Below apiVersion 8
   nothing changes. [Reaching any server](manifest.md#fetch-hosts).
+- **Your settings form and your section, in English too.** Every setting may carry `labelEn` and `hintEn` (an `action`
+  with `confirm`, also `confirmEn`), every `select` option and `list` field its `labelEn`, and the manifest's `section`
+  its `labelEn`, with the same limits as the usual text. With the app in English Kino shows them; the usual text stays
+  the Spanish one and the fallback wherever one is missing. Additive: an older Kino ignores these keys.
+  [English texts](settings-form.md#english).
 - **Kino's error messages to your code are English** (`e.message` of a `kino.fetch` failure, `kino.storage`,
   `kino.html`, the signing rules) and may change: match on `e.code`, never on the text. The manifest refusals the
   person reads at install stay as they were. [Errors your code can catch](kino-api.md#catch).
