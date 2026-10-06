@@ -44,7 +44,7 @@ What each entry may carry:
 | `fields` | `list` only | required: 1 to 4, each `{ key, label, type, hint?, required? }` with `type` `"text"` or `"url"`, no `default` ("Solo un ajuste de tipo list tiene "fields"") |
 | `max` | `list` only | optional whole number 1..50 (default 20): how many entries |
 | `confirm` | `action` only, apiVersion 6 | optional, 1 to 120 characters: asked before the action runs, with Cancelar focused ("Solo un ajuste de tipo action tiene "confirm"") |
-| `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, Kino 0.9.54: the same text in English, with the same limits ([English texts](#english)) |
+| `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, apiVersion 9 (Kino 0.9.55): the same text in English, with the same limits ([English texts](#english)) |
 
 Any other key in an entry is ignored. A manifest that breaks a rule is refused at install with a
 message that names the setting (`El ajuste "quality" necesita opciones`); a `list` below apiVersion 4
@@ -60,10 +60,10 @@ your code reads it, it syncs to their other devices sealed end to end. A key tha
 author (a fixed API key of the site's own player), goes in the manifest's sealed
 [`secrets`](manifest.md#secrets) instead, and your code only ever holds a marker.
 
-## English texts (Kino 0.9.54) { #english }
+## English texts (apiVersion 9, Kino 0.9.55) { #english }
 
-Kino 0.9.54 speaks Spanish or English (Ajustes ▸ App ▸ Idioma). For your form to read in English too, each text can
-carry its English version next to it, under the same key with `En` at the end:
+Kino speaks Spanish or English since 0.9.54 (Ajustes ▸ App ▸ Idioma). From Kino 0.9.55, with `"apiVersion": 9`, each
+text of your form can carry its English version next to it, under the same key with `En` at the end:
 
 | Where | English keys | Limit |
 | --- | --- | --- |
@@ -84,8 +84,8 @@ carry its English version next to it, under the same key with `En` at the end:
   With the app in Spanish nothing changes.
 - **Your code never notices**: keys, types, values and `default`s are the same in both languages, and `kino.config`
   returns the same. To know the language, read [`kino.lang`](kino-api.md#lang).
-- **Additive**: valid at every `apiVersion`, and an older Kino ignores these keys like any other key it does not know.
-  `confirmEn` is ignored wherever `confirm` is (below apiVersion 6).
+- **From apiVersion 9**: below 9 these keys are unknown and ignored without being checked, as on an older Kino (which
+  does not take `"apiVersion": 9` either).
 - **The same rules as the usual text**: an empty one, one over the limit or one that is not a text refuses the manifest
   at install ("\"labelEn\" del ajuste \"quality\" debe ser un texto de 1 a 40 caracteres"; on an option, "Una opción
   del ajuste \"quality\" no es válida"); `null` is the same as leaving it out. `confirmEn` only goes on an `action`

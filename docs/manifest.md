@@ -42,9 +42,9 @@ español que nombra el campo.
 | `browser` | Opcional, `true`, `false` o `"pages"`, desde `apiVersion` 6; por debajo se ignora. `true` deja que el plugin abra páginas en una vista web oculta en el aparato con `kino.browser.capture` (en `resolve`), en rojo como "Puede abrir páginas web ocultas para encontrar el video"; `"pages"` agrega `kino.browser.page`, como "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video". Una actualización que lo agrega, o que pasa de `true` a `"pages"`, espera aprobación de nuevo; el `resolve` de un plugin aprobado tiene 75 s. Mira [Navegador oculto](browser.md). Cualquier otro valor se rechaza con "El campo \"browser\" debe ser true, false o \"pages\"". |
 | `debug` | Opcional, `true` o `false` (por defecto `false`), desde `apiVersion` 6; por debajo se ignora. Desde Kino 0.9.50 todo plugin instalado tiene un interruptor "Modo debug" en su pestaña de Ajustes (errores en pantalla y un "Registro" que la persona puede copiar o compartirte); este campo solo lo deja **encendido de entrada**. Sin él arranca apagado y cada persona lo enciende cuando quiere mandarte un reporte. Cuando la persona lo toca, manda su decisión (`validate.mjs` te dice qué significa `true`). Mira [Registro y telemetría](diagnostics.md#debug). Cualquier otro valor se rechaza con "El campo \"debug\" debe ser true o false". |
 | `telemetry` | Opcional, `true`, `false` o `"verbose"` (por defecto `false`), desde `apiVersion` 6; por debajo se ignora. Pide compartir las líneas de diagnóstico de tu plugin con el registro de errores de Kino cuando una llamada falla, venga de donde venga el plugin, y enciende `kino.log.report`. Se muestra en la hoja de consentimiento y una actualización que lo declara por primera vez espera su aprobación. Hasta Kino 0.9.53 las líneas de todo plugin que lo declara se envían siempre, sin interruptor; desde Kino 0.9.54 la pestaña de tu plugin en Ajustes tiene un interruptor "Enviar registros de errores y de reproducción", encendido por defecto, y la línea de consentimiento dice "Comparte con Kino registros de errores y datos técnicos de algunas reproducciones para corregir fallas" (`true` también envía una pequeña muestra de reproducciones que salieron bien). Mira [Registro y telemetría](diagnostics.md#telemetry). Cualquier otro valor se rechaza con "El campo \"telemetry\" debe ser true, false o \"verbose\"". |
-| `section` | Opcional, `{ "label": "…" }` (de 1 a 20 caracteres), desde `apiVersion` 6; por debajo se ignora. Le da a tu plugin su propia sección y exige el export `section`: mira [Sección, categorías y colores](section-theme.md). Desde Kino 0.9.54 puede llevar también `"labelEn"` (de 1 a 20 caracteres): el nombre de la sección cuando la app está en inglés; `label` sigue siendo el texto en español y el de respaldo. Un Kino anterior lo ignora. Uno vacío, de más de 20 o que no sea texto se rechaza con "El campo \"section.labelEn\" debe tener entre 1 y 20 caracteres". Mira [Textos en inglés](settings-form.md#english). |
+| `section` | Opcional, `{ "label": "…" }` (de 1 a 20 caracteres), desde `apiVersion` 6; por debajo se ignora. Le da a tu plugin su propia sección y exige el export `section`: mira [Sección, categorías y colores](section-theme.md). Desde `apiVersion` 9 (Kino 0.9.55) puede llevar también `"labelEn"` (de 1 a 20 caracteres): el nombre de la sección cuando la app está en inglés; `label` sigue siendo el texto en español y el de respaldo. Por debajo de 9 se ignora sin revisarlo. Uno vacío, de más de 20 o que no sea texto se rechaza con "El campo \"section.labelEn\" debe tener entre 1 y 20 caracteres". Mira [Textos en inglés](settings-form.md#english). |
 | `theme` | Opcional, un objeto, desde `apiVersion` 6; por debajo se ignora. Hasta cinco colores `#RRGGBB`: `accent`, `onAccent`, `background`, `surface`, `highlight`; cualquier otra clave se rechaza con "El campo \"theme\" tiene un color desconocido". El manifiesto solo revisa el formato; las protecciones de lectura corren cuando Kino usa los colores ([Tus colores](section-theme.md#theme)). |
-| `fetchHosts` | Opcional, solo `"any"`. Deja que tu `kino.fetch` llegue a **cualquier host público**, por `http` o `https`, para scrapers cuyos sitios o redirecciones de extractores cambian de dominio. En un plugin escrito a mano Kino lo respeta **desde `apiVersion` 8 (Kino 0.9.54)**, después de que la persona lo aprueba en rojo ("Puede conectarse a cualquier servidor de internet"); `kino.fetchAnyHost` es `true` cuando está activo. Por debajo de apiVersion 8 solo lo respeta en los manifiestos que arma al convertir un [scraper de Nuvio](nuvio.md); en tu plugin se ignora (tu `kino.fetch` sigue limitado a tus `hosts`) y `sdk/validate.mjs` avisa "fetchHosts solo tiene efecto en plugins convertidos desde Nuvio o, en uno escrito a mano, desde apiVersion 8 (Kino 0.9.54); en tu plugin se ignora". Mira [Conectarse a cualquier servidor](#fetch-hosts). Desde `apiVersion: 4` su único valor es `"any"`; cualquier otro se rechaza con "El campo \"fetchHosts\" solo admite \"any\"". Por debajo de apiVersion 4 se ignora. |
+| `fetchHosts` | Opcional, solo `"any"`. Deja que tu `kino.fetch` llegue a **cualquier host público**, por `http` o `https`, para scrapers cuyos sitios o redirecciones de extractores cambian de dominio. En un plugin escrito a mano Kino lo respeta **desde `apiVersion` 9 (Kino 0.9.55)**, después de que la persona lo aprueba en rojo ("Puede conectarse a cualquier servidor de internet"); `kino.fetchAnyHost` es `true` cuando está activo. Por debajo de apiVersion 9 solo lo respeta en los manifiestos que arma al convertir un [scraper de Nuvio](nuvio.md); en tu plugin se ignora (tu `kino.fetch` sigue limitado a tus `hosts`) y `sdk/validate.mjs` avisa "fetchHosts solo tiene efecto en plugins convertidos desde Nuvio o, en uno escrito a mano, desde apiVersion 9 (Kino 0.9.55); en tu plugin se ignora". Mira [Conectarse a cualquier servidor](#fetch-hosts). Desde `apiVersion: 4` su único valor es `"any"`; cualquier otro se rechaza con "El campo \"fetchHosts\" solo admite \"any\"". Por debajo de apiVersion 4 se ignora. |
 | `description`, `author`, `homepage` | Textos opcionales. Se les quitan los espacios de los extremos y se cortan a 300, 60 y 200 caracteres. Kino muestra el nombre, el autor, la versión y la descripción cuando le pregunta a la persona si quiere instalar. |
 
 Las demás claves se ignoran. `hosts` cumple tres funciones: es lo que la persona aprueba, es el
@@ -98,13 +98,13 @@ consentimiento lo muestra en rojo ("Puede reproducir video desde cualquier servi
 una actualización que lo agrega espera a que la persona apruebe de nuevo. Si puedes, lista los
 dominios reales: la gente confía más en una lista corta.
 
-## Conectarse a cualquier servidor (`fetchHosts`, apiVersion 8) { #fetch-hosts }
+## Conectarse a cualquier servidor (`fetchHosts`, apiVersion 9) { #fetch-hosts }
 
 Hay scrapers que no pueden listar sus hosts: el sitio cambia de dominio cada tanto, o un extractor
-redirige a un CDN distinto en cada video. Desde **Kino 0.9.54** un plugin escrito a mano puede pedir:
+redirige a un CDN distinto en cada video. Desde **Kino 0.9.55** un plugin escrito a mano puede pedir:
 
 ```json
-"apiVersion": 8,
+"apiVersion": 9,
 "fetchHosts": "any"
 ```
 
@@ -127,13 +127,13 @@ hacía con los [scrapers de Nuvio](nuvio.md) que convierte:
   reproduces sigue sus propias reglas ([`streamHosts`](#stream-hosts)); las imágenes, las licencias DRM
   y las descargas no cambian.
 - **`kino.fetchAnyHost`** es `true` cuando el permiso está activo en esta instalación (declarado, con
-  apiVersion 8 y aprobado), `false` si no, y `undefined` en un Kino anterior: úsalo para elegir entre
+  apiVersion 9 y aprobado), `false` si no, y `undefined` en un Kino anterior: úsalo para elegir entre
   ir directo al host nuevo o quedarte con tu propio respaldo. [La API `kino`](kino-api.md#fetch-any-host).
 
-Por debajo de apiVersion 8 un plugin escrito a mano puede declarar el campo (el manifiesto sigue
+Por debajo de apiVersion 9 un plugin escrito a mano puede declarar el campo (el manifiesto sigue
 siendo válido), pero Kino lo ignora: la pantalla de consentimiento no lo muestra y `kino.fetch` sigue
-en tus `hosts`. Y como Kino 0.9.53 y anteriores rechazan `"apiVersion": 8`, ese plugin necesita Kino
-0.9.54. Si puedes, lista los dominios reales: la gente confía más en una lista corta.
+en tus `hosts`. Y como Kino 0.9.54 y anteriores rechazan `"apiVersion": 9`, ese plugin necesita Kino
+0.9.55. Si puedes, lista los dominios reales: la gente confía más en una lista corta.
 
 ## Secretos sellados (apiVersion 4) { #secrets }
 

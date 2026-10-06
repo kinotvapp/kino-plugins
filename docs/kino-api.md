@@ -6,7 +6,7 @@
 kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
-kino.fetchAnyHost // Kino 0.9.54+: true when this install's kino.fetch may reach any public host; undefined before
+kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
 ```
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
@@ -33,9 +33,9 @@ Automático habla español en un aparato configurado en cualquier variante de es
 
 ### `kino.fetchAnyHost`: ¿llega `kino.fetch` a cualquier host? { #fetch-any-host }
 
-Desde **Kino 0.9.54**, `kino.fetchAnyHost` es `true` solo cuando el `kino.fetch` de esta instalación puede llegar a
+Desde **Kino 0.9.55**, `kino.fetchAnyHost` es `true` solo cuando el `kino.fetch` de esta instalación puede llegar a
 cualquier host público: tu manifiesto declara [`"fetchHosts": "any"`](manifest.md#fetch-hosts), tu plugin califica
-(`apiVersion` 8 o más, o un scraper de Nuvio convertido) **y** la persona lo aprobó en rojo. Si falta algo es `false`,
+(`apiVersion` 9 o más, o un scraper de Nuvio convertido) **y** la persona lo aprobó en rojo. Si falta algo es `false`,
 y en un Kino anterior no existe (`undefined`). Úsalo para decidir antes de pedir:
 
 ```js
@@ -43,7 +43,7 @@ const url = kino.fetchAnyHost === true ? enlaceDelExtractor : await miRespaldo(e
 ```
 
 Aun en `true`, la red de la casa sigue rechazada y un [secreto sellado](manifest.md#secrets) solo va a tus `hosts`
-declarados. En el kit de Node es `true` cuando el manifiesto pide `"fetchHosts": "any"` con `apiVersion` 8 (el kit da
+declarados. En el kit de Node es `true` cuando el manifiesto pide `"fetchHosts": "any"` con `apiVersion` 9 (el kit da
 la aprobación por hecha).
 
 Kino también pone los globales web que le faltan a QuickJS, escritos en JavaScript y congelados:
@@ -378,10 +378,10 @@ un error.
   versiones anteriores no tienen esa función, así que compruébala (`typeof kino.meta === "function"`).
   `node sdk/validate.mjs` avisa si tu código la llama sin esa comprobación.
 
-### Por título, sin ids (Kino 0.9.54) { #meta-by-title }
+### Por título, sin ids (apiVersion 9, Kino 0.9.55) { #meta-by-title }
 
 ```js
-if (typeof kino.meta === "function" && kino.meta.byTitle === true) {   // Kino 0.9.54 o superior
+if (typeof kino.meta === "function" && kino.meta.byTitle === true) {   // Kino 0.9.55 o superior
   const m = await kino.meta({ type: "movie", title: "Matrix", year: 1999 });
   if (m) console.log(m.ids.tmdb, m.ids.imdb);                            // 603, "tt0133093"
 }
@@ -401,7 +401,8 @@ Cuando tu fuente solo te da el nombre y el año, pásaselos a Kino en vez de los
   (30 por minuto, 8 s), y la caché de 30 minutos es por tipo, título normalizado y año.
 - **La consulta**: `title` de 1 a 200 caracteres; `year` de 1870 a 2100 (un número o un texto de 4 dígitos), y solo
   junto a `title`. Cualquier otra cosa lanza `invalid_request`. Si mandas `ids` y `title`, ganan los ids.
-- **Comprueba `kino.meta.byTitle === true`**: un Kino anterior no conoce `title` y responde `invalid_request` («necesita
+- **Necesita `"apiVersion": 9`; comprueba `kino.meta.byTitle === true`**: por debajo de 9 `kino.meta.byTitle` no
+  existe y el título no llega, igual que en un Kino anterior, así que la consulta responde `invalid_request` («necesita
   al menos un id»). `node sdk/validate.mjs` avisa si llamas `kino.meta` con `title` sin esa comprobación.
 
 Con el kit, la búsqueda de TMDB de Kino no existe: el archivo de `KINO_META_FIXTURE` responde con claves

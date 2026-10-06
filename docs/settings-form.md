@@ -45,7 +45,7 @@ Lo que puede llevar cada entrada:
 | `fields` | solo `list` | obligatorio: de 1 a 4, cada uno `{ key, label, type, hint?, required? }` con `type` `"text"` o `"url"`, sin `default` ("Solo un ajuste de tipo list tiene "fields"") |
 | `max` | solo `list` | opcional, número entero de 1 a 50 (20 por defecto): cuántas entradas |
 | `confirm` | solo `action`, apiVersion 6 | opcional, de 1 a 120 caracteres: se pregunta antes de correr la acción, con Cancelar enfocado ("Solo un ajuste de tipo action tiene "confirm"") |
-| `labelEn`, `hintEn`, `confirmEn` | los de `label`, `hint`, `confirm` | opcionales, Kino 0.9.54: el mismo texto en inglés, con los mismos límites ([Textos en inglés](#english)) |
+| `labelEn`, `hintEn`, `confirmEn` | los de `label`, `hint`, `confirm` | opcionales, apiVersion 9 (Kino 0.9.55): el mismo texto en inglés, con los mismos límites ([Textos en inglés](#english)) |
 
 Cualquier otra clave de una entrada se ignora. Un manifiesto que incumple una regla se rechaza al
 instalar con un mensaje que nombra el ajuste (`El ajuste "quality" necesita opciones`); una `list` por
@@ -63,10 +63,10 @@ escribe, tu código la lee y viaja sellada de punta a punta a sus otros aparatos
 **tuya**, de quien hizo el plugin (una clave fija del reproductor del sitio), va en los
 [`secrets`](manifest.md#secrets) sellados del manifiesto, y tu código solo tiene un marcador.
 
-## Textos en inglés (Kino 0.9.54) { #english }
+## Textos en inglés (apiVersion 9, Kino 0.9.55) { #english }
 
-Kino 0.9.54 habla español o inglés (Ajustes ▸ App ▸ Idioma). Para que tu formulario también se lea en inglés, cada
-texto puede llevar al lado su versión en inglés, con la misma clave y `En` al final:
+Kino habla español o inglés desde 0.9.54 (Ajustes ▸ App ▸ Idioma). Desde Kino 0.9.55, con `"apiVersion": 9`, cada
+texto de tu formulario puede llevar al lado su versión en inglés, con la misma clave y `En` al final:
 
 | Dónde | Claves en inglés | Límite |
 | --- | --- | --- |
@@ -87,8 +87,8 @@ texto puede llevar al lado su versión en inglés, con la misma clave y `En` al 
   en español nada cambia.
 - **Tu código no se entera**: las claves, los tipos, los valores y los `default` son los mismos en los dos idiomas, y
   `kino.config` devuelve lo mismo. Si quieres saber el idioma, lee [`kino.lang`](kino-api.md#lang).
-- **Es aditivo**: vale en cualquier `apiVersion`, y un Kino anterior ignora estas claves como ignora cualquier otra
-  que no conoce. `confirmEn` se ignora donde `confirm` se ignora (por debajo de apiVersion 6).
+- **Desde apiVersion 9**: por debajo de 9 estas claves son desconocidas y se ignoran sin revisarlas, como en un Kino
+  anterior (que tampoco acepta `"apiVersion": 9`).
 - **Las mismas reglas que el texto de siempre**: uno vacío, de más del límite o que no sea texto rechaza el manifiesto
   al instalar ("\"labelEn\" del ajuste \"quality\" debe ser un texto de 1 a 40 caracteres"; en una opción, "Una
   opción del ajuste \"quality\" no es válida"); `null` es como no ponerlo. `confirmEn` solo va en un `action` ("Solo un

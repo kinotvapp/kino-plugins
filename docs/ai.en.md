@@ -88,8 +88,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   is opened or played; do not rely on it. If the video comes from changing CDNs, use
   "streamHosts": "any" (apiVersion 4; the person approves it at install); for live channels,
   "liveStreamHosts": "any" (apiVersion 3, needs the "channels" capability). If the site or its
-  extractors rotate domains and you cannot list them, use "fetchHosts": "any" (apiVersion 8, Kino
-  0.9.54; the person approves it in red, it never reaches the home network) and check kino.fetchAnyHost.
+  extractors rotate domains and you cannot list them, use "fetchHosts": "any" (apiVersion 9, Kino
+  0.9.55; the person approves it in red, it never reaches the home network) and check kino.fetchAnyHost.
   There is no maximum number of hosts from Kino 0.9.45; Kino 0.9.44 and older refuse more than 20, so
   if you declare more than 20, tell me.
 - In kino-plugin.json write "entry": "plugin.js" and "icon": "icon.png", NEVER "./plugin.js": Kino

@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 8; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 9; 9 adds fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -363,7 +363,7 @@ type KinoMigrateAnswer =
   | { kind: "episode"; ref: string; season?: number; number: number }
   | { kind: "live"; code: string };
 
-/** apiVersion 6, with `"section": { "label" }` in the manifest: your own section (TV sidebar, chip atop Inicio on the phone). Kino 0.9.54: an optional `"labelEn"` (same 20-character limit) is the entry's text when the app is in English; `label` stays the Spanish default and the fallback. */
+/** apiVersion 6, with `"section": { "label" }` in the manifest: your own section (TV sidebar, chip atop Inicio on the phone). Kino 0.9.55: an optional `"labelEn"` (same 20-character limit) is the entry's text when the app is in English; `label` stays the Spanish default and the fallback. */
 interface KinoSectionAnswer {
   /** At most 8; each `id` matches the item id pattern, each `label` at most 24 characters. */
   tabs?: { id: string; label: string }[];
@@ -428,10 +428,10 @@ interface KinoPlugin {
   /** apiVersion 3, optional with "channels". At most 50 channels and a 24 h window per call. */
   guide?(arg: { channelIds: string[]; from: number; to: number }): Promise<KinoGuideEntry[]>;
   /**
-   * The settings form's texts (manifest, not code): since Kino 0.9.54 a setting may add `labelEn`, `hintEn` and (an action,
+   * The settings form's texts (manifest, not code): since Kino 0.9.55 a setting may add `labelEn`, `hintEn` and (an action,
    * next to `confirm`) `confirmEn`, an option and a list field `labelEn` (a field also `hintEn`), each with the base field's
-   * limits. Kino shows them when the app is in English; the base texts stay the Spanish default and the fallback. Valid at
-   * every apiVersion; an older Kino ignores them. Your code never sees them: keys and values are the same in both languages.
+   * limits. Kino shows them when the app is in English; the base texts stay the Spanish default and the fallback. apiVersion 9
+   * (Kino 0.9.55): below it the keys are unknown and ignored. Your code never sees them: keys and values are the same in both languages.
    */
   /** apiVersion 6: required when a setting has `type: "status"`. One text per status setting key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. */
   settingsStatus?(): Promise<Record<string, string>>;
@@ -577,7 +577,7 @@ interface KinoMetaRequest {
 }
 
 /**
- * Kino 0.9.54 (check `kino.meta.byTitle === true` first; an older Kino answers `invalid_request`): the title to ask about by
+ * Kino 0.9.55, apiVersion 9 (check `kino.meta.byTitle === true` first; below apiVersion 9 or on an older Kino the title is dropped and the query answers `invalid_request`): the title to ask about by
  * name when you have no id. `title` 1..200 characters, `year` 1870..2100 (a number or a 4-digit string; only with `title`).
  * Kino searches TMDB (the type's own search, es-MX, first page) and keeps the hit whose es-MX or original title equals
  * yours once both are normalised (lowercase, no accents, punctuation as spaces); with `year`, that exact year wins, else
@@ -852,8 +852,8 @@ declare namespace kino {
   const appVersion: string;
   const lang: string;
   /**
-   * Kino 0.9.54+: `true` when THIS install's `kino.fetch` may reach any public host -- the manifest declares
-   * `"fetchHosts": "any"`, the plugin qualifies (apiVersion 8 or later, or converted from a Nuvio scraper) and the
+   * Kino 0.9.55+: `true` when THIS install's `kino.fetch` may reach any public host -- the manifest declares
+   * `"fetchHosts": "any"`, the plugin qualifies (apiVersion 9 or later, or converted from a Nuvio scraper) and the
    * person approved its red consent line. `false` otherwise; `undefined` on an older Kino (keep your own fallback).
    */
   const fetchAnyHost: boolean | undefined;
@@ -885,7 +885,7 @@ declare namespace kino {
    */
   function meta(query: KinoMetaRequest | KinoMetaTitleRequest): Promise<KinoMetaAnswer | null>;
   namespace meta {
-    /** Kino 0.9.54: true when `kino.meta` takes `{ type, title, year? }` (KinoMetaTitleRequest); absent before. */
+    /** Kino 0.9.55, apiVersion 9: true when `kino.meta` takes `{ type, title, year? }` (KinoMetaTitleRequest); absent before. */
     const byTitle: true | undefined;
   }
 

@@ -6,7 +6,7 @@
 kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest apiVersion this build of Kino understands, not your manifest's
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
-kino.fetchAnyHost // Kino 0.9.54+: true when this install's kino.fetch may reach any public host; undefined before
+kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
 ```
 
 ### `kino.lang`: the person's language { #lang }
@@ -28,8 +28,8 @@ feature-detect: read it where you need it.
 
 ### `kino.fetchAnyHost`: does `kino.fetch` reach any host? { #fetch-any-host }
 
-From **Kino 0.9.54**, `kino.fetchAnyHost` is `true` only when this install's `kino.fetch` may reach any public host:
-your manifest declares [`"fetchHosts": "any"`](manifest.md#fetch-hosts), your plugin qualifies (`apiVersion` 8 or
+From **Kino 0.9.55**, `kino.fetchAnyHost` is `true` only when this install's `kino.fetch` may reach any public host:
+your manifest declares [`"fetchHosts": "any"`](manifest.md#fetch-hosts), your plugin qualifies (`apiVersion` 9 or
 later, or a converted Nuvio scraper) **and** the person approved it in red. If anything is missing it is `false`, and
 on an older Kino it does not exist (`undefined`). Use it to decide before you fetch:
 
@@ -38,7 +38,7 @@ const url = kino.fetchAnyHost === true ? extractorLink : await myFallback(extrac
 ```
 
 Even when `true`, the home network stays refused and a [sealed secret](manifest.md#secrets) only goes to your declared
-`hosts`. In the Node kit it is `true` when the manifest asks for `"fetchHosts": "any"` at `apiVersion` 8 (the kit
+`hosts`. In the Node kit it is `true` when the manifest asks for `"fetchHosts": "any"` at `apiVersion` 9 (the kit
 takes the approval as given).
 
 Kino also provides the web globals QuickJS lacks, written in JavaScript and frozen: `URL`,
@@ -347,10 +347,10 @@ up. `null` means nobody knew the title: it is never an error.
   has no such function, so feature-detect it (`typeof kino.meta === "function"`). `node sdk/validate.mjs` warns when your
   code calls it without that check.
 
-### By title, without ids (Kino 0.9.54) { #meta-by-title }
+### By title, without ids (apiVersion 9, Kino 0.9.55) { #meta-by-title }
 
 ```js
-if (typeof kino.meta === "function" && kino.meta.byTitle === true) {   // Kino 0.9.54+
+if (typeof kino.meta === "function" && kino.meta.byTitle === true) {   // Kino 0.9.55+
   const m = await kino.meta({ type: "movie", title: "Matrix", year: 1999 });
   if (m) console.log(m.ids.tmdb, m.ids.imdb);                            // 603, "tt0133093"
 }
@@ -369,8 +369,8 @@ When your source only gives you the name and the year, hand Kino those instead o
   the 30-minute cache is per type, normalised title and year.
 - **The query**: `title` 1 to 200 characters; `year` 1870 to 2100 (a number or a 4-digit string), and only with
   `title`. Anything else throws `invalid_request`. Send `ids` and `title` together and the ids win.
-- **Check `kino.meta.byTitle === true`**: an older Kino does not know `title` and answers `invalid_request` ("needs at
-  least one id"). `node sdk/validate.mjs` warns when you call `kino.meta` with `title` without that check.
+- **Needs `"apiVersion": 9`; check `kino.meta.byTitle === true`**: below 9 `kino.meta.byTitle` is absent and the title
+  never arrives, as on an older Kino, so the query answers `invalid_request` ("needs at least one id"). `node sdk/validate.mjs` warns when you call `kino.meta` with `title` without that check.
 
 Under the kit there is no Kino TMDB search: the `KINO_META_FIXTURE` file answers keys like
 `"movie:title:the matrix:1999"` (the type, `title`, the normalised title and the year, or without the year), and

@@ -1,10 +1,10 @@
 {
-  "$comment": "Kino plugin contract, apiVersion 1 to 8. The single source of truth for every number and rule a plugin meets. The app checks each value against its own code, and a test in the app pins this file to it; sdk/validate.mjs, sdk/run.mjs and the guide's tables read this file.",
-  "apiVersion": 8,
-  "maxApiVersion": 8,
-  "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54" },
-  "additiveFromApp": { "kino.meta": "0.9.53", "kino.tmdb": "0.9.53", "catalogOnly": "0.9.54", "kino.browser.captureAll": "0.9.54", "kino.fetchAnyHost": "0.9.54",
-    "kino.meta.byTitle": "0.9.54" },
+  "$comment": "Kino plugin contract, apiVersion 1 to 9. The single source of truth for every number and rule a plugin meets. The app checks each value against its own code, and a test in the app pins this file to it; sdk/validate.mjs, sdk/run.mjs and the guide's tables read this file.",
+  "apiVersion": 9,
+  "maxApiVersion": 9,
+  "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54", "9": "0.9.55" },
+  "additiveFromApp": { "kino.meta": "0.9.53", "kino.tmdb": "0.9.53", "catalogOnly": "0.9.54", "kino.browser.captureAll": "0.9.54", "kino.fetchAnyHost": "0.9.55",
+    "kino.meta.byTitle": "0.9.55" },
   "capabilities": {
     "names": ["search", "home", "browse", "episodes", "resolve", "download", "drm", "channels", "migrate", "scopedSearch", "meta", "subtitles", "tracking", "segments"],
     "required": ["resolve"],
@@ -39,7 +39,7 @@
     "maxPathChars": 200,
     "liveStreamHosts": { "value": "any", "apiVersion": 3, "requires": "channels" },
     "streamHosts": { "value": "any", "apiVersion": 4 },
-    "fetchHosts": { "value": "any", "apiVersion": 4, "handWrittenApiVersion": 8, "consentLine": "Puede conectarse a cualquier servidor de internet" },
+    "fetchHosts": { "value": "any", "apiVersion": 4, "handWrittenApiVersion": 9, "consentLine": "Puede conectarse a cualquier servidor de internet" },
     "discoverable": { "default": true },
     "categories": { "values": ["movies", "series", "anime", "live", "radio", "subtitles", "utilities", "adult"], "message": "El campo \"categories\" debe ser una lista sin repetidos de: movies, series, anime, live, radio, subtitles, utilities, adult" },
     "catalogOnly": {
@@ -90,8 +90,8 @@
     "hintMaxChars": 80,
     "sectionHintMaxChars": 300,
     "english": {
-      "$comment": "Kino 0.9.54, additive (every apiVersion; an older Kino ignores the keys): the English variant of a setting's label, hint and confirm, of an option's and a list field's texts, and of section.label. Same limits as the base field (confirmEn only where confirm is, and only with it). The base text is the Spanish default and the fallback; Kino shows the variant when it speaks English. Other languages: unknown keys, ignored.",
-      "fromApp": "0.9.54", "suffix": "En",
+      "$comment": "Kino 0.9.55, apiVersion 9 (below it, and on an older Kino, the keys are unknown and ignored, never checked): the English variant of a setting's label, hint and confirm, of an option's and a list field's texts, and of section.label. Same limits as the base field (confirmEn only where confirm is, and only with it). The base text is the Spanish default and the fallback; Kino shows the variant when it speaks English. Other languages: unknown keys, ignored.",
+      "fromApp": "0.9.55", "apiVersion": 9, "suffix": "En",
       "settingKeys": ["labelEn", "hintEn", "confirmEn"], "optionKeys": ["labelEn"], "fieldKeys": ["labelEn", "hintEn"], "sectionKeys": ["labelEn"]
     },
     "maxOptions": 20,
@@ -373,8 +373,9 @@
     "noPluginsFrom": ["meta"],
     "errorCodes": ["invalid_request", "rate_limited", "not_allowed"],
     "byTitle": {
-      "$comment": "Kino 0.9.54, no new apiVersion: kino.meta({ type, title, year? }) instead of ids (ids win when both come). Kino searches TMDB (type's endpoint, es-MX, first page) and keeps a hit whose es-MX or original title equals the asked one once both are normalised (lowercase, no accents, punctuation as spaces); with a year, that exact year wins, else one within yearSlack. A tie (same title and year, or same title and no year) or no match answers null, never a guess. Then the answer is the ids lookup's, same shape, cache (keyed by type, normalised title and year), budget and timeout. year without title, a bad title or a bad year: invalid_request.",
-      "fromApp": "0.9.54",
+      "$comment": "Kino 0.9.55, apiVersion 9 (below it the prelude drops title and year, so the query needs ids; kino.meta.byTitle is absent): kino.meta({ type, title, year? }) instead of ids (ids win when both come). Kino searches TMDB (type's endpoint, es-MX, first page) and keeps a hit whose es-MX or original title equals the asked one once both are normalised (lowercase, no accents, punctuation as spaces); with a year, that exact year wins, else one within yearSlack. A tie (same title and year, or same title and no year) or no match answers null, never a guess. Then the answer is the ids lookup's, same shape, cache (keyed by type, normalised title and year), budget and timeout. year without title, a bad title or a bad year: invalid_request.",
+      "fromApp": "0.9.55",
+      "apiVersion": 9,
       "featureDetect": "kino.meta.byTitle === true",
       "titleMaxChars": 200, "minYear": 1870, "maxYear": 2100, "yearSlack": 1, "searchLanguage": "es-MX"
     }
