@@ -26,7 +26,7 @@ Desde `"apiVersion": 6` (Kino 0.9.50) hay más exports opcionales, cada uno con 
 ([Describir otros títulos](#meta)). `subtitles` ([Subtítulos para cualquier título](#subtitles)) no
 necesita un `apiVersion` nuevo. Desde `"apiVersion": 7` (Kino 0.9.51): `track` ([Contarle a un
 servicio de seguimiento qué ve la persona](#tracking)) y `segments` ([Dónde están la intro y los
-créditos](#segments)). Desde `"apiVersion": 8` (Kino 0.9.54, todavía no publicada): los tipos de ítem de
+créditos](#segments)). Desde `"apiVersion": 8` (Kino 0.9.54): los tipos de ítem de
 audio `music` y `podcast` ([Música y podcasts](#music-podcasts)) y el export opcional `details` ([Los
 detalles propios de un título](#details)). Y en cualquier `apiVersion`, desde Kino 0.9.54, un plugin que
 lista títulos pero no reproduce ninguno puede decirlo con `"catalogOnly": true` ([Plugins de solo
@@ -497,7 +497,7 @@ reproducción; un plugin con un CDN fijo debería igual declararlo.
 Con `"apiVersion": 8` un ítem puede ser audio: `kind: "music"` (un álbum, una lista o una sola pista) o
 `kind: "podcast"` (un programa o un audiolibro), en `search`, `browse`, las filas de `home` y tu
 sección, junto a tus películas y series. No hay nada que declarar aparte de la versión: un ítem de audio
-**no** necesita la capacidad `episodes`. Kino 0.9.54 todavía no está publicada; un Kino anterior
+**no** necesita la capacidad `episodes`. Un Kino anterior a 0.9.54
 rechaza un plugin apiVersion 8 con "Este plugin necesita una versión más nueva de Kino", así que declara
 8 solo cuando devuelvas ítems de audio o exportes `details`.
 
@@ -685,8 +685,7 @@ como arma Kino la consulta. Al revés, cualquier plugin puede preguntarle a Kino
 ## Plugins de solo catálogo (`catalogOnly`, Kino 0.9.54) { #catalog-only }
 
 Un plugin que lista y describe títulos pero no tiene video propio -- un catálogo de TMDB, una lista de
-estrenos, calificaciones -- lo dice con `"catalogOnly": true` en su manifiesto (Kino 0.9.54, todavía no
-publicada):
+estrenos, calificaciones -- lo dice con `"catalogOnly": true` en su manifiesto (Kino 0.9.54):
 
 ```json
 {

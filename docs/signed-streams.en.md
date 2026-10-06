@@ -54,7 +54,7 @@ Kino plays the stream through a local proxy. Before every playlist and segment r
   only good inside `kino.crypto`, so compute the header there.
 - Three failed signatures in a row stop the video.
 - Below apiVersion 6, `signing` and `signContext` are ignored.
-- **The messages above are Kino 0.9.54's** (not released yet): the technical detail your code and the
+- **The messages above are Kino 0.9.54's**: the technical detail your code and the
   log see is English from that version on and may change, so match on the error's `code`, never on its
   text. Kino 0.9.53 and older word them in Spanish (`La firma por petición solo funciona con video HLS
   (.m3u8)`, "sign no puede usar la red", `El dato "signContext" no es válido`…).

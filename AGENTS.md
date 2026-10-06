@@ -70,7 +70,7 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   whole plugin with "Este plugin necesita una versión más nueva de Kino"). `apiVersion` 6 = Kino
   0.9.50: never declare 6 "just in case". `7` only for `tracking` or `segments` (Kino 0.9.51+); `8` only
   for `music`/`podcast` items or the optional `details(ref)` export (a movie's own details for its title
-  page; Kino 0.9.54+, not released yet; Kino 0.9.53 and older refuse an apiVersion 8 plugin). From
+  page; Kino 0.9.54+; Kino 0.9.53 and older refuse an apiVersion 8 plugin). From
   apiVersion 8 `details` is a reserved export name: never export a helper called `details`.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
@@ -447,7 +447,7 @@ only when you use one of these.
   over a `tmdbKey` setting (keep the setting only as the fallback for older Kino). Catch `no_tmdb_key` where an empty
   answer is better than an error (Home rows); uncaught, the person reads Kino's own sentence telling them where to add
   the key. [The `kino` API](https://kinotvapp.github.io/kino-plugins/en/kino-api/#tmdb).
-- **Kino 0.9.54 (not released yet), no new apiVersion**: `kino.browser.capture` takes `captureAll`, `alsoMatch`,
+- **Kino 0.9.54, no new apiVersion**: `kino.browser.capture` takes `captureAll`, `alsoMatch`,
   `waitForCookie` and `returnCookiesOnTimeout`, only behind `if (kino.browser.captureAll)` (older Kino ignores them).
   `kino.lang` follows the app's language (`"es-CO"` or `"en-US"`; before 0.9.54 always `"es-CO"`): word your
   `userMessage` and send `Accept-Language` from it. Kino's own error messages become English and may change: match on

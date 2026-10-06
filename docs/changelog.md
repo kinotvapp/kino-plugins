@@ -5,7 +5,7 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 
 ## Kino 0.9.54: `apiVersion` 8, música y podcasts, plugins de solo catálogo { #v0954 }
 
-<span id="next"></span>(Todavía no publicada.) **`apiVersion` 8 = Kino 0.9.54.** El contrato (`contract.json`) ahora dice
+<span id="next"></span>(Publicada el 2026-10-06.) **`apiVersion` 8 = Kino 0.9.54.** El contrato (`contract.json`) ahora dice
 `maxApiVersion` 8 y `kino.apiVersion` informa 8. Kino 0.9.53 y anteriores rechazan un manifiesto con `"apiVersion": 8`
 («Este plugin necesita una versión más nueva de Kino»), así que declara 8 solo si devuelves ítems `music` o `podcast`
 o exportas `details`. Todo lo demás de esta lista es aditivo (vale en cualquier `apiVersion` y un Kino anterior lo
@@ -79,13 +79,18 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
 - **Plugins de CloudStream**: la persona puede agregar un repositorio de CloudStream y Kino convierte cada plugin que
   elige en un plugin de Kino que corre a través de una app complemento aparte; Music/Audio pasan a `music` y
   Podcast/AudioBook a `podcast`. No tienes nada que escribir: es lo que puede esperar quien mantiene un repositorio de
-  CloudStream. Los plugins generados reciben un objeto `kino.cloudstream` que el tuyo nunca tiene.
+  CloudStream. Los plugins generados reciben un objeto `kino.cloudstream` que el tuyo nunca tiene. Un repositorio también
+  se agrega con su código corto de CloudStream (cutt.ly, o py.md con `!` al principio), y la pantalla de ajustes propia
+  de un plugin se abre en el teléfono.
   [Plugins de CloudStream](cloudstream.md).
 - **Corregido: `kino.tmdb` y `kino.meta` después de una llamada abandonada.** Cuando Kino abandonaba una llamada tuya
   (una pantalla que se cerró, un límite de tiempo) pero igual usaba su respuesta tardía, cada `kino.tmdb` o
   `kino.meta` que esa llamada hacía después fallaba con `not_allowed`, así que un catálogo de TMDB podía mostrar una
   sola fila en el Inicio en vez de todas hasta reiniciar. Desde 0.9.54 siguen respondiendo hasta que termina la
   evaluación de esa llamada. [La API `kino`](kino-api.md#tmdb).
+- **La frase de `no_tmdb_key` para la persona** ahora es «Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB»
+  («Add your TMDB key in Settings ▸ Your TMDB key»); la de 0.9.53 también mencionaba un addon de TMDB de Stremio. No hay
+  nada que cambiar: compara `e.code`, nunca el texto. [La API `kino`](kino-api.md#tmdb).
 
 ## Kino 0.9.53: `kino.meta` y `kino.tmdb` { #v0953 }
 

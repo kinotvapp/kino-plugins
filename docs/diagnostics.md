@@ -67,7 +67,7 @@ tipo de falla, nunca una línea de log.
 - **Consentimiento.** La hoja de consentimiento dice "Comparte registros de errores con Kino para
   corregir fallas". Una actualización que lo declara por primera vez espera la aprobación de la persona,
   como un host nuevo (queda en "Actualización disponible — requiere tu aprobación"). Desde **Kino
-  0.9.54** (todavía no publicada) la línea dice "Comparte con Kino registros de errores y datos técnicos
+  0.9.54** la línea dice "Comparte con Kino registros de errores y datos técnicos
   de algunas reproducciones para corregir fallas", porque entonces `true` también envía una pequeña
   muestra de las reproducciones que salen bien ([abajo](#playback)).
 - **El interruptor.** Hasta Kino 0.9.53, mientras se estabilizan los plugins, las líneas de un plugin

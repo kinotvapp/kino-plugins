@@ -77,13 +77,13 @@ read, 2 s) but that costs a request. Prefer links that need no `headers` (the li
 host involved must be one your plugin may reach (declared, typed, or covered by an "any" permission), over
 https. While casting, the phone itself stays silent.
 
-From Kino 0.9.54 (not released yet), an apiVersion 8 [`music` or `podcast`](contract.md#music-podcasts)
+From Kino 0.9.54, an apiVersion 8 [`music` or `podcast`](contract.md#music-podcasts)
 track goes to a Chromecast as music, with its title, artist, album and cover, and to a DLNA TV as an audio
 item; an 18+ track sends only the app's name.
 
 ## From Kino 0.9.54 { #v0954 }
 
-Not released yet. With nothing new in your manifest, except where said:
+With nothing new in your manifest, except where said:
 
 - **Kino in Spanish or English.** The person picks the app's language in Ajustes ▸ App ▸ Idioma
   ("Automático" follows the device: Spanish on a Spanish device, English on any other). Kino's own texts

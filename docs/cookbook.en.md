@@ -586,8 +586,7 @@ export async function home() {
 export async function search(query) {
   if (!query.q) return [];
   // Kino's key answers first, so this is rare. Uncaught, no_tmdb_key reaches the person as Kino's own sentence
-  // ("Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu llave."): nothing to
-  // word yourself.
+  // ("Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB"): nothing to word yourself.
   const r = await tmdb("/search/multi", { query: query.q, language: "es-MX", include_adult: false });
   return r.results.filter((m) => m.media_type === "movie" || m.media_type === "tv").map((m) => item(m, m.media_type));
 }

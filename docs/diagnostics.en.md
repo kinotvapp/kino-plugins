@@ -62,7 +62,7 @@ of failure, never a log line.
 
 - **Consent.** The consent sheet says "Comparte registros de errores con Kino para corregir fallas". An
   update that newly declares it waits for the person's approval, like a new host ("Actualización
-  disponible — requiere tu aprobación"). From **Kino 0.9.54** (not released yet) the line reads
+  disponible — requiere tu aprobación"). From **Kino 0.9.54** the line reads
   "Comparte con Kino registros de errores y datos técnicos de algunas reproducciones para corregir
   fallas" ("Shares error reports and technical data from some playbacks with Kino to fix problems"),
   because `true` then also sends a small sample of good playbacks ([below](#playback)).

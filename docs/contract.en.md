@@ -26,7 +26,7 @@ From `"apiVersion": 6` (Kino 0.9.50) there are more optional exports, each with 
 ([Describing other titles](#meta)). `subtitles` ([Subtitles for any title](#subtitles)) needs no new
 `apiVersion`. From `"apiVersion": 7` (Kino 0.9.51): `track` ([Telling a tracker what the person
 watches](#tracking)) and `segments` ([Where the intro and credits are](#segments)). From
-`"apiVersion": 8` (Kino 0.9.54, not released yet): the audio item kinds `music` and `podcast`
+`"apiVersion": 8` (Kino 0.9.54): the audio item kinds `music` and `podcast`
 ([Music and podcasts](#music-podcasts)) and the optional `details` export ([A title's own
 details](#details)). And at every `apiVersion`, from Kino 0.9.54, a plugin that lists titles but plays
 none can say so with `"catalogOnly": true` ([Catalog-only plugins](#catalog-only)).
@@ -480,7 +480,7 @@ CDN should still declare it.
 With `"apiVersion": 8` an item may be audio: `kind: "music"` (an album, a playlist or a single
 track) or `kind: "podcast"` (a show or an audiobook), in `search`, `browse`, `home` rows and your
 section, next to your movies and series. Nothing to declare beyond the version: an audio item does
-**not** need the `episodes` capability. Kino 0.9.54 is not released yet; an older Kino refuses an
+**not** need the `episodes` capability. An older Kino refuses an
 apiVersion 8 plugin with "Este plugin necesita una versión más nueva de Kino", so declare 8 only when
 you return audio items or export `details`.
 
@@ -654,8 +654,7 @@ Kino builds the query. The other way round, any plugin can ask Kino what it know
 ## Catalog-only plugins (`catalogOnly`, Kino 0.9.54) { #catalog-only }
 
 A plugin that lists and describes titles but has no video of its own -- a TMDB catalog, a list of
-what's new, ratings -- says so with `"catalogOnly": true` in its manifest (Kino 0.9.54, not released
-yet):
+what's new, ratings -- says so with `"catalogOnly": true` in its manifest (Kino 0.9.54):
 
 ```json
 {

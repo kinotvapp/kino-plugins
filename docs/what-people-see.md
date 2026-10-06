@@ -96,13 +96,13 @@ petición. Prefiere enlaces que no necesiten `headers` (la ruta más liviana); c
 tiene que ser uno al que tu plugin puede llegar (declarado, escrito por la persona, o cubierto por un
 permiso "any"), por https. Mientras se envía, el celular se queda en silencio.
 
-Desde Kino 0.9.54 (todavía no publicada), una pista [`music` o `podcast`](contract.md#music-podcasts) de
+Desde Kino 0.9.54, una pista [`music` o `podcast`](contract.md#music-podcasts) de
 apiVersion 8 va a un Chromecast como música, con su título, artista, álbum y portada, y a una TV DLNA como
 ítem de audio; una pista +18 solo envía el nombre de la app.
 
 ## Desde Kino 0.9.54 { #v0954 }
 
-Todavía no publicada. Sin nada nuevo en tu manifiesto, salvo donde se diga:
+Sin nada nuevo en tu manifiesto, salvo donde se diga:
 
 - **Kino en español o en inglés.** La persona elige el idioma de la app en Ajustes ▸ App ▸ Idioma
   ("Automático" sigue al aparato: español en un aparato en español, inglés en cualquier otro). Los textos

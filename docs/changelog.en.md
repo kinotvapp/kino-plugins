@@ -5,7 +5,7 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 
 ## Kino 0.9.54: `apiVersion` 8, music and podcasts, catalog-only plugins { #v0954 }
 
-<span id="next"></span>(Not released yet.) **`apiVersion` 8 = Kino 0.9.54.** The contract (`contract.json`) now says
+<span id="next"></span>(Released 2026-10-06.) **`apiVersion` 8 = Kino 0.9.54.** The contract (`contract.json`) now says
 `maxApiVersion` 8 and `kino.apiVersion` reports 8. A manifest with `"apiVersion": 8` is refused by Kino 0.9.53 and older
 ("Este plugin necesita una versión más nueva de Kino"), so declare 8 only if you return `music` or `podcast` items or
 export `details`. Everything else on this list is additive (valid at any `apiVersion`, ignored by older Kino), and
@@ -73,11 +73,15 @@ nothing on it makes you change your plugin. How to use each one and still run on
 - **CloudStream plugins**: people can add a CloudStream repository and Kino turns each plugin they pick into a Kino
   plugin that runs through a separate complement app; Music/Audio become `music` and Podcast/AudioBook `podcast`.
   Nothing for you to write: it is what a CloudStream repository maintainer may rely on. Generated plugins get a
-  `kino.cloudstream` object yours never has. [CloudStream plugins](cloudstream.md).
+  `kino.cloudstream` object yours never has. A repository can also be added by its CloudStream short code (cutt.ly, or
+  py.md with a leading `!`), and a plugin's own settings screen opens on phones. [CloudStream plugins](cloudstream.md).
 - **Fixed: `kino.tmdb` and `kino.meta` after an abandoned call.** When Kino abandoned a call of yours (a screen
   closed, a time limit) but still used its late answer, every `kino.tmdb` or `kino.meta` that call made afterwards
   failed with `not_allowed`, so a TMDB catalog could show one Home row instead of all of them until a restart. From
   0.9.54 they keep answering until that call's evaluation ends. [The `kino` API](kino-api.md#tmdb).
+- **`no_tmdb_key`'s sentence for the person** is now "Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB"
+  ("Add your TMDB key in Settings ▸ Your TMDB key"); 0.9.53's also pointed to a Stremio TMDB addon. Nothing to change:
+  match on `e.code`, never on the text. [The `kino` API](kino-api.md#tmdb).
 
 ## Kino 0.9.53: `kino.meta` and `kino.tmdb` { #v0953 }
 

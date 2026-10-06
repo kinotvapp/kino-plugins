@@ -54,7 +54,7 @@ llama `sign()` y envía sus headers, mezclados sobre los `headers` propios del s
   data"): un marcador solo sirve dentro de `kino.crypto`, así que calcula el header ahí.
 - Tres firmas fallidas seguidas detienen el video.
 - Por debajo de apiVersion 6, `signing` y `signContext` se ignoran.
-- **Los mensajes de arriba son los de Kino 0.9.54** (todavía no publicada): desde esa versión el detalle
+- **Los mensajes de arriba son los de Kino 0.9.54**: desde esa versión el detalle
   técnico que ven tu código y el log está en inglés y puede cambiar, así que compara el `code` del error,
   nunca su texto. Kino 0.9.53 y anteriores los escriben en español (`La firma por petición solo funciona
   con video HLS (.m3u8)`, "sign no puede usar la red", `El dato "signContext" no es válido`…).

@@ -590,8 +590,8 @@ export async function home() {
 export async function search(query) {
   if (!query.q) return [];
   // La llave de Kino contesta primero, así que esto es raro. Sin atraparlo, no_tmdb_key le llega a la persona como la
-  // frase de Kino ("Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con tu
-  // llave."): no tienes que redactar nada.
+  // frase de Kino ("Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB"): no tienes que
+  // redactar nada.
   const r = await tmdb("/search/multi", { query: query.q, language: "es-MX", include_adult: false });
   return r.results.filter((m) => m.media_type === "movie" || m.media_type === "tv").map((m) => item(m, m.media_type));
 }

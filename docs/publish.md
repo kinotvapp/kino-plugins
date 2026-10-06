@@ -160,7 +160,7 @@ Para aparecer:
 3. Kino busca máximo cada 12 horas por dispositivo (y cuando la persona toca "Actualizar"), y muestra
    los resultados en su propia pestaña de la pantalla Plugins, "De la comunidad" (junto a
    Recomendados; en "Elige tus fuentes", después de los plugins recomendados). Hasta Kino 0.9.53 se
-   queda solo con los 30 resultados con más estrellas. Desde **Kino 0.9.54** (todavía no publicada)
+   queda solo con los 30 resultados con más estrellas. Desde **Kino 0.9.54**
    los lee de a 100, la persona elige el orden ("Populares" o "Recientes"), "Cargar más" lee los 100
    siguientes y "Buscar en GitHub" encuentra un plugin por su nombre: mira
    [Desde Kino 0.9.54](#discovery-0954). Instalar uno pasa por la misma hoja de consentimiento que
@@ -238,7 +238,7 @@ Lo que describe la lista de arriba es Kino 0.9.53 y anteriores.
 
 #### Desde Kino 0.9.54 { #discovery-0954 }
 
-(Todavía no publicada.) Las reglas que tiene que cumplir un repositorio no cambian; cambia cuántos
+Las reglas que tiene que cumplir un repositorio no cambian; cambia cuántos
 resultados lee la app y en qué orden:
 
 - **De a 100, en el orden que elige la persona.** La app lee una página de la búsqueda de GitHub, 100

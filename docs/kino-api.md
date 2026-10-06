@@ -14,7 +14,7 @@ manifiesto; `kino.appVersion` es la versión de Kino.)
 ### `kino.lang`: el idioma de la persona { #lang }
 
 `kino.lang` es el idioma en que Kino le habla a la persona. Hasta Kino 0.9.53 es siempre `"es-CO"`. Desde **Kino 0.9.54**
-(todavía no publicada) sigue el idioma de la app: `"es-CO"` mientras Kino está en español, `"en-US"` mientras está en
+sigue el idioma de la app: `"es-CO"` mientras Kino está en español, `"en-US"` mientras está en
 inglés. La persona lo elige en Ajustes ▸ App ▸ Idioma (Automático, Español o English, sincronizado entre sus aparatos);
 Automático habla español en un aparato configurado en cualquier variante de español, e inglés en cualquier otro. Sin
 `apiVersion` nuevo y sin nada que comprobar: léelo donde lo necesites.
@@ -164,13 +164,13 @@ valor llevaría un carácter de control una vez puesto el secreto se rechaza en 
 **A dónde puede ir esa petición: solo a un host que lista el `hosts` de tu manifiesto, por `https`, en
 cada salto de redirección.** Nunca a un host aprobado mientras el plugin corre, nunca a un servidor
 que la persona escribió en tus ajustes, y ni `streamHosts: "any"` ni `liveStreamHosts: "any"` llegan
-hasta ahí. Un salto a cualquier otra parte falla como `host_not_allowed`: "este plugin no puede
-enviar datos sellados a `<host>`" para un host que no declaraste, "... sin https a `<host>`" para
-`http` plano aunque el host esté declarado.
+hasta ahí. Un salto a cualquier otra parte falla como `host_not_allowed`: "this plugin can't
+send sealed data to `<host>`" para un host que no declaraste, "... without https to `<host>`" para
+`http` plano aunque el host esté declarado. (Son los mensajes de Kino 0.9.54; 0.9.53 y anteriores los dicen en español. Compara el `code`.)
 
 **`kino.crypto`.** Un marcador puede ser la `key` *completa* de un `encrypt`/`decrypt` AES --
 exactamente un marcador, nada más en el texto -- o parte de una `key` más larga de HMAC o del
-`password`/`salt` de PBKDF2. Siempre se rechaza, con "no se puede usar un dato sellado aquí", como
+`password`/`salt` de PBKDF2. Siempre se rechaza, con "a sealed value can't be used here", como
 `data`, `iv` o `aad`, como parte de una `key` de cifrado más larga, y como llave de un cifrado que no
 es AES (`des-ede3-*`) -- salvo una [llave de cifrado con tipo](manifest.md#typed-keys) (apiVersion 6),
 que sirve como llave completa de cualquier cifrado, `des-ede3` incluido, y de nada más. No es una raya arbitraria: un `iv` o un `aad` conocidos bajo una llave sellada
@@ -400,8 +400,8 @@ Una puerta de solo lectura a la API v3 de TMDB. Tu plugin nunca lleva una llave:
    Kino, o el 429 de TMDB) o `unavailable` (TMDB rechazó la llave de Kino).
 
 `no_tmdb_key` queda para una versión de Kino sin llave propia y una persona sin llave: `e.userMessage` es entonces la
-frase de Kino para la persona, en su idioma: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio
-configurado con tu llave." / "Add your TMDB key in Settings, or install a Stremio TMDB addon set up with your key." Si no
+frase de Kino para la persona, en su idioma: "Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB" /
+"Add your TMDB key in Settings ▸ Your TMDB key" (Kino 0.9.53 también mencionaba un addon de TMDB de Stremio). Si no
 la atrapas, la persona lee esa misma frase. En esa versión, una llave de la persona que TMDB rechaza también es
 `no_tmdb_key`.
 

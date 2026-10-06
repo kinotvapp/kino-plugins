@@ -11,7 +11,7 @@ kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks Eng
 ### `kino.lang`: the person's language { #lang }
 
 `kino.lang` is the language Kino speaks to the person. Up to Kino 0.9.53 it is always `"es-CO"`. From **Kino 0.9.54**
-(not released yet) it follows the app's language: `"es-CO"` while Kino is in Spanish, `"en-US"` while it is in English.
+it follows the app's language: `"es-CO"` while Kino is in Spanish, `"en-US"` while it is in English.
 The person picks it in Ajustes ▸ App ▸ Idioma (Automático, Español or English, synced between their devices);
 Automático speaks Spanish on a device set to any Spanish and English on any other. No new `apiVersion` and nothing to
 feature-detect: read it where you need it.
@@ -145,12 +145,12 @@ refused rather than sent.
 **Where that request may go: only a host your manifest's `hosts` lists, over `https`, on every
 redirect hop.** Never a host approved while the plugin runs, never a server the person typed into
 your settings, and neither `streamHosts: "any"` nor `liveStreamHosts: "any"` extends to it. A hop
-anywhere else fails as `host_not_allowed`: "este plugin no puede enviar datos sellados a `<host>`"
-for a host you did not declare, "... sin https a `<host>`" for plain `http` even on a declared one.
+anywhere else fails as `host_not_allowed`: "this plugin can't send sealed data to `<host>`"
+for a host you did not declare, "... without https to `<host>`" for plain `http` even on a declared one. (These messages are Kino 0.9.54's; 0.9.53 and older word them in Spanish. Match on `code`.)
 
 **`kino.crypto`.** A marker may be the *entire* `key` of an AES `encrypt`/`decrypt` -- exactly one
 marker, nothing else in the string -- or part of a longer HMAC `key` or PBKDF2 `password`/`salt`. It
-is always refused, with "no se puede usar un dato sellado aquí", as `data`, `iv` or `aad`, as part of
+is always refused, with "a sealed value can't be used here", as `data`, `iv` or `aad`, as part of
 a longer cipher `key`, and as the key of a non-AES cipher (`des-ede3-*`) -- except a
 [typed cipher key](manifest.md#typed-keys) (apiVersion 6), which is the whole key of any cipher,
 `des-ede3` included, and nothing else. That is not an arbitrary
@@ -367,8 +367,8 @@ A read-only door to TMDB's v3 API. Your plugin never holds a key: Kino brings on
    TMDB's 429) or `unavailable` (TMDB refused Kino's key).
 
 `no_tmdb_key` is left for a Kino build with no key of its own and a person with none either: `e.userMessage` is then Kino's
-own sentence for the person, in their language: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio
-configurado con tu llave." / "Add your TMDB key in Settings, or install a Stremio TMDB addon set up with your key." Uncaught,
+own sentence for the person, in their language: "Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB" /
+"Add your TMDB key in Settings ▸ Your TMDB key" (Kino 0.9.53 also pointed to a Stremio TMDB addon). Uncaught,
 the person reads that same sentence. On such a build, a person's key TMDB refuses is `no_tmdb_key` too.
 
 A key your plugin keeps in its own settings (a `tmdbKey` setting) stays your plugin's business: Kino never reads it for

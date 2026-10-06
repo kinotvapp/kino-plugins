@@ -149,7 +149,7 @@ la página. Sin ellos, la mayoría de estos servidores responden 403.
 
 ### Todas las coincidencias, una cookie, una respuesta al acabarse el tiempo (Kino 0.9.54) { #capture-all }
 
-Cuatro opciones más, sin `apiVersion` nuevo: Kino 0.9.54 (todavía no publicada) y posteriores las aceptan, un Kino
+Cuatro opciones más, sin `apiVersion` nuevo: Kino 0.9.54 y posteriores las aceptan, un Kino
 anterior las ignora y hace una captura normal. Comprueba `kino.browser.captureAll === true` antes de contar con ellas
 (`node sdk/validate.mjs` avisa cuando no lo haces).
 

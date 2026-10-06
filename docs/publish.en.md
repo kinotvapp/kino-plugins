@@ -155,7 +155,7 @@ To be listed:
 3. Kino searches at most every 12 hours per device (and when the person taps "Actualizar"), and shows
    the matches in their own tab of the Plugins screen, "De la comunidad" (beside Recomendados; in
    "Elige tus fuentes", after the recommended plugins). Up to Kino 0.9.53 it keeps only the 30
-   most-starred matches. From **Kino 0.9.54** (not released yet) it reads them 100 at a time, the
+   most-starred matches. From **Kino 0.9.54** it reads them 100 at a time, the
    person picks the order ("Populares" or "Recientes"), "Cargar más" reads the next 100, and "Buscar
    en GitHub" finds a plugin by name: see [From Kino 0.9.54](#discovery-0954).
    Installing one goes through the same consent sheet as any other plugin.
@@ -227,7 +227,7 @@ What the list above describes is Kino 0.9.53 and older.
 
 #### From Kino 0.9.54 { #discovery-0954 }
 
-(Not released yet.) The rules a repository must meet do not change; what changes is how many
+The rules a repository must meet do not change; what changes is how many
 matches the app reads and in which order:
 
 - **100 at a time, in the order the person picks.** The app reads one page of GitHub's search, 100

@@ -1,6 +1,6 @@
 # CloudStream plugins
 
-**Kino 0.9.54 (not released yet).** Kino can install the plugins of a CloudStream repository without
+**Kino 0.9.54.** Kino can install the plugins of a CloudStream repository without
 anyone writing a Kino plugin: each plugin the person picks is converted, on the device, into a Kino
 plugin that talks to a **complement**, a separate app where the CloudStream code runs. This page covers
 how people add them, how each part maps, and where it stops. It is useful if you maintain a CloudStream
@@ -11,8 +11,9 @@ none of it to write your own plugin.
 
 1. In Ajustes ▸ Plugins, "Agregar plugin", the person pastes the repository's address: the URL of its
    `repo.json` (an object with `pluginLists`) or of a `plugins.json` (the plugin list itself). The
-   `cloudstreamrepo://…` and `https://cs.repo/…` links repositories are shared with work too: Kino
-   reduces them to the `https` URL of the JSON.
+   `cloudstreamrepo://…` and `https://cs.repo/?…` links repositories are shared with work too (Kino
+   reduces them to the `https` URL of the JSON), and so does the repository's
+   [short code](#short-code).
 2. The address must be `https`, on a public host (never `http`, a local IP, `localhost` or a home
    network name), with no user name or password, end in `.json` and be at most 500 characters. If it is
    not a CloudStream repository, Kino tries Nuvio and a Kino plugin, as with any pasted address.
@@ -37,6 +38,28 @@ none of it to write your own plugin.
    plugin becomes **its own Kino plugin**, in Ajustes ▸ Plugins like any other, and the repository stays
    in the "Repositorios de CloudStream" list under its own name (the `repo.json`'s `name`). "Quitar" on a
    repository asks first and does not uninstall its plugins: they stay and keep updating.
+
+### With a short code { #short-code }
+
+In the same box, the person can type a repository's **short code**, as in CloudStream: only letters,
+digits, `_`, `-` and `!` (at most 64 characters; an address is never a code). A code that starts with
+`!` is a **py.md** link (`!abc` is `https://py.md/abc`); any other is a **cutt.ly** link (`abc` is
+`https://cutt.ly/abc`).
+
+- Kino asks the shortener **once**, with no cookies or credentials and 10 s at most, and **does not
+  follow the redirect**: it only reads where it points. No other page of the shortener is opened.
+- That target is checked like an address pasted by hand (also when it is a `cloudstreamrepo://` link):
+  it must be a public `https` URL, with no user name or password, ending in `.json`. If not, "Ese
+  código lleva a una dirección que Kino no abre…" ("That code leads to an address Kino doesn't open:
+  only https repositories outside the home network.").
+- Before reading anything from the repository, Kino shows the address the code leads to so the person
+  confirms it: "¿Abrir este repositorio?" ("Open this repository?"), the URL, and "Ábrelo solo si
+  confías en quien te pasó el código." ("Open it only if you trust whoever gave you the code."). Only
+  "Abrir" ("Open") goes on as in step 3.
+- An unknown code says "That code doesn't lead to any CloudStream repository. Check that it's spelled
+  right."; offline, or when the shortener fails, "Couldn't look up the code. Check your connection and
+  try again." (each in the app's language).
+- Neither the code nor its target goes to the logs.
 
 ## The complement { #complement }
 
@@ -101,6 +124,23 @@ A title listed as a movie that has a single episode (an `NSFW` title, a mislabel
 first one. The adapter keeps the `load` answer of the last few titles for a few minutes, so the page
 and the "Reproducir" right after it cost one call.
 
+## A plugin's settings { #settings }
+
+Some CloudStream plugins bring a settings screen of their own (the one the plugin's gear opens in
+CloudStream). In Kino it is in Ajustes ▸ Plugins, the plugin's "Gestionar" ▸ **"Ajustes del plugin"**
+("Plugin settings"):
+
+- **Only on a phone or a tablet.** On a TV the entry does not appear.
+- Only when the complement said, while loading the installed version, that the plugin has settings, and
+  while the complement is ready.
+- The screen is the plugin's own: the complement shows it over Kino, one at a time ("Some settings are
+  already open"). When it is saved, Kino reads again what it shows from that plugin.
+- The values live in the plugin's storage ([`kino.storage`](kino-api.md#storage)), so they sync to the
+  person's other devices like the rest of its state.
+- When something goes wrong, the plugin's card says so: "This plugin's settings failed", "The plugin
+  didn't answer", "This plugin isn't compatible with the companion" or "Couldn't open the settings.
+  Try again".
+
 ## Limits that differ from a hand-written plugin { #limits }
 
 - List calls (`search`, `home`, `browse`, `episodes`, `details`) get **45 s**
@@ -147,3 +187,8 @@ device waits until it has the complement to install it.
 - Return `VIDEO`, `M3U8` or `DASH` links with a `quality` and a clear `name`: it is their label in the
   Servidor menu.
 - Use `status: 0` to withdraw a plugin: it is switched off on the devices that already have it.
+- You can publish a cutt.ly [short code](#short-code) for your repository (or a py.md one, typed with a
+  leading `!`): its redirect must lead **straight** to your `repo.json`'s `https` URL (or to a
+  `cloudstreamrepo://` link), because Kino never follows a second redirect of the shortener.
+- If your plugin has a settings screen, people open it in Kino from a phone or a tablet, never from a
+  TV: make the plugin work with its default values.

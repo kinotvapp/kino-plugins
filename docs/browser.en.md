@@ -143,7 +143,7 @@ served what the page would have been. Without them most of these servers answer 
 
 ### Every match, a cookie, an answer on timeout (Kino 0.9.54) { #capture-all }
 
-Four more options, with no new `apiVersion`: Kino 0.9.54 (not released yet) and later take them, older Kino ignores
+Four more options, with no new `apiVersion`: Kino 0.9.54 and later take them, older Kino ignores
 them and runs a plain capture. Check `kino.browser.captureAll === true` before relying on them (`node sdk/validate.mjs`
 warns when you don't).
 

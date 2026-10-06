@@ -44,7 +44,7 @@ Desde apiVersion 6, además:
 | `kino.log.report` | un reporte por plugin y área por hora, 3 por plugin hasta que Kino se reinicia; área de máximo 24 caracteres |
 | `telemetry: "verbose"` | 60 eventos por plugin hasta que Kino se reinicia, uno por minuto por área |
 
-Desde Kino 0.9.54 (todavía no publicada), además:
+Desde Kino 0.9.54, además:
 
 | Qué | Límite |
 | --- | --- |
