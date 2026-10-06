@@ -20,6 +20,7 @@ nothing on it makes you change your plugin. How to use each one and still run on
 | `kino.lang` in the app's language | Kino 0.9.54 | read `kino.lang`; it was always `"es-CO"` before |
 | `"fetchHosts": "any"` on a hand-written plugin | Kino 0.9.54, `apiVersion` 8 | `kino.fetchAnyHost === true` (approved by the person) |
 | English settings and `section` texts (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.54, any `apiVersion` | nothing to check: an older Kino shows the usual ones |
+| `kino.meta({ type, title, year? })` without ids | Kino 0.9.54, any `apiVersion` | `kino.meta.byTitle === true` |
 
 - **Music and podcasts** (apiVersion 8): an item may be `kind: "music"` (an album, a playlist or a single track) or
   `kind: "podcast"` (a show or an audiobook), with an optional `artist`. With `episodes` declared, Kino asks it for the
@@ -68,6 +69,11 @@ nothing on it makes you change your plugin. How to use each one and still run on
   its `labelEn`, with the same limits as the usual text. With the app in English Kino shows them; the usual text stays
   the Spanish one and the fallback wherever one is missing. Additive: an older Kino ignores these keys.
   [English texts](settings-form.md#english).
+- **`kino.meta` by title.** When your source only gives you the name and the year, `kino.meta({ type, title, year })`
+  looks the title up on TMDB (es-MX, matching the original title too, the exact year or one off) and answers the same
+  as with an id, `ids` included. When two hits tie or none matches it answers `null`: it never guesses. Check
+  `kino.meta.byTitle === true` first; an older Kino answers `invalid_request`.
+  [By title, without ids](kino-api.md#meta-by-title).
 - **Kino's error messages to your code are English** (`e.message` of a `kino.fetch` failure, `kino.storage`,
   `kino.html`, the signing rules) and may change: match on `e.code`, never on the text. The manifest refusals the
   person reads at install stay as they were. [Errors your code can catch](kino-api.md#catch).

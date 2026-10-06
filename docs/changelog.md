@@ -20,6 +20,7 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
 | `kino.lang` en el idioma de la app | Kino 0.9.54 | lee `kino.lang`; antes siempre era `"es-CO"` |
 | `"fetchHosts": "any"` en un plugin escrito a mano | Kino 0.9.54, `apiVersion` 8 | `kino.fetchAnyHost === true` (aprobado por la persona) |
 | Textos de ajustes y de `section` en inglés (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.54, cualquier `apiVersion` | nada que revisar: un Kino anterior muestra los de siempre |
+| `kino.meta({ type, title, year? })` sin ids | Kino 0.9.54, cualquier `apiVersion` | `kino.meta.byTitle === true` |
 
 - **Música y podcasts** (apiVersion 8): un ítem puede ser `kind: "music"` (un álbum, una lista o una sola pista) o
   `kind: "podcast"` (un programa o un audiolibro), con un `artist` opcional. Con `episodes` declarada, Kino le pide
@@ -71,6 +72,11 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
   `section` del manifiesto su `labelEn`, con los mismos límites que el texto de siempre. Con la app en inglés Kino los
   muestra; el texto de siempre sigue siendo el español y el de respaldo donde falte uno. Es aditivo: un Kino anterior
   ignora estas claves. [Textos en inglés](settings-form.md#english).
+- **`kino.meta` por título.** Si tu fuente solo te da el nombre y el año, `kino.meta({ type, title, year })` busca el
+  título en TMDB (es-MX, comparando también con el título original, el año exacto o a un año) y responde lo mismo que
+  con un id, `ids` incluidos. Si dos resultados empatan o ninguno coincide responde `null`: nunca adivina. Revisa
+  `kino.meta.byTitle === true` antes; un Kino anterior responde `invalid_request`.
+  [Por título, sin ids](kino-api.md#meta-by-title).
 - **Los mensajes de error de Kino para tu código están en inglés** (el `e.message` de una falla de `kino.fetch`,
   `kino.storage`, `kino.html`, las reglas de la firma) y pueden cambiar: compara con `e.code`, nunca con el texto. Los
   rechazos del manifiesto que la persona lee al instalar quedan como estaban.

@@ -378,9 +378,39 @@ un error.
   versiones anteriores no tienen esa función, así que compruébala (`typeof kino.meta === "function"`).
   `node sdk/validate.mjs` avisa si tu código la llama sin esa comprobación.
 
+### Por título, sin ids (Kino 0.9.54) { #meta-by-title }
+
+```js
+if (typeof kino.meta === "function" && kino.meta.byTitle === true) {   // Kino 0.9.54 o superior
+  const m = await kino.meta({ type: "movie", title: "Matrix", year: 1999 });
+  if (m) console.log(m.ids.tmdb, m.ids.imdb);                            // 603, "tt0133093"
+}
+```
+
+Cuando tu fuente solo te da el nombre y el año, pásaselos a Kino en vez de los ids: `{ type, title, year?, lang? }`.
+
+- **Cómo lo busca**: Kino busca el título en TMDB (la búsqueda de películas o la de series según `type`, en español
+  es-MX, la primera página) y se queda con el resultado cuyo título en español o título original es igual al tuyo, sin
+  mayúsculas, tildes ni signos («¡Amélie!» y «amelie» son el mismo). Con `year`, gana el de ese año exacto; si no hay,
+  uno que esté a un año (la fecha de estreno puede variar según el país). Una película nunca responde por una serie, ni
+  al revés.
+- **Nunca adivina**: si dos resultados empatan (el mismo título y el mismo año, o el mismo título y no diste año) o
+  ninguno coincide, la respuesta es `null`. Si tienes el año, mándalo: es lo que separa una película de su remake.
+- **La misma respuesta de siempre**: si lo encuentra, responde exactamente como si hubieras preguntado por su id, con
+  `ids` lleno (TMDB, IMDb, TVDB…), y a los plugins `meta` de la persona se les pregunta por esos ids. Mismos límites
+  (30 por minuto, 8 s), y la caché de 30 minutos es por tipo, título normalizado y año.
+- **La consulta**: `title` de 1 a 200 caracteres; `year` de 1870 a 2100 (un número o un texto de 4 dígitos), y solo
+  junto a `title`. Cualquier otra cosa lanza `invalid_request`. Si mandas `ids` y `title`, ganan los ids.
+- **Comprueba `kino.meta.byTitle === true`**: un Kino anterior no conoce `title` y responde `invalid_request` («necesita
+  al menos un id»). `node sdk/validate.mjs` avisa si llamas `kino.meta` con `title` sin esa comprobación.
+
+Con el kit, la búsqueda de TMDB de Kino no existe: el archivo de `KINO_META_FIXTURE` responde con claves
+`"movie:title:the matrix:1999"` (el tipo, `title`, el título normalizado y el año, o sin el año), y `pickMetaTitle` de
+`sdk/kino-shim.mjs` te dice qué escogería Kino entre resultados de TMDB que traigas tú.
+
 Lo contrario -- que tu plugin describa títulos para la ficha de Kino -- es la [capacidad `meta`](contract.md#meta). Con el
 kit de Node, `kino.meta` responde `null` salvo que apuntes `KINO_META_FIXTURE` a un archivo JSON de respuestas (claves
-`"movie:imdb:tt0133093"` o `"tmdb:1399"`; ver [Probar en local](test-locally.md)).
+`"movie:imdb:tt0133093"` o `"tmdb:1399"`, y por título `"movie:title:the matrix:1999"`; ver [Probar en local](test-locally.md)).
 
 ## `await kino.tmdb(path, params?)`: TMDB sin una llave en tu código (Kino 0.9.53) { #tmdb }
 
