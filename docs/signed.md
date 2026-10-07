@@ -47,6 +47,10 @@ se filtra, y no esconde tu código.
 
 ## Cómo firmar, paso a paso { #how }
 
+!!! tip "¿Primera vez?"
+    El tutorial [Firma tu plugin, paso a paso](sign-tutorial.md) recorre todo, desde crear la clave
+    hasta comprobarlo en Kino y publicar cada actualización.
+
 Necesitas el kit de Node que viene con los plugins de ejemplo (la carpeta `sdk/`). Si empezaste
 desde [un ejemplo](examples.md), ya lo tienes.
 

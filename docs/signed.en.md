@@ -45,6 +45,10 @@ if your private key leaks, and it does not hide your code.
 
 ## How to sign, step by step { #how }
 
+!!! tip "First time?"
+    The tutorial [Sign your plugin, step by step](sign-tutorial.md) walks through everything, from creating
+    the key to checking it in Kino and publishing every update.
+
 You need the Node kit that comes with the example plugins (the `sdk/` folder). If you started from
 [an example](examples.md) you already have it.
 
