@@ -135,6 +135,50 @@ need to sign again.
     has your plugin. If your plugin was published unsigned and you start signing it, Kino asks each
     person to approve that update once.
 
+## Sign without thinking: let git sign for you { #auto-sign }
+
+The signature "expiring" with every change is on purpose: it is what stops changed code from being
+published in your name. But you do not have to remember to sign: a git *hook* can do it on every
+commit, on your own computer.
+
+Create the file `.git/hooks/pre-commit` in your repository:
+
+```bash
+#!/bin/sh
+# Signs plugin.js before every commit. The signature must cover what is committed, so plugin.js
+# must have no changes left out of the commit.
+if ! git diff --quiet -- plugin.js kino-plugin.json; then
+  echo "pre-commit: add plugin.js and kino-plugin.json to the commit first (git add plugin.js kino-plugin.json)" >&2
+  exit 1
+fi
+node sdk/seal.mjs --sign --repo your-user/your-plugin --key ~/.config/kino/kino-author-key.pem >/dev/null || exit 1
+git add kino-plugin.json
+```
+
+and make it executable:
+
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+From then on, every update is:
+
+1. Change `plugin.js` and **raise `version`**.
+2. `git commit -am "1.0.1"`: the hook signs and adds the signature to the same commit.
+3. `git tag v1.0.1 && git push origin main v1.0.1`.
+
+- If the hook sees changes to `plugin.js` left out of the commit, it stops: it would sign different
+  code from what you push.
+- Hooks do not travel with the repository: create it once on each computer you publish from.
+- If your plugin lives in a folder of the repository, change the paths (`folder/plugin.js`,
+  `node folder/sdk/seal.mjs … --manifest folder/kino-plugin.json`) and the `--repo`
+  (`your-user/your-repo/folder`).
+
+!!! danger "Do not sign in GitHub Actions"
+    Signing in the cloud means storing your private key in the repository's secrets, and whoever
+    gets into your GitHub account could sign as you: exactly what the signature must prevent. Always
+    sign on your own computer.
+
 ## Quick checklist { #checklist }
 
 - [ ] The key is outside the repository and backed up.

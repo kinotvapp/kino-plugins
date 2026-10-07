@@ -136,6 +136,50 @@ otra vez.
     plugin. Si tu plugin estaba publicado sin firma y empiezas a firmarlo, Kino le pide a cada persona
     aprobar esa actualización una vez.
 
+## Firmar sin pensarlo: que git firme por ti { #auto-sign }
+
+Que la firma "se venza" con cada cambio es a propósito: es lo que impide publicar código cambiado a
+tu nombre. Pero no tienes que acordarte de firmar: un *hook* de git puede hacerlo en cada commit, en
+tu propio computador.
+
+Crea el archivo `.git/hooks/pre-commit` en tu repositorio:
+
+```bash
+#!/bin/sh
+# Firma plugin.js antes de cada commit. La firma tiene que cubrir lo que se sube, así que
+# plugin.js no puede tener cambios fuera del commit.
+if ! git diff --quiet -- plugin.js kino-plugin.json; then
+  echo "pre-commit: agrega plugin.js y kino-plugin.json al commit (git add plugin.js kino-plugin.json)" >&2
+  exit 1
+fi
+node sdk/seal.mjs --sign --repo tu-usuario/tu-plugin --key ~/.config/kino/kino-author-key.pem >/dev/null || exit 1
+git add kino-plugin.json
+```
+
+y dale permiso de ejecución:
+
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+Desde ahí, cada actualización es:
+
+1. Cambia `plugin.js` y **sube `version`**.
+2. `git commit -am "1.0.1"`: el hook firma y agrega la firma al mismo commit.
+3. `git tag v1.0.1 && git push origin main v1.0.1`.
+
+- Si el hook ve cambios de `plugin.js` sin agregar al commit, se detiene: firmaría un código distinto
+  del que subes.
+- Los hooks no viajan con el repositorio: lo creas una vez en cada computador desde el que publicas.
+- Si tu plugin vive en una carpeta del repositorio, cambia las rutas (`carpeta/plugin.js`,
+  `node carpeta/sdk/seal.mjs … --manifest carpeta/kino-plugin.json`) y el `--repo`
+  (`tu-usuario/tu-repo/carpeta`).
+
+!!! danger "No firmes en GitHub Actions"
+    Para firmar en la nube tendrías que guardar tu clave privada en los secretos del repositorio, y
+    quien entre a tu cuenta de GitHub podría firmar como tú: justo lo que la firma debe impedir. Firma
+    siempre en tu computador.
+
 ## Lista rápida { #checklist }
 
 - [ ] La clave está fuera del repositorio y tiene copia de seguridad.
