@@ -139,6 +139,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
+| [Panel del reproductor](player-panel.md) | `panel`, `panelAction` y `playerEvent`, acciones sobre el reproductor y `settingsLayout` (apiVersion 9) |
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |
