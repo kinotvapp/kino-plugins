@@ -42,8 +42,8 @@ y en un Kino anterior no existe (`undefined`). Úsalo para decidir antes de pedi
 const url = kino.fetchAnyHost === true ? enlaceDelExtractor : await miRespaldo(enlaceDelExtractor);
 ```
 
-Aun en `true`, la red de la casa sigue rechazada y un [secreto sellado](manifest.md#secrets) solo va a tus `hosts`
-declarados. En el kit de Node es `true` cuando el manifiesto pide `"fetchHosts": "any"` con `apiVersion` 9 (el kit da
+Aun en `true`, un host que no declaraste solo se alcanza por `https` en el puerto 443 (y con un cupo de peticiones), la red
+de la casa sigue rechazada y un [secreto sellado](manifest.md#secrets) solo va a tus `hosts` declarados ([las reglas](manifest.md#fetch-hosts)). En el kit de Node es `true` cuando el manifiesto pide `"fetchHosts": "any"` con `apiVersion` 9 (el kit da
 la aprobación por hecha).
 
 Kino también pone los globales web que le faltan a QuickJS, escritos en JavaScript y congelados:
@@ -121,7 +121,8 @@ tiempo de tu llamada. Pide la forma que tiene el contenido.
 
 | `e.code` | Cuándo |
 | --- | --- |
-| `host_not_allowed` | el host (o un salto de redirección) no es uno que declaraste o que escribió la persona, o es `http` en un host declarado que no está marcado `insecureHttp`; con [`fetchHosts`](manifest.md#fetch-hosts) aprobado, solo una dirección de la red de la casa |
+| `host_not_allowed` | el host (o un salto de redirección) no es uno que declaraste o que escribió la persona, o es `http` en un host declarado que no está marcado `insecureHttp`; con [`fetchHosts`](manifest.md#fetch-hosts) aprobado, un host que llega solo por ese permiso por `http`, por un puerto distinto de 443 o con un nombre de una sola etiqueta, o una dirección de la red de la casa |
+| `rate_limited` | con [`fetchHosts`](manifest.md#fetch-hosts) aprobado, demasiadas peticiones a hosts que llegan solo por ese permiso: más de 60 por minuto a un mismo sitio o 600 cada 10 minutos en total (250 y 2500 en un plugin convertido de Nuvio) |
 | `timeout` | no llegó una respuesta completa dentro de `timeoutMs` |
 | `network` | la conexión falló, o hubo demasiadas redirecciones |
 | `too_large` | la petición pasa del tope de tamaño, o un cuerpo de más de 5 MB |
@@ -507,7 +508,7 @@ inglés desde Kino 0.9.54).
 
 | Dónde | `e.code` |
 | --- | --- |
-| `kino.fetch` | `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request` ([la tabla](#fetch)) |
+| `kino.fetch` | `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request`, y `rate_limited` con `fetchHosts` ([la tabla](#fetch)) |
 | `kino.crypto` | `crypto_error` |
 | `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
 | `kino.browser.page` | los mismos, más `rate_limited` ([Navegador oculto](browser.md#page)) |

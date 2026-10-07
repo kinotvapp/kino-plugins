@@ -18,10 +18,13 @@ ignores them, as an older version does.
 
 - **`"fetchHosts": "any"` for your plugin** (apiVersion 9): until now Kino honoured it only on the Nuvio scrapers it
   converts. From Kino 0.9.55 a hand-written plugin with `"apiVersion": 9` and `"fetchHosts": "any"` may reach any public
-  host with `kino.fetch` (over `http` or `https`, redirects included), for sites and extractors that rotate domains.
-  The person approves it in red ("Puede conectarse a cualquier servidor de internet") and an update that adds it waits
-  for that approval again, the first start after a Kino update included; the home network stays refused and a sealed
-  secret only goes to your `hosts`. `kino.fetchAnyHost` is `true` when it is active (`false` otherwise; `undefined` on
+  host you did not declare with `kino.fetch` (redirects included), only over `https` on port 443 and at a dotted name
+  or a public IPv4 address, for sites and extractors that rotate domains. Those requests spend a budget per plugin
+  (60 a minute to one site, 600 every 10 minutes; over it, `rate_limited`); your declared `hosts` keep their own rules
+  and spend none of it, so declare your primary sites. The person approves it in red ("Puede conectarse a cualquier
+  servidor público de internet (solo https, nunca tu red local)") and an update that adds it waits for that approval
+  again, the first start after a Kino update included; the home network stays refused and a sealed secret only goes
+  to your `hosts`. On hidden pages, the start address and every top-level navigation follow the same rule. `kino.fetchAnyHost` is `true` when it is active (`false` otherwise; `undefined` on
   an older Kino). Below apiVersion 9 nothing changes. [Reaching any server](manifest.md#fetch-hosts).
 - **Your settings form and your section, in English too** (apiVersion 9). Every setting may carry `labelEn` and
   `hintEn` (an `action` with `confirm`, also `confirmEn`), every `select` option and `list` field its `labelEn`, and

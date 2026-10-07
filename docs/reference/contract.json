@@ -3,7 +3,7 @@
   "apiVersion": 9,
   "maxApiVersion": 9,
   "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54", "9": "0.9.55" },
-  "additiveFromApp": { "kino.meta": "0.9.53", "kino.tmdb": "0.9.53", "catalogOnly": "0.9.54", "kino.browser.captureAll": "0.9.54", "kino.fetchAnyHost": "0.9.55",
+  "additiveFromApp": { "kino.meta": "0.9.53", "kino.tmdb": "0.9.53", "catalogOnly": "0.9.54", "kino.browser.captureAll": "0.9.54", "fetch.errorHost": "0.9.55", "kino.fetchAnyHost": "0.9.55",
     "kino.meta.byTitle": "0.9.55" },
   "capabilities": {
     "names": ["search", "home", "browse", "episodes", "resolve", "download", "drm", "channels", "migrate", "scopedSearch", "meta", "subtitles", "tracking", "segments"],
@@ -14,7 +14,7 @@
     "declarative": ["download", "drm", "scopedSearch"],
     "apiVersions": { "download": 2, "drm": 2, "channels": 3, "migrate": 6, "scopedSearch": 6, "meta": 6, "tracking": 7, "segments": 7 },
     "requires": { "scopedSearch": "search" },
-    "requiresMessage": "La capacidad \"{capability}\" necesita también \"{requires}\"",
+    "requiresMessage": "The \"{capability}\" capability also needs \"{requires}\"",
     "needsApproval": ["download", "drm", "channels", "migrate", "tracking"],
     "exports": { "channels": ["liveCategories", "liveChannels"], "tracking": ["track"] },
     "optionalExports": { "channels": ["guide", "liveSearch"], "resolve": ["sign"] }
@@ -39,17 +39,17 @@
     "maxPathChars": 200,
     "liveStreamHosts": { "value": "any", "apiVersion": 3, "requires": "channels" },
     "streamHosts": { "value": "any", "apiVersion": 4 },
-    "fetchHosts": { "value": "any", "apiVersion": 4, "handWrittenApiVersion": 9, "consentLine": "Puede conectarse a cualquier servidor de internet" },
+    "fetchHosts": { "value": "any", "apiVersion": 4, "handWrittenApiVersion": 9, "consentLine": "Puede conectarse a cualquier servidor público de internet (solo https, nunca tu red local)" },
     "discoverable": { "default": true },
-    "categories": { "values": ["movies", "series", "anime", "live", "radio", "subtitles", "utilities", "adult"], "message": "El campo \"categories\" debe ser una lista sin repetidos de: movies, series, anime, live, radio, subtitles, utilities, adult" },
+    "categories": { "values": ["movies", "series", "anime", "live", "radio", "subtitles", "utilities", "adult"], "message": "The \"categories\" field must be a list without repeats of: movies, series, anime, live, radio, subtitles, utilities, adult" },
     "catalogOnly": {
       "$comment": "\"catalogOnly\": true (Kino 0.9.54, additive: no apiVersion, valid at every one, an older Kino ignores the field). The plugin lists and describes titles and plays none: resolve is not required, one of atLeastOneOf is, forbiddenCapabilities and forbiddenFields (streamHosts, and browser only as true: \"pages\" reads pages for the catalog) are refused. Kino never calls its resolve, never lists it as a source of a title (search, Ver otras fuentes, Buscar dónde verlo, the player's Servidor) and sends its titles to the person's other sources. For Kino 0.9.53 and older also declare and export resolve (throwing not_found) and search or home.",
-      "notBooleanMessage": "El campo \"catalogOnly\" debe ser true o false",
+      "notBooleanMessage": "The \"catalogOnly\" field must be true or false",
       "atLeastOneOf": ["home", "browse", "search", "meta"],
-      "atLeastOneOfMessage": "Un plugin \"catalogOnly\" debe declarar \"home\", \"browse\", \"search\" o \"meta\"",
+      "atLeastOneOfMessage": "A \"catalogOnly\" plugin must declare \"home\", \"browse\", \"search\" or \"meta\"",
       "forbiddenCapabilities": ["download", "drm", "channels"],
       "forbiddenFields": ["streamHosts", "browser"],
-      "forbidsMessage": "Un plugin \"catalogOnly\" no puede declarar \"{name}\": no reproduce videos",
+      "forbidsMessage": "A \"catalogOnly\" plugin can't declare \"{name}\": it doesn't play videos",
       "consentLine": { "es": "Solo catálogo: no reproduce videos", "en": "Catalog only: doesn't play videos" },
       "playerMessage": { "es": "{name} solo muestra el catálogo: no reproduce videos. Busca este título en tus otras fuentes.", "en": "{name} only shows the catalog: it doesn't play videos. Look for this title in your other sources." },
       "resolveNote": "catalogOnly: Kino {fromApp} y posteriores nunca llaman resolve ni sign; solo un Kino anterior, que no conoce el campo",
@@ -59,9 +59,16 @@
       }
     },
     "debug": { "apiVersion": 6, "default": false, "switchLabel": "Modo debug", "switchHint": "Muestra los errores de este plugin en pantalla y guarda un registro que puedes compartir con su autor.", "defaultOnNote": "Modo debug encendido de entrada (\"debug\": true): quien instale el plugin verá sus errores en pantalla y se guardará su registro hasta que apague el interruptor en Ajustes. Sin el campo, cada persona puede encenderlo cuando quiera enviarte un registro" },
-    "browser": { "apiVersion": 6, "consentLine": "Puede abrir páginas web ocultas para encontrar el video", "notBooleanMessage": "El campo \"browser\" debe ser true, false o \"pages\"", "pageApiVersion": 6, "pagesValue": "pages", "pageConsentLine": "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video" },
-    "telemetry": { "apiVersion": 6, "consentLine": "Comparte con Kino registros de errores y datos técnicos de algunas reproducciones para corregir fallas", "notBooleanMessage": "El campo \"telemetry\" debe ser true, false o \"verbose\"", "switchLabel": "Enviar registros de errores y de reproducción", "report": { "windowSeconds": 3600, "areaMaxChars": 24, "areaPattern": "^(?=[a-z0-9_:]*[_:])[a-z0-9_:]{1,24}$", "otherArea": "other", "perPluginPerSession": 3, "sessionShare": 10 }, "verbose": { "value": "verbose", "consentLine": "Comparte registros detallados de reproducción y errores con Kino para corregir fallas", "successSample": 0.25, "perPluginPerSession": 60, "areaWindowSeconds": 60 }, "logcat": { "playTag": "KinoPlay", "pluginTagPrefix": "KinoPlugin/" } },
+    "browser": { "apiVersion": 6, "consentLine": "Puede abrir páginas web ocultas para encontrar el video", "notBooleanMessage": "The \"browser\" field must be true, false or \"pages\"", "pageApiVersion": 6, "pagesValue": "pages", "pageConsentLine": "Puede abrir páginas web ocultas para mostrar contenido y encontrar el video" },
+    "telemetry": { "apiVersion": 6, "consentLine": "Comparte con Kino registros de errores y datos técnicos de algunas reproducciones para corregir fallas", "notBooleanMessage": "The \"telemetry\" field must be true, false or \"verbose\"", "switchLabel": "Enviar registros de errores y de reproducción", "report": { "windowSeconds": 3600, "areaMaxChars": 24, "areaPattern": "^(?=[a-z0-9_:]*[_:])[a-z0-9_:]{1,24}$", "otherArea": "other", "perPluginPerSession": 3, "sessionShare": 10 }, "verbose": { "value": "verbose", "consentLine": "Comparte registros detallados de reproducción y errores con Kino para corregir fallas", "successSample": 0.25, "perPluginPerSession": 60, "areaWindowSeconds": 60 }, "logcat": { "playTag": "KinoPlay", "pluginTagPrefix": "KinoPlugin/" } },
     "section": { "apiVersion": 6, "labelMaxChars": 20, "export": "section" },
+    "panel": {
+      "apiVersion": 9, "labelMaxChars": 24, "exports": { "panel": "panel", "action": "panelAction", "event": "playerEvent" },
+      "icons": ["info", "tune", "settings", "star", "bolt", "language", "subtitles", "list", "magic", "heart", "movie", "tv", "sports", "music", "bookmark", "help"],
+      "defaultIcon": "tune",
+      "iconFile": { "sizePx": 96, "maxBytes": 24576, "storedName": "panel-icon.png", "refusal": "The panel icon must be a 96×96 px PNG with a transparent background, at most 24 KB" }
+    },
+    "settingsLayout": { "apiVersion": 9 },
     "theme": {
       "apiVersion": 6,
       "tokens": ["accent", "onAccent", "background", "surface", "highlight"],
@@ -75,7 +82,7 @@
       "minBrandDeltaE": 25
     },
     "secrets": { "apiVersion": 4, "namePattern": "^[A-Za-z][A-Za-z0-9_]{0,31}$", "maxSecrets": 16, "maxValueBytes": 4096, "prefix": "kino-sealed:v1:", "largeApiVersion": 6, "largeMaxValueBytes": 8192, "typed": { "apiVersion": 6, "uses": ["cipher-key"], "keyEncodings": ["hex", "base64"], "keyBytes": [16, 24, 32] } },
-    "signature": { "apiVersion": 5, "fromApp": "0.9.45", "domain": "kino-signed-entry:v1", "authorKeyHexChars": 64, "valueHexChars": 128, "consentLine": "Firmado por su autor", "authorKeyLabel": "Clave del autor", "badFieldMessage": "El campo \"signature\" debe ser { \"authorKey\": 64 caracteres hex, \"value\": 128 caracteres hex } (node sdk/seal.mjs --sign)", "badSignatureMessage": "La firma del autor no es válida: el código no es el que firmó, o no es para este repositorio, este plugin o esta versión" }
+    "signature": { "apiVersion": 5, "fromApp": "0.9.45", "domain": "kino-signed-entry:v1", "authorKeyHexChars": 64, "valueHexChars": 128, "consentLine": "Firmado por su autor", "authorKeyLabel": "Clave del autor", "badFieldMessage": "The \"signature\" field must be { \"authorKey\": 64 hex characters, \"value\": 128 hex characters } (node sdk/seal.mjs --sign)", "badSignatureMessage": "La firma del autor no es válida: el código no es el que firmó, o no es para este repositorio, este plugin o esta versión" }
   },
   "hostRules": {
     "labelPattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
@@ -123,6 +130,9 @@
   "output": {
     "section": { "apiVersion": 6, "maxTabs": 8, "maxTabLabelChars": 24, "maxHeroTextChars": 300 },
     "categories": { "apiVersion": 6, "export": "categories", "maxCategories": 24, "maxTitleChars": 40 },
+    "panel": { "maxTopElements": 40, "maxTitleChars": 60, "maxMessageChars": 160, "maxTabs": 6, "maxTabLabelChars": 24, "maxQrUrlChars": 512, "minRefreshMs": 2000, "maxRefreshMs": 60000, "maxStatusChars": 200, "maxLabelChars": 40, "maxConfirmChars": 160, "maxHintChars": 80, "maxPlaceholderChars": 40, "maxAltChars": 200, "maxValueChars": 500, "maxSaveKeys": 50, "maxOptions": 20, "maxOptionChars": 40 },
+    "layout": { "maxDepth": 4, "maxRowChildren": 6, "maxNodes": 120, "maxCardTitleChars": 60, "maxTextChars": 1000, "maxLogLines": 10 },
+    "player": { "speeds": [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], "minSeekStepMs": 5000, "maxSeekStepMs": 120000, "maxMarkers": 30, "maxMarkerLabelChars": 24, "maxCountdownS": 30, "resizes": ["fit", "fill", "zoom", "4:3", "16:9", "21:9"] },
     "details": { "apiVersion": 8, "fromApp": "0.9.54", "export": "details", "capability": null, "askedFor": "movie", "fields": ["title", "poster", "backdrop", "overview", "ids", "genres", "year", "rating", "runtimeMinutes"], "seriesFields": ["rating", "runtimeMinutes", "ids.mal", "ids.anilist", "ids.kitsu"], "ids": ["tmdb", "imdb", "mal", "anilist", "kitsu"], "reservedExportFromApiVersion": 8 },
     "meta": { "apiVersion": 6, "fromApp": "0.9.51", "fields": ["logo", "ratings", "cast"], "ratingSources": ["imdb", "tmdb", "rottentomatoes", "metacritic", "letterboxd", "mal", "anilist", "trakt"], "maxRatings": 6, "ratingValuePattern": "^\\d{1,3}([.,]\\d{1,2})?(%|/\\d{1,3})?$", "maxCast": 20, "maxCastNameChars": 60, "maxEpisodes": 5000, "maxRatingSourceChars": 20, "yearReadChars": 9, "yearPattern": "\\d{4}", "minEpisodeSeason": 0, "answerFields": ["title", "overview", "poster", "backdrop", "episodes", "genres", "logo", "ratings", "cast"], "ratingLabels": { "imdb": "IMDb", "tmdb": "TMDB", "rottentomatoes": "Rotten Tomatoes", "metacritic": "Metacritic", "letterboxd": "Letterboxd", "mal": "MAL", "anilist": "AniList", "trakt": "Trakt" }, "pageCastNames": 5, "cacheTtlMs": 1800000, "maxCachedTitles": 200 },
     "retry": { "apiVersion": 6, "reasons": ["conflict", "expired"], "maxAttempts": 3, "statuses": [401, 403, 409] },
@@ -234,6 +244,9 @@
     "settingsStatus": 10000,
     "action": 30000,
     "section": 20000,
+    "panel": 20000,
+    "panelAction": 20000,
+    "playerEvent": 5000,
     "categories": 20000,
     "validateSettings": 20000,
     "migrate": 10000,
@@ -269,7 +282,22 @@
     "maxInFlight": 6,
     "maxHostQuestionsPerCall": 3,
     "maxRedirects": 10,
-    "errorCodes": ["host_not_allowed", "timeout", "network", "too_large", "invalid_request"]
+    "errorCodes": ["host_not_allowed", "timeout", "network", "too_large", "invalid_request", "rate_limited"],
+    "errorHostField": "host",
+    "maxErrorHostChars": 253,
+    "anyHost": {
+      "$comment": "A host reached ONLY through an approved fetchHosts \"any\" (not declared, not a typed server): https on port 443, a public IPv4 literal or a dotted public name (a single-label name such as router is refused), on every redirect hop and for the hidden page's start address too. Each such request spends a budget on top of maxRequestsPerCall: perSite in perSiteWindowMs (a site is the registrable domain, so its subdomains count together) and perPlugin in perPluginWindowMs, refilled continuously and kept per plugin for the whole app (a runtime that closes and reopens keeps it). nuvioPerSite/nuvioPerPlugin: a converted Nuvio scraper's, scaled with its larger per-call cap. Over budget the request fails with errorCode, never queued. Declared hosts (insecureHttp ones included) and typed servers keep their own rules and never spend it. The hidden page (kino.browser) under the grant: its start address and every later top-level navigation of a capture (always for a CloudStream page) follow one rule: a declared or typed host by its own rules, any other host https on port 443 at a dotted public name (not limited to the plugin's hosts); on the proxy path a main-frame server redirect target may be contacted once before the capture ends blocked (detection, not prevention); subresources stay any public host (never the LAN) and spend no budget. From Kino 0.9.55.",
+      "schemes": ["https"],
+      "port": 443,
+      "singleLabelNames": false,
+      "perSite": 60,
+      "perSiteWindowMs": 60000,
+      "perPlugin": 600,
+      "perPluginWindowMs": 600000,
+      "nuvioPerSite": 250,
+      "nuvioPerPlugin": 2500,
+      "errorCode": "rate_limited"
+    }
   },
   "browser": {
     "apiVersion": 6,

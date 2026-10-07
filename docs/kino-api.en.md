@@ -37,8 +37,8 @@ on an older Kino it does not exist (`undefined`). Use it to decide before you fe
 const url = kino.fetchAnyHost === true ? extractorLink : await myFallback(extractorLink);
 ```
 
-Even when `true`, the home network stays refused and a [sealed secret](manifest.md#secrets) only goes to your declared
-`hosts`. In the Node kit it is `true` when the manifest asks for `"fetchHosts": "any"` at `apiVersion` 9 (the kit
+Even when `true`, a host you did not declare is reached only over `https` on port 443 (and under a request budget), the home
+network stays refused and a [sealed secret](manifest.md#secrets) only goes to your declared `hosts` ([the rules](manifest.md#fetch-hosts)). In the Node kit it is `true` when the manifest asks for `"fetchHosts": "any"` at `apiVersion` 9 (the kit
 takes the approval as given).
 
 Kino also provides the web globals QuickJS lacks, written in JavaScript and frozen: `URL`,
@@ -103,11 +103,12 @@ seconds of your call's time. Ask for the form the content is.
 <!-- contract:fetchErrors:start -->
 | `e.code` | When |
 | --- | --- |
-| `host_not_allowed` | the host (or a redirect hop) is not one you declared or the person typed, or it is `http` on a declared host not marked `insecureHttp`; with [`fetchHosts`](manifest.md#fetch-hosts) approved, only an address on the home network |
+| `host_not_allowed` | the host (or a redirect hop) is not one you declared or the person typed, or it is `http` on a declared host not marked `insecureHttp`; under `"fetchHosts": "any"`, a host reached only through it over `http`, on a port other than 443, or a single-label name |
 | `timeout` | no complete answer within `timeoutMs` |
 | `network` | the connection failed, or too many redirects |
 | `too_large` | the request over the size cap, or a body over 5 MB |
 | `invalid_request` | a bad URL, method, `redirect` or `body`, or more requests than a call allows |
+| `rate_limited` | under `"fetchHosts": "any"`, too many requests to hosts reached only through it: more than 60 a minute to one site or 600 every 10 minutes in all (250 and 2,500 for a plugin converted from a Nuvio scraper) |
 <!-- contract:fetchErrors:end -->
 
 From Kino 0.9.54 Kino's own error messages (`e.message`) are English and may change; match on `code`.
@@ -467,7 +468,7 @@ text of `e.message`: that is for the log, and may change (Spanish up to Kino 0.9
 
 | Where | `e.code` |
 | --- | --- |
-| `kino.fetch` | `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request` ([the table](#fetch)) |
+| `kino.fetch` | `host_not_allowed`, `timeout`, `network`, `too_large`, `invalid_request`, and `rate_limited` under `fetchHosts` ([the table](#fetch)) |
 | `kino.crypto` | `crypto_error` |
 | `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
 | `kino.browser.page` | the same, plus `rate_limited` ([Hidden browser](browser.md#page)) |

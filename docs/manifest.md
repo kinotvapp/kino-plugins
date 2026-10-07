@@ -44,7 +44,7 @@ español que nombra el campo.
 | `telemetry` | Opcional, `true`, `false` o `"verbose"` (por defecto `false`), desde `apiVersion` 6; por debajo se ignora. Pide compartir las líneas de diagnóstico de tu plugin con el registro de errores de Kino cuando una llamada falla, venga de donde venga el plugin, y enciende `kino.log.report`. Se muestra en la hoja de consentimiento y una actualización que lo declara por primera vez espera su aprobación. Hasta Kino 0.9.53 las líneas de todo plugin que lo declara se envían siempre, sin interruptor; desde Kino 0.9.54 la pestaña de tu plugin en Ajustes tiene un interruptor "Enviar registros de errores y de reproducción", encendido por defecto, y la línea de consentimiento dice "Comparte con Kino registros de errores y datos técnicos de algunas reproducciones para corregir fallas" (`true` también envía una pequeña muestra de reproducciones que salieron bien). Mira [Registro y telemetría](diagnostics.md#telemetry). Cualquier otro valor se rechaza con "El campo \"telemetry\" debe ser true, false o \"verbose\"". |
 | `section` | Opcional, `{ "label": "…" }` (de 1 a 20 caracteres), desde `apiVersion` 6; por debajo se ignora. Le da a tu plugin su propia sección y exige el export `section`: mira [Sección, categorías y colores](section-theme.md). Desde `apiVersion` 9 (Kino 0.9.55) puede llevar también `"labelEn"` (de 1 a 20 caracteres): el nombre de la sección cuando la app está en inglés; `label` sigue siendo el texto en español y el de respaldo. Por debajo de 9 se ignora sin revisarlo. Uno vacío, de más de 20 o que no sea texto se rechaza con "El campo \"section.labelEn\" debe tener entre 1 y 20 caracteres". Mira [Textos en inglés](settings-form.md#english). |
 | `theme` | Opcional, un objeto, desde `apiVersion` 6; por debajo se ignora. Hasta cinco colores `#RRGGBB`: `accent`, `onAccent`, `background`, `surface`, `highlight`; cualquier otra clave se rechaza con "El campo \"theme\" tiene un color desconocido". El manifiesto solo revisa el formato; las protecciones de lectura corren cuando Kino usa los colores ([Tus colores](section-theme.md#theme)). |
-| `fetchHosts` | Opcional, solo `"any"`. Deja que tu `kino.fetch` llegue a **cualquier host público**, por `http` o `https`, para scrapers cuyos sitios o redirecciones de extractores cambian de dominio. En un plugin escrito a mano Kino lo respeta **desde `apiVersion` 9 (Kino 0.9.55)**, después de que la persona lo aprueba en rojo ("Puede conectarse a cualquier servidor de internet"); `kino.fetchAnyHost` es `true` cuando está activo. Por debajo de apiVersion 9 solo lo respeta en los manifiestos que arma al convertir un [scraper de Nuvio](nuvio.md); en tu plugin se ignora (tu `kino.fetch` sigue limitado a tus `hosts`) y `sdk/validate.mjs` avisa "fetchHosts solo tiene efecto en plugins convertidos desde Nuvio o, en uno escrito a mano, desde apiVersion 9 (Kino 0.9.55); en tu plugin se ignora". Mira [Conectarse a cualquier servidor](#fetch-hosts). Desde `apiVersion: 4` su único valor es `"any"`; cualquier otro se rechaza con "El campo \"fetchHosts\" solo admite \"any\"". Por debajo de apiVersion 4 se ignora. |
+| `fetchHosts` | Opcional, solo `"any"`. Deja que tu `kino.fetch` llegue a **cualquier host público, solo por `https` en el puerto 443**, para scrapers cuyos sitios o redirecciones de extractores cambian de dominio. En un plugin escrito a mano Kino lo respeta **desde `apiVersion` 9 (Kino 0.9.55)**, después de que la persona lo aprueba en rojo ("Puede conectarse a cualquier servidor público de internet (solo https, nunca tu red local)"); `kino.fetchAnyHost` es `true` cuando está activo. Con un cupo de peticiones y sin tocar tus `hosts` declarados. Por debajo de apiVersion 9 solo lo respeta en los manifiestos que arma al convertir un [scraper de Nuvio](nuvio.md); en tu plugin se ignora (tu `kino.fetch` sigue limitado a tus `hosts`) y `sdk/validate.mjs` avisa "fetchHosts solo tiene efecto en plugins convertidos desde Nuvio o, en uno escrito a mano, desde apiVersion 9 (Kino 0.9.55); en tu plugin se ignora". Mira [Conectarse a cualquier servidor](#fetch-hosts). Desde `apiVersion: 4` su único valor es `"any"`; cualquier otro se rechaza con "El campo \"fetchHosts\" solo admite \"any\"". Por debajo de apiVersion 4 se ignora. |
 | `description`, `author`, `homepage` | Textos opcionales. Se les quitan los espacios de los extremos y se cortan a 300, 60 y 200 caracteres. Kino muestra el nombre, el autor, la versión y la descripción cuando le pregunta a la persona si quiere instalar. |
 
 Las demás claves se ignoran. `hosts` cumple tres funciones: es lo que la persona aprueba, es el
@@ -109,21 +109,39 @@ redirige a un CDN distinto en cada video. Desde **Kino 0.9.55** un plugin escrit
 ```
 
 Con eso, **tu `kino.fetch`** (cada salto de redirección incluido, y su tarro de cookies) puede llegar a
-**cualquier host público**, por `http` o `https`, sin una pregunta por host. Es lo mismo que Kino ya
-hacía con los [scrapers de Nuvio](nuvio.md) que convierte:
+hosts que no declaraste, sin una pregunta por host, con estas reglas (la tienen los
+[scrapers de Nuvio](nuvio.md) que Kino convierte, desde antes):
 
 - **La persona lo aprueba.** La pantalla de consentimiento lo muestra en rojo ("Puede conectarse a
-  cualquier servidor de internet"), y una actualización que lo agrega espera a que la persona apruebe
-  de nuevo. Sin esa aprobación, `kino.fetch` sigue en tus `hosts`.
+  cualquier servidor público de internet (solo https, nunca tu red local)"), y una actualización que lo
+  agrega espera a que la persona apruebe de nuevo. Sin esa aprobación, `kino.fetch` sigue en tus `hosts`.
+- **Solo `https`, por el puerto 443, y solo a un nombre con punto o a una IPv4 pública.** Esto vale para un
+  host que llega **únicamente** por este permiso (no está en tus `hosts` ni es un servidor que escribió la
+  persona), en cada salto de redirección. Un `http://`, otro puerto o un nombre de una sola etiqueta
+  (`router`, `nas`) falla con `host_not_allowed` (y `e.host` dice cuál).
+- **Un cupo de peticiones.** Esas peticiones (cada salto que sale) gastan un cupo que Kino lleva por plugin
+  para toda la app: como mucho **60 por minuto a un mismo sitio** (un dominio y sus subdominios cuentan
+  juntos) y **600 cada 10 minutos en total** (250 y 2500 en un plugin convertido de Nuvio); se rellena de forma
+  continua. Pasado el cupo, la petición falla al instante con `rate_limited`. Los 60 pedidos por llamada de
+  [`kino.fetch`](kino-api.md#fetch) siguen aplicando.
+- **Tus `hosts` declarados y los servidores que escribió la persona conservan sus propias reglas** (un host
+  `insecureHttp` sigue aceptando `http`, uno declarado cualquier puerto) y **no gastan cupo**. **Declara tus
+  sitios principales**: es más rápido, no depende del cupo y la gente confía más en una lista corta.
 - **Nunca la red de la casa.** Las direcciones locales o privadas (`localhost`, `192.168.x.x`,
   `10.x.x.x`, `.local`…) y los nombres públicos que resuelven dentro de la red de la casa siguen
   rechazados con `host_not_allowed`, también en un salto de redirección. Una dirección IPv6 escrita
   tal cual (`[2001:db8::1]`) se rechaza siempre, sea local o pública: usa un nombre.
 - **Los [secretos sellados](#secrets) no cambian**: un pedido que lleva un valor sellado solo va a los
   `hosts` que declaraste, por `https`, en cada salto.
-- **`kino.fetch` y la dirección inicial de tus páginas ocultas.** Si además declaraste
-  [`"browser"`](browser.md), la página que abre `kino.browser.capture` o `kino.browser.page` también
-  puede empezar en cualquier host público (lo que la página carga después ya era libre). Lo que
+- **Las páginas ocultas.** Si además declaraste [`"browser"`](browser.md), la dirección inicial de lo que abren
+  `kino.browser.capture` y `kino.browser.page`, y cada navegación de la página principal que sigue (una
+  redirección, un `location`), siguen **una sola regla**: un host que declaraste o que escribió la persona
+  conserva la suya, y uno que llega solo por este permiso tiene que ser `https`, puerto 443 y un nombre con
+  punto o una IPv4 pública. La navegación puede salir de tus `hosts` (los embeds saltan de host), y la primera
+  que rompe la regla termina la captura con `blocked`. Es detección, no siempre prevención: cuando el WebView del
+  aparato pasa la página por el proxy de Kino, una redirección de servidor de la página principal puede
+  contactar su destino una vez antes de que la captura termine. Lo que la página carga después (frames, scripts, el
+  CDN del video) sigue siendo libre (cualquier host público, nunca la red de la casa) y no gasta cupo. Lo que
   reproduces sigue sus propias reglas ([`streamHosts`](#stream-hosts)); las imágenes, las licencias DRM
   y las descargas no cambian.
 - **`kino.fetchAnyHost`** es `true` cuando el permiso está activo en esta instalación (declarado, con

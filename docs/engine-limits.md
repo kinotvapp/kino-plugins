@@ -10,7 +10,7 @@
 | Cargar el módulo (su nivel superior) | 10 s |
 | Sandbox inactivo | se cierra después de 5 minutos sin llamadas |
 | Tiempos agotados seguidos | 3 seguidos y Kino desactiva el plugin ("No responde") |
-| `kino.fetch` | solo https (o el servidor propio de la persona tal como lo escribió, o `http` en un host declarado `insecureHttp`); 15 s por defecto, 30 s máximo; cuerpo de la respuesta máximo 5 MB; la petición (URL, headers y cuerpo) máximo 1.048.576 caracteres; máximo 60 peticiones por llamada, contando cada salto, también los rechazados (250 para un plugin convertido desde un scraper de Nuvio); máximo 6 peticiones al mismo tiempo; máximo 3 preguntas de host por llamada; máximo 10 redirecciones por petición |
+| `kino.fetch` | solo https (o el servidor propio de la persona tal como lo escribió, o `http` en un host declarado `insecureHttp`); 15 s por defecto, 30 s máximo; cuerpo de la respuesta máximo 5 MB; la petición (URL, headers y cuerpo) máximo 1.048.576 caracteres; máximo 60 peticiones por llamada, contando cada salto, también los rechazados (250 para un plugin convertido desde un scraper de Nuvio); máximo 6 peticiones al mismo tiempo; máximo 3 preguntas de host por llamada; máximo 10 redirecciones por petición; con [`fetchHosts: "any"`](manifest.md#fetch-hosts), un host que llega solo por ese permiso: `https` por el puerto 443, un nombre con punto o una IPv4 pública, como mucho 60 peticiones por minuto por sitio y 600 cada 10 minutos por plugin (250 / 2500 en un scraper de Nuvio convertido), si no `rate_limited` |
 | Cookies | 50 por dominio, 64 KB en total por plugin |
 | `kino.storage` | 256 KB por plugin; el `ttlMs` opcional de una entrada va de 1 a 2.592.000.000 ms (30 días) |
 | `kino.sleep` | de 0 a 5.000 ms por llamada |

@@ -75,13 +75,15 @@ pequeño adaptador, y se instala con un manifiesto generado:
 - `"streamHosts": "any"`: sus películas y episodios se pueden reproducir desde cualquier servidor
   público ([la regla](manifest.md#stream-hosts)).
 - `"fetchHosts": "any"`: su `kino.fetch` puede llegar a cualquier servidor **público**, sin una
-  pregunta por cada host. Los nombres locales, las direcciones privadas, de loopback y link-local, y
+  pregunta por cada host, pero solo por `https` en el puerto 443 y a un nombre con punto o una IPv4
+  pública, con un cupo de peticiones (los hosts que el scraper nombra con `http://` los declara el
+  convertidor como `insecureHttp`). Los nombres locales, las direcciones privadas, de loopback y link-local, y
   los nombres que resuelven dentro de la red de la casa siguen rechazados, en cada salto de
   redirección. Este campo se respeta **solo** en estas instalaciones convertidas; en un plugin escrito
   a mano no hace nada ([por qué](manifest.md#stream-hosts)).
 
 Por eso la hoja de consentimiento de un scraper convertido muestra, en rojo, "Puede reproducir video
-desde cualquier servidor que indique" y "Puede conectarse a cualquier servidor de internet", además de
+desde cualquier servidor que indique" y "Puede conectarse a cualquier servidor público de internet (solo https, nunca tu red local)", además de
 "Puede descargar videos para verlos sin conexión". Nada de él corre antes de que la persona acepte.
 
 ## Cómo se porta un scraper convertido { #behavior }

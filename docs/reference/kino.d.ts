@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 9; 9 adds fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 9; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -115,8 +115,9 @@ interface KinoEpisode {
   title?: string;
   still?: string;
   overview?: string;
-  /** YYYY-MM-DD */
+  /** YYYY-MM-DD. Since Kino 0.9.55 shown under the episode in the list (phone and TV), worded in the app's language. */
   airDate?: string;
+  /** 1..1000. Since Kino 0.9.55 shown under the episode in the list, next to `airDate` ("12 mar 2024 · 48 min"). */
   runtimeMinutes?: number;
 }
 
@@ -389,12 +390,196 @@ interface KinoCategory {
   adult?: boolean;
 }
 
+// ---------- apiVersion 9 (Kino 0.9.55): the player panel ----------
+// A button in the player, shown only while YOUR content plays, opens a panel you describe with `panel(context)`. Kino
+// validates every answer; an invalid element is dropped (and logged), a panel that is not an object shows nothing. The
+// kit runs the same validation: node sdk/run.mjs <plugin dir> panel|panelAction|playerEvent. Layout limits: at most 40
+// top-level elements, 120 nodes in all, 4 levels deep, 6 children per row.
+
+/** What the player knows about the title playing when `panel`, `panelAction` or `playerEvent` is called (exactly these keys; an absent optional is left out). */
+interface KinoPanelContext {
+  kind: "movie" | "episode" | "live";
+  /** The ref of the title that plays, exactly as you gave it. */
+  ref: string;
+  title: string;
+  year?: string;
+  season?: number;
+  episode?: number;
+  episodeTitle?: string;
+  ids: { tmdb?: number; imdb?: string; tvdb?: number; mal?: number; anilist?: number; kitsu?: number };
+  /** The copy playing now. */
+  playing: { label?: string; lang?: string; quality?: string; server?: string };
+  positionMs: number;
+  /** Absent for live or while the player does not know it. */
+  durationMs?: number;
+  paused: boolean;
+  /** The back/forward step in effect, ms. */
+  seekStepMs: number;
+  /** Read-only playback stats; only what the player knows. */
+  stats: {
+    width?: number; height?: number; videoCodec?: string; audioCodec?: string; bitrateKbps?: number; bufferedMs?: number;
+    droppedFrames?: number; network?: "wifi" | "ethernet" | "cellular" | "other"; stallsThisSession?: number;
+  };
+  device: "tv" | "phone";
+  /** The app's language, "es-CO" or "en-US" style. */
+  lang: string;
+  /** The tab the person asked for (a tab press calls `panel` again with it). */
+  tab?: string;
+  /** What you saved with `values`/`save`: per title (`video`) and for the whole plugin (`plugin`). */
+  values: { video: Record<string, KinoPanelValue>; plugin: Record<string, KinoPanelValue> };
+  /** The player's own properties in effect: the step, the speed, the resize mode and your `autoNext` when you set one. */
+  player: { seekStepMs: number; speed?: number; resize?: KinoPlayerResize; autoNext?: { enabled: boolean; countdownS: number; nextRef?: string } };
+}
+
+type KinoPanelValue = string | boolean | number | null;
+type KinoPlayerResize = "fit" | "fill" | "zoom" | "4:3" | "16:9" | "21:9";
+/** `scope` of an input: `plugin` (default) is one value for all your titles, `video` one per title. */
+type KinoPanelScope = "video" | "plugin";
+
+/**
+ * Rows, columns and cards around leaves (the one layout model of the player panel and of `settingsLayout`). `hidden: true`
+ * keeps a node out of sight, `enabled: false` greys it out and takes it out of focus (a settings layout ignores both).
+ * Limits: depth 4, a row keeps 6 children, `col.weight` 1 to 12 (else 1), 120 nodes in all, card `title` 60 characters.
+ */
+type KinoLayoutNode<Leaf> =
+  | { type: "row"; children: KinoLayoutNode<Leaf>[]; gap?: "none" | "small" | "medium" | "large"; align?: "start" | "center" | "end" | "stretch"; stackOnNarrow?: boolean; enabled?: boolean; hidden?: boolean }
+  | { type: "col"; children: KinoLayoutNode<Leaf>[]; weight?: number; gap?: "none" | "small" | "medium" | "large"; align?: "start" | "center" | "end" | "stretch"; enabled?: boolean; hidden?: boolean }
+  | { type: "card"; title?: string; titleEn?: string; children: KinoLayoutNode<Leaf>[]; style?: "plain" | "outlined" | "filled"; enabled?: boolean; hidden?: boolean }
+  | (Leaf & { enabled?: boolean; hidden?: boolean });
+
+/**
+ * A leaf of a panel. `key` (1 to 128 of A-Z a-z 0-9 . _ ~ -) names what holds a value or can be pressed and is unique
+ * across the whole panel; a label is 1 to 40 characters. Every text has an optional `...En` twin shown when the app is in English.
+ */
+type KinoPanelElement =
+  | { type: "section"; title: string; titleEn?: string; text?: string; textEn?: string }
+  | { type: "text"; text: string; textEn?: string }
+  /** At most 200 characters. */
+  | { type: "status"; text: string; textEn?: string }
+  /** https only, on a public host; `alt` up to 200 characters. */
+  | { type: "image"; url: string; aspect?: "16:9" | "2:3" | "1:1" | "banner"; alt?: string; altEn?: string }
+  /** `confirm` (up to 160 characters) asks first. Pressing calls `panelAction` with trigger "press". */
+  | { type: "button"; key: string; label: string; labelEn?: string; confirm?: string; confirmEn?: string }
+  /** `autoSave: true` saves each change by itself (trigger "change"). `hint` up to 80 characters. */
+  | { type: "toggle"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; hint?: string; hintEn?: string; autoSave?: boolean }
+  /** 1 to 20 options, `value` and `label` 1 to 40 characters, values distinct. */
+  | { type: "select"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; options: { value: string; label: string; labelEn?: string }[]; hint?: string; hintEn?: string; autoSave?: boolean }
+  /** `placeholder` up to 40 characters; Enter calls `panelAction` with trigger "submit". */
+  | { type: "text-input"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; hint?: string; hintEn?: string; placeholder?: string; placeholderEn?: string }
+  /** https, up to 512 characters, on a public host (never the device or the home network: no local name, private address or IPv6 literal). */
+  | { type: "qr"; url: string; label?: string; labelEn?: string }
+  /** The series' episodes, the current one highlighted; choosing one plays it. */
+  | { type: "episodes"; ref: string }
+  /** Not in this Kino: dropped ("needs a newer Kino"). Reserved for a later version. */
+  | { type: "ai"; [field: string]: unknown }
+  /** Not in this Kino: dropped ("needs a newer Kino"). Reserved for a later version. */
+  | { type: "chat"; [field: string]: unknown };
+
+/** What `panel(context)` returns. A tab press calls it again with `context.tab`; `refreshMs` calls it again by itself. */
+interface KinoPanel {
+  /** Up to 60 characters. */
+  title?: string;
+  titleEn?: string;
+  /** `modal` (default): centred over the video. `panel`: a side strip with the video visible behind. */
+  presentation?: "modal" | "panel";
+  /** `#RRGGBB`; kept only when it passes the same rules as the manifest theme's `accent`. */
+  accent?: string;
+  /** Asks Kino to call `panel` again every so often: 2000 to 60000 ms (clamped). */
+  refreshMs?: number;
+  /** At most 6: `id` as a key, `label` up to 24 characters. */
+  tabs?: { id: string; label: string; labelEn?: string }[];
+  /** The tab shown; the first one when absent or unknown. */
+  tab?: string;
+  elements: KinoLayoutNode<KinoPanelElement>[];
+}
+
+/** Why `panelAction` is called: a button pressed, an input changed or submitted. "tab" and "open" are reserved: this Kino never sends them. */
+interface KinoPanelEvent {
+  /** The element's key. */
+  key: string;
+  trigger: "press" | "change" | "submit" | "tab" | "open";
+  /** Every input's value on screen now (saved or not yet). */
+  values: Record<string, KinoPanelValue>;
+  /** The new value, for "change" and "submit". */
+  value?: KinoPanelValue;
+}
+
+/** What the plugin asks the player to do (every field optional). Bounds below are applied by Kino, which clamps or drops what is outside them. */
+interface KinoPlayerAction {
+  /** Ms from the start, clamped to 0..duration; ignored on live. At most one seek per second. */
+  seekToMs?: number;
+  /** The back/forward step: 5000 to 120000, whole seconds. */
+  seekStepMs?: number;
+  /** One of 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2. */
+  speed?: number;
+  resize?: KinoPlayerResize;
+  /** The same block as a Stream's `skip`: the skip-intro/outro button. */
+  skip?: { openingStartMs?: number; openingEndMs?: number; endingStartMs?: number };
+  /** At most 30 dots on the progress bar; `label` up to 24 characters; selecting one seeks there. */
+  markers?: { atMs: number; label: string }[];
+  /** The end-of-episode countdown: `countdownS` 0 to 30, required when `enabled` (left out it is 0 when disabled). */
+  autoNext?: { enabled: boolean; countdownS?: number; nextRef?: string };
+}
+
+/** What `panelAction` (and, for `player` and `message`, `playerEvent`) may return. `null` is "nothing to do". */
+interface KinoPanelAnswer {
+  /** A whole new panel. */
+  panel?: KinoPanel;
+  /** Replaces single elements in place, by key (at most 40 entries); each is one node, validated like any element. */
+  patch?: Record<string, KinoLayoutNode<KinoPanelElement>>;
+  /** Values to show now (at most 120 keys; strings up to 500 characters). */
+  values?: Record<string, KinoPanelValue>;
+  /** Keys of `values` (or on-screen inputs) to keep: at most 50. */
+  save?: string[];
+  /** The key to move focus to. */
+  focus?: string;
+  /** A short toast for the person (up to 160 characters); shown only when it passes the rules a `userMessage` does. */
+  message?: string;
+  player?: KinoPlayerAction;
+}
+
+/** What `playerEvent` is told. `failed` carries `kind`; `copyChanged` carries `automatic`, `label` and, after an automatic change, the last copy's failure `kind`. */
+interface KinoPlayerEvent {
+  type: "started" | "paused" | "resumed" | "ended" | "failed" | "copyChanged";
+  kind?: string;
+  label?: string;
+  automatic?: boolean;
+}
+
+/**
+ * The manifest's `panel` (apiVersion 9): the player's button. `label` 1 to 24 characters (`labelEn` the English one),
+ * and `icon` (one of info, tune, settings, star, bolt, language, subtitles, list, magic, heart, movie, tv, sports, music,
+ * bookmark, help; another name draws tune) or `iconFile`, a relative .png of exactly 96x96 px with an alpha channel, at
+ * most 24 KB (only its alpha is drawn), never both. Declaring it makes `panel` required.
+ */
+interface KinoManifestPanel { label: string; labelEn?: string; icon?: string; iconFile?: string }
+
+/**
+ * The manifest's `settingsLayout` (apiVersion 9): where the settings of the form go. A list of rows, columns and cards
+ * around `{ setting: "<key>" }`, `{ type: "text", text }` and `{ type: "image", url }` leaves. Settings left out are
+ * added at the end in manifest order; an unknown or repeated key is ignored by Kino (and refused by the kit's validate).
+ */
+type KinoSettingsLayoutLeaf = { setting: string } | { type: "text"; text: string; textEn?: string } | { type: "image"; url: string; aspect?: "16:9" | "2:3" | "1:1" | "banner" };
+type KinoSettingsLayout = KinoLayoutNode<KinoSettingsLayoutLeaf>[];
+
 /** Your module's exports. `resolve` is required, and at least one of `search`/`home` (a catalog-only plugin: see [KinoCatalogOnlyPlugin]). */
 interface KinoPlugin {
   /** apiVersion 6, capability "migrate". Return null for anything that is not yours. 10 s per call. */
   migrate?(input: KinoMigrateInput): Promise<KinoMigrateAnswer | null>;
   /** apiVersion 6, required when the manifest declares `section`. `tab` is null the first time. 20 s per call. */
   section?(arg: { tab: string | null }): Promise<KinoSectionAnswer>;
+  /**
+   * apiVersion 9, required when the manifest declares `panel`: the panel the button opens. Called with the context when it
+   * opens, on a tab press and every `refreshMs`. 20 s per call; a panel that is not an object shows nothing.
+   */
+  panel?(context: KinoPanelContext): Promise<KinoPanel>;
+  /** apiVersion 9, optional: a button pressed, an input changed or submitted. Called with TWO arguments, `(event, context)`. 20 s per call. */
+  panelAction?(event: KinoPanelEvent, context: KinoPanelContext): Promise<KinoPanelAnswer | null | void>;
+  /**
+   * apiVersion 9, optional, needs no `panel`: told about the playing title's player events (fire and forget: 5 s, at most one
+   * in flight, events coalesce). May answer a `player` action or a `message`; anything else is ignored. `(event, context)`.
+   */
+  playerEvent?(event: KinoPlayerEvent, context: KinoPanelContext): Promise<KinoPanelAnswer | null | void>;
   /** apiVersion 6, optional, needs `browse`: up to 24 tiles in Categorías, in your order. 20 s per call. */
   categories?(arg: null): Promise<KinoCategory[]>;
   /** With `query.within` (capability "scopedSearch", apiVersion 6): null = "can't search inside this page". 15 s per call. */
@@ -561,7 +746,7 @@ type KinoPluginModule = KinoPlayingPlugin | KinoCatalogOnlyPlugin | KinoSubtitle
 // ---------- the kino API ----------
 
 type KinoErrorCode = "auth_required" | "not_found" | "geo_blocked" | "rate_limited" | "unavailable";
-type KinoFetchErrorCode = "host_not_allowed" | "timeout" | "network" | "too_large" | "invalid_request";
+type KinoFetchErrorCode = "host_not_allowed" | "timeout" | "network" | "too_large" | "invalid_request" | "rate_limited";
 /** Kino 0.9.53: what `kino.meta` and `kino.tmdb` throw besides the fetch codes (see contract.json `kinoMeta`/`kinoTmdb`). */
 type KinoServiceErrorCode = "rate_limited" | "not_allowed" | "no_tmdb_key" | "not_found" | "unavailable";
 
@@ -645,6 +830,11 @@ interface KinoError extends Error {
    * from `kino.tmdb` (Kino 0.9.53) it is Kino's own sentence for the person, in their language: show it as is.
    */
   readonly userMessage?: string;
+  /**
+   * Kino 0.9.55: on a `host_not_allowed` from `kino.fetch`, the host Kino refused (at most 253 characters), so you never
+   * have to read it out of the message. Absent on older Kino and when no one host was refused (the signing lane).
+   */
+  readonly host?: string;
 }
 
 interface KinoErrorOptions {
@@ -860,8 +1050,14 @@ declare namespace kino {
 
   /**
    * Only to the manifest's hosts over https (http only on a host declared `insecureHttp`), or to the person's own server as typed.
-   * With `fetchAnyHost` true, also any PUBLIC host over http or https (never the home network; a sealed secret still only
-   * goes to the manifest's own hosts over https). Never throws for a non-2xx status.
+   * With `fetchAnyHost` true, also any PUBLIC host over https on port 443, at a public IPv4 address or a dotted name (never
+   * the home network, never a single-label name; a sealed secret still only goes to the manifest's own hosts over https).
+   * Those requests spend a budget kept for the whole app: at most 60 a minute per site and 600 every 10 minutes per plugin
+   * (250 / 2,500 for a converted Nuvio scraper), then `rate_limited`; declared hosts never spend it (declare your main
+   * sites). From Kino 0.9.55; a hidden page's start address and a capture's top-level navigations to a host reachable
+   * only through the grant follow the same https / port 443 / dotted-name rule (declared hosts keep theirs); its
+   * subresources do not.
+   * Never throws for a non-2xx status.
    */
   function fetch(url: string, options?: KinoFetchOptions): Promise<KinoResponse>;
 

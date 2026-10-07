@@ -18,10 +18,14 @@ ignora como lo hace una versión anterior.
 
 - **`"fetchHosts": "any"` para tu plugin** (apiVersion 9): hasta ahora solo lo respetaba en los scrapers de Nuvio que
   convierte. Desde Kino 0.9.55 un plugin escrito a mano con `"apiVersion": 9` y `"fetchHosts": "any"` puede llegar con
-  `kino.fetch` a cualquier host público (por `http` o `https`, redirecciones incluidas), para sitios y extractores que
-  cambian de dominio. La persona lo aprueba en rojo ("Puede conectarse a cualquier servidor de internet") y una
-  actualización que lo agrega espera su aprobación otra vez, también la primera vez que se abre Kino después de
-  actualizarlo; la red de la casa sigue rechazada y un secreto sellado solo va a tus `hosts`. `kino.fetchAnyHost` es
+  `kino.fetch` a hosts que no declaró (redirecciones incluidas), solo por `https` en el puerto 443 y a un nombre con
+  punto o una IPv4 pública, para sitios y extractores que cambian de dominio. Esas peticiones gastan un cupo por
+  plugin (60 por minuto a un mismo sitio, 600 cada 10 minutos; pasado el cupo, `rate_limited`); tus `hosts` declarados
+  conservan sus reglas y no lo gastan, así que declara tus sitios principales. La persona lo aprueba en rojo ("Puede
+  conectarse a cualquier servidor público de internet (solo https, nunca tu red local)") y una actualización que lo
+  agrega espera su aprobación otra vez, también la primera vez que se abre Kino después de actualizarlo; la red de
+  la casa sigue rechazada y un secreto sellado solo va a tus `hosts`. En las páginas ocultas, la dirección inicial y
+  cada navegación principal siguen la misma regla. `kino.fetchAnyHost` es
   `true` cuando está activo (`false` si no; `undefined` en un Kino anterior). Por debajo de apiVersion 9 nada cambia.
   [Conectarse a cualquier servidor](manifest.md#fetch-hosts).
 - **Tu formulario de ajustes y tu sección, también en inglés** (apiVersion 9). Cada ajuste puede llevar `labelEn` y
