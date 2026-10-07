@@ -36,7 +36,7 @@ Un ejemplo completo con todos los elementos, las dos pestañas y todas las accio
 
 ```json
 "apiVersion": 9,
-"panel": { "label": "Opciones de Latino", "labelEn": "Latino options", "icon": "tune" }
+"panel": { "label": "Opciones", "labelEn": "Options", "icon": "tune" }
 ```
 
 | Campo | Qué es |
@@ -220,11 +220,11 @@ Todos los campos son opcionales; `null` (o nada) significa «no hay nada que hac
 | Campo | Qué hace |
 | --- | --- |
 | `panel` | reemplaza el panel entero (mismas reglas que `panel(context)`). |
-| `patch` | `{ "<key>": elemento }`: reemplaza solo esos elementos en su lugar (un botón puede cambiar un texto sin redibujar todo). Máximo 40 claves; cada entrada es un solo nodo, validado como cualquier elemento y con su propio cupo de 120 nodos. Kino la descarta (con una línea en el registro) si la clave no nombra un elemento que esté en pantalla, si repite la clave de otro elemento del panel, o si el panel resultante pasa de 120 nodos o de 4 niveles. |
+| `patch` | `{ "<key>": elemento }`: reemplaza solo esos elementos en su lugar (solo los elementos con `key`: `button`, `toggle`, `select` y `text-input`; para cambiar un `text`, un `status` o una imagen devuelve un `panel` entero). Máximo 40 claves; cada entrada es un solo nodo, validado como cualquier elemento y con su propio cupo de 120 nodos. Kino la descarta (con una línea en el registro) si la clave no nombra un elemento que esté en pantalla, si repite la clave de otro elemento del panel, o si el panel resultante pasa de 120 nodos o de 4 niveles. |
 | `values` | `{ "<key>": valor }`: cambia lo que ven los campos (limpiar uno, llenar uno desde otro). Máximo 120 claves; cada valor es texto de hasta 500 caracteres, un booleano, un número finito o `null`. **No guarda.** Una clave que no es un campo en pantalla se ignora. |
 | `save` | `["<key>", …]`: guarda esos campos, cada uno con el `scope` que declaró (máximo 50). Solo se guardan claves de campos que están en pantalla. Además, el `toggle` o `select` con `autoSave: true` que disparó la acción se guarda solo, sin que lo listes. |
 | `focus` | la clave a la que mover el foco (TV). |
-| `message` | un aviso breve para la persona, de hasta 160 caracteres, que Kino muestra como un mensaje corto. Pasa por **las mismas reglas que un [`userMessage`](contract.md#user-message)** (Kino la muestra como «Mensaje de &lt;tu plugin&gt;: …», y si el nombre de tu plugin no puede presentarla, por ejemplo `Cuevana3`, se descarta); si no las cumple se descarta con una línea en el registro. |
+| `message` | un aviso breve para la persona, de hasta 160 caracteres, que Kino muestra como un mensaje corto. Pasa por **las mismas reglas que un [`userMessage`](contract.md#user-message)** (Kino la muestra como «Mensaje de &lt;tu plugin&gt;: …» (en inglés, "Message from &lt;your plugin&gt;: …"), y si el nombre de tu plugin no puede presentarla, por ejemplo `Cuevana3`, se descarta); si no las cumple se descarta con una línea en el registro. |
 | `player` | acciones sobre el reproductor: la [tabla de abajo](#player). |
 
 Kino aplica, en este orden, `panel` o `patch`, `values`, `save`, `focus`, `player` y, al final, `message`.
@@ -238,7 +238,7 @@ se guarda.
 ## Controlar el reproductor: `player` { #player }
 
 La respuesta de `panelAction` y de `playerEvent` puede traer `player: { … }`. Cualquier otra clave dentro de
-`player` se rechaza y se anota en el registro. Un valor fuera de su rango se ajusta o se descarta, también con
+`player` se ignora con una línea en el registro (el resto de `player` sí se aplica). Un valor fuera de su rango se ajusta o se descarta, también con
 una línea en el registro.
 
 | Propiedad | Valores | Qué hace |
@@ -286,8 +286,9 @@ Todo aplica **solo mientras suena el contenido de tu plugin** y **lo que la pers
 - También se guardan así, sin que escribas nada, las propiedades del reproductor: `seekStepMs`, `speed`, `resize`
   y `autoNext` **por plugin**, y `markers` **por video**. `skip` va al botón de saltar de ese episodio.
 - Límites: máximo **50 claves por alcance** y valores de máximo **500 caracteres**; si te pasas, la escritura se
-  rechaza entera con «No se pudo guardar: …» (en inglés «Couldn't save: …»). Kino también conserva como mucho
-  1500 valores por video en total en el aparato, sumando todos los plugins (los más viejos se van).
+  rechaza entera con «No se pudo guardar: …» (en inglés «Couldn't save: …»). Kino también guarda como mucho
+  1500 valores vivos en total en el aparato (todos los alcances y todos los plugins); pasado eso, se van los
+  valores por video más viejos.
 - **Se sincroniza en las dos vías** entre los aparatos de la persona, como todo lo suyo (gana la última escritura por clave).
   Un valor que llega de otro aparato actualiza el panel abierto.
 - Se borra al **desinstalar** el plugin.
@@ -299,7 +300,7 @@ Todo aplica **solo mientras suena el contenido de tu plugin** y **lo que la pers
 ## `playerEvent(event, context)`: enterarte de la reproducción { #player-event }
 
 Exporta `playerEvent` (no necesita `panel`) para saber lo que pasa mientras suena un título tuyo. Es
-fire-and-forget: Kino no espera nada a cambio y nunca se bloquea por él.
+de "lanzar y olvidar": Kino no espera nada a cambio y nunca se bloquea por él.
 
 ```js
 export async function playerEvent(event, context) {
@@ -341,7 +342,7 @@ diseño solo **coloca** ajustes que ya existen, por su clave.
 "settingsLayout": [
   { "type": "card", "title": "Idioma y calidad", "titleEn": "Language and quality", "children": [
     { "type": "row", "children": [ { "setting": "preferred" }, { "setting": "maxQuality" } ] } ] },
-  { "type": "text", "text": "Lo demás va debajo." },
+  { "type": "text", "text": "Lo demás va debajo.", "textEn": "Everything else goes below." },
   { "type": "image", "url": "https://example.com/banner.png", "aspect": "banner" }
 ]
 ```
@@ -391,8 +392,6 @@ node sdk/run.mjs --context '{"lang":"en-US","kind":"episode","device":"phone"}' 
 - `sdk/validate.mjs` revisa el manifiesto: `panel`, el `iconFile` (96×96, alfa, 24 KB, desde el disco), un
   `icon` desconocido (aviso), un panel o diseño por debajo de apiVersion 9 (se ignora) y `settingsLayout` (una clave
   repetida o desconocida es un problema).
-- Las pruebas del kit: `node --test plugins/sdk/test/*.test.mjs` (con el comodín; en Node 24 pasarle el directorio
-  falla con `MODULE_NOT_FOUND`).
 
 Mira también [Probar en local](test-locally.md).
 

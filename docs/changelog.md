@@ -42,7 +42,7 @@ ignora como lo hace una versión anterior.
   conectarse a cualquier servidor público de internet (solo https, nunca tu red local)") y una actualización que lo
   agrega espera su aprobación otra vez, también la primera vez que se abre Kino después de actualizarlo; la red de
   la casa sigue rechazada y un secreto sellado solo va a tus `hosts`. En las páginas ocultas, la dirección inicial y
-  cada navegación principal siguen la misma regla. `kino.fetchAnyHost` es
+  cada navegación principal siguen la misma regla. Un `host_not_allowed` de `kino.fetch` trae ahora `e.host`. `kino.fetchAnyHost` es
   `true` cuando está activo (`false` si no; `undefined` en un Kino anterior). Por debajo de apiVersion 9 nada cambia.
   [Conectarse a cualquier servidor](manifest.md#fetch-hosts).
 - **Tu formulario de ajustes y tu sección, también en inglés** (apiVersion 9). Cada ajuste puede llevar `labelEn` y

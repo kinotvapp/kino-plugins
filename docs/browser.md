@@ -79,7 +79,8 @@ La página corre en el aparato de la persona, así que Kino la encierra:
 - **Todos los métodos, la misma revisión.** `POST` funciona, la página sigue las redirecciones como en
   un navegador, y las conexiones WebSocket pasan por la misma revisión. WebRTC está apagado.
 - **A dónde puede ir la página principal.** La página de una captura puede navegar a cualquier sitio
-  público en el nivel principal (la cadena de redirecciones de un embed salta de host a propósito):
+  público en el nivel principal (la cadena de redirecciones de un embed salta de host a propósito; con
+  [`fetchHosts: "any"`](manifest.md#fetch-hosts) aprobado, esas navegaciones tienen que ser `https`, puerto 443 y un nombre con punto):
   solo devuelve las peticiones de video que hizo la página y la última dirección de la página principal,
   nunca un documento. Una [lectura de página](#page) es más estricta: su documento principal tiene que
   quedarse en tus hosts.

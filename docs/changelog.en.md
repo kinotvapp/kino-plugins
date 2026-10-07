@@ -41,7 +41,7 @@ ignores them, as an older version does.
   and spend none of it, so declare your primary sites. The person approves it in red ("Puede conectarse a cualquier
   servidor público de internet (solo https, nunca tu red local)") and an update that adds it waits for that approval
   again, the first start after a Kino update included; the home network stays refused and a sealed secret only goes
-  to your `hosts`. On hidden pages, the start address and every top-level navigation follow the same rule. `kino.fetchAnyHost` is `true` when it is active (`false` otherwise; `undefined` on
+  to your `hosts`. On hidden pages, the start address and every top-level navigation follow the same rule. A `host_not_allowed` from `kino.fetch` now carries `e.host`. `kino.fetchAnyHost` is `true` when it is active (`false` otherwise; `undefined` on
   an older Kino). Below apiVersion 9 nothing changes. [Reaching any server](manifest.md#fetch-hosts).
 - **Your settings form and your section, in English too** (apiVersion 9). Every setting may carry `labelEn` and
   `hintEn` (an `action` with `confirm`, also `confirmEn`), every `select` option and `list` field its `labelEn`, and

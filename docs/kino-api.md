@@ -129,6 +129,7 @@ tiempo de tu llamada. Pide la forma que tiene el contenido.
 | `invalid_request` | una URL, método, `redirect` o `body` inválidos, o más peticiones de las que permite una llamada |
 
 Desde Kino 0.9.54 los mensajes de error de Kino (`e.message`) están en inglés y pueden cambiar; compara el `code`.
+Desde Kino 0.9.55, un `host_not_allowed` de `kino.fetch` trae `e.host`: el host que Kino rechazó (hasta 253 caracteres), para que no tengas que sacarlo del mensaje; falta en un Kino anterior y cuando no se rechazó un solo host.
 
 - **Límites:** 15 s por petición por defecto (30 s como máximo), un cuerpo de máximo 5 MB
   (decodificado con el charset de su `Content-Type`, UTF-8 por defecto), y máximo 60 peticiones en una

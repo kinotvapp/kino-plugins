@@ -76,7 +76,8 @@ The page runs on the person's device, so Kino fences it in:
 - **Every method, the same check.** `POST` works, redirects are followed by the page as in a browser,
   and WebSocket connections pass the same check. WebRTC is switched off.
 - **Where the top page may go.** A capture's page may navigate anywhere public at the top level (an
-  embed's redirect chain hops hosts by design): it only ever returns the video requests the page made
+  embed's redirect chain hops hosts by design; under an approved [`fetchHosts: "any"`](manifest.md#fetch-hosts),
+  those navigations must be `https`, port 443 and a dotted name): it only ever returns the video requests the page made
   and the top page's last address, never a document. A [page read](#page) is stricter: its top
   document must stay on your hosts.
 - **Clean every time.** Each page starts with no cookies or storage, and everything is wiped when it

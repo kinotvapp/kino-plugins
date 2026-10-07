@@ -112,6 +112,7 @@ seconds of your call's time. Ask for the form the content is.
 <!-- contract:fetchErrors:end -->
 
 From Kino 0.9.54 Kino's own error messages (`e.message`) are English and may change; match on `code`.
+From Kino 0.9.55 a `host_not_allowed` from `kino.fetch` carries `e.host`: the host Kino refused (at most 253 characters), so you never have to read it out of the message; it is absent on an older Kino and when no single host was refused.
 
 - **Limits:** 15 s per request by default (30 s at most), a body of at most 5 MB (decoded with the
   charset of its `Content-Type`, UTF-8 by default), and at most 60 requests in one call to your

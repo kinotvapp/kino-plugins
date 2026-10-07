@@ -138,7 +138,7 @@ exact message Kino shows, never a summary.
    for `migrate`; `meta` for `meta`; `subtitles` for `subtitles`). `download`, `drm` and `scopedSearch` are declarative: nothing to export. Other
    exports are required by a manifest field, not a capability: `section` (by `"section"`),
    `settingsStatus` (by a `status` setting), `action` (by an `action` setting), `sign` (by any stream
-   with `signing: "request"`); `categories` (needs `browse`) and `validateSettings` are optional.
+   with `signing: "request"`), `panel` (by `"panel"`, apiVersion 9; `panelAction` and `playerEvent` are optional); `categories` (needs `browse`) and `validateSettings` are optional.
    Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
@@ -162,7 +162,7 @@ exact message Kino shows, never a summary.
     `node sdk/run.mjs . live guide <id,id>`, `node sdk/run.mjs . live search <query>` (for `liveSearch`), `node sdk/run.mjs live playlist <url|file> [--epg <url|file>]`,
     and `resolve <ref> --live` for a channel's ref. Settings: `--config key=value` (repeatable) or
     `sdk/config.json` (never committed). apiVersion 6: `node sdk/run.mjs . section [tab]`,
-    `. categories`, `. theme`, `. settingsStatus`, `. action <key>`, `. validateSettings '<json>'`,
+    `. categories`, `. theme`, `. settingsStatus`, apiVersion 9: `. panel <ref> [tab]`, `. panelAction <ref> <key> <press|change|submit>`, `. playerEvent <ref> <type>`, `. action <key>`, `. validateSettings '<json>'`,
     `./plugin.js migrate '{"kind":"title","ref":"…"}'`, `--within '<ref>' ./plugin.js search "…"`,
     `./plugin.js sign '{"url":…,"kind":"segment","ref":…,"context":…}'`,
     `--retry conflict:1 ./plugin.js resolve '<ref>'`, and `node sdk/validate.mjs . --run liveSearch <q>`
@@ -235,9 +235,14 @@ exact message Kino shows, never a summary.
   for a channel the `liveStreamHosts` rule. Never `kino.fetch`, images or DRM licenses, never the
   home network. Shown in red; prefer listing real domains. The person can grant the same rule
   themselves ("Permitir video de cualquier servidor", the broad video permission).
-- `"fetchHosts"` exists only for plugins Kino converts from Nuvio scrapers; in a hand-written plugin
-  it does nothing (`sdk/validate.mjs` warns "fetchHosts solo tiene efecto en plugins convertidos desde
-  Nuvio; en tu plugin se ignora"). Do not use it. From apiVersion 4 any value but `"any"` is refused.
+- `"fetchHosts": "any"` (Kino converts Nuvio scrapers with it; a hand-written plugin may use it from
+  apiVersion 9, Kino 0.9.55) lets `kino.fetch` reach hosts you did not declare, without a question per host.
+  The person approves it with a red consent line ("Puede conectarse a cualquier servidor público de internet
+  (solo https, nunca tu red local)"). Only `https` on port 443, to a dotted public name or a public IPv4
+  address; never the home network; a request budget (60 a minute per site, 600 every 10 minutes per plugin,
+  else `rate_limited`). Declared `hosts` keep their own rules and spend no budget, so declare the primary
+  sites and use it only for hosts that rotate. Check `kino.fetchAnyHost === true`. Below apiVersion 9 it is
+  ignored in a hand-written plugin (`sdk/validate.mjs` says so). From apiVersion 4 any value but `"any"` is refused.
 
 **The engine is QuickJS, not Node, not a browser.** Missing: `setTimeout`, `setInterval`,
 `setImmediate`, `queueMicrotask`, `Buffer`, `process`, `require`, `fetch`, `AbortController`,
@@ -275,6 +280,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes (1..8,192 at apiVersion 6); typed cipher keys 16/24/32 bytes (apiVersion 6) |
 | Stream (apiVersion 6) | `alternatives` 8 (any apiVersion; lazy and concrete together); `label` 48 chars; lazy `ref` 512 chars; `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
 | Hidden browser (apiVersion 6) | one page at a time in the whole app; `capture` `timeoutMs` ≤ 25,000 (default 18,000), ≤ 8 media, 10 subtitles; `page` `timeoutMs` ≤ 25,000 (default 15,000; Kino cuts it to the call's remaining time minus 1.5 s; pass ~12,000 in `search`), never from `categories`, top document on your hosts, 20 reads a minute; automatic fallback waits ≤ 20 s per lazy copy |
+| Player panel (apiVersion 9) | `panel`/`panelAction` 20 s, `playerEvent` 5 s; 40 top-level elements, 120 nodes, depth 4, 6 per row; title 60, button/input label 40, text 1,000; 6 tabs; values 50 keys per scope, 500 characters; `message` 160 |
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
 
@@ -529,6 +535,13 @@ the TV's own copy of the plugin (keep `id` and refs identical across devices), c
 for new chapters through `episodes(ref)` (keep series refs stable), saves "Para ti" picks by `ref`,
 and treats a **signed** plugin installed from two repos with the same `id` and author key as one
 plugin across devices.
+
+**The player panel (apiVersion 9, Kino 0.9.55).** `"panel": { "label", "labelEn?", "icon" | "iconFile" }` adds a
+button in the player, only while a title of the plugin plays, and requires exporting `panel(context)`; optional
+`panelAction(event, context)` answers presses, changes and submits, and `playerEvent(event, context)` hears
+started/paused/resumed/ended/failed/copyChanged. `settingsLayout` arranges the settings form in rows, columns and
+cards. Playback must never depend on any of it (older Kino refuses apiVersion 9). Full reference:
+<https://kinotvapp.github.io/kino-plugins/en/player-panel/>.
 
 **Community takedowns**: each author is responsible for their own plugin; Kino only lists community
 plugins (no recommendation or promotion). A plugin that breaks the rules for plugins (a `userMessage`

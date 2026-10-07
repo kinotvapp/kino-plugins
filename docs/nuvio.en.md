@@ -72,8 +72,8 @@ adapter, and installed with a generated manifest:
 - `"fetchHosts": "any"`: its `kino.fetch` may reach any **public** server, without a question per
   host, but only over `https` on port 443 and at a dotted name or a public IPv4 address, under a request budget
   (hosts the scraper names with `http://` are declared by the converter as `insecureHttp`). Local names, private, loopback and link-local addresses, and names that resolve into the home
-  network stay refused, on every redirect hop. This field is honoured **only** for these converted
-  installs; in a hand-written plugin it has no effect ([why](manifest.md#stream-hosts)).
+  network stay refused, on every redirect hop. This field is honoured on these converted installs and,
+  from `apiVersion` 9 (Kino 0.9.55), on a hand-written plugin ([the rule](manifest.md#fetch-hosts)).
 
 So the consent sheet of a converted scraper shows, in red, "Puede reproducir video desde cualquier
 servidor que indique" and "Puede conectarse a cualquier servidor público de internet (solo https, nunca tu red local)", plus "Puede descargar

@@ -35,7 +35,7 @@ repository; there is [a small one](#example) below.
 
 ```json
 "apiVersion": 9,
-"panel": { "label": "Latino options", "labelEn": "Latino options", "icon": "tune" }
+"panel": { "label": "Opciones", "labelEn": "Options", "icon": "tune" }
 ```
 
 | Field | What it is |
@@ -218,11 +218,11 @@ Every field is optional; `null` (or nothing) means "nothing to do".
 | Field | What it does |
 | --- | --- |
 | `panel` | replaces the whole panel (same rules as `panel(context)`). |
-| `patch` | `{ "<key>": element }`: replaces just those elements in place (a button can update one text without redrawing everything). At most 40 keys; each entry is a single node, validated like any element and with its own 120-node budget. Kino drops it (with a log line) if the key names no element on screen, if it repeats another element's key in the panel, or if the resulting panel passes 120 nodes or 4 levels. |
+| `patch` | `{ "<key>": element }`: replaces just those elements in place (only elements that have a `key`: `button`, `toggle`, `select` and `text-input`; to change a `text`, a `status` or an image, return a whole `panel`). At most 40 keys; each entry is a single node, validated like any element and with its own 120-node budget. Kino drops it (with a log line) if the key names no element on screen, if it repeats another element's key in the panel, or if the resulting panel passes 120 nodes or 4 levels. |
 | `values` | `{ "<key>": value }`: changes what the inputs show (clear one, fill one from another). At most 120 keys; each value is a string of up to 500 characters, a boolean, a finite number or `null`. **It does not save.** A key that is not an input on screen is ignored. |
 | `save` | `["<key>", …]`: saves those inputs, each with the `scope` it declared (at most 50). Only keys of inputs that are on screen are saved. Also, the `toggle` or `select` with `autoSave: true` that fired the action saves itself, without you listing it. |
 | `focus` | the key to move focus to (TV). |
-| `message` | a short notice for the person, up to 160 characters, that Kino shows as a brief message. It goes through **the same rules as a [`userMessage`](contract.md#user-message)** (Kino shows it as "Mensaje de &lt;your plugin&gt;: …", and if your plugin's name cannot introduce it, for example `Cuevana3`, it is dropped); if it does not pass, it is dropped with a log line. |
+| `message` | a short notice for the person, up to 160 characters, that Kino shows as a brief message. It goes through **the same rules as a [`userMessage`](contract.md#user-message)** (Kino shows it as "Message from &lt;your plugin&gt;: …" ("Mensaje de &lt;your plugin&gt;: …" in Spanish), and if your plugin's name cannot introduce it, for example `Cuevana3`, it is dropped); if it does not pass, it is dropped with a log line. |
 | `player` | actions on the player: the [table below](#player). |
 
 Kino applies, in this order, `panel` or `patch`, `values`, `save`, `focus`, `player` and, last, `message`.
@@ -234,8 +234,8 @@ without error. A `save` that spans both scopes is saved whole or not at all.
 
 ## Driving the player: `player` { #player }
 
-A `panelAction` or `playerEvent` answer may carry `player: { … }`. Any other key inside `player` is rejected and
-logged. A value outside its range is clamped or dropped, also with a log line.
+A `panelAction` or `playerEvent` answer may carry `player: { … }`. Any other key inside `player` is ignored with a
+log line (the rest of `player` still applies). A value outside its range is clamped or dropped, also with a log line.
 
 | Property | Values | What it does |
 | --- | --- | --- |
@@ -281,8 +281,8 @@ Everything applies **only while your plugin's content plays**, and **what the pe
 - The player properties are stored the same way, without you writing anything: `seekStepMs`, `speed`, `resize`
   and `autoNext` **per plugin**, and `markers` **per video**. `skip` goes to that episode's skip button.
 - Limits: at most **50 keys per scope** and values of at most **500 characters**; over that, the whole write is
-  refused with "Couldn't save: …" (in Spanish "No se pudo guardar: …"). Kino also keeps at most 1500 per-video values
-  in total on the device, across all plugins (the oldest go).
+  refused with "Couldn't save: …" (in Spanish "No se pudo guardar: …"). Kino also keeps at most 1500 live values
+  in total on the device (all scopes and all plugins); past that, the oldest per-video values go.
 - **It syncs both ways** across the person's devices, like everything of theirs (last write wins per key). A value
   that arrives from another device updates the open panel.
 - It is removed when the plugin is **uninstalled**.
@@ -384,8 +384,6 @@ node sdk/run.mjs --context '{"lang":"en-US","kind":"episode","device":"phone"}' 
 - `sdk/validate.mjs` checks the manifest: `panel`, the `iconFile` (96×96, alpha, 24 KB, from disk), an unknown
   `icon` (a warning), a panel or layout below apiVersion 9 (ignored) and `settingsLayout` (a repeated or unknown
   key is a problem).
-- The kit's own tests: `node --test plugins/sdk/test/*.test.mjs` (with the glob; on Node 24, passing the
-  directory fails with `MODULE_NOT_FOUND`).
 
 See also [Test it locally](test-locally.md).
 
