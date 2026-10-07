@@ -120,12 +120,12 @@ with the same key is dropped). Anything that can be pressed or holds a value car
 | `section` | `title`, `text?` | a heading with optional text; `title` up to 60, `text` up to 1000. |
 | `text` | `text` | multi-line text, up to 1000 characters; not selectable and does nothing. |
 | `status` | `text` | a highlighted status line, up to 200 characters. |
-| `image` | `url`, `aspect?`, `alt?` | `https` only, on a public host; `aspect` is `16:9`, `2:3`, `1:1` or `banner`; `alt` up to 200. If it fails to load it takes no room and never breaks the panel. |
+| `image` | `url`, `aspect?`, `alt?` | `https` only, on a public address: Kino never reaches the device's or the home network's addresses (the one exception is a server the person typed in your plugin's settings); `aspect` is `16:9`, `2:3`, `1:1` or `banner`; `alt` up to 200. If it fails to load it takes no room and never breaks the panel. |
 | `button` | `key`, `label`, `confirm?` | pressing it calls `panelAction` with `trigger: "press"`. `label` 1 to 40 (longer, and the button is dropped). With `confirm` (up to 160) Kino asks first. |
 | `toggle` | `key`, `label`, `scope`, `hint?`, `autoSave?` | a switch. Calls `panelAction` with `trigger: "change"`. |
 | `select` | `key`, `label`, `scope`, `options`, `hint?`, `autoSave?` | a list of 1 to 20 options `{ value, label }` (each 1 to 40, values distinct; one bad option drops the `select`). |
 | `text-input` | `key`, `label`, `scope`, `hint?`, `placeholder?` | a text field. Calls `panelAction` with `trigger: "submit"` only on confirm (the TV keyboard's "Listo", the phone keyboard's action), **never per keystroke**. `placeholder` up to 40. |
-| `qr` | `url`, `label?` | a QR code plus the link's text; `https` only, up to 512 characters, on a public host (never the home network or an IPv6 literal). On the TV it is read with the phone's camera; on the phone, tapping it opens the link. Kino never opens it by itself. `label` up to 40. |
+| `qr` | `url`, `label?` | a QR code plus the link's text; `https` only, up to 512 characters, on a public host **with a dot** (or a public IPv4 address): never the device or the home network (no local or single-name host, private address or IPv6 literal). On the TV it is read with the phone's camera; on the phone, tapping it opens the link. Kino never opens it by itself. `label` up to 40. |
 | `episodes` | `ref` | the list of the playing series' episodes with the current one highlighted; choosing one plays it, through the same path as "next episode". It may be empty (a movie, for example) and then takes no focus. |
 | `row`, `col`, `card` | see [layout](#layout) | containers. |
 | `ai`, `chat` | | **not in this version**: dropped ("needs a newer Kino"). |
@@ -172,11 +172,13 @@ overflows on a TV or a phone.
 - Both presentations **scroll** when the content does not fit: by touch on the phone; on the TV the focused
   element is always brought into view, with a margin (D-pad up/down moves focus and scrolls).
 - Text, sections, images and status lines take no focus (they are scrolled past). Buttons, inputs, `episodes`
-  and, on the phone, `qr` do.
+  and `qr` do.
 - **TV**: focus starts on the first element that can take it (the close X if there is none); inside a row,
   left/right; between rows, up/down, in reading order. **Focus does not leave the panel** (neither modal nor strip)
   and Back closes it: to reach the player's controls, close it first. While the panel is open the player does not
-  steal focus.
+  steal focus. The whole panel body is reachable with the D-pad (the QR and long text blocks are focus stops so they
+  scroll into view) and, if the focused control disappears when your answer replaces the panel, focus returns to
+  the first control.
 - **Phone**: the panel does not take focus on its own, so a text field does not raise the keyboard. The strip
   fits between the top bar and the bottom controls while they are shown.
 - An action's answer may ask for `focus: "<key>"` to move focus; it only applies on the TV, once per answer (a

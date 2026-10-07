@@ -466,7 +466,7 @@ type KinoPanelElement =
   | { type: "select"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; options: { value: string; label: string; labelEn?: string }[]; hint?: string; hintEn?: string; autoSave?: boolean }
   /** `placeholder` up to 40 characters; Enter calls `panelAction` with trigger "submit". */
   | { type: "text-input"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; hint?: string; hintEn?: string; placeholder?: string; placeholderEn?: string }
-  /** https, up to 512 characters, on a public host (never the device or the home network: no local name, private address or IPv6 literal). */
+  /** https, up to 512 characters, on a public host with a dot (or a public IPv4 address): never the device or the home network (no local or single-name host, private address or IPv6 literal). */
   | { type: "qr"; url: string; label?: string; labelEn?: string }
   /** The series' episodes, the current one highlighted; choosing one plays it. */
   | { type: "episodes"; ref: string }

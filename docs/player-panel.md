@@ -21,10 +21,10 @@ Un ejemplo completo con todos los elementos, las dos pestañas y todas las accio
 
 - Un botón con el nombre y el ícono de tu manifiesto, **junto al de subtítulos** («Audio y subtítulos»), solo
   **mientras suena un título de ese plugin**. En el celular está en la fila de íconos de abajo, al lado del de
-  subtítulos (si la fila no cabe, se desplaza y el botón del panel queda entre los primeros); en el TV, justo
+  subtítulos (si la fila no cabe, se desplaza y el botón del panel queda entre los primeros); en la TV, justo
   después del botón de subtítulos, navegable con el control remoto (D-pad).
 - No aparece si el plugin está apagado o dañado, si su `apiVersion` es menor que 9, si el manifiesto no declara
-  `panel` o si el plugin no exporta `panel`. En el TV, un canal en vivo de un plugin no tiene botones en
+  `panel` o si el plugin no exporta `panel`. En la TV, un canal en vivo de un plugin no tiene botones en
   pantalla, así que no tiene panel; los canales de la pestaña En vivo tampoco (en el celular, un canal en vivo
   de un plugin sí lo tiene).
 - **El video nunca se pausa** mientras el panel está abierto. Atrás, o la X, lo cierra; también se cierra al
@@ -121,12 +121,12 @@ se dibuja). Una `key` es de 1 a 128 caracteres de `A-Z a-z 0-9 . _ ~ -` y **no s
 | `section` | `title`, `text?` | un encabezado con un texto opcional; `title` hasta 60, `text` hasta 1000. |
 | `text` | `text` | texto de varias líneas, hasta 1000 caracteres; no se puede seleccionar ni hace nada. |
 | `status` | `text` | una línea de estado destacada, hasta 200 caracteres. |
-| `image` | `url`, `aspect?`, `alt?` | solo `https`, en un host público; `aspect` es `16:9`, `2:3`, `1:1` o `banner`; `alt` hasta 200. Si falla al cargar no ocupa lugar ni rompe el panel. |
+| `image` | `url`, `aspect?`, `alt?` | solo `https`, en una dirección pública: Kino nunca llega a las direcciones del aparato ni de la red de la casa (la única excepción es un servidor que la persona escribió en los ajustes de tu plugin); `aspect` es `16:9`, `2:3`, `1:1` o `banner`; `alt` hasta 200. Si falla al cargar no ocupa lugar ni rompe el panel. |
 | `button` | `key`, `label`, `confirm?` | al tocarlo llama `panelAction` con `trigger: "press"`. `label` de 1 a 40 (más largo, el botón se descarta). Con `confirm` (hasta 160) Kino pregunta antes. |
 | `toggle` | `key`, `label`, `scope`, `hint?`, `autoSave?` | un interruptor. Llama `panelAction` con `trigger: "change"`. |
 | `select` | `key`, `label`, `scope`, `options`, `hint?`, `autoSave?` | una lista de 1 a 20 opciones `{ value, label }` (cada una de 1 a 40, valores distintos; una opción mala descarta el `select`). |
-| `text-input` | `key`, `label`, `scope`, `hint?`, `placeholder?` | un campo de texto. Llama `panelAction` con `trigger: "submit"` solo al confirmar (el «Listo» del teclado del TV, la acción del teclado del celular), **nunca por cada letra**. `placeholder` hasta 40. |
-| `qr` | `url`, `label?` | un código QR más el texto del enlace; solo `https`, hasta 512 caracteres, en un host público (ni la red de la casa ni una dirección IPv6). En el TV se lee con la cámara del celular; en el celular, tocarlo abre el enlace. Kino nunca lo abre solo. `label` hasta 40. |
+| `text-input` | `key`, `label`, `scope`, `hint?`, `placeholder?` | un campo de texto. Llama `panelAction` con `trigger: "submit"` solo al confirmar (el «Listo» del teclado de la TV, la acción del teclado del celular), **nunca por cada letra**. `placeholder` hasta 40. |
+| `qr` | `url`, `label?` | un código QR más el texto del enlace; solo `https`, hasta 512 caracteres, en un host público **con punto** (o una dirección IPv4 pública; nunca el aparato ni la red de la casa: ni un host local o de una sola palabra, ni una dirección privada, ni una dirección IPv6). En la TV se lee con la cámara del celular; en el celular, tocarlo abre el enlace. Kino nunca lo abre solo. `label` hasta 40. |
 | `episodes` | `ref` | la lista de episodios de la serie que suena, con el actual resaltado; elegir uno lo reproduce, por el mismo camino que «siguiente episodio». Puede quedar vacía (una película, por ejemplo) y entonces no toma foco. |
 | `row`, `col`, `card` | mira [el diseño](#layout) | contenedores. |
 | `ai`, `chat` | | **no están en esta versión**: se descartan («needs a newer Kino»). |
@@ -171,24 +171,26 @@ nada se desborda en un TV ni en un celular.
 
 ## Desplazamiento y foco { #focus }
 
-- Los dos paneles **se desplazan** cuando el contenido no cabe: en el celular con el dedo; en el TV el foco
+- Los dos paneles **se desplazan** cuando el contenido no cabe: en el celular con el dedo; en la TV el foco
   siempre se trae a la vista, con un margen (el D-pad arriba/abajo mueve el foco y desplaza).
 - El texto, las secciones, las imágenes y los estados no toman foco (se pasan de largo). Toman foco los botones,
-  los campos, los `episodes` y, en el celular, los `qr`.
+  los campos, los `episodes` y los `qr`.
 - **TV**: el foco empieza en el primer elemento que lo toma (si no hay ninguno, en la X de cerrar); dentro de una fila,
   izquierda/derecha; entre filas, arriba/abajo, en orden de lectura. **El foco no sale del panel** (ni del modal
   ni de la franja) y Atrás lo cierra: para llegar a los controles del reproductor, se cierra primero. Mientras
-  el panel está abierto el reproductor no le roba el foco.
+  el panel está abierto el reproductor no le roba el foco. Todo el cuerpo del panel se alcanza con el D-pad (el QR y
+  los bloques de texto largos son paradas de foco para que se desplacen a la vista) y, si el control con foco
+  desaparece cuando tu respuesta reemplaza el panel, el foco vuelve al primer control.
 - **Celular**: el panel no toma foco solo, para que un campo de texto no levante el teclado de entrada. La
   franja se acomoda entre la barra de arriba y los controles de abajo mientras están visibles.
-- La respuesta de una acción puede pedir `focus: "<key>"` para mover el foco; solo vale en el TV, una vez por
+- La respuesta de una acción puede pedir `focus: "<key>"` para mover el foco; solo vale en la TV, una vez por
   respuesta (un refresco no lo repite).
 - Un botón ocupado (esperando tu `panelAction`) muestra un indicador y no acepta otra pulsación sin soltar el foco.
 
 ## Pestañas { #tabs }
 
 `tabs: [{ id, label }]` (máximo 6; `id` como una clave, `label` hasta 24, los repetidos se descartan) y `tab` (la
-actual; si no existe, la primera). Se dibujan como una tira de arriba (izquierda/derecha en el TV). Tocar una
+actual; si no existe, la primera). Se dibujan como una tira de arriba (izquierda/derecha en la TV). Tocar una
 llama otra vez `panel(context)` con `context.tab`: **tú armas el contenido de cada pestaña**. No hay un
 disparador `tab`: esa pestaña llega en el contexto.
 
@@ -256,7 +258,7 @@ una línea en el registro.
 - Sin `autoNext`, o con `countdownS: 0` y sin `nextRef`: pasa al siguiente de inmediato, como siempre.
 - `{ enabled: false }` (no necesita `countdownS`): el reproductor se queda al final, sin avanzar.
 - `{ enabled: true, countdownS: 1..30 }` (con `enabled: true`, `countdownS` es obligatorio; de 0 a 30): una tarjeta abajo a la derecha
-  dice «Siguiente en N s» con «Ver ahora» (el foco del TV empieza ahí) y «Cancelar» (Atrás también cancela y deja el
+  dice «Siguiente en N s» con «Ver ahora» (el foco de la TV empieza ahí) y «Cancelar» (Atrás también cancela y deja el
   reproductor al final). Al llegar a cero, o con «Ver ahora», se reproduce el siguiente. Si la persona salta atrás
   o reanuda, la cuenta se cancela.
 - `nextRef` sugiere cuál es el siguiente: solo se usa si es el `ref` de un episodio de la lista de la serie;
@@ -271,7 +273,7 @@ Todo aplica **solo mientras suena el contenido de tu plugin** y **lo que la pers
 - **Velocidad y tamaño**: si la persona toca el botón de velocidad o el zoom del reproductor, tu `speed` o `resize`
   se ignoran mientras dure esa pantalla de reproducción. El ciclo de velocidades de la persona **no cambia**
   (0,75, 1, 1,25, 1,5 y 2); tus velocidades 0,5 y 1,75 se aplican y se muestran, y el siguiente toque pasa al
-  paso siguiente del ciclo de la persona. En el TV no hay botón de velocidad, así que ahí la persona no puede
+  paso siguiente del ciclo de la persona. En la TV no hay botón de velocidad, así que ahí la persona no puede
   anular la tuya.
 - **Saltar intro/final**: una corrección manual de la persona (el botón «No tiene intro/outro» o ajustar los
   tiempos) gana sobre tu `skip`. No se guarda para canales en vivo ni para títulos +18.
@@ -476,6 +478,6 @@ El kit corre cada llamada sola, sin el estado de una sesión del reproductor. Es
 - Que un `message` que contiene **una contraseña de la persona** se rechaza (el kit aplica las demás reglas de
   `userMessage`).
 - Todo lo que depende del aparato: el contexto real (las estadísticas, la copia, los ids que se conocen), el diseño y el foco
-  en el TV y el celular, el aspecto del ícono, y quién gana (la velocidad o el zoom de la persona).
+  en la TV y el celular, el aspecto del ícono, y quién gana (la velocidad o el zoom de la persona).
 - Los disparadores `tab` y `open`: el kit los acepta porque están reservados, pero Kino 0.9.55 nunca los manda.
 - Los eventos reales del reproductor: con `playerEvent` los llamas tú, a mano.
