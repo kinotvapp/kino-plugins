@@ -3,19 +3,36 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Kino 0.9.55: `apiVersion` 9, `fetchHosts` on hand-written plugins, English texts, `kino.meta` by title { #v0955 }
+## Kino 0.9.55: `apiVersion` 9, the player panel, `fetchHosts` on hand-written plugins, English texts, `kino.meta` by title { #v0955 }
 
 <span id="next"></span>(Not released yet.) **`apiVersion` 9 = Kino 0.9.55.** The contract (`contract.json`) now says
 `maxApiVersion` 9 and `kino.apiVersion` reports 9. A manifest with `"apiVersion": 9` is refused by Kino 0.9.54 and older
-("Este plugin necesita una versión más nueva de Kino"), and all three features need `apiVersion` 9: below it Kino
+("Este plugin necesita una versión más nueva de Kino"), and every feature here needs `apiVersion` 9: below it Kino
 ignores them, as an older version does.
 
 | Feature | From | How to tell |
 | --- | --- | --- |
+| The player panel: `panel`, `panelAction`, `playerEvent`, the manifest's `panel` and the player properties | Kino 0.9.55, `apiVersion` 9 | nothing to check: an older Kino refuses `apiVersion` 9; do not depend on it to play |
+| `settingsLayout`: rows, columns and cards in your settings | Kino 0.9.55, `apiVersion` 9 | nothing to check: below 9, or on an older Kino, the usual list shows |
 | `"fetchHosts": "any"` on a hand-written plugin | Kino 0.9.55, `apiVersion` 9 | `kino.fetchAnyHost === true` (approved by the person) |
 | English settings and `section` texts (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.55, `apiVersion` 9 | nothing to check: below 9, or on an older Kino, the usual ones show |
 | `kino.meta({ type, title, year? })` without ids | Kino 0.9.55, `apiVersion` 9 | `kino.meta.byTitle === true` |
 
+- **The player panel** (apiVersion 9). A button next to the subtitles one, only while a title of yours plays, opens
+  a panel you build with `panel(context)`: text, images, buttons, switches, lists and inputs, in rows, columns and
+  cards, with tabs, and with values kept per video or for your whole plugin and synced. `panelAction(event,
+  context)` answers each button or input (with `panel`, `patch`, `values`, `save`, `focus`, `message` and `player`),
+  and the manifest carries `"panel": { "label", "icon" | "iconFile" }` (a 96×96 PNG).
+  [The player panel](player-panel.md).
+- **Player properties** (apiVersion 9): `player` in a `panelAction` or `playerEvent` answer drives the player:
+  `seekToMs`, `seekStepMs` (5 to 120 s), `speed`, `resize`, `skip`, `markers` (up to 30 dots on the bar) and
+  `autoNext` (an end-of-episode countdown, or `{ enabled: false }`). What the person does by hand wins.
+  [Driving the player](player-panel.md#player).
+- **`playerEvent(event, context)`** (apiVersion 9): tells you about `started`, `paused`, `resumed`, `ended`, `failed`
+  and `copyChanged` while a title of yours plays; fire-and-forget, 5 s, one at a time.
+  [`playerEvent`](player-panel.md#player-event).
+- **`settingsLayout`** (apiVersion 9): arranges the settings you already declared in rows, columns and cards,
+  without removing any. [`settingsLayout`](player-panel.md#settings-layout).
 - **`"fetchHosts": "any"` for your plugin** (apiVersion 9): until now Kino honoured it only on the Nuvio scrapers it
   converts. From Kino 0.9.55 a hand-written plugin with `"apiVersion": 9` and `"fetchHosts": "any"` may reach any public
   host you did not declare with `kino.fetch` (redirects included), only over `https` on port 443 and at a dotted name

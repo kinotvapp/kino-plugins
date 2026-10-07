@@ -3,19 +3,36 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Kino 0.9.55: `apiVersion` 9, `fetchHosts` en plugins escritos a mano, textos en inglés, `kino.meta` por título { #v0955 }
+## Kino 0.9.55: `apiVersion` 9, panel del reproductor, `fetchHosts` en plugins escritos a mano, textos en inglés, `kino.meta` por título { #v0955 }
 
 <span id="next"></span>(Todavía no publicada.) **`apiVersion` 9 = Kino 0.9.55.** El contrato (`contract.json`) ahora dice
 `maxApiVersion` 9 y `kino.apiVersion` informa 9. Kino 0.9.54 y anteriores rechazan un manifiesto con `"apiVersion": 9`
-(«Este plugin necesita una versión más nueva de Kino»), y las tres novedades piden `apiVersion` 9: por debajo, Kino las
+(«Este plugin necesita una versión más nueva de Kino»), y todas las novedades piden `apiVersion` 9: por debajo, Kino las
 ignora como lo hace una versión anterior.
 
 | Novedad | Desde | Cómo saberlo |
 | --- | --- | --- |
+| Panel del reproductor: `panel`, `panelAction`, `playerEvent`, el campo `panel` y las propiedades del reproductor | Kino 0.9.55, `apiVersion` 9 | nada que revisar: un Kino anterior rechaza `apiVersion` 9; no dependas de él para reproducir |
+| `settingsLayout`: filas, columnas y tarjetas en tus ajustes | Kino 0.9.55, `apiVersion` 9 | nada que revisar: por debajo de 9, o en un Kino anterior, se ve la lista de siempre |
 | `"fetchHosts": "any"` en un plugin escrito a mano | Kino 0.9.55, `apiVersion` 9 | `kino.fetchAnyHost === true` (aprobado por la persona) |
 | Textos de ajustes y de `section` en inglés (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.55, `apiVersion` 9 | nada que revisar: por debajo de 9, o en un Kino anterior, se ven los de siempre |
 | `kino.meta({ type, title, year? })` sin ids | Kino 0.9.55, `apiVersion` 9 | `kino.meta.byTitle === true` |
 
+- **El panel del reproductor** (apiVersion 9). Un botón junto al de subtítulos, solo mientras suena un título tuyo,
+  abre un panel que armas con `panel(context)`: texto, imágenes, botones, interruptores, listas y campos, en filas,
+  columnas y tarjetas, con pestañas, y con valores que se guardan por video o para todo tu plugin y se sincronizan.
+  `panelAction(event, context)` responde a cada botón o campo (con `panel`, `patch`, `values`, `save`, `focus`,
+  `message` y `player`), y el manifiesto lleva `"panel": { "label", "icon" | "iconFile" }` (un PNG de 96×96).
+  [El panel del reproductor](player-panel.md).
+- **Propiedades del reproductor** (apiVersion 9): `player` en la respuesta de `panelAction` y `playerEvent` mueve el
+  reproductor: `seekToMs`, `seekStepMs` (5 a 120 s), `speed`, `resize`, `skip`, `markers` (hasta 30 puntos en la barra)
+  y `autoNext` (cuenta regresiva al siguiente episodio, o `{ enabled: false }`). Lo que la persona hace a mano gana.
+  [Controlar el reproductor](player-panel.md#player).
+- **`playerEvent(event, context)`** (apiVersion 9): te avisa de `started`, `paused`, `resumed`, `ended`, `failed` y
+  `copyChanged` mientras suena un título tuyo; sin esperar tu respuesta, 5 s, uno a la vez.
+  [`playerEvent`](player-panel.md#player-event).
+- **`settingsLayout`** (apiVersion 9): acomoda los ajustes que ya declaraste en filas, columnas y tarjetas, sin quitar
+  ninguno. [`settingsLayout`](player-panel.md#settings-layout).
 - **`"fetchHosts": "any"` para tu plugin** (apiVersion 9): hasta ahora solo lo respetaba en los scrapers de Nuvio que
   convierte. Desde Kino 0.9.55 un plugin escrito a mano con `"apiVersion": 9` y `"fetchHosts": "any"` puede llegar con
   `kino.fetch` a hosts que no declaró (redirecciones incluidas), solo por `https` en el puerto 443 y a un nombre con
