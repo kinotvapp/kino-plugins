@@ -14,9 +14,22 @@ esas herramientas:
 
 !!! tip "¿Quieres usar un scraper de Nuvio?"
     No necesitas este prompt: Kino instala directamente los scrapers de un repositorio de Nuvio,
-    convirtiéndolos en el dispositivo. Mira [Scrapers de Nuvio](nuvio.md). Lo mismo con un addon de
-    Stremio ([Addons de Stremio](stremio.md)) y, desde Kino 0.9.54, con los plugins de un repositorio de
-    CloudStream ([Plugins de CloudStream](cloudstream.md)).
+    convirtiéndolos en el dispositivo. Mira [Scrapers de Nuvio](nuvio.md).
+
+!!! tip "¿Quieres usar un addon de Stremio?"
+    Tampoco necesitas este prompt. En Ajustes ▸ Plugins, «Agregar plugin», elige **Stremio** y pega la dirección del
+    `manifest.json` del addon: Kino lo lee y genera, en el dispositivo, un plugin que habla con el servidor del addon.
+    Mira [Addons de Stremio](stremio.md).
+
+!!! tip "¿Quieres usar un plugin de CloudStream?"
+    No necesitas este prompt (Kino 0.9.54). En «Agregar plugin», pega la dirección de un repositorio de CloudStream, o su
+    código corto, y Kino convierte los plugins que la persona elija. **Algo importante: necesita una app auxiliar.** El
+    código de CloudStream nunca corre dentro de Kino; corre en una pequeña app aparte, el **complemento de CloudStream**
+    (un APK adicional). La primera vez, Kino ofrece instalarlo («Instalar complemento»): lo descarga de los mismos
+    servidores que sus propias actualizaciones, comprueba que es la copia de Kino (paquete, versión, sha256 y firma) y
+    Android pide permiso para instalarlo. El complemento no tiene permiso de internet: toda petición pasa por Kino. Mientras
+    no esté instalado, esos plugins dicen «Necesitas el complemento de CloudStream» con un botón para instalarlo. Mira
+    [Plugins de CloudStream](cloudstream.md) y [el complemento](cloudstream.md#complement).
 
 ## Antes de empezar { #before }
 
