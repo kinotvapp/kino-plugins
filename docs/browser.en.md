@@ -80,6 +80,18 @@ The page runs on the person's device, so Kino fences it in:
   those navigations must be `https`, port 443 and a dotted name): it only ever returns the video requests the page made
   and the top page's last address, never a document. A [page read](#page) is stricter: its top
   document must stay on your hosts.
+- **With `fetchHosts: "any"` approved, three layers** (Kino 0.9.55). One rule covers the start address and every later
+  top-level navigation (a redirect, a meta refresh, a script setting `location`): a host you declared or the person typed
+  keeps its own rules (an `insecureHttp` host takes `http`, a declared host any port, a typed server exactly as typed); a
+  host reachable only through the grant must be `https`, on port 443, at a name with a dot or a public IPv4 address.
+  Navigations may leave your hosts (embeds hop by design), and the first one that breaks the rule ends the capture with
+  `blocked` ("only https pages on port 443 at a public name with a dot are opened"). This is detection, not always
+  prevention: when the device's WebView routes the page through Kino's proxy, a server redirect of the top page is
+  followed by the WebView before Kino sees it, so its target may be contacted once before the capture ends (the same
+  holds for a page read). The page's **subresources** (frames, scripts, the video's CDN) stay as broad as before: any
+  public server, never the home network, covered by your own `"browser": true` consent rather than by the grant, and
+  not counted in the `kino.fetch` budget. Service workers are kept off the network only where the device's WebView
+  supports it. Without the grant a capture's navigations are not guarded.
 - **Clean every time.** Each page starts with no cookies or storage, and everything is wiped when it
   closes. Nothing is shared with [`kino.cookies`](kino-api.md#cookies), with your other captures or
   with any other plugin.

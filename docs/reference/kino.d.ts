@@ -466,7 +466,7 @@ type KinoPanelElement =
   | { type: "select"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; options: { value: string; label: string; labelEn?: string }[]; hint?: string; hintEn?: string; autoSave?: boolean }
   /** `placeholder` up to 40 characters; Enter calls `panelAction` with trigger "submit". */
   | { type: "text-input"; key: string; label: string; labelEn?: string; scope?: KinoPanelScope; hint?: string; hintEn?: string; placeholder?: string; placeholderEn?: string }
-  /** https, up to 512 characters, on a public host with a dot (or a public IPv4 address): never the device or the home network (no local or single-name host, private address or IPv6 literal). */
+  /** https, up to 512 characters, on a public host with a dot, or a public IPv4 address (never the device or the home network: no single-label or local name, private address or IPv6 literal). */
   | { type: "qr"; url: string; label?: string; labelEn?: string }
   /** The series' episodes, the current one highlighted; choosing one plays it. */
   | { type: "episodes"; ref: string }
@@ -1039,8 +1039,21 @@ interface CsLink {
 
 declare namespace kino {
   const apiVersion: number;
+  /** Kino's version name, for example "0.9.56" ("sdk" in the Node kit). */
   const appVersion: string;
+  /**
+   * The language Kino speaks now, as a tag: "es-CO" or "en-US" (`kino.lang.slice(0, 2)` for the bare "es"/"en"). It follows
+   * the person's choice in Ajustes ▸ App ▸ Idioma: on a change Kino closes the plugin's runtime and the next call opens a
+   * new one with the new value (a `sign()` lane keeps the old one), so read it per call, not into a long-lived cache.
+   */
   const lang: string;
+  /**
+   * Kino 0.9.55+: the UI Kino shows on this device, `"tv"` (remote control, ten-foot screen) or `"phone"` (touch; a
+   * tablet gets whatever Kino shows it, usually `"phone"`). Same value for every apiVersion and every call while Kino
+   * runs; no permission, it says nothing about the person. `undefined` on an older Kino. The Node kit says `"phone"`
+   * unless `run.mjs --device tv` or `KINO_DEVICE=tv`.
+   */
+  const device: "tv" | "phone" | undefined;
   /**
    * Kino 0.9.55+: `true` when THIS install's `kino.fetch` may reach any public host -- the manifest declares
    * `"fetchHosts": "any"`, the plugin qualifies (apiVersion 9 or later, or converted from a Nuvio scraper) and the
@@ -1102,6 +1115,17 @@ declare namespace kino {
    * `rate_limited`, `not_found`, `too_large`, `timeout`, `network`, `unavailable`, `not_allowed` (from `sign()`).
    */
   function tmdb(path: string, params?: Record<string, string | number | boolean>): Promise<any>;
+
+  /**
+   * Kino 0.9.55: share ONE anonymous, free guest session of your source's portal, so people in regions that can't log in
+   * have live sessions to seed from. `session` is a plain object of the session's own fields (its ids and token); Kino keeps
+   * only the known seed fields, drops everything else, and sends it to Kino's own error board — but only when the
+   * person's plugin-telemetry consent is on (the same consent `kino.log.report` rides on). It is anonymous: it names no
+   * account and carries nothing about the person. Best-effort and synchronous; it answers nothing and never throws. Mint a
+   * BRAND-NEW guest session for this, never the person's own, and send it only after you confirmed it works. Absent on a
+   * Kino older than 0.9.55 (feature-detect with `typeof kino.seed === "function"`).
+   */
+  function seed(session: Record<string, string | number>): void;
 
   /**
    * apiVersion 6, with `"browser": true` (or `"pages"`) in the manifest (the person approves it in red): from `resolve` only, and only

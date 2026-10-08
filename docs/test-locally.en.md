@@ -31,6 +31,8 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
 - `--record fixtures.json` saves every `kino.fetch` answer; `--replay fixtures.json` answers from that
   file only, with no network. Record once, then your tests run offline and always the same (the
   scaffold's `test/plugin.test.mjs` does exactly that).
+- `--device tv|phone` (or `KINO_DEVICE=tv`) sets what [`kino.device`](kino-api.md#device) says, to try the TV side of your
+  plugin; the default is `"phone"`. Any other value stops the run.
 - `KINO_TYPE=movie|series|music|podcast|any` sets the `type` of the search (default `any`; `music` and `podcast` are
   [apiVersion 8](contract.md#music-podcasts), Kino 0.9.54).
 - To fill the other fields of the query, pass the whole query as JSON:
@@ -223,6 +225,13 @@ KINO_TMDB_FIXTURE=tmdb.json node sdk/run.mjs . search matrix   # kino.tmdb answe
   [`kino.tmdb`](kino-api.md#tmdb)); `node sdk/validate.mjs` warns when your code calls either without
   `typeof kino.<name> === "function"` (older Kino has neither). Samples of both files are in
   `docs/plugins/fixtures/kino-services/` of Kino's repository.
+
+## `kino.device` and `kino.seed` (Kino 0.9.55) { #device }
+
+The kit has both. `kino.device` is `"phone"` unless you pass `--device tv` (or set `KINO_DEVICE=tv`), so you can run your
+plugin once as each. [`kino.seed`](kino-api.md#seed) sends nothing anywhere: it applies the same filter as the app
+(the contract's `kinoSeed` keys and limits) and logs which keys Kino would keep, never their values, because they are
+tokens; with no `"telemetry"` in your manifest the line says the app would send nothing.
 
 ## What the Node kit does not reproduce { #differences }
 

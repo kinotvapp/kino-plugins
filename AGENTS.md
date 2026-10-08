@@ -243,6 +243,16 @@ exact message Kino shows, never a summary.
   else `rate_limited`). Declared `hosts` keep their own rules and spend no budget, so declare the primary
   sites and use it only for hosts that rotate. Check `kino.fetchAnyHost === true`. Below apiVersion 9 it is
   ignored in a hand-written plugin (`sdk/validate.mjs` says so). From apiVersion 4 any value but `"any"` is refused.
+- `kino.device` (Kino 0.9.55, every apiVersion) is `"tv"` or `"phone"`, the UI Kino shows on this device; `undefined` on an
+  older Kino, so treat anything but `"tv"` as the phone. Use it for what really differs on a TV box (fewer items per
+  request, wording that says "en el control" instead of "toca"). The kit says `"phone"` unless `run.mjs --device tv`.
+- `kino.seed(session)` (Kino 0.9.55, every apiVersion) is ONLY for a source that hands anonymous guest sessions to anyone
+  and blocks regions from logging in: share ONE brand-new guest session you just created and proved works, never the
+  person's own, at most once every few hours per device (keep the time in `kino.storage`), behind a setting the person can
+  turn off, and mention it in the plugin's description. Feature-detect `typeof kino.seed === "function"`. Kino keeps only
+  `sn`, `userId`, `userToken`, `jwtToken`, `mintedAt`, `customer`, `activeTime`, `availableTime` (the first three required),
+  and sends them to its own error board only with the person's telemetry consent. Never add it to a plugin that does not
+  need it. Reference: [kino.seed](https://kinotvapp.github.io/kino-plugins/en/kino-api/#seed).
 
 **The engine is QuickJS, not Node, not a browser.** Missing: `setTimeout`, `setInterval`,
 `setImmediate`, `queueMicrotask`, `Buffer`, `process`, `require`, `fetch`, `AbortController`,

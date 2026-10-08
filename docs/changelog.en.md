@@ -5,7 +5,7 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 
 ## Kino 0.9.55: `apiVersion` 9, the player panel, `fetchHosts` on hand-written plugins, English texts, `kino.meta` by title { #v0955 }
 
-<span id="next"></span>(Not released yet.) **`apiVersion` 9 = Kino 0.9.55.** The contract (`contract.json`) now says
+<span id="next"></span>(Released 2026-10-08.) **`apiVersion` 9 = Kino 0.9.55.** The contract (`contract.json`) now says
 `maxApiVersion` 9 and `kino.apiVersion` reports 9. A manifest with `"apiVersion": 9` is refused by Kino 0.9.54 and older
 ("Este plugin necesita una versión más nueva de Kino"), and every feature here needs `apiVersion` 9: below it Kino
 ignores them, as an older version does.
@@ -17,6 +17,8 @@ ignores them, as an older version does.
 | `"fetchHosts": "any"` on a hand-written plugin | Kino 0.9.55, `apiVersion` 9 | `kino.fetchAnyHost === true` (approved by the person) |
 | English settings and `section` texts (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.55, `apiVersion` 9 | nothing to check: below 9, or on an older Kino, the usual ones show |
 | `kino.meta({ type, title, year? })` without ids | Kino 0.9.55, `apiVersion` 9 | `kino.meta.byTitle === true` |
+| [`kino.device`](kino-api.md#device): `"tv"` or `"phone"`, the UI Kino shows on this device | Kino 0.9.55, every `apiVersion` | `kino.device === "tv"` (`undefined` before) |
+| [`kino.seed(session)`](kino-api.md#seed): share one anonymous guest session of your source (needs the person's telemetry consent) | Kino 0.9.55, every `apiVersion` | `typeof kino.seed === "function"` |
 
 - **The player panel** (apiVersion 9). A button next to the subtitles one, only while a title of yours plays, opens
   a panel you build with `panel(context)`: text, images, buttons, switches, lists and inputs, in rows, columns and

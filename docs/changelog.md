@@ -5,7 +5,7 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 
 ## Kino 0.9.55: `apiVersion` 9, panel del reproductor, `fetchHosts` en plugins escritos a mano, textos en inglés, `kino.meta` por título { #v0955 }
 
-<span id="next"></span>(Todavía no publicada.) **`apiVersion` 9 = Kino 0.9.55.** El contrato (`contract.json`) ahora dice
+<span id="next"></span>(Publicada el 8 de octubre de 2026.) **`apiVersion` 9 = Kino 0.9.55.** El contrato (`contract.json`) ahora dice
 `maxApiVersion` 9 y `kino.apiVersion` informa 9. Kino 0.9.54 y anteriores rechazan un manifiesto con `"apiVersion": 9`
 («Este plugin necesita una versión más nueva de Kino»), y todas las novedades piden `apiVersion` 9: por debajo, Kino las
 ignora como lo hace una versión anterior.
@@ -17,6 +17,8 @@ ignora como lo hace una versión anterior.
 | `"fetchHosts": "any"` en un plugin escrito a mano | Kino 0.9.55, `apiVersion` 9 | `kino.fetchAnyHost === true` (aprobado por la persona) |
 | Textos de ajustes y de `section` en inglés (`labelEn`, `hintEn`, `confirmEn`) | Kino 0.9.55, `apiVersion` 9 | nada que revisar: por debajo de 9, o en un Kino anterior, se ven los de siempre |
 | `kino.meta({ type, title, year? })` sin ids | Kino 0.9.55, `apiVersion` 9 | `kino.meta.byTitle === true` |
+| [`kino.device`](kino-api.md#device): `"tv"` o `"phone"`, la interfaz que Kino muestra en este aparato | Kino 0.9.55, todo `apiVersion` | `kino.device === "tv"` (`undefined` antes) |
+| [`kino.seed(session)`](kino-api.md#seed): compartir una sesión de invitado anónima de tu fuente (requiere el consentimiento de telemetría de la persona) | Kino 0.9.55, todo `apiVersion` | `typeof kino.seed === "function"` |
 
 - **El panel del reproductor** (apiVersion 9). Un botón junto al de subtítulos, solo mientras suena un título tuyo,
   abre un panel que armas con `panel(context)`: texto, imágenes, botones, interruptores, listas y campos, en filas,

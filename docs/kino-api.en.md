@@ -7,6 +7,8 @@ kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest api
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
 kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
+kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
+kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 ```
 
 ### `kino.lang`: the person's language { #lang }
@@ -25,6 +27,23 @@ feature-detect: read it where you need it.
   Kino shows your text as you wrote it. `kino.meta`'s `lang` takes the tag as it is (`lang: kino.lang`) or its bare code
   (`kino.lang.split("-")[0]`).
 - The Node kit's `kino.lang` is always `"es-CO"` ([Test it locally](test-locally.md#differences)).
+
+### `kino.device`: TV or phone? { #device }
+
+From **Kino 0.9.55**, `kino.device` is `"tv"` or `"phone"`: the interface Kino shows on this device, the same decision it
+makes to draw its TV screens (remote control, ten-foot UI) or its phone ones. A tablet gets whatever Kino shows it,
+usually `"phone"`. It never changes while Kino runs, needs no permission and works at every `apiVersion`. On an older Kino
+it is `undefined`, so treat anything but `"tv"` as the phone:
+
+```js
+const onTv = kino.device === "tv";
+const pageSize = onTv ? 20 : 40;                                   // fewer items per request on a TV box
+const hint = onTv ? "Elige otra fuente con el control" : "Toca otra fuente";
+```
+
+Use it for what really differs: fewer items per request, a copy that decodes well on a box, a `userMessage` that says
+"en el control" instead of "toca". The Node kit says `"phone"` unless you pass `--device tv` to `run.mjs`
+([Test it locally](test-locally.md#device)).
 
 ### `kino.fetchAnyHost`: does `kino.fetch` reach any host? { #fetch-any-host }
 
@@ -452,6 +471,36 @@ Under the Node kit, `kino.tmdb` uses your key from `KINO_TMDB_KEY` (or `"tmdbKey
 Kino's, with the stricter limit on Kino's key (20 per 10 s; the kit has no person's key to fall back to), and with
 `KINO_TMDB_FIXTURE` it answers offline from a JSON file keyed `"<path>?<params sorted by name>"` or `"<path>"`. Without
 either, it throws `no_tmdb_key`, as a Kino build without a key does.
+
+## `kino.seed(session)`: share one anonymous guest session (Kino 0.9.55) { #seed }
+
+Some sources give an anonymous, free guest session to anyone who asks and block whole regions from logging in.
+`kino.seed` lets your plugin hand Kino **one** such session so people in those regions have live sessions to fall back
+on. It is best-effort and synchronous: it answers nothing and never throws into your plugin, so call it and carry on.
+
+```js
+if (typeof kino.seed === "function") {
+  kino.seed({ sn, userId, userToken, jwtToken, mintedAt });   // a brand-new guest session, already proven to work
+}
+```
+
+- **What to send.** A session you just created for this and nothing else, never the person's own, and only after you
+  checked it works (for example by reading one catalog page with it). If a device cannot create a working guest session
+  (a blocked region, a refusal, an empty answer), it sends nothing at all.
+- **What Kino keeps.** Only these keys, each a short string (at most 2,048 characters) or a finite number: `sn`,
+  `userId`, `userToken`, `jwtToken`, `mintedAt`, `customer`, `activeTime` and `availableTime`. Any other key is dropped.
+  If `sn`, `userId` and `userToken` are not all present and non-blank, the whole session is dropped. The cleaned session
+  is at most 8,192 characters, and a session whose JSON is over 16,384 characters never crosses.
+- **Consent.** Kino sends it to its own error board only when the person's plugin-telemetry consent is on for your plugin
+  (the one [`kino.log.report`](#log) rides on, with `"telemetry": true` in your manifest); with it off, nothing leaves the
+  device. It is anonymous: it names no account and carries nothing about the person. Say so in your plugin's
+  description and give the person a setting to turn the contribution off.
+- **Rate.** Do not mint on every Home. Keep a timestamp in [`kino.storage`](#storage) and share at most one session
+  every few hours per device.
+- **Feature-detect it.** An older Kino has no `kino.seed`; the check above is the whole compatibility story. The
+  contract's `kinoSeed` section carries the same keys and limits ([`contract.json`](reference/index.md)).
+- **In the Node kit** `kino.seed` is there too: it sends nothing, applies the same filter and logs which keys Kino
+  would keep (never the values), noting when your manifest lacks `"telemetry"` and the app would send nothing.
 
 ## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 

@@ -90,6 +90,9 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "liveStreamHosts": "any" (apiVersion 3, needs the "channels" capability). If the site or its
   extractors rotate domains and you cannot list them, use "fetchHosts": "any" (apiVersion 9, Kino
   0.9.55; the person approves it in red; https on port 443 only, under a request budget, never the home network) and check kino.fetchAnyHost.
+  Use kino.device ("tv" or "phone", Kino 0.9.55) for what differs on a TV box. Add kino.seed(session) only to a plugin whose source
+  hands out anonymous guest sessions and blocks regions: one brand-new, already-working session at most every few hours, behind a
+  setting the person can turn off, feature-detected with typeof kino.seed === "function".
   There is no maximum number of hosts from Kino 0.9.45; Kino 0.9.44 and older refuse more than 20, so
   if you declare more than 20, tell me.
 - In kino-plugin.json write "entry": "plugin.js" and "icon": "icon.png", NEVER "./plugin.js": Kino

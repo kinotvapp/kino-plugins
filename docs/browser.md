@@ -84,6 +84,19 @@ La página corre en el aparato de la persona, así que Kino la encierra:
   solo devuelve las peticiones de video que hizo la página y la última dirección de la página principal,
   nunca un documento. Una [lectura de página](#page) es más estricta: su documento principal tiene que
   quedarse en tus hosts.
+- **Con `fetchHosts: "any"` aprobado, tres capas** (Kino 0.9.55). Una sola regla cubre la dirección de inicio y cada
+  navegación posterior del nivel principal (una redirección, un meta refresh, un script que cambia `location`): un host que
+  declaraste o que la persona escribió conserva sus propias reglas (un host `insecureHttp` admite `http`, un host
+  declarado cualquier puerto, un servidor escrito por la persona exactamente como lo escribió); un host alcanzable solo por
+  el permiso tiene que ser `https`, en el puerto 443, con un nombre con punto o una IPv4 pública. Las navegaciones pueden
+  salir de tus hosts (los embeds saltan a propósito) y la primera que rompa la regla termina la captura con `blocked`
+  («solo se abren páginas https en el puerto 443 con un nombre público con punto»). Es detección, no siempre prevención:
+  cuando el WebView del aparato pasa la página por el proxy de Kino, una redirección del servidor sobre la página principal
+  la sigue el WebView antes de que Kino la vea, así que su destino puede recibir una conexión antes de que termine la
+  captura (lo mismo vale para una lectura de página). Los **subrecursos** de la página (marcos, scripts, la CDN del video)
+  siguen tan amplios como antes: cualquier servidor público, nunca la red de la casa, cubiertos por tu propio consentimiento
+  `"browser": true` y no por el permiso, y no cuentan en el cupo de `kino.fetch`. Los service workers solo se mantienen
+  fuera de la red donde el WebView del aparato lo permite. Sin el permiso, las navegaciones de una captura no se vigilan.
 - **Limpia cada vez.** Cada página empieza sin cookies ni almacenamiento, y todo se borra al cerrarla.
   Nada se comparte con [`kino.cookies`](kino-api.md#cookies), con tus otras capturas ni con ningún otro
   plugin.

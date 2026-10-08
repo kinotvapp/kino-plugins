@@ -7,6 +7,8 @@ kino.apiVersion   // 8 on Kino 0.9.54 (7 on 0.9.51 to 0.9.53) -- the highest api
 kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
 kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
+kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
+kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 ```
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
@@ -30,6 +32,23 @@ Automático habla español en un aparato configurado en cualquier variante de es
   `Accept-Language`. Kino muestra tu texto tal como lo escribiste. El `lang` de `kino.meta` acepta la etiqueta tal cual
   (`lang: kino.lang`) o su código corto (`kino.lang.split("-")[0]`).
 - En el kit de Node, `kino.lang` es siempre `"es-CO"` ([Probar en local](test-locally.md#differences)).
+
+### `kino.device`: ¿TV o celular? { #device }
+
+Desde **Kino 0.9.55**, `kino.device` es `"tv"` o `"phone"`: la interfaz que Kino muestra en este aparato, la misma decisión
+con la que dibuja sus pantallas de TV (control remoto, pantalla a distancia) o las del celular. Una tableta recibe lo que
+Kino le muestre, normalmente `"phone"`. No cambia mientras Kino corre, no pide permiso y sirve en todo `apiVersion`. En un
+Kino anterior es `undefined`, así que trata todo lo que no sea `"tv"` como celular:
+
+```js
+const enTv = kino.device === "tv";
+const tamano = enTv ? 20 : 40;                                      // menos elementos por petición en una caja de TV
+const pista = enTv ? "Elige otra fuente con el control" : "Toca otra fuente";
+```
+
+Úsalo para lo que de verdad cambia: menos elementos por petición, una copia que decodifique bien en una caja, un
+`userMessage` que diga «en el control» en vez de «toca». El kit de Node dice `"phone"` salvo que le pases `--device tv` a
+`run.mjs` ([Probar en local](test-locally.md#device)).
 
 ### `kino.fetchAnyHost`: ¿llega `kino.fetch` a cualquier host? { #fetch-any-host }
 
@@ -491,6 +510,37 @@ Con el kit de Node, `kino.tmdb` usa tu llave de `KINO_TMDB_KEY` (o `"tmdbKey"` e
 de Kino, con el límite más estricto de la llave de Kino (20 cada 10 s; el kit no tiene una llave de la persona a la que
 pasar), y con `KINO_TMDB_FIXTURE` responde sin red desde un archivo JSON con claves `"<path>?<params ordenados por
 nombre>"` o `"<path>"`. Sin ninguno de los dos lanza `no_tmdb_key`, como una versión de Kino sin llave propia.
+
+## `kino.seed(session)`: compartir una sesión anónima de invitado (Kino 0.9.55) { #seed }
+
+Algunas fuentes dan una sesión de invitado anónima y gratuita a quien la pida, y bloquean regiones enteras para iniciar
+sesión. `kino.seed` deja que tu plugin le entregue a Kino **una** de esas sesiones para que las personas de esas regiones
+tengan sesiones vivas a las que recurrir. Es de mejor esfuerzo y síncrona: no responde nada y nunca lanza hacia tu plugin,
+así que la llamas y sigues.
+
+```js
+if (typeof kino.seed === "function") {
+  kino.seed({ sn, userId, userToken, jwtToken, mintedAt });   // una sesión de invitado nueva, ya comprobada
+}
+```
+
+- **Qué enviar.** Una sesión que acabas de crear para esto y nada más, nunca la de la persona, y solo después de
+  comprobar que funciona (por ejemplo, leyendo una página del catálogo con ella). Si un aparato no puede crear una sesión
+  de invitado que funcione (región bloqueada, un rechazo, una respuesta vacía), no envía nada.
+- **Qué guarda Kino.** Solo estas claves, cada una un texto corto (máximo 2.048 caracteres) o un número finito: `sn`,
+  `userId`, `userToken`, `jwtToken`, `mintedAt`, `customer`, `activeTime` y `availableTime`. Cualquier otra clave se
+  descarta. Si `sn`, `userId` y `userToken` no están todas y con contenido, se descarta la sesión entera. La sesión ya
+  limpia tiene como máximo 8.192 caracteres, y una sesión cuyo JSON pase de 16.384 caracteres ni siquiera cruza.
+- **Consentimiento.** Kino la envía a su propio tablero de errores solo cuando el consentimiento de telemetría de plugins
+  está activo para tu plugin (el mismo que usa [`kino.log.report`](#log), con `"telemetry": true` en tu manifiesto); con
+  él apagado, nada sale del aparato. Es anónima: no nombra ninguna cuenta ni lleva nada de la persona. Dilo en la
+  descripción de tu plugin y dale a la persona un ajuste para apagar el aporte.
+- **Frecuencia.** No crees una en cada Inicio. Guarda una marca de tiempo en [`kino.storage`](#storage) y comparte como
+  máximo una sesión cada pocas horas por aparato.
+- **Detéctalo.** Un Kino anterior no tiene `kino.seed`; la comprobación de arriba es toda la compatibilidad. La sección
+  `kinoSeed` del contrato trae las mismas claves y límites ([`contract.json`](reference/index.md)).
+- **En el kit de Node** `kino.seed` también existe: no envía nada, aplica el mismo filtro y registra qué claves
+  conservaría Kino (nunca los valores), avisando cuando tu manifiesto no tiene `"telemetry"` y la app no enviaría nada.
 
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
