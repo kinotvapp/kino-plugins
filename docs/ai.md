@@ -92,9 +92,6 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   "liveStreamHosts": "any" (apiVersion 3, necesita la capacidad "channels"). Si el sitio o sus
   extractores cambian de dominio y no puedes listarlos, usa "fetchHosts": "any" (apiVersion 9, Kino
   0.9.55; la persona lo aprueba en rojo; solo por https en el puerto 443, con un cupo de peticiones, nunca la red de la casa) y revisa kino.fetchAnyHost.
-  Usa kino.device ("tv" o "phone", Kino 0.9.55) para lo que cambia en una caja de TV. Agrega kino.seed(session) solo a un plugin cuya fuente
-  reparta sesiones de invitado anónimas y bloquee regiones: una sesión nueva y que ya funciona como mucho cada pocas horas, detrás de
-  un ajuste que la persona pueda apagar, detectada con typeof kino.seed === "function".
   Desde Kino 0.9.45 no hay un máximo de hosts; Kino 0.9.44 y anteriores rechazan más de 20, así que si
   declaras más de 20, avísame.
 - En kino-plugin.json escribe "entry": "plugin.js" e "icon": "icon.png", NUNCA "./plugin.js": Kino
@@ -132,7 +129,12 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   resolve. Por debajo de apiVersion 8 esos ítems se descartan.
 - Detecta lo que a un Kino viejo le falta: kino.meta y kino.tmdb (Kino 0.9.53) solo detrás de
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, y las opciones captureAll del
-  navegador oculto (Kino 0.9.54) solo cuando `kino.browser.captureAll === true`. TMDB va por
+  navegador oculto (Kino 0.9.54) solo cuando `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
+  es "tv" o "phone" y es undefined en un Kino anterior: úsalo solo para lo que de verdad cambia en una caja
+  de TV y trata todo lo que no sea "tv" como celular. Agrega kino.seed(session) (Kino 0.9.55, detrás de
+  `typeof kino.seed === "function"`) SOLO a un plugin cuya fuente reparta sesiones de invitado anónimas y
+  bloquee regiones para iniciar sesión: una sesión nueva que acabas de comprobar que funciona, nunca la de la
+  persona, como mucho cada pocas horas y detrás de un ajuste que la persona pueda apagar. TMDB va por
   kino.tmdb, nunca con una llave en el código. Nunca exportes una función auxiliar llamada "details":
   desde apiVersion 8 es un export reservado.
 - Nada secreto en el código ni en el repositorio. El usuario y la contraseña de cada persona van en

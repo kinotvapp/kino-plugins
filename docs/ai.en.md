@@ -90,9 +90,6 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "liveStreamHosts": "any" (apiVersion 3, needs the "channels" capability). If the site or its
   extractors rotate domains and you cannot list them, use "fetchHosts": "any" (apiVersion 9, Kino
   0.9.55; the person approves it in red; https on port 443 only, under a request budget, never the home network) and check kino.fetchAnyHost.
-  Use kino.device ("tv" or "phone", Kino 0.9.55) for what differs on a TV box. Add kino.seed(session) only to a plugin whose source
-  hands out anonymous guest sessions and blocks regions: one brand-new, already-working session at most every few hours, behind a
-  setting the person can turn off, feature-detected with typeof kino.seed === "function".
   There is no maximum number of hosts from Kino 0.9.45; Kino 0.9.44 and older refuse more than 20, so
   if you declare more than 20, tell me.
 - In kino-plugin.json write "entry": "plugin.js" and "icon": "icon.png", NEVER "./plugin.js": Kino
@@ -129,7 +126,12 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   apiVersion 8 such items are dropped.
 - Feature-detect what older Kino lacks: kino.meta and kino.tmdb (Kino 0.9.53) only behind
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, and the hidden browser's
-  captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. TMDB goes through
+  captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
+  is "tv" or "phone" and undefined on an older Kino: use it only for what really differs on a TV box and
+  treat anything but "tv" as the phone. Add kino.seed(session) (Kino 0.9.55, behind
+  `typeof kino.seed === "function"`) ONLY to a plugin whose source hands out anonymous guest sessions and
+  blocks regions from logging in: one brand-new session you just proved works, never the person's own, at
+  most every few hours, behind a setting the person can turn off. TMDB goes through
   kino.tmdb, never with a key in the code. Never export a helper named "details": from apiVersion 8
   it is a reserved export.
 - Nothing secret in the code or the repository. Each person's username and password go in a
