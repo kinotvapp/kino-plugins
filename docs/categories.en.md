@@ -12,7 +12,7 @@ in [the contract](contract.md).
 
 ## What the Home does with your categories { #how }
 
-- **Tabs = types.** A type `genre` on a row (`peliculas`, `series`, `anime`...) picks the tab for all its items. If the row's `genre` is a genre id (`accion`) or a new category, every item of that row goes to that genre row and the tab comes from each item's `kind` (`movie`, `series`, `music`, `podcast`). With no `genre`, Kino reads the row title: one that names a known genre ("Terror", "Comedia") gives that genre, and only `anime`, `infantil`, `documentales`, `deportes`, `noticias` and `musica` can be guessed as a tab. A title's tab is decided by the first row it appears in, and each row shows at most 30 titles.
+- **Tabs = types.** A type `genre` on a row (`peliculas`, `series`, `anime`...) picks the tab for all its items. If the row's `genre` is a genre id (`accion`) or a new category, every item of that row goes to that genre row and the tab comes from each item's `kind` (`movie`, `series`, `music`, `podcast`). With no `genre`, Kino reads the row title: one that names a known genre ("Terror", "Comedia") gives that genre, and the guess is skipped when the row already names a known genre; only `anime`, `infantil`, `documentales`, `deportes`, `noticias` and `musica` can be guessed as a tab. A title's tab is decided by the first row it appears in, and each row shows at most 30 titles.
 - **Rows = genres.** Inside a tab, Kino groups titles by each item's `genres` (`["Drama", "Suspenso"]` puts the title in
   the Drama and Suspenso rows).
 - **One title, one card.** When several sources have the same title, one card is shown. Identity is, in this order: the

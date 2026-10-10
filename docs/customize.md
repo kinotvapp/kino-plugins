@@ -134,7 +134,7 @@ export async function home() {
 
 - Una fila con `ref` (y la capacidad `browse`) termina en "Ver más"; con `scopedSearch` tú respondes la
   búsqueda dentro de ella.
-- `genre` es como Categorías agrupa las filas navegables de todos los plugins, y como el Inicio por
+- `genre` es como Categorías agrupa las filas navegables de todos los plugins, y como el Home por
   categorías ubica tu contenido. En una fila acepta cualquier categoría (un id como `peliculas`, `series`,
   `anime`, `documentales`…, un alias, o una nueva que se agrega al final); en una categoría en vivo o una lista
   sigue siendo uno de diez ids, y la pestaña Categorías (la antigua) solo usa esos diez. Sin él, Kino lo adivina por el título. [Home por categorías](categories.md).
