@@ -10,7 +10,8 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   cualquier otra cosa se guarda como un slug (minúsculas ASCII `[a-z0-9-]`, hasta 40 caracteres) que se agrega al final,
   después de las conocidas. Las categorías en vivo y las listas siguen con los diez ids. Las versiones anteriores de
   Kino ignoran un valor fuera de esos diez. [Home por categorías](categories.md).
-- **Home por categorías** (opcional para la persona): pestañas por tipo y filas por género, una tarjeta por título,
+- **Home por categorías** (opcional para la persona): una sola lista de filas por categoría (filas de género con todos los tipos mezclados, una fila completa
+  por tipo temático como Anime o Infantil, sin pestañas), una tarjeta por título,
   armado solo con lo que tus filas de Inicio ya dejaron guardado. Declara `genre` en cada fila y `genres` en cada ítem, de
   preferencia con los ids del vocabulario, y manda `ids`/TMDB y `year` para que un título sea una sola tarjeta entre
   fuentes. [Qué hace el Inicio con tus categorías](categories.md#how).

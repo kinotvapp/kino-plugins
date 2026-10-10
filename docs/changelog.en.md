@@ -10,7 +10,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   as a slug (lowercase ASCII `[a-z0-9-]`, at most 40 characters) appended at the end, after the known ones. Live
   categories and playlists keep the ten ids. Earlier Kino versions ignore a value outside those ten.
   [Home categories](categories.md).
-- **Home by categories** (optional for the person): type tabs and genre rows, one card per title, built only from what
+- **Home by categories** (optional for the person): one flat list of category rows (genre rows with every type mixed, a full
+  row per thematic type such as Anime or Kids, no tabs), one card per title, built only from what
   your Home rows already left cached. Declare `genre` on each row and `genres` on each item, preferably with the
   vocabulary ids, and send `ids`/TMDB and `year` so a title is one card across sources.
   [What the Home does with your categories](categories.md#how).
