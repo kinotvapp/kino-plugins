@@ -1,10 +1,10 @@
 # Home categories { #home-categories }
 
 Kino can show a **Home by categories**, in the style of streaming apps: type tabs on top (Movies, Series, Anime...) and
-genre rows inside (Action, Comedy...), with **one card per title**. It is optional: the person turns it on in settings.
+genre rows inside (Action, Comedy...), with **one card per title**. It is optional and off by default: the person turns it on in Ajustes ▸ App ▸ "Home por categorías (experimento)" ("Home by categories (experiment)" in English).
 It is built **only from what your Home rows already left cached** (it does not search on its own or call your plugin), so
 what you declare in `home()` decides where your content lands. This page explains how to declare it. Items and rows are
-in [the contract](contract.en.md).
+in [the contract](contract.md).
 
 !!! note "From the next Kino release"
     Until now a Home row's `genre` accepted only ten closed ids. From the next release it accepts **any category**
@@ -12,13 +12,13 @@ in [the contract](contract.en.md).
 
 ## What the Home does with your categories { #how }
 
-- **Tabs = types.** Each row's `genre` (`peliculas`, `series`, `anime`...) decides which tab it lands in.
+- **Tabs = types.** A type `genre` on a row (`peliculas`, `series`, `anime`...) picks the tab for all its items. If the row's `genre` is a genre id (`accion`) or a new category, every item of that row goes to that genre row and the tab comes from each item's `kind` (`movie`, `series`, `music`, `podcast`). With no `genre`, Kino reads the row title: one that names a known genre ("Terror", "Comedia") gives that genre, and only `anime`, `infantil`, `documentales`, `deportes`, `noticias` and `musica` can be guessed as a tab. A title's tab is decided by the first row it appears in, and each row shows at most 30 titles.
 - **Rows = genres.** Inside a tab, Kino groups titles by each item's `genres` (`["Drama", "Suspenso"]` puts the title in
   the Drama and Suspenso rows).
 - **One title, one card.** When several sources have the same title, one card is shown. Identity is, in this order: the
-  **TMDB id** (movie and series kept apart), else the **normalised title plus year**, else just the title. Tapping the
-  card makes Kino search that title across every source that has it.
-- **No genre:** a title with no genre goes to the **"Más títulos"** row.
+  **TMDB id** (movie and series kept apart), else the **normalised title plus year**, else just the title. Movies and series are kept apart even without a TMDB id, but a copy with a TMDB id and one without never merge. Tapping a video
+  card makes Kino search that title across every source that has it; an audio card plays that plugin's own item directly.
+- **No genre:** a title with no genre goes to the **"Más títulos"** row ("More titles" in an English app).
 - **Nothing empty:** a row or tab with no titles is never shown.
 - **18+:** `adult: true` content stays hidden while the person's 18+ code is locked.
 - **Audio apart:** music and podcasts get their own tabs (`radio`, `podcasts`, `audiolibros`, `conciertos`, `musica`).
@@ -37,7 +37,7 @@ That way your content lands in the right place and sits together with other plug
 
 The **id** is what you write. Kino shows the Spanish name (or the English one if the person uses Kino in English). The
 "Also understood" column holds aliases Kino maps to the id; case, accents and punctuation do not matter, and the names
-shown on screen work too.
+shown on screen work too (note: English "Sports" is the name of both `deportes` and `deportivo`, and maps to `deportes`).
 
 ### Video types (tabs) { #video-types }
 
@@ -117,7 +117,7 @@ shown on screen work too.
 ## Declaring it in your plugin { #declare }
 
 `genre` goes on the **row** `home()` returns; `genres` goes on each **item** (up to 5 free-text names, each at most 30
-characters; see [the contract](contract.en.md)). For a title to merge well with other sources' copies, also send `ids`
+characters; see [the contract](contract.md)). For a title to merge well with other sources' copies, also send `ids`
 (with the TMDB id if you have it) and `year`.
 
 ```js
@@ -133,7 +133,7 @@ export async function home() {
         ref: String(m.id),
         kind: "movie",
         title: m.title,
-        year: String(m.year),          // helps merge the same title across sources
+        year: m.year ? String(m.year) : undefined,  // helps merge the same title across sources
         ids: { tmdb: m.tmdbId },
         poster: m.poster,
         genres: m.genres,              // e.g. ["Drama", "Suspenso"]: the rows inside
@@ -143,7 +143,7 @@ export async function home() {
 }
 ```
 
-Both `genre` and `genres` accept the table ids **or** names and aliases (`"Action"`, `"Acción"`, `"Thriller"`,
+`genres` only places titles into genre rows: a type id there (`genres: ["Anime"]`) is ignored; the type goes on the row's `genre`. Both `genre` and `genres` accept the table ids **or** names and aliases (`"Action"`, `"Acción"`, `"Thriller"`,
 `"Sci-Fi & Fantasy"`): Kino maps them to the id. Your genres can come straight from the source.
 
 ## What happens to an unknown category { #unknown }
@@ -153,14 +153,13 @@ A row's `genre` is no longer limited to the old ten ids. Kino **canonicalises** 
 1. If it is a known id or alias (Spanish or English), it goes to the table's id.
 2. Otherwise it is kept as a **slug**: lowercase ASCII `[a-z0-9-]`, at most 40 characters.
 
-A category that is not in the tables is **appended at the end**, after the known ones, and shown with your plugin's own
-text. It helps when nothing really fits, but it does not merge with other plugins' categories: use it sparingly.
+A category that is not in the tables is a **genre row** (not a new tab): every item of that row goes into it, the tab comes from each item's `kind`, and the row is **appended at the end**, after the known ones, shown with your plugin's own text. It helps when nothing really fits. Rows are grouped by slug, not by plugin: it merges with another plugin's row only when the spelling matches, so use it sparingly.
 
-**Live categories** and **playlists** keep the closed ten-id vocabulary; see [Live channels](live-channels.en.md).
+**Live categories** and **playlists** keep the closed ten-id vocabulary; see [Live channels](live-channels.md).
 
 ## Tips so titles merge { #dedupe }
 
-- Send `ids` (especially the TMDB one, `ids: { tmdb: 603 }`) and `year` on every item. Without TMDB, title plus year merges best.
+- Send `ids` (especially the TMDB one, `ids: { tmdb: 603 }`) and `year` on every item. A copy with TMDB and one without never merge, so always send `ids.tmdb`; without TMDB, title plus year merges best.
 - Keep the title identical across rows and sources; do not append "(HD)", the year or the language.
-- Declare `genres` on every item: without them the title lands in "Más títulos".
+- Declare `genres` on every item: without them the title lands in "Más títulos" ("More titles").
 - Mark 18+ content `adult: true`: it stays hidden while the code is locked.

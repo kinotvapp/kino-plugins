@@ -9,11 +9,11 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   English: `"Action"`, `"Acción"`, `"Thriller"`, `"Sci-Fi & Fantasy"`...) maps to the base id, and anything else is kept
   as a slug (lowercase ASCII `[a-z0-9-]`, at most 40 characters) appended at the end, after the known ones. Live
   categories and playlists keep the ten ids. Earlier Kino versions ignore a value outside those ten.
-  [Home categories](categories.en.md).
+  [Home categories](categories.md).
 - **Home by categories** (optional for the person): type tabs and genre rows, one card per title, built only from what
   your Home rows already left cached. Declare `genre` on each row and `genres` on each item, preferably with the
   vocabulary ids, and send `ids`/TMDB and `year` so a title is one card across sources.
-  [What the Home does with your categories](categories.en.md#how).
+  [What the Home does with your categories](categories.md#how).
 
 ## Kino 0.9.55: `apiVersion` 9, the player panel, `fetchHosts` on hand-written plugins, English texts, `kino.meta` by title { #v0955 }
 

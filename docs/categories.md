@@ -1,8 +1,8 @@
-# Categorías del Inicio { #home-categories }
+# Home por categorías { #home-categories }
 
-Kino puede mostrar un **Inicio por categorías**, al estilo de las apps de streaming: arriba, pestañas por tipo
+Kino puede mostrar un **Home por categorías**, al estilo de las apps de streaming: arriba, pestañas por tipo
 (Películas, Series, Anime…) y adentro, filas por género (Acción, Comedia…), con **una tarjeta por título**. Es
-opcional: la persona lo activa en los ajustes. Se arma **solo con lo que tus filas de Inicio ya dejaron guardado**
+opcional y viene apagado: la persona lo activa en Ajustes ▸ App ▸ «Home por categorías (experimento)». Se arma **solo con lo que tus filas de Inicio ya dejaron guardado**
 (no busca nada por su cuenta ni llama a tu plugin), así que lo que declares en `home()` decide dónde cae tu contenido.
 Esta página explica cómo declararlo. Los ítems y las filas están en [el contrato](contract.md).
 
@@ -12,13 +12,13 @@ Esta página explica cómo declararlo. Los ítems y las filas están en [el cont
 
 ## Qué hace el Inicio con tus categorías { #how }
 
-- **Pestañas = tipos.** El `genre` de cada fila (`peliculas`, `series`, `anime`…) decide en qué pestaña cae.
+- **Pestañas = tipos.** Un `genre` de tipo en la fila (`peliculas`, `series`, `anime`…) decide la pestaña de todos sus ítems. Si el `genre` de la fila es de género (`accion`) o una categoría nueva, todos sus ítems quedan en esa fila de género y la pestaña sale del `kind` de cada ítem (`movie`, `series`, `music`, `podcast`). Sin `genre`, Kino mira el título de la fila: uno que diga un género conocido («Terror», «Comedia») da ese género, y solo `anime`, `infantil`, `documentales`, `deportes`, `noticias` y `musica` se pueden adivinar como pestaña. La pestaña de un título la decide la primera fila en que aparece, y cada fila muestra hasta 30 títulos.
 - **Filas = géneros.** Dentro de una pestaña, Kino agrupa los títulos por los `genres` de cada ítem (`["Drama", "Suspenso"]`
   pone el título en las filas Drama y Suspenso).
 - **Un título, una tarjeta.** Si varias fuentes tienen el mismo título, se muestra una sola tarjeta. La identidad es,
   en este orden: el **id de TMDB** (película y serie van aparte), si no el **título normalizado más el año**, y si no solo
-  el título. Al tocar la tarjeta, Kino busca el título en todas las fuentes que lo tengan.
-- **Sin género:** un título sin ningún género va a la fila **«Más títulos»**.
+  el título. Película y serie van aparte aunque no tengan TMDB, pero una copia con id de TMDB y otra sin él no se juntan. Al tocar una tarjeta de video, Kino busca el título en todas las fuentes que lo tengan; una tarjeta de audio reproduce directamente el ítem de ese plugin.
+- **Sin género:** un título sin ningún género va a la fila **«Más títulos»** (en inglés, «More titles»).
 - **Nada vacío:** una fila o una pestaña sin títulos no se muestra.
 - **+18:** el contenido `adult: true` queda oculto mientras el código +18 de la persona esté bloqueado.
 - **Audio aparte:** la música y los podcasts tienen sus propias pestañas (`radio`, `podcasts`, `audiolibros`,
@@ -38,11 +38,11 @@ Así tu contenido cae en el sitio correcto y se junta con el de otros plugins, e
 
 El **id** es lo que escribes. Kino muestra el nombre en español (o en inglés si la persona usa Kino en inglés). La
 columna «También entiende» son alias que Kino convierte al id; da igual mayúsculas, tildes y signos, y también
-funcionan los nombres que se ven en pantalla.
+funcionan los nombres que se ven en pantalla (ojo: «Sports» en inglés es el nombre de `deportes` y de `deportivo`, y se convierte a `deportes`).
 
 ### Tipos de video (pestañas) { #video-types }
 
-| Id | Nombre en Kino | Nombre en inglés | También entiende |
+| Id | Nombre en español | Nombre en inglés | También entiende |
 |---|---|---|---|
 | `peliculas` | Películas | Movies | pelicula, movies, movie, films, film, cine |
 | `series` | Series | Series | serie, tv shows, tv show, shows |
@@ -58,7 +58,7 @@ funcionan los nombres que se ven en pantalla.
 
 ### Tipos de audio (pestañas) { #audio-types }
 
-| Id | Nombre en Kino | Nombre en inglés | También entiende |
+| Id | Nombre en español | Nombre en inglés | También entiende |
 |---|---|---|---|
 | `radio` | Radio | Radio | emisoras, radios |
 | `podcasts` | Podcasts | Podcasts | podcast |
@@ -68,7 +68,7 @@ funcionan los nombres que se ven en pantalla.
 
 ### Géneros de video (filas) { #video-genres }
 
-| Id | Nombre en Kino | Nombre en inglés | También entiende |
+| Id | Nombre en español | Nombre en inglés | También entiende |
 |---|---|---|---|
 | `accion` | Acción | Action | action, action adventure |
 | `aventura` | Aventura | Adventure | adventure, aventuras |
@@ -93,7 +93,7 @@ funcionan los nombres que se ven en pantalla.
 
 ### Géneros de anime (filas) { #anime-genres }
 
-| Id | Nombre en Kino | Nombre en inglés | También entiende |
+| Id | Nombre en español | Nombre en inglés | También entiende |
 |---|---|---|---|
 | `shonen` | Shonen | Shonen | shounen |
 | `isekai` | Isekai | Isekai | — |
@@ -103,7 +103,7 @@ funcionan los nombres que se ven en pantalla.
 
 ### Géneros de audio (filas) { #audio-genres }
 
-| Id | Nombre en Kino | Nombre en inglés | También entiende |
+| Id | Nombre en español | Nombre en inglés | También entiende |
 |---|---|---|---|
 | `pop` | Pop | Pop | — |
 | `rock` | Rock | Rock | — |
@@ -134,17 +134,17 @@ export async function home() {
         ref: String(m.id),
         kind: "movie",
         title: m.title,
-        year: String(m.year),          // ayuda a juntar el mismo título de varias fuentes
+        year: m.year ? String(m.year) : undefined,  // ayuda a juntar el mismo título de varias fuentes
         ids: { tmdb: m.tmdbId },
         poster: m.poster,
-        genres: m.genres,              // p. ej. ["Drama", "Suspenso"]: las filas de dentro
+        genres: m.genres,              // p. ej. ["Drama", "Suspenso"]: las filas de adentro
       })),
     },
   ];
 }
 ```
 
-Tanto `genre` como `genres` aceptan los ids de las tablas **o** los nombres y alias (`"Action"`, `"Acción"`,
+`genres` solo ubica títulos en filas de género: un id de tipo ahí (`genres: ["Anime"]`) se ignora; el tipo va en el `genre` de la fila. Tanto `genre` como `genres` aceptan los ids de las tablas **o** los nombres y alias (`"Action"`, `"Acción"`,
 `"Thriller"`, `"Sci-Fi & Fantasy"`): Kino los convierte al id. Tus géneros pueden venir tal cual de la fuente.
 
 ## Qué pasa con una categoría desconocida { #unknown }
@@ -154,15 +154,14 @@ El `genre` de una fila ya no se limita a los diez ids de antes. Kino lo **canoni
 1. Si es un id o un alias conocido (en español o en inglés), lo lleva al id de la tabla.
 2. Si no, lo guarda como un **slug**: minúsculas ASCII `[a-z0-9-]`, de hasta 40 caracteres.
 
-Una categoría que no está en las tablas **se agrega al final**, después de las conocidas, y se muestra con el texto
-de tu plugin. Sirve cuando de verdad nada encaja, pero no se junta con las de otros plugins: úsala poco.
+Una categoría que no está en las tablas es una **fila de género** (no una pestaña nueva): todos los ítems de esa fila quedan en ella, la pestaña sale del `kind` de cada ítem, y la fila **se agrega al final**, después de las conocidas, con el texto de tu plugin. Sirve cuando de verdad nada encaja. Las filas se agrupan por slug, no por plugin: se juntan con las de otro plugin solo si la escritura coincide; úsala poco.
 
 Las **categorías en vivo** y las **listas** (`playlist`) siguen con el vocabulario cerrado de diez ids; ver
 [Canales en vivo](live-channels.md).
 
 ## Consejos para que los títulos se junten { #dedupe }
 
-- Manda `ids` (en especial el de TMDB, `ids: { tmdb: 603 }`) y `year` en cada ítem. Sin TMDB, el título más el año es lo que mejor junta.
+- Manda `ids` (en especial el de TMDB, `ids: { tmdb: 603 }`) y `year` en cada ítem. Una copia con TMDB y otra sin él nunca se juntan, así que manda siempre `ids.tmdb`; sin TMDB, el título más el año es lo que mejor junta.
 - Deja igual el título entre filas y fuentes; no le añadas «(HD)», el año ni el idioma.
 - Declara `genres` en cada ítem: sin ellos el título cae en «Más títulos».
 - Marca `adult: true` en lo +18: queda oculto mientras el código esté bloqueado.

@@ -137,7 +137,7 @@ export async function home() {
 - `genre` es como Categorías agrupa las filas navegables de todos los plugins, y como el Inicio por
   categorías ubica tu contenido. En una fila acepta cualquier categoría (un id como `peliculas`, `series`,
   `anime`, `documentales`…, un alias, o una nueva que se agrega al final); en una categoría en vivo o una lista
-  sigue siendo uno de diez ids. Sin él, Kino lo adivina por el título. [Categorías del Inicio](categories.md).
+  sigue siendo uno de diez ids, y la pestaña Categorías (la antigua) solo usa esos diez. Sin él, Kino lo adivina por el título. [Home por categorías](categories.md).
 - Cada ítem puede llevar `badges` (hasta 3 chips como `"Latino"`, `"4K"`), `quality`, `lang`, `rating`,
   `year`, `genres`, `overview`, un `poster` y un `backdrop`; `ids.tmdb` deja que Kino complete su ficha.
 - Los ítems `kind: "live"` se quedan en las filas de Inicio desde apiVersion 6, como tarjetas de canal
