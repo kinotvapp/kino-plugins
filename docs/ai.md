@@ -130,6 +130,10 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   dominios, sin números largos, nunca pidiendo plata, contraseñas, códigos ni contacto por fuera de
   Kino, y nunca repitiendo lo que escribió la persona (Kino la muestra como "Mensaje de <plugin>: …"
   solo si pasa todas sus reglas; un plugin que la usa para pedir plata o datos incumple las reglas y sale del índice de la comunidad).
+- Categorías del Inicio: agrupa el contenido de preferencia en las categorías de Kino
+  (https://kinotvapp.github.io/kino-plugins/categories/): declara "genre" en cada fila de home() y "genres"
+  en cada ítem con ids de esa lista (peliculas, series, anime, accion, comedia, drama…), manda también "year"
+  e ids.tmdb, e inventa una categoría nueva solo cuando ninguna encaje.
 - Contenido +18: márcalo con adult: true (apiVersion 6; Kino lo muestra solo con el código +18
   desbloqueado). Nunca intentes saltarte ese candado.
 - Todo lo que lee la persona, en español de Bogotá con tuteo, nunca voseo, y los textos que arma el

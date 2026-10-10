@@ -127,6 +127,10 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   domain, no long numbers, never asking for money, passwords, codes or contact outside Kino, and never
   echoing what the person typed (Kino shows it as "Mensaje de <plugin>: …" only if it passes all its
   rules; a plugin that uses it to ask for money or data breaks the rules and is taken out of the community index).
+- Home categories: preferably group the content in Kino's categories
+  (https://kinotvapp.github.io/kino-plugins/en/categories/): declare "genre" on each home() row and "genres"
+  on each item using ids from that list (peliculas, series, anime, accion, comedia, drama...), also send
+  "year" and ids.tmdb, and invent a new category only when nothing fits.
 - 18+ content: mark it with adult: true (apiVersion 6; Kino shows it only with the 18+ code
   unlocked). Never try to get around that lock.
 - Everything the person reads is in Spanish from Bogotá with tuteo, never voseo, and the texts the

@@ -3,6 +3,18 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Próxima versión de Kino: Inicio por categorías, `genre` abierto en las filas { #home-categories }
+
+- **`genre` en una fila de Inicio acepta cualquier categoría.** Antes eran diez ids cerrados. Ahora un id o alias
+  conocido (en español o inglés: `"Action"`, `"Acción"`, `"Thriller"`, `"Sci-Fi & Fantasy"`…) se lleva al id base, y
+  cualquier otra cosa se guarda como un slug (minúsculas ASCII `[a-z0-9-]`, hasta 40 caracteres) que se agrega al final,
+  después de las conocidas. Las categorías en vivo y las listas siguen con los diez ids. Las versiones anteriores de
+  Kino ignoran un valor fuera de esos diez. [Categorías del Inicio](categories.md).
+- **Inicio por categorías** (opcional para la persona): pestañas por tipo y filas por género, una tarjeta por título,
+  armado solo con lo que tus filas de Inicio ya dejaron guardado. Declara `genre` en cada fila y `genres` en cada ítem, de
+  preferencia con los ids del vocabulario, y manda `ids`/TMDB y `year` para que un título sea una sola tarjeta entre
+  fuentes. [Qué hace el Inicio con tus categorías](categories.md#how).
+
 ## Kino 0.9.55: `apiVersion` 9, panel del reproductor, `fetchHosts` en plugins escritos a mano, textos en inglés, `kino.meta` por título { #v0955 }
 
 <span id="next"></span>(Publicada el 8 de octubre de 2026.) **`apiVersion` 9 = Kino 0.9.55.** El contrato (`contract.json`) ahora dice

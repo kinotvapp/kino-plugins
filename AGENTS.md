@@ -294,6 +294,19 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
 
+**Home categories** (the optional "Home por categorías"; the full vocabulary and aliases are at
+<https://kinotvapp.github.io/kino-plugins/en/categories/>): preferably group the plugin's content in
+Kino's categories. Put `genre` on each `home()` row (a type id: `peliculas`, `series`, `anime`, `doramas`,
+`infantil`, `documentales`, `clasicos`, `deportes`, `noticias`, `entretenimiento`, `otros`; audio: `radio`,
+`podcasts`, `audiolibros`, `conciertos`, `musica`) and `genres` on each item (genre ids such as `accion`,
+`comedia`, `drama`, `terror`, `suspenso`, `ciencia-ficcion`, `romance`; or the source's own names, which Kino
+maps when they are known aliases). Invent a new category only when nothing fits: from the next Kino release a
+row's `genre` accepts any category, canonicalised (a known id or alias maps to the base id; anything else is a
+slug, lowercase ASCII `[a-z0-9-]`, at most 40 characters, appended after the known ones and not merged with other
+plugins'). Live categories and playlists keep the closed ten-id `genre`. Send `ids.tmdb` and `year` so one title
+is one card across sources (identity: TMDB id, else normalised title + year, else title); an item with no genre
+lands in "Más títulos".
+
 **Data rules that silently drop things**: an item `id` outside `^[A-Za-z0-9._~-]{1,128}$` (derive a
 slug); a repeated `id`; `adult: true` below apiVersion 6 (from 6 it is kept behind the person's 18+
 code); a `series` without the `episodes` capability; a `live` item at apiVersion 1, or in a `home` row

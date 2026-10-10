@@ -134,9 +134,10 @@ export async function home() {
 
 - A row with a `ref` (and the `browse` capability) ends in "Ver más"; with `scopedSearch` you answer the
   search inside it yourself.
-- `genre` (one of `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`,
-  `musica`, `entretenimiento`, `otros`) is how Categorías groups browsable rows of every plugin.
-  Without it Kino guesses from the title.
+- `genre` is how Categorías groups browsable rows of every plugin, and how the Home by categories places
+  your content. On a row it accepts any category (an id such as `peliculas`, `series`, `anime`,
+  `documentales`..., an alias, or a new one that is appended at the end); on a live category or a playlist it
+  is still one of ten ids. Without it Kino guesses from the title. [Home categories](categories.en.md).
 - Each item can carry `badges` (up to 3 chips such as `"Latino"`, `"4K"`), `quality`, `lang`, `rating`,
   `year`, `genres`, `overview`, a `poster` and a `backdrop`; `ids.tmdb` lets Kino complete its info page.
 - `kind: "live"` items stay in Home rows from apiVersion 6, as channel cards with the "En vivo" badge.

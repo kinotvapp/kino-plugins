@@ -134,9 +134,10 @@ export async function home() {
 
 - Una fila con `ref` (y la capacidad `browse`) termina en "Ver más"; con `scopedSearch` tú respondes la
   búsqueda dentro de ella.
-- `genre` (uno de `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`,
-  `musica`, `entretenimiento`, `otros`) es como Categorías agrupa las filas navegables de todos los
-  plugins. Sin él, Kino lo adivina por el título.
+- `genre` es como Categorías agrupa las filas navegables de todos los plugins, y como el Inicio por
+  categorías ubica tu contenido. En una fila acepta cualquier categoría (un id como `peliculas`, `series`,
+  `anime`, `documentales`…, un alias, o una nueva que se agrega al final); en una categoría en vivo o una lista
+  sigue siendo uno de diez ids. Sin él, Kino lo adivina por el título. [Categorías del Inicio](categories.md).
 - Cada ítem puede llevar `badges` (hasta 3 chips como `"Latino"`, `"4K"`), `quality`, `lang`, `rating`,
   `year`, `genres`, `overview`, un `poster` y un `backdrop`; `ids.tmdb` deja que Kino complete su ficha.
 - Los ítems `kind: "live"` se quedan en las filas de Inicio desde apiVersion 6, como tarjetas de canal
