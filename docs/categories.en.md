@@ -16,13 +16,15 @@ in [the contract](contract.md).
 - **Rows = genres.** Inside a tab, Kino groups titles by each item's `genres` (`["Drama", "Suspenso"]` puts the title in
   the Drama and Suspenso rows).
 - **One title, one card.** When several sources have the same title, one card is shown. Identity is, in this order: the
-  **TMDB id** (movie and series kept apart), else the **normalised title plus year**, else just the title. Movies and series are kept apart even without a TMDB id, but a copy with a TMDB id and one without never merge. Tapping a video
+  **TMDB id** (movie and series kept apart), else the **normalised title plus year**, else just the title. Movies and series are kept apart even without a TMDB id. Then, within each tab, Kino joins copies of the same title (and the same kind, movie or series) when there is no doubt: a copy without ids joins the only one with a TMDB id when the years match or one of them has no year, and a year-less copy joins the only dated one. With two TMDB ids or two different years for that title, the copies without ids stay apart: Kino never guesses. Tapping a video
   card makes Kino search that title across every source that has it; an audio card plays that plugin's own item directly.
 - **No genre:** a title with no genre goes to the **"Más títulos"** row ("More titles" in an English app).
 - **Nothing empty:** a row or tab with no titles is never shown.
 - **18+:** `adult: true` content stays hidden while the person's 18+ code is locked.
 - **Audio apart:** music and podcasts get their own tabs (`radio`, `podcasts`, `audiolibros`, `conciertos`, `musica`).
-- **Live is not in it:** live channels stay in "En vivo", not in this Home.
+  Those tabs are for audio items that are **not** live (`music`, `podcast`).
+- **Live is not in it:** live channels (`kind: "live"`), **radio stations included**, stay in "En vivo" and this Home does
+  not paint them. So a station never reaches the `radio` tab.
 - A **"Fuentes"** link opens the sources (your plugins).
 
 ## Group your content in these categories { #prefer }

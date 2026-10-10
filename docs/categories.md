@@ -17,13 +17,14 @@ Esta página explica cómo declararlo. Los ítems y las filas están en [el cont
   pone el título en las filas Drama y Suspenso).
 - **Un título, una tarjeta.** Si varias fuentes tienen el mismo título, se muestra una sola tarjeta. La identidad es,
   en este orden: el **id de TMDB** (película y serie van aparte), si no el **título normalizado más el año**, y si no solo
-  el título. Película y serie van aparte aunque no tengan TMDB, pero una copia con id de TMDB y otra sin él no se juntan. Al tocar una tarjeta de video, Kino busca el título en todas las fuentes que lo tengan; una tarjeta de audio reproduce directamente el ítem de ese plugin.
+  el título. Película y serie van aparte aunque no tengan TMDB. Después, dentro de cada pestaña, Kino junta las copias del mismo título (y del mismo tipo, película o serie) cuando no hay duda: una copia sin ids se junta con la única que tiene id de TMDB si el año coincide o alguna no tiene año, y una sin año se junta con la única que tiene año. Si hay dos ids de TMDB o dos años distintos para ese título, las copias sin ids quedan aparte: Kino nunca adivina. Al tocar una tarjeta de video, Kino busca el título en todas las fuentes que lo tengan; una tarjeta de audio reproduce directamente el ítem de ese plugin.
 - **Sin género:** un título sin ningún género va a la fila **«Más títulos»** (en inglés, «More titles»).
 - **Nada vacío:** una fila o una pestaña sin títulos no se muestra.
 - **+18:** el contenido `adult: true` queda oculto mientras el código +18 de la persona esté bloqueado.
 - **Audio aparte:** la música y los podcasts tienen sus propias pestañas (`radio`, `podcasts`, `audiolibros`,
-  `conciertos`, `musica`).
-- **En vivo no entra:** los canales en vivo siguen en «En vivo», no en este Inicio.
+  `conciertos`, `musica`). Esas pestañas son para ítems de audio que **no** son en vivo (`music`, `podcast`).
+- **En vivo no entra:** los canales en vivo (`kind: "live"`), **emisoras de radio incluidas**, siguen en «En vivo» y este
+  Inicio no los pinta. Por eso una emisora nunca llega a la pestaña `radio`.
 - Un enlace **«Fuentes»** abre las fuentes (tus plugins).
 
 ## Agrupa tu contenido en estas categorías { #prefer }
