@@ -98,7 +98,7 @@ Lo que quiero:
 - Acceso: <<< ninguno / mi usuario y contraseña del sitio / una clave de API mía (del desarrollador) que no quiero publicar / la dirección de un servidor que escribe cada persona >>>
 - Qué le pregunta Kino a la persona al configurarlo: <<< nada / su usuario y contraseña / su región / la dirección de su servidor >>>
 - Descargas para ver sin conexión: <<< sí / no >>>
-- Otra app resuelve el stream reproducible (una app resolutora aparte en el aparato): <<< no / sí: el nombre del paquete de la app, el protocolo que responde y qué "ref" espera >>>
+- Otra app resuelve el stream reproducible (una app resolutora aparte en el aparato): <<< no / sí: el nombre del paquete de la app, el protocolo que responde, qué "ref" espera y cómo la consigue la gente: un APK de un release de GitHub (con su sha256), F-Droid, un código de Downloader para la TV >>>
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>

@@ -96,7 +96,7 @@ What I want:
 - Access: <<< none / my username and password on the site / an API key of mine (the developer's) that I do not want to publish / the address of a server each person types >>>
 - What Kino asks the person when setting it up: <<< nothing / their username and password / their region / their server's address >>>
 - Offline downloads: <<< yes / no >>>
-- Another app resolves the playable stream (a separate resolver app on the device): <<< no / yes: the app's package name, the protocol name it answers, and what "ref" it expects >>>
+- Another app resolves the playable stream (a separate resolver app on the device): <<< no / yes: the app's package name, the protocol name it answers, what "ref" it expects, and how people get it: a GitHub release APK (with its sha256), F-Droid, a Downloader code for TV >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
