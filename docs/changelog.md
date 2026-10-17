@@ -29,9 +29,9 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   `protocol`, después de que la persona permite esa app para tu plugin, y reproduce la respuesta que recibe
   (validada como la tuya, con los hosts juzgados como en la respuesta de cualquier resolutor). Tu plugin nunca
   sabe qué app lo atendió. [Aplicaciones resolutoras externas](resolver.md), [el contrato](contract.md#external-resolve).
-- **`externalResolver`** (campo del manifiesto, apiVersion 11): `{ package, apk?: { url, sha256, label? } }` nombra
+- **`externalResolver`** (campo del manifiesto, apiVersion 11): `{ package, apk?: { url, sha256, label? }, fdroid?: true, downloader?: { code } }` nombra
   la única app que quieres (a ninguna otra se le pregunta) y dónde puede Kino ofrecer descargarla, de un release de
-  GitHub, comprobada contra el `sha256`. [El manifiesto](manifest.md#external-resolver).
+  GitHub, comprobada contra el `sha256`; `fdroid: true` y un `code` de Downloader (se muestra, Kino nunca lo instala) son dos formas más, opcionales, de conseguirla. [El manifiesto](manifest.md#external-resolver).
 - **`media`** (la descripción opcional e informativa de un stream sobre el archivo: contenedor, video, pistas de
   audio y subtítulos, si se convirtió) y **`portable`** (una copia HLS universal del mismo video, hecha bajo
   demanda, que Kino puede enviar a la TV): se leen de la respuesta de cualquier plugin o resolutor, en cualquier

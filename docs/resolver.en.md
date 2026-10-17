@@ -205,6 +205,14 @@ screen turning off.
   sheet: it can download it from GitHub, checks the file has exactly that `sha256` (otherwise it is deleted and
   nothing is offered) and hands it to Android's installer, which asks the person as for any app. Kino does not
   check who signed it and has not reviewed it; the sheet says so.
+- **Other ways to get the app.** `externalResolver` may also say `"fdroid": true` (the same `package` is listed in F-Droid:
+  Kino opens the F-Droid client for exactly that package, or its page on f-droid.org, or says what to search for) and/or
+  `"downloader": { "code": "..." }` (3 to 10 digits: a code of the Downloader app that sideloads on a TV; Kino only **shows** it,
+  with a button to open Downloader when it is installed, and installs nothing itself on that path). All three are optional and
+  independent, Kino offers only what is declared for exactly that `package`, and the sheet leads with the buttons on a phone and
+  with the code on a TV. Be honest with your users: the official F-Droid client has no real Android TV support (it does not appear
+  in the TV's launcher and some screens cannot be reached with a remote), so for a TV the Downloader code or the `apk` is the
+  practical route. Kino has not verified a particular F-Droid client build against this link on a real device.
 
 ## Using a resolver from your plugin { #use }
 

@@ -28,9 +28,9 @@ necesita una versión más nueva de Kino"), so declare 11 only if you use `exter
   allows that app for your plugin, and plays the answer it gets back (validated like yours, with hosts judged as
   for any resolver's answer). Your plugin never learns which app handled it. [External resolver
   apps](resolver.md), [the contract](contract.md#external-resolve).
-- **`externalResolver`** (manifest field, apiVersion 11): `{ package, apk?: { url, sha256, label? } }` names the one
+- **`externalResolver`** (manifest field, apiVersion 11): `{ package, apk?: { url, sha256, label? }, fdroid?: true, downloader?: { code } }` names the one
   app you want (no other is ever asked) and where Kino may offer to download it, from a GitHub release, checked
-  against the `sha256`. [The manifest](manifest.md#external-resolver).
+  against the `sha256`; `fdroid: true` and a Downloader `code` (shown, never installed by Kino) are two more optional ways to get it. [The manifest](manifest.md#external-resolver).
 - **`media`** (a stream's optional, advisory description of the file: container, video, audio and subtitle tracks,
   whether it was converted) and **`portable`** (a universal HLS copy of the same video, made on demand, that Kino
   may cast to a TV): read from any plugin's or resolver's answer, at any `apiVersion`; older Kino ignores both.

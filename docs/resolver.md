@@ -210,6 +210,14 @@ sobreviva a que se apague la pantalla del celular.
   muestra una hoja: puede descargarla de GitHub, comprueba que el archivo tenga exactamente ese `sha256` (si no,
   lo borra y no ofrece nada) y se lo entrega al instalador de Android, que le pregunta a la persona como con
   cualquier app. Kino no comprueba quién la firmó ni la ha revisado; la hoja lo dice.
+- **Otras formas de conseguir la app.** `externalResolver` también puede decir `"fdroid": true` (el mismo `package` está en F-Droid:
+  Kino abre el cliente de F-Droid para exactamente ese paquete, o su página en f-droid.org, o dice qué buscar) y/o
+  `"downloader": { "code": "..." }` (de 3 a 10 dígitos: un código de la app Downloader, que instala en la TV; Kino solo lo
+  **muestra**, con un botón para abrir Downloader si está instalada, y no instala nada por sí mismo en ese camino). Las tres son
+  opcionales e independientes, Kino ofrece solo lo declarado para exactamente ese `package`, y la hoja empieza por los botones en el
+  celular y por el código en la TV. Sé honesto con tu gente: el cliente oficial de F-Droid no tiene soporte real de Android TV (no
+  aparece en el lanzador de la TV y a algunas pantallas no se llega con el control), así que para una TV lo práctico es el código de
+  Downloader o el `apk`. Kino no ha verificado una versión concreta del cliente de F-Droid con este enlace en un aparato real.
 
 ## Usar un resolutor desde tu plugin { #use }
 

@@ -343,8 +343,8 @@ supports. `playlistItems` answers the same `Page` shape as `browse`. Full rules:
 **Another app resolving what you found (`externalResolve`, apiVersion 11, Kino 0.9.66)**: for the one
 case where a plugin can identify what it found but cannot produce a playable URL itself and a separate,
 independently-installed resolver app can. Declare the declarative `externalResolve` capability (nothing to
-export) and, to name the app, the manifest's `externalResolver` (`{ package, apk?: { url, sha256, label? } }`,
-the `apk` a GitHub release asset); then `resolve()` (or one entry of `alternatives`) answers
+export) and, to name the app, the manifest's `externalResolver` (`{ package, apk?: { url, sha256, label? }, fdroid?: true, downloader?: { code } }`,
+the `apk` a GitHub release asset, `fdroid` meaning the same package is in F-Droid, `downloader.code` 3 to 10 digits for TV sideloading); then `resolve()` (or one entry of `alternatives`) answers
 `{ external: { protocol, ref, resolver? } }` instead of `{ url }`. `protocol` is a string you choose (1 to 64 of
 `a-z 0-9 . _ -`; Kino never interprets it), `ref` is opaque (1 to 2048 characters, no control characters), and
 the plugin never learns which app handled it or how. Kino asks the person once per app, shows the app's live
@@ -637,7 +637,7 @@ people. See
       capability and `"apiVersion": 10`; export only the functions your service actually supports --
       none is required.
 - [ ] External resolver: a plugin that hands a title to another app declares `"apiVersion": 11` and the
-      `externalResolve` capability (nothing to export), optionally `externalResolver` (`{ package, apk? }`) in the
+      `externalResolve` capability (nothing to export), optionally `externalResolver` (`{ package, apk?, fdroid?, downloader? }`) in the
       manifest, and `resolve()` (or one `alternatives` entry) answers `{ external: { protocol, ref, resolver? } }` with no
       `url`; the plugin does not promise an app is installed, keeps a fallback copy when it can, and never uses `external`
       when it can produce the URL itself. Its `hosts` list only what the plugin's own code fetches, not what the resolver

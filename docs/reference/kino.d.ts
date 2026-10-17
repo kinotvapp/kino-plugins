@@ -1468,15 +1468,25 @@ type KinoMetaFn = (query: KinoMetaQuery) => Promise<KinoTitleMeta | null>;
  *
  *     "externalResolver": {
  *       "package": "com.example.resolver",
- *       "apk": { "url": "https://github.com/acme/resolver/releases/download/v1.0/resolver.apk", "sha256": "<64 hex>", "label": "Example Resolver" }
+ *       "apk": { "url": "https://github.com/acme/resolver/releases/download/v1.0/resolver.apk", "sha256": "<64 hex>", "label": "Example Resolver" },
+ *       "fdroid": true,
+ *       "downloader": { "code": "1234567" }
  *     }
  *
  * `apk.url` must be a GitHub release asset (`https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`); nothing else is
  * ever downloaded. It is offered only for exactly `package`, and only handed to the installer if the file's sha256 matches.
- * Without an `apk` (or if the stream names another package) a missing resolver just fails with "resolver not found".
+ * Three independent ways to get the app when it is not installed, each optional: `apk` (above); `fdroid: true` (the same
+ * `package` is listed in F-Droid: Kino opens F-Droid for exactly that package; the official F-Droid client has no real Android TV
+ * support, so on a TV prefer the others); `downloader.code` (3 to 10 digits: a Downloader code for TV sideloading, which Kino only
+ * SHOWS, with a button to open the Downloader app when it is installed). Kino offers only what the manifest declares for exactly
+ * `package`. With none of them (or if the stream names another package) a missing resolver just fails with "resolver not found".
  * A stream's `external.resolver` overrides `package`; without either, any installed app declaring the protocol may be asked.
  */
 interface KinoManifestExternalResolver {
   package: string;
   apk?: { url: string; sha256: string; label?: string };
+  /** Only `true` means anything: this `package` is listed in F-Droid. */
+  fdroid?: true;
+  /** A Downloader app code (3 to 10 digits) that fetches the app, for a TV. Shown, never installed by Kino. */
+  downloader?: { code: string };
 }
