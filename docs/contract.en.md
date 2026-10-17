@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 10)
+# The contract (apiVersion 1 to 11)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -99,9 +99,19 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
                drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> },
                label?: string,                                                        // apiVersion 6
                alternatives?: ({ url: string, mime?: string, headers?: Record<string, string>, label?: string }
-                               | { ref: string, label?: string })[],                  // label and { ref }: apiVersion 6
+                               | { ref: string, label?: string }
+                               | { external: External, label?: string })[],         // label and { ref }: apiVersion 6; { external }: 11
                skip?: { openingStartMs?: number, openingEndMs?: number, endingStartMs?: number },
-               signing?: "request", signContext?: string, alternateHosts?: string[] }   // the last three: apiVersion 6
+               signing?: "request", signContext?: string, alternateHosts?: string[],    // the last three: apiVersion 6
+               external?: External,                                                     // apiVersion 11: instead of url
+               media?: Media,                                                           // Kino 0.9.66: what you know about the file
+               portable?: { url: string, mime?: "application/x-mpegURL" } }             // Kino 0.9.66: a universal HLS copy
+External   = { protocol: string, ref: string, resolver?: string }
+Media      = { title?: string, sizeBytes?: number, container?: string,
+               video?: { codec?: string, profile?: string, width?: number, height?: number, fps?: number, bitDepth?: number, hdr?: boolean },
+               audio?: { codec?: string, channels?: number, language?: string, title?: string, default?: boolean }[],
+               subtitles?: { codec?: string, language?: string, title?: string, text?: boolean }[],
+               converted?: boolean, notes?: string[] }
 ```
 
 **Genre (Categorías and the En vivo filter).** A Home `Row`, a live `LiveCategory` and a `playlist` may carry an optional `genre`. On a `LiveCategory` and a `playlist` it is a closed list of ten ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino shows their Spanish names). On a Home `Row`, from the next Kino release, it accepts **any category**: a known id or alias (Spanish or English) maps to the base id, and anything else is kept as a slug (lowercase ASCII `[a-z0-9-]`, at most 40 characters) and appended after the known ones; see [Home categories](categories.md). It lets Kino line up categories from different plugins: the Categorías tab groups the browsable Home rows (those with a `ref`, when you declare `browse`) of every plugin by genre, and En vivo can narrow its categories by genre. On a live category or a playlist, a value outside the list is ignored, never an error, and without a `genre` Kino guesses from the title of the row or group ("Deportes", "Noticias Colombia", "Kids"…), so set it when your titles do not say it. On a `playlist` the genre is the default for the groups of the list (each group's own title is guessed first). The older Categorías tab still uses only the ten ids: a row with `genre: "accion"` or a new slug gets its tile guessed from its title. Kino versions before this field ignore it.
@@ -371,6 +381,22 @@ TMDB.
 
 - `expiresInSeconds` (30 to 86400) says when your URL may stop working. If playback fails after that
   long, Kino calls `resolve` once more and continues where the person was.
+- `media` (optional, Kino 0.9.66; older Kino ignores it) says what you know about the file itself: its `title`,
+  `sizeBytes` and `container`, its `video` (`codec`, `profile`, `width`, `height`, `fps`, `bitDepth`, `hdr`), its
+  `audio` and `subtitles` tracks (`codec`, `language`, `title`, and `default` / `text`), whether you `converted`
+  it for playback and short `notes`. It is **advisory**: Kino shows and logs it and may use it as a hint (for a
+  cast), but never trusts it for anything that could harm the person. Every field is optional and cleaned: text
+  is one line (control characters dropped, whitespace collapsed) cut at 120 characters (`codec`/`container` 40,
+  `language` 20), numbers are clamped (`width`/`height` to 16384, `fps` to 480, `bitDepth` to 16, `channels` to
+  32, `sizeBytes` to 2^50), at most 16 tracks and 4 `notes`; an object with nothing usable left is dropped. A bad
+  `media` never refuses the stream. [Details](resolver.md#media).
+- `portable` (optional, Kino 0.9.66; older Kino ignores it) is **a universal copy of this same video** next to
+  `url`: `{ url, mime? }`, an HLS (`application/x-mpegURL`) any TV receiver plays (H.264 8-bit up to 1080p with
+  stereo AAC). Only a source that can make one on demand has any use for it; the phone's own player never uses
+  it, and Kino casts it to a TV only when the title's own route would need a conversion or the stream is likely
+  not playable as it is. It is checked exactly like `url` (same host rules); anything else, a non-HLS `mime`
+  included, is dropped and the rest of the answer still counts. It is ignored next to `drm`, request `signing` or
+  `external`. [Details](resolver.md#portable).
 - **DRM only when declared.** A stream carrying any of `drm`, `license`, `licenseUrl`, `drmLicenseUrl`,
   `keySystem` or `widevine` is refused ("El video tiene DRM y los plugins no lo soportan") -- unless
   your manifest declares the `drm` capability (apiVersion 2) and the only such key is a `drm` block
@@ -434,6 +460,29 @@ each copy with its label, then `resolve '<a copy's ref>'` to resolve that copy.
 
 A complete plugin that captures its first server and offers the rest this way is on
 [Hidden browser](browser.md#example).
+
+### Letting another app resolve what you found (`externalResolve`, apiVersion 11, Kino 0.9.66) { #external-resolve }
+
+Sometimes your plugin can tell exactly what it found but cannot turn it into a playable URL itself: that needs a
+separate, independently-installed Android app. From `"apiVersion": 11`, declare the `externalResolve` capability
+(declarative: nothing to export) and have `resolve()` -- or one entry of a Stream's `alternatives` -- answer
+`{ external: { protocol, ref } }` instead of `{ url, ... }`:
+
+```js
+export async function resolve(ref) {
+  return { external: { protocol: "my-protocol", ref: "some-opaque-reference" } };
+}
+```
+
+`protocol` is a string you choose (1 to 64 characters from `a-z 0-9 . _ -`; Kino never interprets it), `ref` is
+opaque (1 to 2048 characters, no control characters, never logged in full) and the optional `resolver` is the
+Android package of the one app you want: it overrides the manifest's
+[`externalResolver`](manifest.md#external-resolver), and with it set no other app is ever asked. Kino finds an
+app that declares `protocol`, asks the person's permission the first time, hands it `ref` and waits for an answer
+shaped like a normal `resolve()` answer. From your plugin's side, assume one of two things: it plays, or it fails
+like any other `resolve()` failure. Use it only when you genuinely cannot produce a `url` yourself, and give it a
+fallback when you can. Everything else -- the whole flow, what the person sees, `media` and `portable`,
+casting to a TV, building the other side -- is on [External resolver apps](resolver.md).
 
 ### A host you forgot may be asked about, once { #forgotten-host }
 

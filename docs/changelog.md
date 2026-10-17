@@ -16,6 +16,33 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   preferencia con los ids del vocabulario, y manda `ids`/TMDB y `year` para que un título sea una sola tarjeta entre
   fuentes. [Qué hace el Inicio con tus categorías](categories.md#how).
 
+## Kino 0.9.66: `apiVersion` 11, apps resolutoras externas, `media` y `portable` { #v0966 }
+
+(Todavía no publicada.) **`apiVersion` 11 = Kino 0.9.66.** El contrato (`contract.json`) dice ahora
+`maxApiVersion` 11 y `kino.apiVersion` informa 11. Kino 0.9.65 y anteriores rechazan un manifiesto con
+`"apiVersion": 11` ("Este plugin necesita una versión más nueva de Kino"), así que declara 11 solo si usas
+`externalResolve`.
+
+- **`externalResolve`** (apiVersion 11): una capacidad declarativa (no hay nada que exportar). Una respuesta de
+  `resolve()`, o una entrada de las `alternatives` de un Stream, puede ser `{ external: { protocol, ref, resolver? } }`
+  en vez de una `url` reproducible: Kino le pasa `ref` a una app instalada por separado que declara resolver
+  `protocol`, después de que la persona permite esa app para tu plugin, y reproduce la respuesta que recibe
+  (validada como la tuya, con los hosts juzgados como en la respuesta de cualquier resolutor). Tu plugin nunca
+  sabe qué app lo atendió. [Aplicaciones resolutoras externas](resolver.md), [el contrato](contract.md#external-resolve).
+- **`externalResolver`** (campo del manifiesto, apiVersion 11): `{ package, apk?: { url, sha256, label? } }` nombra
+  la única app que quieres (a ninguna otra se le pregunta) y dónde puede Kino ofrecer descargarla, de un release de
+  GitHub, comprobada contra el `sha256`. [El manifiesto](manifest.md#external-resolver).
+- **`media`** (la descripción opcional e informativa de un stream sobre el archivo: contenedor, video, pistas de
+  audio y subtítulos, si se convirtió) y **`portable`** (una copia HLS universal del mismo video, hecha bajo
+  demanda, que Kino puede enviar a la TV): se leen de la respuesta de cualquier plugin o resolutor, en cualquier
+  `apiVersion`; un Kino más viejo ignora las dos. [Las reglas del `Stream`](contract.md#stream).
+- **Lo que ve la persona**: una pregunta de consentimiento la primera vez que se necesita una app, "Abriendo con
+  ..." con el progreso en vivo de la app y *Cancelar* y, cuando falla, la frase corta de la propia app junto al
+  código ("No se pudo resolver este contenido (`timeout`): ..."). [Lo que ve la persona](what-people-see.md#resolver).
+- **Enviar a la TV** un título de un resolutor pasa por el proxy de cast de Kino; está cubierto por pruebas con un
+  resolutor falso y **todavía no se ha probado con un Chromecast ni un receptor DLNA reales**.
+  [Enviar a la TV un título de un resolutor](resolver.md#cast).
+
 ## Kino 0.9.65: `apiVersion` 10, la capacidad `playlists` { #v0965 }
 
 (Todavía no publicada.) **`apiVersion` 10 = Kino 0.9.65.** El contrato (`contract.json`) dice ahora

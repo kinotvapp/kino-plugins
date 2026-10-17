@@ -81,6 +81,24 @@ From Kino 0.9.54, an apiVersion 8 [`music` or `podcast`](contract.md#music-podca
 track goes to a Chromecast as music, with its title, artist, album and cover, and to a DLNA TV as an audio
 item; an 18+ track sends only the app's name.
 
+## External resolver apps (Kino 0.9.66) { #resolver }
+
+When a plugin answers `external` instead of a `url` ([External resolver apps](resolver.md)):
+
+- **The first time**, a dialog asks: "<plugin>" quiere usar "<app>" para resolver contenido de tipo "<protocol>".
+  / Esta aplicación no es de Kino y actúa por su cuenta. ("Permitir" / "No permitir"). With several apps for the
+  protocol, "Elige qué aplicación usar"; the pick is remembered.
+- **While the app works**: "Abriendo con "<app>"" with its live progress (its own short text, or "Buscando...")
+  and a "Cancelar" button.
+- **When it fails**: "No se pudo resolver este contenido (<code>): <the app's own short sentence>."; with no app
+  installed, "Este contenido necesita una aplicación externa que no tienes instalada." (or, when the plugin names
+  one, a sheet that offers to download it from GitHub); after a "no", "No autorizaste resolver este contenido con
+  ...". A later playback error the app explained reads "La aplicación que ofrece este video dijo: ...".
+- **Their decisions** live in Ajustes, in the "Fuentes externas" section, where each can be revoked. Such a title
+  can only be played, never downloaded.
+- **Sending it to a TV** goes through the phone like any plugin title; it has not been tried yet with a real
+  receiver ([Casting a resolver's title](resolver.md#cast)).
+
 ## From Kino 0.9.54 { #v0954 }
 
 With nothing new in your manifest, except where said:

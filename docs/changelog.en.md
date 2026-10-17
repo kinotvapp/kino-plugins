@@ -16,6 +16,32 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   vocabulary ids, and send `ids`/TMDB and `year` so a title is one card across sources.
   [What the Home does with your categories](categories.md#how).
 
+## Kino 0.9.66: `apiVersion` 11, external resolver apps, `media` and `portable` { #v0966 }
+
+(Not released yet.) **`apiVersion` 11 = Kino 0.9.66.** The contract (`contract.json`) now says `maxApiVersion` 11
+and `kino.apiVersion` reports 11. Kino 0.9.65 and older refuse a manifest with `"apiVersion": 11` ("Este plugin
+necesita una versión más nueva de Kino"), so declare 11 only if you use `externalResolve`.
+
+- **`externalResolve`** (apiVersion 11): a declarative capability (nothing to export). A `resolve()` answer, or
+  one entry of a Stream's `alternatives`, may be `{ external: { protocol, ref, resolver? } }` instead of a playable
+  `url`: Kino hands `ref` to an independently-installed app that declares it resolves `protocol`, after the person
+  allows that app for your plugin, and plays the answer it gets back (validated like yours, with hosts judged as
+  for any resolver's answer). Your plugin never learns which app handled it. [External resolver
+  apps](resolver.md), [the contract](contract.md#external-resolve).
+- **`externalResolver`** (manifest field, apiVersion 11): `{ package, apk?: { url, sha256, label? } }` names the one
+  app you want (no other is ever asked) and where Kino may offer to download it, from a GitHub release, checked
+  against the `sha256`. [The manifest](manifest.md#external-resolver).
+- **`media`** (a stream's optional, advisory description of the file: container, video, audio and subtitle tracks,
+  whether it was converted) and **`portable`** (a universal HLS copy of the same video, made on demand, that Kino
+  may cast to a TV): read from any plugin's or resolver's answer, at any `apiVersion`; older Kino ignores both.
+  [The `Stream` rules](contract.md#stream).
+- **What the person sees**: a consent question the first time an app is needed, "Abriendo con ..." with the app's
+  live progress and *Cancelar*, and, when it fails, the app's own short sentence next to the code ("No se pudo
+  resolver este contenido (`timeout`): ..."). [What people see](what-people-see.md#resolver).
+- **Casting** a title from a resolver goes through Kino's cast proxy; it is covered by tests with a fake resolver
+  and **has not been tried yet with a real Chromecast or DLNA receiver**. [Casting a resolver's
+  title](resolver.md#cast).
+
 ## Kino 0.9.65: `apiVersion` 10, the `playlists` capability { #v0965 }
 
 (Not released yet.) **`apiVersion` 10 = Kino 0.9.65.** The contract (`contract.json`) now says

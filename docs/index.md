@@ -132,6 +132,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Manifiesto](manifest.md) | Cada campo y regla de `kino-plugin.json`, ajustes, `streamHosts`, secretos sellados, los servidores propios de la persona, `insecureHttp`, descargas |
 | [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
 | [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
+| [Aplicaciones resolutoras externas](resolver.md) | `externalResolve` (apiVersion 11): pasarle un título a una app instalada por separado que lo convierte en una URL reproducible; el flujo, `media`, `portable`, errores, enviar a la TV, construir el otro lado |
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
 | [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
 | [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |

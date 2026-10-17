@@ -126,6 +126,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The manifest](manifest.md) | Every field and rule of `kino-plugin.json`, settings, `streamHosts`, sealed secrets, the person's own servers, `insecureHttp`, downloads |
 | [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
+| [External resolver apps](resolver.md) | `externalResolve` (apiVersion 11): hand a title to an independently-installed app that turns it into a playable URL; the flow, `media`, `portable`, errors, casting, building the other side |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
 | [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `validateSettings`, a complete example, the own tab and syncing |

@@ -100,6 +100,25 @@ Desde Kino 0.9.54, una pista [`music` o `podcast`](contract.md#music-podcasts) d
 apiVersion 8 va a un Chromecast como música, con su título, artista, álbum y portada, y a una TV DLNA como
 ítem de audio; una pista +18 solo envía el nombre de la app.
 
+## Aplicaciones resolutoras externas (Kino 0.9.66) { #resolver }
+
+Cuando un plugin responde `external` en vez de una `url` ([Aplicaciones resolutoras externas](resolver.md)):
+
+- **La primera vez**, un diálogo pregunta: "<plugin>" quiere usar "<app>" para resolver contenido de tipo
+  "<protocolo>". / Esta aplicación no es de Kino y actúa por su cuenta. ("Permitir" / "No permitir"). Con varias
+  apps para el protocolo, "Elige qué aplicación usar"; la elección se recuerda.
+- **Mientras la app trabaja**: "Abriendo con "<app>"" con su progreso en vivo (su propio texto corto, o
+  "Buscando...") y un botón "Cancelar".
+- **Cuando falla**: "No se pudo resolver este contenido (<código>): <la frase corta de la propia app>."; sin
+  ninguna app instalada, "Este contenido necesita una aplicación externa que no tienes instalada." (o, cuando el
+  plugin nombra una, una hoja que ofrece descargarla de GitHub); después de un "no", "No autorizaste resolver este
+  contenido con ...". Un error de reproducción posterior que la app explicó dice "La aplicación que ofrece este
+  video dijo: ...".
+- **Sus decisiones** viven en Ajustes, en la sección "Fuentes externas", donde cada una se puede revocar. Un
+  título así solo se puede reproducir, nunca descargar.
+- **Enviarlo a una TV** pasa por el celular como cualquier título de un plugin; todavía no se ha probado con un
+  receptor real ([Enviar a la TV un título de un resolutor](resolver.md#cast)).
+
 ## Desde Kino 0.9.54 { #v0954 }
 
 Sin nada nuevo en tu manifiesto, salvo donde se diga:

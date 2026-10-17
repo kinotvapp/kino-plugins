@@ -337,6 +337,20 @@ no approval prompt (unlike `channels`, which requires two and does need one): `p
 supports. `playlistItems` answers the same `Page` shape as `browse`. Full rules:
 [Playlists](https://kinotvapp.github.io/kino-plugins/en/contract/#playlists).
 
+**Another app resolving what you found (`externalResolve`, apiVersion 11, Kino 0.9.66)**: for the one
+case where a plugin can identify what it found but cannot produce a playable URL itself and a separate,
+independently-installed resolver app can. Declare the declarative `externalResolve` capability (nothing to
+export) and, to name the app, the manifest's `externalResolver` (`{ package, apk?: { url, sha256, label? } }`,
+the `apk` a GitHub release asset); then `resolve()` (or one entry of `alternatives`) answers
+`{ external: { protocol, ref, resolver? } }` instead of `{ url }`. `protocol` is a string you choose (1 to 64 of
+`a-z 0-9 . _ -`; Kino never interprets it), `ref` is opaque (1 to 2048 characters, no control characters), and
+the plugin never learns which app handled it or how. Kino asks the person once per app, shows the app's live
+progress, validates its answer like a plugin's own (DRM and a second `external` refused) and plays it. The
+answer may carry an advisory `media` and a `portable` universal HLS copy for casting. Nothing guarantees an app is
+installed: do not present it as always available, and give the title a fallback when you can. If you do not
+need it, do not use it. Full rules, what the person sees and the cast caveats (not yet tried on real receivers):
+[External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/).
+
 **Feature-detect what older Kino lacks**: `kino.meta` and `kino.tmdb` (Kino 0.9.53, no new apiVersion)
 only behind `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`; the hidden
 browser's `captureAll`, `alsoMatch`, `waitForCookie` and `returnCookiesOnTimeout` options (Kino 0.9.54) only when

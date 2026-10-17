@@ -147,6 +147,13 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   is a contract not yet wired into any Kino screen, so do not present it as something already live
   in the app. Read it at https://kinotvapp.github.io/kino-plugins/en/contract/#playlists before
   using it; most plugins do not need it.
+- Another app resolving what you found (apiVersion 11, Kino 0.9.66): when a source cannot be turned into a
+  URL by the plugin itself and a separate, independently-installed resolver app does it, declare the
+  "externalResolve" capability (and, to name the app, the manifest's "externalResolver") and answer
+  { external: { protocol, ref } } from resolve() instead of a url. Kino never interprets the protocol or the
+  ref; it asks the person's permission, shows the app's progress and plays what it returns. Use it only when the
+  plugin truly cannot produce a url, give it a fallback when possible, and do not promise a resolver app exists.
+  Read https://kinotvapp.github.io/kino-plugins/en/resolver/ before using it.
 - Feature-detect what older Kino lacks: kino.meta and kino.tmdb (Kino 0.9.53) only behind
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, and the hidden browser's
   captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)

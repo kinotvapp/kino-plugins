@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 10)
+# El contrato (apiVersion 1 a 11)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -101,9 +101,19 @@ Stream     = { url: string, mime?: string, headers?: Record<string, string>,
                drm?: { type: "widevine", licenseUrl: string, licenseHeaders?: Record<string, string> },
                label?: string,                                                        // apiVersion 6
                alternatives?: ({ url: string, mime?: string, headers?: Record<string, string>, label?: string }
-                               | { ref: string, label?: string })[],                  // label y { ref }: apiVersion 6
+                               | { ref: string, label?: string }
+                               | { external: External, label?: string })[],         // label y { ref }: apiVersion 6; { external }: 11
                skip?: { openingStartMs?: number, openingEndMs?: number, endingStartMs?: number },
-               signing?: "request", signContext?: string, alternateHosts?: string[] }   // las tres últimas: apiVersion 6
+               signing?: "request", signContext?: string, alternateHosts?: string[],    // las tres últimas: apiVersion 6
+               external?: External,                                                     // apiVersion 11: en vez de url
+               media?: Media,                                                           // Kino 0.9.66: lo que sabes del archivo
+               portable?: { url: string, mime?: "application/x-mpegURL" } }             // Kino 0.9.66: una copia HLS universal
+External   = { protocol: string, ref: string, resolver?: string }
+Media      = { title?: string, sizeBytes?: number, container?: string,
+               video?: { codec?: string, profile?: string, width?: number, height?: number, fps?: number, bitDepth?: number, hdr?: boolean },
+               audio?: { codec?: string, channels?: number, language?: string, title?: string, default?: boolean }[],
+               subtitles?: { codec?: string, language?: string, title?: string, text?: boolean }[],
+               converted?: boolean, notes?: string[] }
 ```
 
 **Género (Categorías y el filtro de En vivo).** Una `Row` del Home, una `LiveCategory` de En vivo y una `playlist` pueden llevar un `genre` opcional. En una `LiveCategory` y en una `playlist` es una lista cerrada de diez ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino muestra sus nombres en español). En una `Row` del Home, desde la próxima versión de Kino, acepta **cualquier categoría**: un id o alias conocido (en español o inglés) se lleva al id base, y cualquier otra cosa se guarda como un slug (minúsculas ASCII `[a-z0-9-]`, hasta 40 caracteres) y se agrega después de las conocidas; ver [Home por categorías](categories.md). Sirve para que Kino alinee categorías de plugins distintos: la pestaña Categorías agrupa por género las filas del Home que se pueden explorar (las que tienen `ref`, si declaras `browse`) de todos los plugins, y En vivo puede acotar sus categorías por género. En una categoría en vivo o una lista, un valor fuera de la lista se ignora, nunca es un error, y sin `genre` Kino lo adivina por el título de la fila o del grupo ("Deportes", "Noticias Colombia", "Kids"…), así que ponlo cuando tus títulos no lo digan. En una `playlist` el género es el de partida para los grupos de la lista (antes se intenta adivinar por el título de cada grupo). La pestaña Categorías (la antigua) sigue usando solo los diez ids: una fila con `genre: "accion"` o un slug nuevo tiene su ficha adivinada por el título. Las versiones de Kino anteriores a este campo lo ignoran.
@@ -383,6 +393,23 @@ Los títulos de música y podcast nunca se emparejan con TMDB.
 
 - `expiresInSeconds` (de 30 a 86400) dice cuándo puede dejar de funcionar tu URL. Si la reproducción
   falla después de ese tiempo, Kino llama a `resolve` una vez más y sigue donde iba la persona.
+- `media` (opcional, Kino 0.9.66; un Kino más viejo la ignora) dice lo que sabes del archivo en sí: su `title`,
+  `sizeBytes` y `container`, su `video` (`codec`, `profile`, `width`, `height`, `fps`, `bitDepth`, `hdr`), sus
+  pistas de `audio` y `subtitles` (`codec`, `language`, `title`, y `default` / `text`), si lo `converted` para
+  reproducirlo y unas `notes` cortas. Es **informativa**: Kino la muestra y la registra y puede usarla de pista
+  (para enviar a la TV), pero nunca se fía de ella para nada que pueda perjudicar a la persona. Todos los campos
+  son opcionales y se limpian: el texto es una línea (sin caracteres de control, espacios colapsados) cortada a
+  120 caracteres (`codec`/`container` 40, `language` 20), los números se acotan (`width`/`height` a 16384, `fps`
+  a 480, `bitDepth` a 16, `channels` a 32, `sizeBytes` a 2^50), como máximo 16 pistas y 4 `notes`; un objeto sin
+  nada útil se descarta. Una `media` mala nunca rechaza el stream. [Detalles](resolver.md#media).
+- `portable` (opcional, Kino 0.9.66; un Kino más viejo la ignora) es **una copia universal de este mismo video**
+  junto a `url`: `{ url, mime? }`, un HLS (`application/x-mpegURL`) que reproduce cualquier receptor de TV (H.264
+  de 8 bits hasta 1080p con AAC estéreo). Solo le sirve a una fuente que pueda fabricarla bajo demanda; el
+  reproductor del celular nunca la usa, y Kino la envía a la TV solo cuando la ruta propia del título exigiría
+  una conversión o el stream probablemente no se reproduce tal cual. Se revisa exactamente como `url` (las mismas
+  reglas de hosts); cualquier otra cosa, un `mime` que no sea HLS incluido, se descarta y el resto de la
+  respuesta sigue valiendo. Se ignora junto a `drm`, la `signing` por petición o `external`.
+  [Detalles](resolver.md#portable).
 - **DRM solo si se declara.** Un stream que traiga cualquiera de `drm`, `license`, `licenseUrl`,
   `drmLicenseUrl`, `keySystem` o `widevine` se rechaza ("El video tiene DRM y los plugins no lo
   soportan") -- salvo que tu manifiesto declare la capacidad `drm` (apiVersion 2) y la única clave de
@@ -450,6 +477,30 @@ etiqueta, y luego `resolve '<el ref de una copia>'` para resolver esa copia.
 
 Un plugin completo que captura su primer servidor y ofrece los demás así está en
 [Navegador oculto](browser.md#example).
+
+### Dejar que otra app resuelva lo que encontraste (`externalResolve`, apiVersion 11, Kino 0.9.66) { #external-resolve }
+
+A veces tu plugin sabe exactamente qué encontró pero no puede convertirlo él mismo en una URL reproducible: eso
+necesita una app de Android aparte, instalada por separado. Desde `"apiVersion": 11`, declara la capacidad
+`externalResolve` (declarativa: no hay nada que exportar) y haz que `resolve()` -- o una entrada de las
+`alternatives` de un Stream -- responda `{ external: { protocol, ref } }` en vez de `{ url, ... }`:
+
+```js
+export async function resolve(ref) {
+  return { external: { protocol: "my-protocol", ref: "some-opaque-reference" } };
+}
+```
+
+`protocol` es una cadena que tú eliges (de 1 a 64 caracteres de `a-z 0-9 . _ -`; Kino nunca la interpreta), `ref`
+es opaco (de 1 a 2048 caracteres, sin caracteres de control, nunca se registra completo) y el `resolver`
+opcional es el paquete de Android de la única app que quieres: pasa por encima del
+[`externalResolver`](manifest.md#external-resolver) del manifiesto, y con él puesto no se le pregunta a ninguna
+otra app. Kino busca una app que declare `protocol`, le pide permiso a la persona la primera vez, le pasa `ref` y
+espera una respuesta con la forma de una respuesta normal de `resolve()`. Desde tu plugin, supón una de dos
+cosas: se reproduce, o falla como cualquier otro fallo de `resolve()`. Úsalo solo cuando de verdad no puedas
+producir tú una `url`, y ten una alternativa cuando puedas. Todo lo demás -- el flujo completo, lo que ve la
+persona, `media` y `portable`, enviar a la TV, construir el otro lado -- está en
+[Aplicaciones resolutoras externas](resolver.md).
 
 ### Por un host que se te olvidó se puede preguntar, una vez { #forgotten-host }
 

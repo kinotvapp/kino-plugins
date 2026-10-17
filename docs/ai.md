@@ -150,6 +150,13 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   conectar a ninguna pantalla de Kino, así que no la presentes como algo que ya se ve en la app.
   Léela en https://kinotvapp.github.io/kino-plugins/contract/#playlists antes de usarla; la mayoría
   de los plugins no la necesita.
+- Otra app que resuelve lo que encontraste (apiVersion 11, Kino 0.9.66): cuando una fuente no se puede
+  convertir en una URL desde el propio plugin y una app resolutora aparte, instalada por separado, lo hace,
+  declara la capacidad "externalResolve" (y, para nombrar la app, el "externalResolver" del manifiesto) y
+  responde { external: { protocol, ref } } desde resolve() en vez de una url. Kino nunca interpreta el
+  protocolo ni el ref; le pide permiso a la persona, muestra el progreso de la app y reproduce lo que devuelve.
+  Úsalo solo cuando el plugin de verdad no pueda producir una url, dale una alternativa cuando se pueda y no
+  prometas que existe una app resolutora. Lee https://kinotvapp.github.io/kino-plugins/resolver/ antes de usarlo.
 - Detecta lo que a un Kino viejo le falta: kino.meta y kino.tmdb (Kino 0.9.53) solo detrás de
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, y las opciones captureAll del
   navegador oculto (Kino 0.9.54) solo cuando `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
