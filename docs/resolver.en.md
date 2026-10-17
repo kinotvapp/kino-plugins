@@ -182,9 +182,7 @@ the local network ([Sending to the TV](what-people-see.md#cast)). That means:
 
 This is covered by Kino's tests with a fake resolver and was tried on one real Chromecast (a TV's built-in one): a direct H.264
 file, a converted HLS with audio and subtitle renditions (seeking from the phone works) and a `portable` copy of an HEVC file all play.
-**DLNA is not working yet** for an HLS whose audio is a separate rendition (tried on an LG webOS TV that lists no HLS: Kino builds one
-continuous MPEG-TS for it, cannot use a separate audio rendition, and the TV receives nothing): keep the audio of anything a DLNA TV
-should play in the segments themselves. Not tried: other receivers, subtitles drawn on the TV, and an app that survives the phone's
+**DLNA** was tried on one real LG webOS TV, which lists no HLS in its formats yet plays it: Kino sends it the HLS playlist as it is, and both a converted HLS with audio and subtitle renditions and a muxed `portable` copy reached playing, with the real duration and a position that advances (pause and resume from the phone work). The "continuous MPEG-TS" route Kino uses for a TV that cannot play HLS does **not** play on that TV, so keep an HLS answer for it. Not tried: sending a plain progressive file from the first byte (one attempt stalled at the TV), seeking from the TV, other renderers, and confirming the picture on the screen. Also untried: an app that survives the phone's
 screen turning off.
 
 ## What to expect { #expect }
@@ -314,7 +312,7 @@ share with whoever builds the app. Name the app in `externalResolver` when only 
 **Why is the `url` allowed to be `http://127.0.0.1:...`?** Because an app that serves the content from the
 device has to; it is accepted for that one answer, with an unguessable path token in it, and for nothing else.
 
-**Will it cast?** Through Kino's proxy: Chromecast yes (tried on a real one); DLNA not yet for an HLS with separate audio renditions
+**Will it cast?** Through Kino's proxy: Chromecast and DLNA yes for an HLS answer (each tried on one real receiver)
 ([above](#cast)).
 
 **Where do I see what `media` said?** In Kino's log, as a one-line summary. A screen for it is not built yet.

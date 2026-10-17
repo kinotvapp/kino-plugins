@@ -116,8 +116,8 @@ Cuando un plugin responde `external` en vez de una `url` ([Aplicaciones resoluto
   video dijo: ...".
 - **Sus decisiones** viven en Ajustes, en la sección "Fuentes externas", donde cada una se puede revocar. Un
   título así solo se puede reproducir, nunca descargar.
-- **Enviarlo a una TV** pasa por el celular como cualquier título de un plugin; se probó con un Chromecast real (DLNA todavía
-  no funciona con renditions de audio aparte) ([Enviar a la TV un título de un resolutor](resolver.md#cast)).
+- **Enviarlo a una TV** pasa por el celular como cualquier título de un plugin; se probó con un Chromecast real (y DLNA en una TV LG
+  webOS, con una respuesta HLS) ([Enviar a la TV un título de un resolutor](resolver.md#cast)).
 
 ## Desde Kino 0.9.54 { #v0954 }
 

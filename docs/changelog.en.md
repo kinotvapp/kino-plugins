@@ -39,7 +39,7 @@ necesita una versión más nueva de Kino"), so declare 11 only if you use `exter
   live progress and *Cancelar*, and, when it fails, the app's own short sentence next to the code ("No se pudo
   resolver este contenido (`timeout`): ..."). [What people see](what-people-see.md#resolver).
 - **Casting** a title from a resolver goes through Kino's cast proxy; it is covered by tests with a fake resolver
-  and was tried on a real Chromecast (a direct file, a converted HLS with renditions, a `portable` copy); **DLNA does not work yet** for an HLS with separate audio renditions. [Casting a resolver's
+  and was tried on a real Chromecast (a direct file, a converted HLS with renditions, a `portable` copy); DLNA was tried on an LG webOS TV: the HLS plays (the continuous-TS route does not). [Casting a resolver's
   title](resolver.md#cast).
 
 ## Kino 0.9.65: `apiVersion` 10, the `playlists` capability { #v0965 }

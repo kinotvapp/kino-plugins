@@ -40,7 +40,7 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   ..." con el progreso en vivo de la app y *Cancelar* y, cuando falla, la frase corta de la propia app junto al
   código ("No se pudo resolver este contenido (`timeout`): ..."). [Lo que ve la persona](what-people-see.md#resolver).
 - **Enviar a la TV** un título de un resolutor pasa por el proxy de cast de Kino; está cubierto por pruebas con un
-  resolutor falso y se probó con un Chromecast real (un archivo directo, un HLS convertido con renditions, una copia `portable`); **DLNA todavía no funciona** con un HLS de renditions de audio aparte.
+  resolutor falso y se probó con un Chromecast real (un archivo directo, un HLS convertido con renditions, una copia `portable`); DLNA se probó en una TV LG webOS: el HLS reproduce (la ruta de TS continuo no).
   [Enviar a la TV un título de un resolutor](resolver.md#cast).
 
 ## Kino 0.9.65: `apiVersion` 10, la capacidad `playlists` { #v0965 }

@@ -351,7 +351,7 @@ the plugin never learns which app handled it or how. Kino asks the person once p
 progress, validates its answer like a plugin's own (DRM and a second `external` refused) and plays it. The
 answer may carry an advisory `media` and a `portable` universal HLS copy for casting. Nothing guarantees an app is
 installed: do not present it as always available, and give the title a fallback when you can. If you do not
-need it, do not use it. Full rules, what the person sees and the cast caveats (Chromecast tried on a real receiver; DLNA not yet for separate audio renditions):
+need it, do not use it. Full rules, what the person sees and the cast caveats (Chromecast and DLNA each tried on one real receiver, with an HLS answer):
 [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/).
 
 **Feature-detect what older Kino lacks**: `kino.meta` and `kino.tmdb` (Kino 0.9.53, no new apiVersion)

@@ -187,10 +187,7 @@ TV una URL con token en la red local ([Enviar a la TV](what-people-see.md#cast))
 
 Esto está cubierto por las pruebas de Kino con un resolutor falso y se probó con un Chromecast real (el integrado de una TV): un archivo
 H.264 directo, un HLS convertido con renditions de audio y subtítulos (buscar desde el celular funciona) y una copia `portable` de un archivo
-HEVC se reproducen. **DLNA todavía no funciona** con un HLS cuyo audio es una rendition aparte (probado en una TV LG webOS que no lista HLS:
-Kino arma un único MPEG-TS continuo para ella, no puede usar una rendition de audio aparte y la TV no recibe nada): deja el audio de lo que
-deba reproducir una TV DLNA dentro de los propios segmentos. Sin probar: otros receptores, subtítulos dibujados en la TV y una app que
-sobreviva a que se apague la pantalla del celular.
+HEVC se reproducen. **DLNA** se probó en una TV LG webOS real, que no lista HLS en sus formatos pero lo reproduce: Kino le envía la playlist HLS tal cual, y tanto un HLS convertido con renditions de audio y subtítulos como una copia `portable` muxed llegaron a reproducir, con la duración real y una posición que avanza (pausar y reanudar desde el celular funcionan). La ruta de "MPEG-TS continuo" que Kino usa para una TV que no reproduce HLS **no** reproduce en esa TV, así que conviene responder con un HLS. Sin probar: enviar un archivo progresivo desde el primer byte (un intento se atascó en la TV), buscar desde la TV, otros renderers, confirmar la imagen en la pantalla y una app que sobreviva a que se apague la pantalla del celular.
 
 ## Qué esperar { #expect }
 
@@ -323,7 +320,7 @@ una cadena que compartes con quien construye la app. Nombra la app en `externalR
 **¿Por qué la `url` puede ser `http://127.0.0.1:...`?** Porque una app que sirve el contenido desde el aparato lo
 necesita; se acepta para esa única respuesta, con un token imposible de adivinar en la ruta, y para nada más.
 
-**¿Se envía a la TV?** Por el proxy de Kino: Chromecast sí (probado en uno real); DLNA todavía no con un HLS de renditions de audio aparte
+**¿Se envía a la TV?** Por el proxy de Kino: Chromecast y DLNA sí con una respuesta HLS (cada uno probado en un receptor real)
 ([arriba](#cast)).
 
 **¿Dónde veo lo que dijo `media`?** En el registro de Kino, como un resumen de una línea. Una pantalla para eso

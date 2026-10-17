@@ -96,8 +96,8 @@ When a plugin answers `external` instead of a `url` ([External resolver apps](re
   ...". A later playback error the app explained reads "La aplicación que ofrece este video dijo: ...".
 - **Their decisions** live in Ajustes, in the "Fuentes externas" section, where each can be revoked. Such a title
   can only be played, never downloaded.
-- **Sending it to a TV** goes through the phone like any plugin title; it was tried on a real Chromecast (DLNA does not
-  work yet with separate audio renditions) ([Casting a resolver's title](resolver.md#cast)).
+- **Sending it to a TV** goes through the phone like any plugin title; it was tried on a real Chromecast (and DLNA on an LG
+  webOS TV, with an HLS answer) ([Casting a resolver's title](resolver.md#cast)).
 
 ## From Kino 0.9.54 { #v0954 }
 
