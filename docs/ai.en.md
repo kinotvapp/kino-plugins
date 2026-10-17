@@ -84,6 +84,11 @@ Before writing anything:
    music or podcasts, also read the "Music and podcasts" section of the contract (apiVersion 8, Kino
    0.9.54: https://kinotvapp.github.io/kino-plugins/en/contract/#music-podcasts) and use
    kinotvapp/kino-plugin-archive-audio as the reference audio plugin.
+4. If my plugin cannot turn what it finds into a playable URL itself and instead hands it to another app
+   installed on the phone or TV (a "resolver app"), read https://kinotvapp.github.io/kino-plugins/en/resolver/ and
+   "Letting another app resolve what you found" in the contract (apiVersion 11, Kino 0.9.66). In that case the
+   plugin only declares "externalResolve" and answers { external: { protocol, ref } } from resolve(); it never
+   touches the content itself.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -91,6 +96,7 @@ What I want:
 - Access: <<< none / my username and password on the site / an API key of mine (the developer's) that I do not want to publish / the address of a server each person types >>>
 - What Kino asks the person when setting it up: <<< nothing / their username and password / their region / their server's address >>>
 - Offline downloads: <<< yes / no >>>
+- Another app resolves the playable stream (a separate resolver app on the device): <<< no / yes: the app's package name, the protocol name it answers, and what "ref" it expects >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>

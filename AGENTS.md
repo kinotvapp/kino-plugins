@@ -24,7 +24,10 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Publishing](https://kinotvapp.github.io/kino-plugins/en/publish/),
    [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/),
    [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/), and for live TV
-   [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/). For apiVersion 6
+   [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/), and, when the plugin hands its titles to
+   another installed app to turn them into a playable stream (apiVersion 11, Kino 0.9.66; the
+   `externalResolve` capability),
+   [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
    shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
@@ -348,7 +351,7 @@ the plugin never learns which app handled it or how. Kino asks the person once p
 progress, validates its answer like a plugin's own (DRM and a second `external` refused) and plays it. The
 answer may carry an advisory `media` and a `portable` universal HLS copy for casting. Nothing guarantees an app is
 installed: do not present it as always available, and give the title a fallback when you can. If you do not
-need it, do not use it. Full rules, what the person sees and the cast caveats (not yet tried on real receivers):
+need it, do not use it. Full rules, what the person sees and the cast caveats (Chromecast tried on a real receiver; DLNA not yet for separate audio renditions):
 [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/).
 
 **Feature-detect what older Kino lacks**: `kino.meta` and `kino.tmdb` (Kino 0.9.53, no new apiVersion)
@@ -624,7 +627,7 @@ people. See
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
       it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+; 8 only for
       `music`/`podcast` items or `details`: it needs Kino 0.9.54+; 10 only for the `playlists`
-      capability: it needs Kino 0.9.65+).
+      capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability: it needs Kino 0.9.66+).
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
       that throws `not_found` (for Kino 0.9.53 and older).
 - [ ] Audio: every audio item has `kind` `"music"` or `"podcast"` and `"apiVersion": 8`; with
@@ -633,6 +636,12 @@ people. See
       `playlistAddItem`, `playlistRemoveItem` or `playlistReorder`, declare the `playlists`
       capability and `"apiVersion": 10`; export only the functions your service actually supports --
       none is required.
+- [ ] External resolver: a plugin that hands a title to another app declares `"apiVersion": 11` and the
+      `externalResolve` capability (nothing to export), optionally `externalResolver` (`{ package, apk? }`) in the
+      manifest, and `resolve()` (or one `alternatives` entry) answers `{ external: { protocol, ref, resolver? } }` with no
+      `url`; the plugin does not promise an app is installed, keeps a fallback copy when it can, and never uses `external`
+      when it can produce the URL itself. Its `hosts` list only what the plugin's own code fetches, not what the resolver
+      app reaches.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks

@@ -86,6 +86,11 @@ Antes de escribir nada:
    plugin es de música o podcasts, lee también la sección "Música y podcasts" del contrato
    (apiVersion 8, Kino 0.9.54: https://kinotvapp.github.io/kino-plugins/contract/#music-podcasts) y usa
    kinotvapp/kino-plugin-archive-audio como el plugin de audio de referencia.
+4. Si mi plugin no puede convertir lo que encuentra en una URL reproducible por sí mismo y lo entrega a otra app
+   instalada en el celular o la TV (una "app resolutora"), lee https://kinotvapp.github.io/kino-plugins/resolver/ y
+   "Dejar que otra app resuelva lo que encontraste" en el contrato (apiVersion 11, Kino 0.9.66). En ese caso el
+   plugin solo declara "externalResolve" y responde { external: { protocol, ref } } desde resolve(); nunca toca el
+   contenido por sí mismo.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -93,6 +98,7 @@ Lo que quiero:
 - Acceso: <<< ninguno / mi usuario y contraseña del sitio / una clave de API mía (del desarrollador) que no quiero publicar / la dirección de un servidor que escribe cada persona >>>
 - Qué le pregunta Kino a la persona al configurarlo: <<< nada / su usuario y contraseña / su región / la dirección de su servidor >>>
 - Descargas para ver sin conexión: <<< sí / no >>>
+- Otra app resuelve el stream reproducible (una app resolutora aparte en el aparato): <<< no / sí: el nombre del paquete de la app, el protocolo que responde y qué "ref" espera >>>
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>

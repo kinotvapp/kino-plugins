@@ -180,10 +180,12 @@ the local network ([Sending to the TV](what-people-see.md#cast)). That means:
   keeps playing the title itself;
 - a title with DRM, request signing, a live channel or music never uses `portable`.
 
-This is covered by Kino's tests with a fake resolver. **It has not been tried yet with a real Chromecast or DLNA
-receiver**, so expect rough edges until it is: whether a receiver accepts the rewritten HLS with its subtitle
-renditions, seeking from the TV and an app that survives the phone's screen turning off are the open
-questions.
+This is covered by Kino's tests with a fake resolver and was tried on one real Chromecast (a TV's built-in one): a direct H.264
+file, a converted HLS with audio and subtitle renditions (seeking from the phone works) and a `portable` copy of an HEVC file all play.
+**DLNA is not working yet** for an HLS whose audio is a separate rendition (tried on an LG webOS TV that lists no HLS: Kino builds one
+continuous MPEG-TS for it, cannot use a separate audio rendition, and the TV receives nothing): keep the audio of anything a DLNA TV
+should play in the segments themselves. Not tried: other receivers, subtitles drawn on the TV, and an app that survives the phone's
+screen turning off.
 
 ## What to expect { #expect }
 
@@ -304,7 +306,7 @@ share with whoever builds the app. Name the app in `externalResolver` when only 
 **Why is the `url` allowed to be `http://127.0.0.1:...`?** Because an app that serves the content from the
 device has to; it is accepted for that one answer, with an unguessable path token in it, and for nothing else.
 
-**Will it cast?** Through Kino's proxy, yes in the code and in its tests; real receivers are not tried yet
+**Will it cast?** Through Kino's proxy: Chromecast yes (tried on a real one); DLNA not yet for an HLS with separate audio renditions
 ([above](#cast)).
 
 **Where do I see what `media` said?** In Kino's log, as a one-line summary. A screen for it is not built yet.

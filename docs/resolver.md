@@ -185,10 +185,12 @@ TV una URL con token en la red local ([Enviar a la TV](what-people-see.md#cast))
   ofreció una. El celular sigue reproduciendo el título por su cuenta;
 - un título con DRM, firma por petición, un canal en vivo o música nunca usa `portable`.
 
-Esto está cubierto por las pruebas de Kino con un resolutor falso. **Todavía no se ha probado con un Chromecast
-ni un receptor DLNA reales**, así que espera asperezas hasta entonces: si un receptor acepta el HLS reescrito
-con sus renditions de subtítulos, buscar desde la TV y una app que sobreviva a que se apague la pantalla del
-celular son las preguntas abiertas.
+Esto está cubierto por las pruebas de Kino con un resolutor falso y se probó con un Chromecast real (el integrado de una TV): un archivo
+H.264 directo, un HLS convertido con renditions de audio y subtítulos (buscar desde el celular funciona) y una copia `portable` de un archivo
+HEVC se reproducen. **DLNA todavía no funciona** con un HLS cuyo audio es una rendition aparte (probado en una TV LG webOS que no lista HLS:
+Kino arma un único MPEG-TS continuo para ella, no puede usar una rendition de audio aparte y la TV no recibe nada): deja el audio de lo que
+deba reproducir una TV DLNA dentro de los propios segmentos. Sin probar: otros receptores, subtítulos dibujados en la TV y una app que
+sobreviva a que se apague la pantalla del celular.
 
 ## Qué esperar { #expect }
 
@@ -313,8 +315,8 @@ una cadena que compartes con quien construye la app. Nombra la app en `externalR
 **¿Por qué la `url` puede ser `http://127.0.0.1:...`?** Porque una app que sirve el contenido desde el aparato lo
 necesita; se acepta para esa única respuesta, con un token imposible de adivinar en la ruta, y para nada más.
 
-**¿Se envía a la TV?** Por el proxy de Kino, sí en el código y en sus pruebas; los receptores reales todavía no
-se han probado ([arriba](#cast)).
+**¿Se envía a la TV?** Por el proxy de Kino: Chromecast sí (probado en uno real); DLNA todavía no con un HLS de renditions de audio aparte
+([arriba](#cast)).
 
 **¿Dónde veo lo que dijo `media`?** En el registro de Kino, como un resumen de una línea. Una pantalla para eso
 todavía no está hecha.
