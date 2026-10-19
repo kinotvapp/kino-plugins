@@ -15,7 +15,7 @@ The complete API demo is [kinotvapp/kino-plugin-own-server](https://github.com/k
 (Internet Archive) is the simplest starting template, and
 [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio)
 (Internet Archive Audio) is the reference for [music and podcasts](music.md) (apiVersion 8, Kino
-0.9.54). The first two carry the `sdk/` folder, the Node kit. Two more files describe the contract for machines (both on the [Reference](reference/index.md)
+0.9.54). The first two carry the `sdk/` folder, the Node kit; the kit alone is in [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk). Two more files describe the contract for machines (both on the [Reference](reference/index.md)
 page): `contract.json` holds every number and rule the app enforces (the tables in this guide are
 generated from it, and the app's tests pin its own constants to it), and `kino.d.ts` declares the
 whole `kino` API for your editor (`/// <reference path="./kino.d.ts" />` at the top of `plugin.js`).

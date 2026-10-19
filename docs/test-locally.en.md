@@ -1,6 +1,7 @@
 # Test it locally
 
-The Node kit is the `sdk/` folder of the example plugins ([where to get it](first-plugin.md#get-the-sdk)):
+The Node kit is the `sdk/` folder of the example plugins ([where to get it](first-plugin.md#get-the-sdk)), and it is
+also on its own in [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk):
 `run.mjs` (run one function), `validate.mjs` (check a plugin the way Kino does), `init.mjs` (scaffold
 a new one), `kino-shim.mjs` (the `kino` API in Node), `contract.mjs` (the rules, read from
 `contract.json`), `seal.mjs` (seals a [secret](manifest.md#secrets) for your manifest, and `--keygen`/`--sign` for a [signed plugin](signed.md)) and

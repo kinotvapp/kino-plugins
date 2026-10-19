@@ -1,6 +1,7 @@
 # Probar en local
 
-El kit de Node es la carpeta `sdk/` de los plugins de ejemplo ([de dónde sacarla](first-plugin.md#get-the-sdk)):
+El kit de Node es la carpeta `sdk/` de los plugins de ejemplo ([de dónde sacarla](first-plugin.md#get-the-sdk)), y está
+también solo en [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk):
 `run.mjs` (ejecuta una función), `validate.mjs` (revisa un plugin como lo hace Kino), `init.mjs` (crea
 el esqueleto de uno nuevo), `kino-shim.mjs` (la API `kino` en Node), `contract.mjs` (las reglas,
 leídas de `contract.json`), `seal.mjs` (sella un [secreto](manifest.md#secrets) para tu manifiesto, y con `--keygen`/`--sign` firma un [plugin firmado](signed.md)) y
