@@ -90,6 +90,12 @@ crear tu plugin a partir de una plantilla, y así el kit ya viene adentro.
     Si ves `✓ Kino would accept this plugin`, ya tienes todo listo para empezar a cambiar `plugin.js`
     y `kino-plugin.json`.
 
+**¿Ya tienes un plugin, o una copia vieja del kit?** El kit solo está en
+[kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk). Copia su carpeta `sdk/`,
+`contract.json` y `kino.d.ts` a tu plugin (van las tres juntas: el kit lee `contract.json`, y `kino.d.ts` es lo
+que tu editor muestra de `kino`). Una copia desactualizada es una razón por la que un plugin que pasa en el
+kit falle en la app, o de que el editor ofrezca una API que ya cambió.
+
 !!! warning "Usa la plantilla, no el botón Fork"
     **Use this template** crea un repositorio nuevo e independiente, que es tuyo. **Fork** crea una
     copia enlazada al original, y Kino **no muestra los forks** en "De la comunidad"

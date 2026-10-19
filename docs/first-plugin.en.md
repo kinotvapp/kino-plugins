@@ -88,6 +88,12 @@ your plugin from a template, so the kit is already inside.
     If you see `✓ Kino would accept this plugin`, you are ready to start changing `plugin.js` and
     `kino-plugin.json`.
 
+**Already have a plugin, or an old copy of the kit?** The kit alone is in
+[kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk). Copy its `sdk/` folder,
+`contract.json` and `kino.d.ts` into your plugin (the three go together: the kit reads `contract.json`, and
+`kino.d.ts` is what your editor shows for `kino`). An out-of-date copy is one reason a plugin that
+passes the kit fails in the app, or the editor offers an API that has changed.
+
 !!! warning "Use the template, not the Fork button"
     **Use this template** creates a new, independent repository that is yours. **Fork** creates a
     copy linked to the original, and Kino **does not show forks** in "De la comunidad"
