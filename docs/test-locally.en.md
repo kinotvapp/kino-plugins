@@ -244,8 +244,9 @@ differences:
   on every shared test guide, but on malformed XML in mid-document it may keep more than the app
   (which stops at the first error and keeps what it read up to there).
 - The rejection trap of [Limits and engine quirks](engine-limits.md#rejection-trap): Node catches what Kino 0.9.49 and older would not.
-- Node has globals Kino lacks (`setTimeout`, `fetch`, `Buffer`, ...): the plugin may pass under Node
-  and fail in Kino. Kino's `URL` has no punycode.
+- The globals Kino lacks (`setTimeout`, `fetch`, `Buffer`, ...) are missing in the kit too: your plugin
+  runs in an isolated environment that holds only what Kino provides (`KINO_SDK_NO_SANDBOX=1` turns
+  it off for debugging). Kino's `URL` has no punycode.
 - The host, redirect and request-count rules are the same, and so are the cookie rules as far as
   Node's own parsing goes, but there is no refusal of names that resolve to private addresses, bodies
   are always read as UTF-8, and the 15 s timeout covers the wait for the response but not the

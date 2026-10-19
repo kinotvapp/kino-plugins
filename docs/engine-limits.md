@@ -92,8 +92,10 @@ literals, spread, `replaceAll`, `Array.prototype.at` y `flat`, `Object.fromEntri
   `structuredClone`, `performance`, `crypto`, `WeakRef` e `Intl`. Usa `kino.sleep` para esperar,
   `kino.fetch` en vez de `fetch` y `kino.crypto` en vez de `crypto`. `URL`, `URLSearchParams`, `atob`,
   `btoa`, `TextEncoder`, `TextDecoder` y `console` sí existen: los pone Kino.
-- **Node tiene casi todos esos**, así que un código que corre bien en el kit de Node igual puede
-  fallar en Kino. Antes de publicar, busca en tu archivo los nombres de arriba.
+- **El kit ya los quita:** `run.mjs` y `validate.mjs` cargan tu plugin en un entorno aislado donde esos
+  nombres no existen (usarlos da `ReferenceError`, igual que en Kino) y `validate` avisa con `!` en qué
+  línea los usas y qué poner en su lugar. También rechaza cualquier `import`: Kino carga un solo
+  archivo (empaquétalo con esbuild).
 - **Los métodos que dependen del idioma no localizan:** `localeCompare` ignora su idioma y sus
   opciones (así que `{ numeric: true }` y `{ sensitivity: "base" }` no hacen nada; compara unidades de
   código), y `(1234.5).toLocaleString("es-CO")` da `"1234.5"`. Escribe la comparación que necesitas;

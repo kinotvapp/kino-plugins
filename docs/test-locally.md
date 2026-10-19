@@ -251,8 +251,9 @@ instala el plugin en la app y pruébalo ahí. Las diferencias:
   conserva lo que leyó hasta ahí).
 - La trampa del rechazo de [Límites y trampas del motor](engine-limits.md#rejection-trap): Node ataja
   lo que Kino 0.9.49 y anteriores no atajarían.
-- Node tiene globales que a Kino le faltan (`setTimeout`, `fetch`, `Buffer`, ...): el plugin puede
-  pasar en Node y fallar en Kino. El `URL` de Kino no tiene punycode.
+- Los globales que a Kino le faltan (`setTimeout`, `fetch`, `Buffer`, ...) tampoco existen en el kit:
+  tu plugin corre en un entorno aislado que solo tiene lo que Kino da (`KINO_SDK_NO_SANDBOX=1` lo
+  desactiva para depurar). El `URL` de Kino no tiene punycode.
 - Las reglas de hosts, de redirecciones y de cantidad de peticiones son las mismas, y las de cookies
   también hasta donde llega el análisis propio de Node, pero no se rechazan nombres que resuelven a
   direcciones privadas, los cuerpos siempre se leen como UTF-8, y el tiempo límite de 15 s cubre la
