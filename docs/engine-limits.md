@@ -111,6 +111,28 @@ literals, spread, `replaceAll`, `Array.prototype.at` y `flat`, `Object.fromEntri
   se cierra durante una llamada" arriba). Poner `name` en objetos normales, y `this.name = "MyError"`
   en una subclase de `Error`, funciona como siempre.
 
+## Lo que el kit no puede copiar { #kit-differences }
+
+El kit corre tu plugin en el V8 de Node dentro de un sandbox que imita el motor de Kino, y una prueba compara los dos con
+un centenar de sondas de lenguaje (`plugins/sdk/test/engine-probes.js` en el repositorio de Kino, medidas contra el motor
+real). El kit copia lo que puede: las líneas de `Error.stack`, `Date#toLocale*String` (ignoran sus argumentos e imprimen
+`01/15/2024` y `01:05:09 PM`), el `toString` de tres líneas de las funciones nativas, `[object global]`, sin
+`ArrayBuffer#resize`/`transfer`, `console` solo con `log`, `info`, `warn` y `error`, y `TextDecoder` solo con utf-8.
+
+Lo que **no** puede copiar, así que un plugin puede pasar en el kit y aun así fallar en Kino:
+
+| Qué | En Kino | En el kit |
+|---|---|---|
+| Memoria | 64 MB por plugin. Un arreglo de 1e7 elementos, un objeto con 1e6 claves o un `Map` con 1e6 entradas hace fallar la llamada | sin límite |
+| Pila | 1 MB: unas 5000 llamadas anidadas ya lanzan `InternalError` (la recursión sin fin es `InternalError`, no `RangeError`) | V8 admite unas 10000 y lanza `RangeError` |
+| Bandera `/x/v` | `SyntaxError` | la acepta |
+| `sort` con un comparador que se contradice (`() => -1`) | otro orden | el orden de V8. Con comparadores coherentes, y la estabilidad, es idéntico |
+| `new URL("http://münchen.de")` | `TypeError` (sin punycode): escribe el host como `xn--mnchen-3ya.de` | lo convierte a `xn--...` |
+| `Error.stackTraceLimit` | no existe | existe (V8 lo necesita para armar `stack`) |
+
+Si algo se comporta en Kino distinto que en el kit, es una sonda por añadir: la lista de diferencias conocidas está en
+`plugins/sdk/test/engine-probes.known.json`, con una razón por línea.
+
 ## Dividir tu código en varios archivos { #splitting-files }
 
 Kino carga exactamente un archivo (el `entry` del manifest), y el motor no tiene `require` ni

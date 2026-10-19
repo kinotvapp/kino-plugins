@@ -119,6 +119,28 @@ literals, spread, `replaceAll`, `Array.prototype.at` and `flat`, `Object.fromEnt
   switched off (see "App closed during a call" above). Setting `name` on ordinary objects, and
   `this.name = "MyError"` in an `Error` subclass, work as usual.
 
+## What the kit cannot copy { #kit-differences }
+
+The kit runs your plugin in Node's V8 inside a sandbox that imitates Kino's engine, and a test compares both on
+about a hundred language probes (`plugins/sdk/test/engine-probes.js` in the Kino repo, measured against the real
+engine). The kit copies what it can: `Error.stack` lines, `Date#toLocale*String` (they ignore their arguments and
+print `01/15/2024` and `01:05:09 PM`), the three-line `toString` of native functions, `[object global]`, no
+`ArrayBuffer#resize`/`transfer`, `console` with only `log`, `info`, `warn` and `error`, `TextDecoder` with utf-8 only.
+
+What it **cannot** copy, so a plugin can pass in the kit and still fail in Kino:
+
+| What | In Kino | In the kit |
+|---|---|---|
+| Memory | 64 MB per plugin. A 1e7-element array, an object with 1e6 keys or a `Map` with 1e6 entries fails the call | no limit |
+| Stack | 1 MB: about 5000 nested calls already throw `InternalError` (runaway recursion is `InternalError`, not `RangeError`) | V8 allows about 10000 and throws `RangeError` |
+| `/x/v` flag | `SyntaxError` | accepted |
+| `sort` with a comparator that contradicts itself (`() => -1`) | a different order | V8's order. Consistent comparators, and stability, are identical |
+| `new URL("http://münchen.de")` | `TypeError` (no punycode): write the host as `xn--mnchen-3ya.de` | turns it into `xn--...` |
+| `Error.stackTraceLimit` | does not exist | exists (V8 needs it to build `stack`) |
+
+If something behaves in Kino unlike in the kit, that is a probe to add: the list of known differences is
+`plugins/sdk/test/engine-probes.known.json`, one reason per line.
+
 ## Splitting your code across files { #splitting-files }
 
 Kino loads exactly one file (the manifest's `entry`), and the engine has no `require` and no
