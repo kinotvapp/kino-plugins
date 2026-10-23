@@ -219,8 +219,9 @@ you hand the plugin over run this self-check and tell me the result of each line
   manifest has a Spanish "name" and "description";
 - if it plays nothing: "catalogOnly": true, and a resolve that fails with not_found for older Kino;
 - if it uses Nuvio scrapers: "apiVersion": 11, the "nuvio" capability and "nuvioRepos" (1 to 4), "streamHosts": "any",
-  kino.nuvio only inside functions and behind `typeof kino.nuvio === "object"`; the Node kit does not know
-  "nuvio" yet (the `Unknown capability` error is expected, do not "fix" it), so tell me to test it in Kino 0.9.71 or newer;
+  kino.nuvio only inside functions and behind `typeof kino.nuvio === "object"`; the Node kit answers it
+  from a fixture (KINO_NUVIO_FIXTURE; if it says `Unknown capability`, my kit is old: update it, do not remove the
+  capability), and the real scrapers are only tested in Kino 0.9.71 or newer;
 - if it has music or podcasts: "apiVersion": 8, every audio item has kind "music" or "podcast", and
   (with "episodes") episodes() answers every audio ref, even a single track.
 

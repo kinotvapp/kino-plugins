@@ -223,8 +223,9 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   y el manifiesto tiene un "name" y una "description" en español;
 - si no reproduce nada: "catalogOnly": true, y un resolve que falla con not_found para los Kino viejos;
 - si usa scrapers de Nuvio: "apiVersion": 11, la capacidad "nuvio" y "nuvioRepos" (de 1 a 4), "streamHosts": "any",
-  kino.nuvio solo dentro de las funciones y detrás de `typeof kino.nuvio === "object"`; el kit de Node todavía no
-  conoce "nuvio" (el error `Unknown capability` es lo esperado, no lo "arregles"), así que dime que lo pruebe en Kino 0.9.71 o más nuevo;
+  kino.nuvio solo dentro de las funciones y detrás de `typeof kino.nuvio === "object"`; el kit de Node lo
+  responde desde una fixture (KINO_NUVIO_FIXTURE; si dice `Unknown capability`, mi kit es viejo: actualízalo, no quites la
+  capacidad), y los scrapers de verdad solo se prueban en Kino 0.9.71 o más nuevo;
 - si tiene música o podcasts: "apiVersion": 8, cada ítem de audio tiene kind "music" o "podcast", y
   (con "episodes") episodes() responde por cada ref de audio, aunque sea una sola pista.
 
