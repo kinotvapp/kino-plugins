@@ -215,7 +215,7 @@ Qué hace cada paso, y dónde puedes ponerle tu propia lógica:
 
 ## Los tipos (TypeScript) { #types }
 
-Estas declaraciones son las de `kino.d.ts` de Kino 0.9.71; los archivos de referencia de este sitio todavía no las incluyen.
+Estas declaraciones son las de `kino.d.ts` de Kino 0.9.71 (también están en [los archivos de referencia](reference/index.md)).
 
 ```ts
 /** Kino 0.9.71, `kino.nuvio.scrapers(query)`: `repo` is a GitHub `owner/repo` or the https address of a Nuvio `manifest.json`, as the person added it. */
@@ -267,10 +267,26 @@ declare namespace kino.nuvio {
 
 ## Probarlo { #test }
 
-- **El kit de Node todavía no conoce `nuvio`.** `node sdk/validate.mjs .` responde `capabilities: Unknown capability: "nuvio"` aunque el manifiesto esté bien: es un error del kit, no de Kino. No quites la capacidad para callarlo; el que decide es Kino 0.9.71 o más nuevo al instalar. El resto de lo que revisa el kit (hosts, estructura, las demás funciones) sí te sirve.
-- El kit de Node **tampoco simula `kino.nuvio`**: en el kit `typeof kino.nuvio` no es `"object"`. Por eso el ejemplo lo
-  comprueba primero. Prueba el `resolve` de verdad instalando el plugin en Kino 0.9.71 o más nuevo y reproduciendo un
-  título.
+El kit de Node (el repositorio [`kino-plugin-sdk`](https://github.com/kinotvapp/kino-plugin-sdk), que también trae
+tu plantilla) conoce `kino.nuvio`:
+
+- `node sdk/validate.mjs .` revisa el manifiesto (`nuvio` con `nuvioRepos`, de 1 a 4 repositorios) y avisa si usas
+  `kino.nuvio` sin comprobar antes `typeof kino.nuvio === "object"`.
+- El kit **no tiene scrapers**: responde `kino.nuvio` desde una fixture, con las mismas revisiones y límites de la app.
+  Sin fixture responde `unavailable`. Pásale una con `KINO_NUVIO_FIXTURE` (hay un ejemplo en
+  [`fixtures/nuvio.json`](https://github.com/kinotvapp/kino-plugin-sdk/blob/main/fixtures/nuvio.json)):
+
+    ```sh
+    KINO_NUVIO_FIXTURE=kino-plugin-sdk/fixtures/nuvio.json node sdk/run.mjs . resolve '{"k":"movie","t":603}'
+    ```
+
+    La fixture es `{ "owner/repo": { "available": [...], "streams": { "<id del scraper>": { "movie:603": {...} } } } }`:
+  lo que ofrece el repositorio y qué responde cada scraper por título (`movie:<tmdbId>`, `series:<tmdbId>:<temporada>:<capítulo>`,
+  o `{ "error": { "code", "message" } }`, o un `delayMs` mayor que tu `timeoutMs` para probar un scraper lento).
+  Sirve para probar **tu** lógica (qué scrapers pides, cómo ordenas y mezclas, qué pasa si uno falla).
+- Si tu copia del kit es anterior (la que trae `Unknown capability: "nuvio"`), actualízala desde
+  [`kino-plugin-sdk`](https://github.com/kinotvapp/kino-plugin-sdk): copia otra vez `sdk/`, `contract.json` y `kino.d.ts`.
+- Que los scrapers de verdad respondan solo se sabe en Kino 0.9.71 o más nuevo: instala el plugin y reproduce un título.
 - Mira el registro del plugin (`kino.log`) para saber qué scraper falló y por qué.
 
 ## Errores comunes { #mistakes }

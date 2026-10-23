@@ -212,7 +212,7 @@ What each step does, and where to put your own logic:
 
 ## The types (TypeScript) { #types }
 
-These declarations are the ones in Kino 0.9.71's `kino.d.ts`; this site's reference files do not include them yet.
+These declarations are the ones in Kino 0.9.71's `kino.d.ts` (they are also in [the reference files](reference/index.md)).
 
 ```ts
 /** Kino 0.9.71, `kino.nuvio.scrapers(query)`: `repo` is a GitHub `owner/repo` or the https address of a Nuvio `manifest.json`, as the person added it. */
@@ -264,10 +264,26 @@ declare namespace kino.nuvio {
 
 ## Testing it { #test }
 
-- **The Node kit does not know `nuvio` yet.** `node sdk/validate.mjs .` answers `capabilities: Unknown capability: "nuvio"` even when the manifest is right: it is a kit error, not a Kino one. Do not remove the capability to silence it; Kino 0.9.71 or newer decides when installing. The rest of what the kit checks (hosts, structure, your other functions) still helps.
-- The Node kit **does not simulate `kino.nuvio` either**: in the kit, `typeof kino.nuvio` is not `"object"`. That is why the
-  example checks it first. Test `resolve` for real by installing the plugin in Kino 0.9.71 or newer and playing a
-  title.
+The Node kit (the [`kino-plugin-sdk`](https://github.com/kinotvapp/kino-plugin-sdk) repository, which your template also
+carries) knows `kino.nuvio`:
+
+- `node sdk/validate.mjs .` checks the manifest (`nuvio` with `nuvioRepos`, 1 to 4 repositories) and warns if you use
+  `kino.nuvio` without checking `typeof kino.nuvio === "object"` first.
+- The kit **has no scrapers**: it answers `kino.nuvio` from a fixture, with the app's checks and limits. Without a
+  fixture it answers `unavailable`. Give it one with `KINO_NUVIO_FIXTURE` (there is a sample in
+  [`fixtures/nuvio.json`](https://github.com/kinotvapp/kino-plugin-sdk/blob/main/fixtures/nuvio.json)):
+
+    ```sh
+    KINO_NUVIO_FIXTURE=kino-plugin-sdk/fixtures/nuvio.json node sdk/run.mjs . resolve '{"k":"movie","t":603}'
+    ```
+
+    The fixture is `{ "owner/repo": { "available": [...], "streams": { "<scraper id>": { "movie:603": {...} } } } }`:
+  what the repository offers and what each scraper answers per title (`movie:<tmdbId>`, `series:<tmdbId>:<season>:<episode>`,
+  or `{ "error": { "code", "message" } }`, or a `delayMs` longer than your `timeoutMs` to try a slow scraper).
+  It is for testing **your** logic (which scrapers you ask, how you sort and merge, what happens when one fails).
+- If your copy of the kit is older (the one that says `Unknown capability: "nuvio"`), update it from
+  [`kino-plugin-sdk`](https://github.com/kinotvapp/kino-plugin-sdk): copy `sdk/`, `contract.json` and `kino.d.ts` again.
+- Whether the real scrapers answer is only known in Kino 0.9.71 or newer: install the plugin and play a title.
 - Read the plugin's log (`kino.log`) to learn which scraper failed and why.
 
 ## Common mistakes { #mistakes }

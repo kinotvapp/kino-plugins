@@ -286,10 +286,12 @@ timeoutMs para que uno colgado no gaste los 75 s del resolve, y recuerda en kino
 funcionaron. Un scraper que falla es una entrada con ok: false, no un error. Devuelve un solo Stream
 con la mejor copia y el resto en alternatives. Todo texto para la persona en español de Bogotá, con tuteo.
 
-El kit de Node todavía no conoce "nuvio": `node sdk/validate.mjs .` va a decir `Unknown capability: "nuvio"`
-aunque el manifiesto esté bien, y `run.mjs` no simula kino.nuvio. No quites la capacidad para callar ese error:
-ignóralo, dime que es lo esperado y, al terminar, cómo probar el resolve instalando el plugin en Kino 0.9.71 o
-más nuevo, con los clics exactos.
+El kit de Node (el actual) conoce "nuvio": `node sdk/validate.mjs .` revisa nuvioRepos y `node sdk/run.mjs`
+responde kino.nuvio desde una fixture que escribes tú (KINO_NUVIO_FIXTURE; ejemplo en
+https://github.com/kinotvapp/kino-plugin-sdk/blob/main/fixtures/nuvio.json), así que pruébalo así. Si
+validate dice `Unknown capability: "nuvio"`, mi copia del kit es vieja: dime que copie otra vez sdk/,
+contract.json y kino.d.ts desde kinotvapp/kino-plugin-sdk (no quites la capacidad). Al terminar, dime cómo
+probar los scrapers de verdad instalando el plugin en Kino 0.9.71 o más nuevo, con los clics exactos.
 ```
 
 

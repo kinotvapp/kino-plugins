@@ -281,10 +281,12 @@ hung one does not spend the resolve's 75 s, and remember in kino.storage which o
 that fails is an entry with ok: false, not an error. Return one Stream with the best copy and the rest
 in alternatives. Every text for the person in Bogota Spanish with tuteo (or kino.lang's language).
 
-The Node kit does not know "nuvio" yet: `node sdk/validate.mjs .` will say `Unknown capability: "nuvio"`
-even when the manifest is right, and `run.mjs` does not simulate kino.nuvio. Do not remove the capability to
-silence that error: ignore it, tell me it is expected and, when you finish, how to test resolve by installing
-the plugin in Kino 0.9.71 or newer, with the exact clicks.
+The Node kit (the current one) knows "nuvio": `node sdk/validate.mjs .` checks nuvioRepos and `node sdk/run.mjs`
+answers kino.nuvio from a fixture you write (KINO_NUVIO_FIXTURE; sample at
+https://github.com/kinotvapp/kino-plugin-sdk/blob/main/fixtures/nuvio.json), so test it that way. If validate
+says `Unknown capability: "nuvio"`, my copy of the kit is old: tell me to copy sdk/, contract.json and
+kino.d.ts again from kinotvapp/kino-plugin-sdk (do not remove the capability). When you finish, tell me how to test
+the real scrapers by installing the plugin in Kino 0.9.71 or newer, with the exact clicks.
 ```
 
 

@@ -858,6 +858,45 @@ type KinoFetchErrorCode = "host_not_allowed" | "timeout" | "network" | "too_larg
 /** Kino 0.9.53: what `kino.meta` and `kino.tmdb` throw besides the fetch codes (see contract.json `kinoMeta`/`kinoTmdb`). */
 type KinoServiceErrorCode = "rate_limited" | "not_allowed" | "no_tmdb_key" | "not_found" | "unavailable";
 
+/** Kino 0.9.71, `kino.nuvio.scrapers(query)`: `repo` is a GitHub `owner/repo` or the https address of a Nuvio `manifest.json`, as the person added it. */
+interface KinoNuvioScrapersRequest {
+  repo: string;
+  /** Only these scraper ids (at most 64). */
+  scrapers?: string[];
+}
+
+/** Kino 0.9.71, `kino.nuvio.streams(query)`: the title by its TMDB id; a series needs `season` and `episode`. */
+interface KinoNuvioStreamsRequest extends KinoNuvioScrapersRequest {
+  type: "movie" | "series" | "tv";
+  tmdbId: number;
+  season?: number;
+  episode?: number;
+  /** How long each scraper may take, 2000 to 60000 ms (default 60000): a scraper that hangs answers `timeout` and hides nothing. */
+  timeoutMs?: number;
+}
+
+interface KinoNuvioScraper { id: string; name: string }
+
+/** One scraper a repository offers (`kino.nuvio.available`). */
+interface KinoNuvioOffered extends KinoNuvioScraper { description: string; types: string[]; languages: string[]; compatible: boolean; installed: boolean }
+
+/** One copy a scraper found: a `Stream`'s fields, copies included; a lazy copy (no address yet) is left out. */
+interface KinoNuvioStream {
+  url: string;
+  mime?: string;
+  headers?: Record<string, string>;
+  label?: string;
+  expiresInSeconds?: number;
+  subtitles?: { lang: string; url: string; format?: "vtt" | "srt" }[];
+  alternatives?: { url: string; mime?: string; headers?: Record<string, string>; label?: string }[];
+}
+
+type KinoNuvioResult =
+  | { scraper: KinoNuvioScraper; ok: true; stream: KinoNuvioStream }
+  | { scraper: KinoNuvioScraper; ok: false; code: string; message: string };
+
+interface KinoNuvioStreamsAnswer { results: KinoNuvioResult[]; truncated: boolean }
+
 /**
  * Kino 0.9.53, `kino.meta(query)`: the title to ask about. `type` and at least one id; ids are positive integers up to
  * 2147483647 (a number or a digit string) except `imdb` ("tt0133093"). `lang` ("es", "es-MX") goes to the person's meta
@@ -1225,6 +1264,35 @@ declare namespace kino {
   function tmdb(path: string, params?: Record<string, string | number | boolean>): Promise<any>;
 
   /**
+   * Kino 0.9.71, apiVersion 11, needs `"nuvio"` in the manifest's `capabilities` (a declarative capability; the consent sheet says "Instala y usa
+   * scrapers de Nuvio del repositorio que indica para buscar enlaces"; check `typeof kino.nuvio === "object"` first). EXPERIMENT. You name
+   * your Nuvio repositories in the manifest's `nuvioRepos` (1 to 4, `owner/repo`; the capability needs it) and `kino.nuvio` refuses any other (`not_allowed`).
+   * The scrapers you install are yours: Kino does not list them among the person's plugins, counts them under yours and removes them with it. The app installs the scrapers you ask for exactly as the importer does for a person (same reader, same conversion, same
+   * torrent filter: a P2P-only scraper is listed as not compatible and never installed), with nothing for the person to do, then asks each for a
+   * title and hands you what it found, to sort, merge and label as you like. Nothing is run or downloaded by your plugin: every scraper keeps
+   * the importer's own hosts, request budget and 75 s limit, and a plugin that declares `nuvio` gets the same 75 s for its own `resolve`.
+   * Only inside one of your functions. At most 20 calls a minute; up to 12 scrapers per `use` or `streams` call (`streams` asks 4 at a time).
+   * Throws `invalid_request` (a bad query), `rate_limited`, `unavailable` (the repository cannot be read), `not_allowed` (the capability is
+   * not declared, or from `sign()`).
+   */
+  namespace nuvio {
+    /** What `repo` offers, read by the importer: each scraper's id, name, types (`movie`, `tv`, `anime`) and languages, whether it is `compatible` and whether it is already `installed`. */
+    function available(query: { repo: string }): Promise<KinoNuvioOffered[]>;
+    /**
+     * Makes sure each scraper in `scrapers` (at most 12) is installed, installing the missing ones one after another (up to 45 s each). A scraper that
+     * cannot be installed is in `failed` (`refused` for a torrent-based one, `not_found`, `timeout`, `failed`) and the rest go on.
+     */
+    function use(query: { repo: string; scrapers: string[] }): Promise<{ ready: string[]; failed: { id: string; code: string; message: string }[] }>;
+    /** The scrapers of `repo` that are installed and on right now (18+ ones are never listed), in install order. */
+    function scrapers(query: KinoNuvioScrapersRequest): Promise<KinoNuvioScraper[]>;
+    /**
+     * One answer per scraper asked, in install order. A scraper that fails or takes longer than 60 s is an entry with `ok: false`, never a
+     * throw, so one slow source hides nothing. `truncated` is true when more than 12 scrapers were installed and only the first 12 were asked.
+     */
+    function streams(query: KinoNuvioStreamsRequest): Promise<KinoNuvioStreamsAnswer>;
+  }
+
+  /**
    * Kino 0.9.55: share ONE anonymous, free guest session of your source's portal, so people in regions that can't log in
    * have live sessions to seed from. `session` is a plain object of the session's own fields (its ids and token); Kino keeps
    * only the known seed fields, drops everything else, and sends it to Kino's own error board — but only when the
@@ -1473,7 +1541,8 @@ type KinoMetaFn = (query: KinoMetaQuery) => Promise<KinoTitleMeta | null>;
  *       "downloader": { "code": "1234567" }
  *     }
  *
- * `apk.url` must be a GitHub release asset (`https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`); nothing else is
+ * `apk.url` must be a GitHub release asset (`https://github.com/<owner>/<repo>/releases/download/<tag>/<file>`) or an archive.org
+ * file (`https://archive.org/download/<item>/<file>`); nothing else is
  * ever downloaded. It is offered only for exactly `package`, and only handed to the installer if the file's sha256 matches.
  * Three independent ways to get the app when it is not installed, each optional: `apk` (above); `fdroid: true` (the same
  * `package` is listed in F-Droid: Kino opens F-Droid for exactly that package; the official F-Droid client has no real Android TV
