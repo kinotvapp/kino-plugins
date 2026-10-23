@@ -149,6 +149,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Lo que ve la persona](what-people-see.md) | La hoja de consentimiento, los diálogos de host, los mensajes del reproductor, Configurar, estados, desactivar y desinstalar |
 | [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, Widevine, `http` plano |
 | [Scrapers de Nuvio](nuvio.md) | Cómo instala la gente los scrapers de Nuvio, qué arma la conversión y sus límites |
+| [Plugins con scrapers de Nuvio](nuvio-plugins.md) | `kino.nuvio` (apiVersion 11): tu plugin nombra un repositorio de Nuvio y Kino instala y usa sus scrapers para buscar enlaces |
 | [Addons de Stremio](stremio.md) | Cómo instala la gente un addon de Stremio, cómo se traduce cada recurso, qué se rechaza y sus límites |
 | [Plugins de CloudStream](cloudstream.md) | Kino 0.9.54: cómo instala la gente los plugins de un repositorio de CloudStream, el complemento, cómo se traduce cada parte y sus límites |
 | [Plugins de ejemplo](examples.md) | Los dos ejemplos publicados, y cómo está hecho el plugin de referencia |

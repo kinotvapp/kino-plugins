@@ -12,8 +12,12 @@ you what to do at each step. This site publishes the rules in the shapes those t
 | [`llms.txt`](https://kinotvapp.github.io/kino-plugins/llms.txt) | The short index, in the [llms.txt](https://llmstxt.org/) format. |
 
 !!! tip "Want to use a Nuvio scraper?"
-    You do not need this prompt: Kino installs the scrapers of a Nuvio repository directly,
+    To **add** scrapers to Kino you do not need this prompt: Kino installs the scrapers of a Nuvio repository directly,
     converting them on the device. See [Nuvio scrapers](nuvio.md).
+
+!!! tip "Want a plugin that finds its links through Nuvio scrapers?"
+    That is a plugin of your own, and an assistant writes it well if it reads [Plugins that use Nuvio scrapers](nuvio-plugins.md)
+    (`kino.nuvio`, Kino 0.9.71). Use [the short Nuvio prompt](#nuvio-prompt) or, in the prompt below, fill in the «Nuvio scrapers» line.
 
 !!! tip "Want to use a Stremio addon?"
     You do not need this prompt either. In Ajustes ▸ Plugins, "Agregar plugin", choose **Stremio** and paste
@@ -89,6 +93,8 @@ Before writing anything:
    "Letting another app resolve what you found" in the contract (apiVersion 11, Kino 0.9.66). In that case the
    plugin only declares "externalResolve" and answers { external: { protocol, ref } } from resolve(); it never
    touches the content itself.
+5. If I named a Nuvio repository, read https://kinotvapp.github.io/kino-plugins/en/nuvio-plugins/ (kino.nuvio,
+   apiVersion 11, Kino 0.9.71) and copy the shape of its complete example.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -97,6 +103,7 @@ What I want:
 - What Kino asks the person when setting it up: <<< nothing / their username and password / their region / their server's address >>>
 - Offline downloads: <<< yes / no >>>
 - Another app resolves the playable stream (a separate resolver app on the device): <<< no / yes: the app's package name, the protocol name it answers, what "ref" it expects, and how people get it: a GitHub release APK (with its sha256), F-Droid, a Downloader code for TV >>>
+- Nuvio scrapers: <<< none / the Nuvio repository (owner/repo) the plugin gets its links from >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
@@ -211,6 +218,9 @@ you hand the plugin over run this self-check and tell me the result of each line
 - for discovery: the repository is public and not a fork, the topic kino-plugin is set, and the
   manifest has a Spanish "name" and "description";
 - if it plays nothing: "catalogOnly": true, and a resolve that fails with not_found for older Kino;
+- if it uses Nuvio scrapers: "apiVersion": 11, the "nuvio" capability and "nuvioRepos" (1 to 4), "streamHosts": "any",
+  kino.nuvio only inside functions and behind `typeof kino.nuvio === "object"`; the Node kit does not know
+  "nuvio" yet (the `Unknown capability` error is expected, do not "fix" it), so tell me to test it in Kino 0.9.71 or newer;
 - if it has music or podcasts: "apiVersion": 8, every audio item has kind "music" or "podcast", and
   (with "episodes") episodes() answers every audio ref, even a single track.
 
@@ -239,6 +249,44 @@ What I want:
 - Name in Kino and a short description: "Cine negro": "Películas clásicas de cine negro de archive.org, de dominio público. No pide cuenta."
 - My GitHub user: my-user
 ```
+
+## Short prompt: a plugin with Nuvio scrapers { #nuvio-prompt }
+
+If all you want is a plugin whose catalogue is yours and whose links are found by the scrapers of a Nuvio
+repository, this prompt is shorter (the assistant still reads `AGENTS.md`):
+
+```text
+You are going to write a Kino plugin that finds its links with the scrapers of a Nuvio repository.
+
+I may not know how to program: explain every step in plain English, run the commands yourself (tell me
+which one and why first) and ask me before anything that cannot be undone.
+
+Read, in this order:
+1. https://kinotvapp.github.io/kino-plugins/AGENTS.md (your instructions).
+2. https://kinotvapp.github.io/kino-plugins/en/nuvio-plugins/ (kino.nuvio: the manifest, the four
+   calls, the limits and a complete example you must follow).
+3. https://kinotvapp.github.io/kino-plugins/llms-full.txt (the whole guide, contract.json and kino.d.ts).
+
+What I want:
+- Nuvio repository: <<< owner/repo, or the https address of its manifest.json >>>
+- Catalogue: <<< movies / series / anime; where it comes from (e.g. TMDB with kino.tmdb) >>>
+- Which scrapers to ask first: <<< e.g. the Spanish-speaking ones / anime ones only for animation / the plugin decides >>>
+- Name in Kino and a short description: <<< e.g. "Mi todo en uno": "Películas y series, enlaces de Nuvio" >>>
+- My GitHub user: <<< e.g. my-user >>>
+
+Rules: "apiVersion": 11, "nuvio" in "capabilities", "nuvioRepos" with that repository, and
+"streamHosts": "any". Call kino.nuvio only inside your functions and behind
+`typeof kino.nuvio === "object"`. Ask few scrapers at a time (start with 4 to 6), lower timeoutMs so a
+hung one does not spend the resolve's 75 s, and remember in kino.storage which ones worked. A scraper
+that fails is an entry with ok: false, not an error. Return one Stream with the best copy and the rest
+in alternatives. Every text for the person in Bogota Spanish with tuteo (or kino.lang's language).
+
+The Node kit does not know "nuvio" yet: `node sdk/validate.mjs .` will say `Unknown capability: "nuvio"`
+even when the manifest is right, and `run.mjs` does not simulate kino.nuvio. Do not remove the capability to
+silence that error: ignore it, tell me it is expected and, when you finish, how to test resolve by installing
+the plugin in Kino 0.9.71 or newer, with the exact clicks.
+```
+
 
 ## Getting Kino to find your plugin { #listed }
 

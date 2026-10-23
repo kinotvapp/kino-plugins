@@ -472,6 +472,10 @@ Kino's, with the stricter limit on Kino's key (20 per 10 s; the kit has no perso
 `KINO_TMDB_FIXTURE` it answers offline from a JSON file keyed `"<path>?<params sorted by name>"` or `"<path>"`. Without
 either, it throws `no_tmdb_key`, as a Kino build without a key does.
 
+## `kino.nuvio` (apiVersion 11, Kino 0.9.71) { #nuvio }
+
+Experiment. With the `nuvio` capability and `nuvioRepos` in the manifest, your plugin asks Kino to install and use the scrapers of a Nuvio repository: `kino.nuvio.available({ repo })`, `use({ repo, scrapers })`, `scrapers({ repo })` and `streams({ repo, type, tmdbId, season?, episode?, scrapers?, timeoutMs? })`. Only inside your functions; 20 calls a minute; detect it with `typeof kino.nuvio === "object"`. Everything, with a complete example, in [Plugins that use Nuvio scrapers](nuvio-plugins.md).
+
 ## `kino.seed(session)`: share one anonymous guest session (Kino 0.9.55) { #seed }
 
 Some sources give an anonymous, free guest session to anyone who asks and block whole regions from logging in.

@@ -3,6 +3,10 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.71: `apiVersion` 11, `kino.nuvio` { #v0971 }
+
+- **A plugin can use the scrapers of a Nuvio repository.** You declare the `nuvio` capability and `nuvioRepos` (1 to 4 repositories) and, inside your functions, call `kino.nuvio.available`, `use`, `scrapers` and `streams`: Kino installs the scrapers as the import does, with no screens, asks them for a title, and you sort, merge and label the copies. The scrapers belong to your plugin and are removed with it; torrent-only ones are never installed. Experiment: detect it with `typeof kino.nuvio === "object"`. [Plugins that use Nuvio scrapers](nuvio-plugins.md).
+
 ## Next Kino release: Home by categories, open `genre` on rows { #home-categories }
 
 - **`genre` on a Home row accepts any category.** It used to be ten closed ids. Now a known id or alias (Spanish or

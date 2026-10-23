@@ -143,6 +143,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [What people see](what-people-see.md) | The consent sheet, host dialogs, player messages, Configurar, statuses, disabling and uninstalling |
 | [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |
 | [Nuvio scrapers](nuvio.md) | How people install Nuvio scrapers, what the conversion builds, and its limits |
+| [Plugins that use Nuvio scrapers](nuvio-plugins.md) | `kino.nuvio` (apiVersion 11): your plugin names a Nuvio repository and Kino installs and uses its scrapers to look for links |
 | [Stremio addons](stremio.md) | How people install a Stremio addon, how each resource maps, what is refused, and its limits |
 | [CloudStream plugins](cloudstream.md) | Kino 0.9.54: how people install the plugins of a CloudStream repository, the complement, how each part maps, and its limits |
 | [Example plugins](examples.md) | The two published examples, and how the reference plugin is built |

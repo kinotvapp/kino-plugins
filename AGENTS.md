@@ -35,7 +35,8 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Moving saved titles](https://kinotvapp.github.io/kino-plugins/en/migrate/),
    [Section, categories and colors](https://kinotvapp.github.io/kino-plugins/en/section-theme/),
    [Logs and telemetry](https://kinotvapp.github.io/kino-plugins/en/diagnostics/),
-   [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
+   [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/). For a plugin that finds its links through Nuvio scrapers (apiVersion 11, Kino 0.9.71):
+   [Plugins that use Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio-plugins/) -- the manifest, the four `kino.nuvio` calls, the limits and a complete example plugin to copy.
 3. The machine-readable contract: `contract.json` (every number and rule) and `kino.d.ts` (every
    shape and the whole `kino` API), at <https://kinotvapp.github.io/kino-plugins/reference/contract.json>
    and <https://kinotvapp.github.io/kino-plugins/reference/kino.d.ts>, and also in the template.
@@ -78,7 +79,8 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   whole plugin with "Este plugin necesita una versión más nueva de Kino"). `apiVersion` 6 = Kino
   0.9.50: never declare 6 "just in case". `7` only for `tracking` or `segments` (Kino 0.9.51+); `8` only
   for `music`/`podcast` items or the optional `details(ref)` export (a movie's own details for its title
-  page; Kino 0.9.54+; Kino 0.9.53 and older refuse an apiVersion 8 plugin). From
+  page; Kino 0.9.54+; Kino 0.9.53 and older refuse an apiVersion 8 plugin); `11` only for the `nuvio`
+  capability (`kino.nuvio`, Kino 0.9.71+; older Kino refuses an apiVersion 11 plugin). From
   apiVersion 8 `details` is a reserved export name: never export a helper called `details`.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
@@ -294,6 +296,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Stream (apiVersion 6) | `alternatives` 8 (any apiVersion; lazy and concrete together); `label` 48 chars; lazy `ref` 512 chars; `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
 | Hidden browser (apiVersion 6) | one page at a time in the whole app; `capture` `timeoutMs` ≤ 25,000 (default 18,000), ≤ 8 media, 10 subtitles; `page` `timeoutMs` ≤ 25,000 (default 15,000; Kino cuts it to the call's remaining time minus 1.5 s; pass ~12,000 in `search`), never from `categories`, top document on your hosts, 20 reads a minute; automatic fallback waits ≤ 20 s per lazy copy |
 | Player panel (apiVersion 9) | `panel`/`panelAction` 20 s, `playerEvent` 5 s; 40 top-level elements, 120 nodes, depth 4, 6 per row; title 60, button/input label 40, text 1,000; 6 tabs; values 50 keys per scope, 500 characters; `message` 160 |
+| `kino.nuvio` (apiVersion 11, Kino 0.9.71) | 20 calls a minute per plugin; 1 to 4 `nuvioRepos`; up to 12 scrapers per `use`/`streams` call (`streams` asks 4 at a time); 60 s per scraper (`timeoutMs` 2,000 to 60,000); installs 45 s each; `available` up to 200 scrapers; scraper filter up to 64 ids; query 4,096 characters; `resolve` 75 s |
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
 
@@ -596,6 +599,8 @@ started/paused/resumed/ended/failed/copyChanged. `settingsLayout` arranges the s
 cards. Playback must never depend on any of it (older Kino refuses apiVersion 9). Full reference:
 <https://kinotvapp.github.io/kino-plugins/en/player-panel/>.
 
+**Nuvio scrapers as a link source (apiVersion 11, Kino 0.9.71, experiment).** Many Nuvio repositories hold dozens of working scrapers; a plugin can use them instead of writing its own scraper per site. Declare `"nuvio"` in `capabilities` and `"nuvioRepos": ["owner/repo"]` (1 to 4 GitHub `owner/repo` or https addresses of a Nuvio `manifest.json`; each requires the other; `kino.nuvio` refuses any repository not listed with `not_allowed`), plus `"streamHosts": "any"` because the videos come from each scraper's own hosts. Inside your functions (never at module load) call `kino.nuvio.available({ repo })` (what is offered: `id`, `name`, `types`, `languages`, `compatible`, `installed`), `kino.nuvio.use({ repo, scrapers })` (installs up to 12, 45 s each; `{ ready, failed }`), `kino.nuvio.scrapers({ repo })` (the installed ones) and `kino.nuvio.streams({ repo, type, tmdbId, season?, episode?, scrapers?, timeoutMs? })`, which answers `{ results, truncated }` with ONE entry per scraper (`{ scraper, ok: true, stream }` or `{ scraper, ok: false, code, message }`; a failing or slow scraper is never a throw). You turn those into one `Stream` (main copy + `alternatives`) in your `resolve`, deciding order, labels and what to drop. Limits: 20 calls a minute per plugin, up to 12 scrapers per call (`streams` asks 4 at a time), 60 s per scraper (`timeoutMs` 2000 to 60000), `resolve` gets 75 s. Torrent-only scrapers are never installed. The scrapers you install belong to your plugin: not listed in Instalados, removed with it. Always check `typeof kino.nuvio === "object"` first. The Node kit does not know the `nuvio` capability yet: `validate.mjs` reports `Unknown capability: "nuvio"` for a correct manifest and `run.mjs` has no `kino.nuvio`. Do NOT remove the capability to silence that one error: tell the person it is expected and that `resolve` must be tested in Kino 0.9.71 or newer. The catalogue still comes from you (for example `kino.tmdb` and `kino.meta`). Copy the shape of the example in <https://kinotvapp.github.io/kino-plugins/en/nuvio-plugins/#example>. This is NOT the person-side Nuvio import (<https://kinotvapp.github.io/kino-plugins/en/nuvio/>): that needs no plugin at all.
+
 **Community takedowns**: each author is responsible for their own plugin; Kino only lists community
 plugins (no recommendation or promotion). A plugin that breaks the rules for plugins (a `userMessage`
 asking for money, passwords or contact data, malware, a rights claim) is removed from the community
@@ -627,7 +632,9 @@ people. See
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
       it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+; 8 only for
       `music`/`podcast` items or `details`: it needs Kino 0.9.54+; 10 only for the `playlists`
-      capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability: it needs Kino 0.9.66+).
+      capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability (Kino 0.9.66+) or the `nuvio` capability (Kino 0.9.71+)).
+      A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
+      `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
       that throws `not_found` (for Kino 0.9.53 and older).
 - [ ] Audio: every audio item has `kind` `"music"` or `"podcast"` and `"apiVersion": 8`; with

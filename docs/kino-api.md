@@ -511,6 +511,10 @@ de Kino, con el límite más estricto de la llave de Kino (20 cada 10 s; el kit 
 pasar), y con `KINO_TMDB_FIXTURE` responde sin red desde un archivo JSON con claves `"<path>?<params ordenados por
 nombre>"` o `"<path>"`. Sin ninguno de los dos lanza `no_tmdb_key`, como una versión de Kino sin llave propia.
 
+## `kino.nuvio` (apiVersion 11, Kino 0.9.71) { #nuvio }
+
+Experimento. Con la capacidad `nuvio` y `nuvioRepos` en el manifiesto, tu plugin le pide a Kino que instale y use los scrapers de un repositorio de Nuvio: `kino.nuvio.available({ repo })`, `use({ repo, scrapers })`, `scrapers({ repo })` y `streams({ repo, type, tmdbId, season?, episode?, scrapers?, timeoutMs? })`. Solo dentro de tus funciones; 20 llamadas por minuto; detéctalo con `typeof kino.nuvio === "object"`. Todo, con un ejemplo completo, en [Plugins que usan scrapers de Nuvio](nuvio-plugins.md).
+
 ## `kino.seed(session)`: compartir una sesión anónima de invitado (Kino 0.9.55) { #seed }
 
 Algunas fuentes dan una sesión de invitado anónima y gratuita a quien la pida, y bloquean regiones enteras para iniciar
