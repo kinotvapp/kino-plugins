@@ -30,30 +30,29 @@ Telegram de la propia persona) y [Sync Servidor](#examples) (un servidor que cor
 ## Quién ve qué { #who-sees-what }
 
 Kino comprime la copia y la cifra entera (AES-256-GCM) antes de llamar a tu plugin. El blob que recibe
-tu código es texto cifrado. Quién puede descifrarlo depende de un campo del manifiesto,
-[`sync.keySecret`](#sync-block):
+tu código es texto cifrado, y Kino nunca le entrega la llave a tu código. Pero la llave siempre sale de
+los propios ajustes de tu plugin:
 
-| | Sin `keySecret` (llave aleatoria) | Con `keySecret` (llave derivada) |
-| --- | --- | --- |
-| La llave | 32 bytes aleatorios hechos en el aparato, guardados en su almacén de llaves, nunca entregados al plugin | Kino la deriva, en cada aparato, del valor de uno de tus ajustes `password` (HKDF-SHA256) |
-| ¿El plugin puede leer los datos? | **No** | **Sí**: tu código lee ese ajuste y la derivación es pública |
-| ¿El servicio puede leerlos? | **No** | **Sí**, si tiene ese secreto (Telegram emitió el token del bot, por ejemplo) |
-| Línea de consentimiento | "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores", en rojo cuando el plugin también tiene `"fetchHosts": "any"` | siempre en rojo: "Sincronizará tus datos a través de su servicio: el plugin y su servicio podrán leerlos" |
-| Un segundo aparato | en Kino 0.9.74 **ninguna pantalla lleva una llave aleatoria a otro aparato** (mira abajo) | solo necesita los mismos ajustes, que "Enviar a otro aparato" le pasa; la llave nunca viaja |
+- **Todo proveedor declara [`sync.keySecret`](#sync-block)**, la `key` de uno de sus ajustes
+  `password`. Un manifiesto con `syncProvider` y sin `keySecret` se rechaza (`The "syncProvider"
+  capability needs a "sync" field whose "keySecret" is the key of one of the plugin's own "password"
+  settings`), en la app y en el kit. No hay modo de llave aleatoria.
+- **Kino deriva la llave de sincronización** en cada aparato del valor de ese ajuste (HKDF-SHA256, del
+  lado de Kino). Un segundo aparato con el mismo valor deriva la misma llave, así que abre la misma copia
+  y **ninguna llave viaja** entre aparatos.
+- **Por eso el plugin y su servicio SÍ pueden leer los datos sincronizados**: la derivación es pública y
+  tu código lee ese ajuste; un servicio que emitió el token (Telegram, para el token de un bot) también.
+  La hoja de consentimiento lo dice en **una línea en rojo**, la misma para todo proveedor: "Sincronizará
+  tus datos a través de su servicio: el plugin y su servicio podrán leerlos". Una actualización que
+  agrega la capacidad siempre espera la aprobación de la persona.
+- Dilo claro también en la descripción y en la guía de tu plugin: quien tenga el token puede leer los
+  datos.
 
 Lo que va en la copia: todo lo que Kino ya sincroniza entre aparatos emparejados por la red local, las
 mismas filas (biblioteca, historial, progreso, ajustes, los plugins instalados y sus ajustes), de cada
-perfil que sincroniza este aparato.
-Las contraseñas de los plugins y los demás secretos que sincroniza Kino también van, cada uno sellado fila
-por fila con la llave de sincronización. Los secretos sellados en el manifiesto de un plugin nunca
-viajan, como siempre.
-
-**En Kino 0.9.74 un proveedor sin `keySecret` sirve para un solo aparato.** Su llave aleatoria se queda
-en el aparato que la hizo, y ninguna pantalla de esta versión se la pasa a otro aparato (el paso de
-ajustes lleva ajustes, nunca una llave), así que un segundo aparato lee la copia como "No se puede leer
-la copia guardada: se guardó con otra clave o no es de Kino". Por eso los dos proveedores de ejemplo
-declaran `keySecret`. Si tu servicio le puede dar a la persona un token largo y aleatorio, úsalo como
-`keySecret`, y di en la descripción de tu plugin quién puede leer los datos.
+perfil que sincroniza este aparato. Las contraseñas de los plugins y los demás secretos que sincroniza
+Kino también van, cada uno sellado fila por fila con la llave de sincronización. Los secretos sellados en
+el manifiesto de un plugin nunca viajan, como siempre.
 
 ## El contrato { #contract }
 
@@ -123,8 +122,10 @@ export async function syncStatus(_null) {                  // opcional
 
 ## El bloque `sync` del manifiesto { #sync-block }
 
-Opcional, desde `apiVersion` 12, y solo con la capacidad `syncProvider` (si no, se rechaza el
-manifiesto: `The "sync" field needs the "syncProvider" capability`). Todas las claves son opcionales:
+Desde `apiVersion` 12, **obligatorio** con la capacidad `syncProvider` y solo con ella (si no, se rechaza
+el manifiesto: `The "sync" field needs the "syncProvider" capability`; un proveedor sin él o sin
+`keySecret`: `The "syncProvider" capability needs a "sync" field whose "keySecret" is the key of one of the
+plugin's own "password" settings`). `keySecret` y `provision` son obligatorios; lo demás es opcional:
 
 | Clave | Por defecto | Regla |
 | --- | --- | --- |
@@ -132,8 +133,8 @@ manifiesto: `The "sync" field needs the "syncProvider" capability`). Todas las c
 | `pullEveryMs` | 600000 (10 min) | un número entero positivo; Kino lo sube a 30 s como mínimo |
 | `pushDebounceMs` | 300000 (5 min) | un número entero positivo; Kino lo sube a 5 s como mínimo |
 | `maxBlobBytes` | 4194304 | el blob más grande que acepta tu servicio, como mucho 4194304 (4 MiB) |
-| `keySecret` | ninguno | la `key` de uno de tus ajustes `password`, que no puede tener `default` |
-| `provision` | ninguno | hasta 8 claves distintas de tus ajustes que guardan valor (secretos o no); tiene que incluir `keySecret` si lo declaras |
+| `keySecret` | **obligatorio** | la `key` de uno de tus ajustes `password`, que no puede tener `default` |
+| `provision` | **obligatorio** | hasta 8 claves distintas de tus ajustes que guardan valor (secretos o no); tiene que incluir `keySecret` |
 
 Los mensajes que da Kino con un bloque mal formado (todos en inglés, al instalar):
 
@@ -147,8 +148,9 @@ Los mensajes que da Kino con un bloque mal formado (todos en inglés, al instala
 que imprime tu servidor), nunca una contraseña que escoge una persona: quien consiga un blob guardado
 puede probar adivinanzas sin conexión. Mientras la persona no lo escriba, Kino no corre ninguna ronda
 (la fila dice "Falta el token: configúralo en Conectar"). Cambiar su valor cambia la llave: la copia
-remota ya no abre ("El token no coincide o los datos guardados no son de Kino") hasta que la persona
-corrige el token o restablece la sincronización en un aparato.
+remota ya no abre ("El token no coincide o los datos guardados no son de Kino", con "Corregir el token" y
+"Restablecer sincronización") hasta que la persona corrige el token o restablece la sincronización en un
+aparato. Todos los demás aparatos también necesitan el valor nuevo ("Enviar a otro aparato", o escrito).
 
 **`provision`** nombra lo que "Enviar a otro aparato" le pasa a un segundo aparato ([abajo](#provisioning)).
 Nombra todo lo que el segundo aparato necesita para correr el mismo proveedor (en Telegram, el token del
@@ -200,32 +202,54 @@ lugar para notar un cambio es `syncStatus`, no `syncPull`.
 
 La persona configura el proveedor en un aparato (el primero nunca necesita un QR). Para el segundo, Kino
 lleva los ajustes que tu manifiesto nombra en `sync.provision`, cifrados de punta a punta de un Kino al
-otro:
+otro (con una llave que el aparato que recibe hace solo para esa sesión):
 
 1. En el **segundo** aparato (por ejemplo, la TV): la fila del proveedor ▸ **"Recibir desde otro
    aparato"**. Durante 3 minutos muestra un QR, una dirección en la red local y un código de 6 dígitos.
-   Cuando el aparato puede abrir una, también ofrece una ruta **por internet** ("Desde otra red", un túnel
-   de Cloudflare de corta vida): unas palabras para escribir con el mismo código.
-2. En el **primer** aparato: la misma fila ▸ **"Enviar a otro aparato"**. Lee el QR; sin cámara, o con la
-   cámara rechazada, pasa a **"Escribir dirección"**, donde la persona escribe solo el último número de la
-   dirección (o, en "Otra red", las palabras) y el código.
+   Al mismo tiempo intenta abrir una **segunda ruta por internet** ("Desde otra red (por internet)", un
+   túnel rápido de Cloudflare); cuando abre, la pantalla también muestra unas **palabras** unidas por
+   guiones (el nombre del túnel). El QR espera al túnel como mucho unos segundos y, si no, muestra solo la
+   red local.
+2. En el **primer** aparato: la misma fila ▸ **"Enviar a otro aparato"**. Lee el QR, que lista primero las
+   direcciones de la red local y después `https://<palabras>.trycloudflare.com/t/<token>`; el celular prueba
+   primero las direcciones locales y después el túnel. Sin cámara, o con la cámara rechazada, pasa a
+   **"Escribir dirección"**: **"Misma red"** (la persona escribe solo el último número de la dirección) u
+   **"Otra red"** (solo las palabras; Kino pone `https://` y `.trycloudflare.com`), más el código de 6
+   dígitos. El celular acepta solo esas dos formas, así que un error al escribir no puede mandar los
+   ajustes a otro lado.
 3. El segundo aparato pregunta **"Recibido para &lt;plugin&gt;: ¿aplicar?"** y lista los ajustes por sus
-   etiquetas, nunca sus valores (un ajuste `url` muestra su dirección, con un aviso cuando está en la red
-   local). Solo **Aplicar** los guarda.
+   etiquetas, nunca valores secretos (un ajuste `url` muestra su dirección, con un aviso cuando está en la
+   red local). Solo **Aplicar** los guarda.
+
+**Qué protege la ruta por internet, sin rodeos.** Las palabras del túnel son **públicas**: las ven la
+pantalla de la TV, la consulta DNS y el nombre TLS del aparato que envía, y Cloudflare. La ruta
+`/t/<token>` del QR es solo una defensa extra (la ruta escrita llega a la misma sesión sin ella). La
+verdadera puerta, en todas las rutas, es el código de 6 dígitos (más, en una ruta escrita, la llave del
+receptor enmascarada con ese código), con **5 intentos** en total, de los cuales como mucho 3 pueden llegar
+por el túnel (después del tercero se cierra solo el túnel y la red local conserva sus intentos), **un solo**
+mensaje válido, **3 minutos** de vida, un tope de **40 peticiones** en el túnel y el "¿aplicar?" de la
+persona. El transporte nunca es de confianza. El riesgo que queda es una denegación de servicio: quien
+tenga las palabras puede gastar los intentos del túnel y cerrar esa ruta.
+
+**Sobre el túnel.** Es la biblioteca
+[cloudflare-quick-tunnel-kotlin](https://github.com/kinotvapp/cloudflare-quick-tunnel-kotlin) del dueño,
+incluida en la app y cargada solo cuando se abre una pantalla para recibir. Usa TCP 7844 (TLS 1.3 + HTTP/2)
+hacia el borde de Cloudflare, sin QUIC; le pide un túnel a `api.trycloudflare.com` y encuentra el borde con
+DNS públicos (1.1.1.1, 1.0.0.1, 8.8.8.8). Los túneles rápidos de Cloudflare son anónimos y están pensados
+para pruebas y desarrollo: no tienen garantía de disponibilidad, pueden estar limitados ("Cloudflare está
+limitando las rutas por internet…"), y una red que los bloquea deja solo la ruta local. Tu plugin no tiene
+nada que ver con eso.
 
 Lo que eso significa para tu plugin:
 
 - Solo viajan los ajustes de `sync.provision`, sellados como los escritos a mano; cualquier otro se
-  rechaza. La llave de sincronización nunca viaja: con `keySecret` cada aparato la deriva del mismo
-  token.
+  rechaza. La llave de sincronización nunca viaja: cada aparato la deriva del mismo token.
 - "Enviar a otro aparato" solo se ofrece cuando este aparato tiene un valor para cada ajuste de
   `provision`. Llena tú mismo los que encuentras (el id de un chat) con
   [`setSettings`](settings-form.md#set-settings), para que la persona nunca los escriba.
-- El receptor acepta un solo mensaje válido, se cierra a los 3 minutos, después de 5 códigos incorrectos
-  o cuando la persona sale de la pantalla, y pregunta antes de aplicar nada. El plugin tiene que estar
-  instalado ahí ("Instala primero &lt;plugin&gt;").
-- En redes distintas y sin ruta por internet, la persona instala el plugin en el segundo aparato, abre
-  **Conectar** y escribe ahí los mismos ajustes.
+- El plugin tiene que estar instalado en el aparato que recibe ("Instala primero &lt;plugin&gt;").
+- Sin ninguna ruta, la persona instala el plugin en el segundo aparato, abre **Conectar** y escribe ahí
+  los mismos ajustes.
 
 ## Ajustes, perfiles y lo que lee la persona { #settings }
 
@@ -250,18 +274,19 @@ Lo que eso significa para tu plugin:
 
 - **El compromiso de `keySecret`.** Las llaves derivadas hacen fácil un segundo aparato (el mismo token y
   nada más) a cambio de la confidencialidad frente al plugin y al servicio. Dilo claro en tu descripción y
-  en tu guía; la línea de consentimiento ya lo dice en rojo, y una actualización que agrega `keySecret`
-  siempre espera la aprobación de la persona.
+  en tu guía; la línea de consentimiento ya lo dice en rojo.
 - **Revocar el token.** Si un token se filtra o se pierde un aparato, la persona lo revoca en el
   servicio (en Telegram, `/revoke` en @BotFather), escribe el nuevo en un aparato y toca **"Restablecer
   sincronización"**: después de una confirmación, la copia de ese aparato reemplaza a la que ya no se
-  puede leer, cifrada con la llave nueva. Después vuelve a enviar los ajustes a los otros aparatos.
-  Documenta esos pasos en tu guía.
-- **Restablecer la sincronización** reemplaza la copia remota por la de este aparato; nunca borra datos
-  del aparato.
-- **El servicio puede retener o borrar la copia.** Sin `keySecret` no puede leerla ni falsificarla: un blob
-  que no se descifra con la llave del aparato se rechaza, nunca se aplica. Con `keySecret`, quien tenga el
-  token puede hacer las dos cosas.
+  puede leer, cifrada con la llave nueva. Después les pasa el token nuevo a los otros aparatos ("Enviar a
+  otro aparato", o escrito en cada uno). Documenta esos pasos en tu guía.
+- **Restablecer la sincronización** reemplaza la copia remota por la de este aparato, con el token que
+  tiene ahora; nunca borra datos del aparato. La confirmación de Kino lo dice: "Se reemplaza la copia
+  guardada en &lt;nombre&gt; por la de este aparato, con el token que tienes ahora. Tus otros aparatos siguen
+  sincronizando si usan el mismo token; si lo cambiaste, pásales el nuevo con «Enviar a otro aparato» o
+  escríbelo en cada uno."
+- **El servicio puede retener o borrar la copia**, y quien tenga el token puede leerla o escribir una
+  nueva. Un blob que no se descifra con la llave del aparato se rechaza, nunca se aplica.
 - **Hosts.** `"hosts"` lista lo que alcanza tu código. Un proveedor para un servidor de la persona, en una
   dirección que no puedes conocer, necesita un [ajuste `url`](manifest.md#own-servers) o
   `"fetchHosts": "any"` (consentimiento en rojo, solo `https` público, nunca la red de la casa): Sync
@@ -273,7 +298,7 @@ Lo que eso significa para tu plugin:
 ## Probar en local { #test }
 
 - `node sdk/validate.mjs .` revisa el bloque `sync` igual que Kino y muestra la línea de consentimiento
-  (en rojo con `keySecret`).
+  (siempre en rojo).
 - `sdk/run.mjs` no tiene un comando para los exports de sincronización. Pruébalos con `node --test`, como
   los ejemplos: carga el plugin con `loadPlugin` (`sdk/sandbox.mjs`) y `createKino` (`sdk/kino-shim.mjs`),
   córrelo contra una imitación local de tu servicio y revisa cada respuesta con `checkSyncAnswer`

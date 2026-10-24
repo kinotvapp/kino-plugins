@@ -103,11 +103,9 @@ When a plugin answers `external` instead of a `url` ([External resolver apps](re
 
 When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
 
-- **The consent sheet** says "Guardará tu información de sincronización (cifrada; el plugin no puede
-  leerla) en sus servidores" ("Will store your sync data (encrypted; the plugin cannot read it) on its
-  servers"), or, in red when the plugin declares `sync.keySecret`, "Sincronizará tus datos a través de su
-  servicio: el plugin y su servicio podrán leerlos" ("Will sync your data through its service: the plugin
-  and its service can read it"). An update that adds either waits for approval.
+- **The consent sheet** says, in red, "Sincronizará tus datos a través de su servicio: el plugin y su
+  servicio podrán leerlos" ("Will sync your data through its service: the plugin and its service can
+  read it"). An update that adds the capability waits for approval.
 - **Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor** lists "Red local" and every installed
   provider, each with a switch; only one is on at a time, or none. Turning one on asks "¿Sincronizar con
   &lt;name&gt;?" ("La sincronización por red local se apaga mientras uses &lt;name&gt;"; "Si &lt;name&gt; ya
@@ -118,8 +116,8 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   coincide o los datos guardados no son de Kino", the plugin's own `syncStatus` line, and the buttons
   Conectar, Sincronizar ahora, Restablecer sincronización, Enviar a otro aparato and Recibir desde otro
   aparato.
-- **Receiving on a second device**: a QR, an address and a 6-digit code for 3 minutes (and words for the
-  internet route), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
+- **Receiving on a second device**: a QR, an address and a 6-digit code for 3 minutes (and, when the
+  Cloudflare quick tunnel opens, the words for "Otra red"), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
   never their values, and "Aplicar".
 
 ## From Kino 0.9.54 { #v0954 }

@@ -1026,8 +1026,10 @@ export async function syncStatus(_null) { /* opcional -> { ready, message? } */ 
 - **Límites**: el blob mide como mucho el `sync.maxBlobBytes` del manifiesto (4 MiB por defecto y como
   máximo), y solo dentro de `syncPull`/`syncPush` pueden `kino.fetch` y el resultado de la llamada ser así
   de grandes.
-- **Consentimiento**: declararla muestra una línea de consentimiento, y una actualización que la agrega
-  (o que agrega `sync.keySecret`) espera a que la persona la apruebe.
+- **Llave y consentimiento**: el manifiesto tiene que declarar `sync.keySecret` (uno de tus ajustes
+  `password`); Kino deriva de él la llave de sincronización en cada aparato, así que el plugin y su
+  servicio pueden leer los datos. Una línea de consentimiento en rojo lo dice, y una actualización que
+  agrega la capacidad espera a que la persona la apruebe.
 
 El bloque `sync` del manifiesto, quién puede leer qué, cada cuánto corre, el aviso en tiempo real, el
 paso de los ajustes a otro aparato, las líneas de consentimiento y los dos proveedores de ejemplo están

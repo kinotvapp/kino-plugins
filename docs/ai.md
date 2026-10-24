@@ -183,13 +183,14 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   { ready, message? }. El blob es texto cifrado en base64 que hace Kino: guárdalo y devuélvelo byte por
   byte, nunca lo decodifiques. Lanza kino.error("conflict", …) cuando la copia remota cambió desde
   expectedVersion, y kino.error("auth_required", …) cuando faltan ajustes o el servicio los rechaza.
-  Agrega un bloque "sync" al manifiesto: "maxBlobBytes" como mucho 4194304 (4 MiB; solo dentro de
-  syncPull y syncPush puede kino.fetch mover tanto); "keySecret" = la clave de un ajuste "password" con un
-  token largo y aleatorio (nunca una contraseña que escoge una persona, sin "default"): Kino deriva de él
-  la llave de sincronización, así que un segundo aparato solo necesita los mismos ajustes, PERO entonces el
-  plugin y su servicio pueden leer los datos y la línea de consentimiento lo dice en rojo; dímelo. Sin
-  "keySecret" solo un aparato puede abrir la copia en Kino 0.9.74. "provision" = los ajustes que necesita
-  un segundo aparato (tiene que incluir "keySecret"). Nunca pongas el token en un error, una línea de
+  El manifiesto TIENE que llevar un bloque "sync" con "keySecret" (un proveedor sin él se rechaza):
+  "keySecret" = la clave de un ajuste "password" con un token largo y aleatorio (nunca una contraseña que
+  escoge una persona, sin "default"); Kino deriva de él la llave de sincronización en cada aparato, así
+  que un segundo aparato solo necesita los mismos ajustes y ninguna llave viaja, PERO el plugin y su
+  servicio pueden leer los datos y la única línea de consentimiento lo dice en rojo: dímelo. "provision"
+  (obligatorio) = los ajustes que necesita un segundo aparato, incluido "keySecret". "maxBlobBytes" como
+  mucho 4194304 (4 MiB; solo dentro de syncPull y syncPush puede kino.fetch mover tanto). Si el token
+  cambia, todos los demás aparatos necesitan el nuevo. Nunca pongas el token en un error, una línea de
   estado o un registro.
 - Ayudas para configurar (apiVersion 12): un ajuste "help" corto (qué necesita la persona y dónde lo
   consigue) y un ajuste "link" (un botón https, p. ej. https://t.me/BotFather). Desde Kino 0.9.74 una
@@ -259,7 +260,8 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   (con "episodes") episodes() responde por cada ref de audio, aunque sea una sola pista;
 - si es un proveedor de sincronización: "apiVersion": 12, "syncProvider" declarada, syncPull y syncPush
   exportadas, "sync.maxBlobBytes" de máximo 4194304, pruebas que envían y traen un blob de 4 MiB y lanzan
-  "conflict", y me dijiste con palabras sencillas quién puede leer los datos (en rojo con "keySecret").
+  "conflict", con "sync.keySecret" y "sync.provision" declarados, y me dijiste con palabras sencillas que el
+  plugin y su servicio pueden leer los datos.
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y

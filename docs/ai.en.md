@@ -178,13 +178,14 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   syncPush({ maxBlobBytes, blob, expectedVersion }) -> { version } and, optionally, syncStatus(null) ->
   { ready, message? }. The blob is opaque base64 ciphertext made by Kino: store it and give it back byte
   for byte, never decode it. Throw kino.error("conflict", …) when the remote copy changed since
-  expectedVersion, and kino.error("auth_required", …) when settings are missing or refused. Add a "sync"
-  block to the manifest: "maxBlobBytes" at most 4194304 (4 MiB; only inside syncPull and syncPush may
-  kino.fetch move that much); "keySecret" = the key of a "password" setting holding a long random token
-  (never a password a person picks, no "default"): Kino derives the sync key from it, so a second device
-  only needs the same settings, BUT the plugin and its service can then read the data and the consent line
-  says so in red; tell me. Without "keySecret" only one device can open the copy in Kino 0.9.74.
-  "provision" = the settings a second device needs (it must include "keySecret"). Never put the token in an
+  expectedVersion, and kino.error("auth_required", …) when settings are missing or refused. The manifest
+  MUST have a "sync" block with "keySecret" (a provider without it is refused): "keySecret" = the key of a
+  "password" setting holding a long random token (never a password a person picks, no "default"); Kino
+  derives the sync key from it on each device, so a second device only needs the same settings and no key
+  travels, BUT the plugin and its service can read the data and the one consent line says so in red: tell
+  me. "provision" (required) = the settings a second device needs, including "keySecret". "maxBlobBytes"
+  at most 4194304 (4 MiB; only inside syncPull and syncPush may kino.fetch move that much). If the token
+  changes, every other device needs the new one. Never put the token in an
   error, a status line or a log.
 - Configuration aids (apiVersion 12): a short "help" setting (what the person needs and where to get it)
   and a "link" setting (an https button, e.g. https://t.me/BotFather). From Kino 0.9.74 an action may
@@ -252,8 +253,9 @@ you hand the plugin over run this self-check and tell me the result of each line
 - if it has music or podcasts: "apiVersion": 8, every audio item has kind "music" or "podcast", and
   (with "episodes") episodes() answers every audio ref, even a single track;
 - if it is a sync provider: "apiVersion": 12, "syncProvider" declared, syncPull and syncPush exported,
-  "sync.maxBlobBytes" at most 4194304, tests that push and pull a 4 MiB blob and throw "conflict", and
-  you told me in plain words who can read the data (in red with "keySecret").
+  "sync.maxBlobBytes" at most 4194304, tests that push and pull a 4 MiB blob and throw "conflict",
+  "sync.keySecret" and "sync.provision" declared, and you told me in plain words that the plugin and its
+  service can read the data.
 
 At the end, walk me through:
 1. Publishing it: a public repository (never a fork) with the files at the root; the topic

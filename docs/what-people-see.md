@@ -123,10 +123,8 @@ Cuando un plugin responde `external` en vez de una `url` ([Aplicaciones resoluto
 
 Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-providers.md)):
 
-- **La hoja de consentimiento** dice "Guardará tu información de sincronización (cifrada; el plugin no
-  puede leerla) en sus servidores" o, en rojo cuando el plugin declara `sync.keySecret`, "Sincronizará tus
-  datos a través de su servicio: el plugin y su servicio podrán leerlos". Una actualización que agrega
-  cualquiera de las dos espera la aprobación.
+- **La hoja de consentimiento** dice, en rojo, "Sincronizará tus datos a través de su servicio: el plugin
+  y su servicio podrán leerlos". Una actualización que agrega la capacidad espera la aprobación.
 - **Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor** lista "Red local" y cada proveedor
   instalado, cada uno con un interruptor; solo uno a la vez, o ninguno. Encender uno pregunta
   "¿Sincronizar con &lt;nombre&gt;?" ("La sincronización por red local se apaga mientras uses
@@ -137,8 +135,8 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   no coincide o los datos guardados no son de Kino", la línea de `syncStatus` del propio plugin, y los
   botones Conectar, Sincronizar ahora, Restablecer sincronización, Enviar a otro aparato y Recibir desde
   otro aparato.
-- **Recibir en un segundo aparato**: un QR, una dirección y un código de 6 dígitos durante 3 minutos (y
-  unas palabras para la ruta por internet), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
+- **Recibir en un segundo aparato**: un QR, una dirección y un código de 6 dígitos durante 3 minutos (y,
+  cuando abre el túnel rápido de Cloudflare, las palabras para "Otra red"), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
   etiquetas de los ajustes que llegaron, nunca sus valores, y "Aplicar".
 
 ## Desde Kino 0.9.54 { #v0954 }

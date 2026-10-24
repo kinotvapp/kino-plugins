@@ -22,14 +22,13 @@ one of its features.
   Kino keeps the logic, encrypts the snapshot and hands your `syncPush` an opaque base64 blob (at most
   `sync.maxBlobBytes`, 4 MiB) to store and your `syncPull` returns it byte for byte, with a `version` of
   yours; `kino.error("conflict", …)` makes Kino pull, merge and push again. The manifest's `sync` block
-  sets the cadence (`poll` or `realtime`), the blob size, `keySecret` (a key derived from one of your
-  `password` settings: the plugin and its service can read the data, said in red) and `provision` (the
-  settings "Enviar a otro aparato" hands to a second device). The capability may be a plugin's only one.
+  sets the cadence (`poll` or `realtime`), the blob size, the required `keySecret` (Kino derives the
+  sync key from one of your `password` settings on each device, so no key travels and the plugin and its
+  service can read the data) and the required `provision` (the settings "Enviar a otro aparato" hands to a
+  second device, over the local network or a Cloudflare quick tunnel). The capability may be a plugin's only one.
   [Sync providers](sync-providers.md).
-- **Consent**: "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus
-  servidores", or, with `keySecret`, in red, "Sincronizará tus datos a través de su servicio: el plugin y
-  su servicio podrán leerlos". An update that adds the capability or `keySecret` always waits for the
-  person's approval.
+- **Consent**: one red line, "Sincronizará tus datos a través de su servicio: el plugin y su servicio
+  podrán leerlos". An update that adds the capability always waits for the person's approval.
 - **Configuration aids** (apiVersion 12): a `link` setting (a button that opens an `https` address
   through the system only on the person's tap; on a TV, the address and a QR) and a `help` setting (a
   button that opens your plain-text instructions in a modal), at most 4 of each.

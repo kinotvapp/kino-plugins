@@ -125,9 +125,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `migrate` when the plugin replaces an older one. Each has a cost (approval prompts, more code): ask.
 - **A sync provider?** Only when the person wants their Kino data (library, history, progress,
   settings, plugins) to travel between their devices through a service instead of the local network:
-  a bot, a storage API, a server they run. Settle with them: the service, whether it gives each person a
-  **long random token** (then `sync.keySecret`, and the plugin and its service CAN read the data, shown in
-  red), what a second device needs (`sync.provision`), and the hosts. It is not a way to add content.
+  a bot, a storage API, a server they run. Settle with them: the service, the **long random token** it
+  gives each person (it becomes the required `sync.keySecret`: the plugin and its service CAN read the
+  data, shown in red; a service without such a token cannot be a provider), what a second device needs
+  (`sync.provision`), and the hosts. It is not a way to add content.
   See "Sync providers" in section 4.
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
@@ -406,21 +407,24 @@ Kino keeps all the logic (what syncs, merging, scheduling), compresses and encry
   error text, so put guidance in the `message`.
 - **The manifest's `sync` block** (needs the capability): `mode` `"poll"` (default) or `"realtime"`;
   `pullEveryMs` (default 600000, floor 30 s); `pushDebounceMs` (default 300000, floor 5 s); `maxBlobBytes`
-  (default and maximum 4194304 = 4 MiB, decoded); `keySecret`; `provision`. Kino runs at most 60 rounds an
+  (default and maximum 4194304 = 4 MiB, decoded); `keySecret` and `provision`, both **required** (a
+  `syncProvider` without them is refused: `The "syncProvider" capability needs a "sync" field whose
+  "keySecret" is the key of one of the plugin's own "password" settings`). Kino runs at most 60 rounds an
   hour, pushes after the last change of a burst, and the playback position only when playback stops.
 - **`keySecret`** = the `key` of one of the plugin's own `password` settings, with no `default`, holding a
   **long random token** (bot token, API key, a token the server prints), never a password a person picks
   (offline guessing). Kino derives the key from it on each device (HKDF-SHA256), so a second device needs
   only the same settings and **the key never travels**; but the plugin and its service CAN then read the
   data, and the consent line says so in red ("Sincronizará tus datos a través de su servicio: el plugin y
-  su servicio podrán leerlos"). Without `keySecret` the key is random, the plugin cannot read the data
-  ("Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores", red
-  with `"fetchHosts": "any"`), and **in Kino 0.9.74 no screen carries that key to another device**: the copy
-  then opens on one device only. Changing the token changes the key ("El token no coincide o los datos
-  guardados no son de Kino"): the person fixes the token or taps "Restablecer sincronización".
+  su servicio podrán leerlos"), the only consent line a provider has. There is no random-key mode.
+  Changing the token changes the key ("El token no coincide o los datos guardados no son de Kino"): the
+  person fixes the token or taps "Restablecer sincronización" (this device's copy replaces the stored one;
+  other devices keep syncing if they use the same token, else they must receive the new one with "Enviar
+  a otro aparato" or have it typed).
 - **`provision`** = at most 8 of the plugin's own valued settings that "Enviar a otro aparato" hands to a
-  second device (QR or typed address and a 6-digit code, local network or a short-lived internet route;
-  the person confirms "Recibido para <plugin>: ¿aplicar?"); it must include `keySecret`. Fill what you
+  second device (QR or typed address and a 6-digit code, over the local network or a Cloudflare quick
+  tunnel whose words are public, so the code, 5 attempts, single use, 3 minutes and the person's
+  "Recibido para <plugin>: ¿aplicar?" are the gate); it must include `keySecret`. Fill what you
   find yourself (a chat id) with `setSettings` so the person types nothing.
 - **Size**: inside `syncPull`/`syncPush` only, `kino.fetch` requests (JSON, base64 body included),
   response bodies and the call's answer may reach ceil(`maxBlobBytes` × 4/3) + 64 KB; every other call
@@ -747,7 +751,7 @@ people. See
       app reaches.
 - [ ] Sync provider: `"apiVersion": 12`, `syncProvider` declared, `syncPull` and `syncPush` exported with one
       object argument, the blob stored and returned byte for byte, `conflict` thrown when the remote moved,
-      `sync.maxBlobBytes` ≤ 4194304, `keySecret` (if any) a long random token in a `password` setting with no
+      `sync.maxBlobBytes` ≤ 4194304, `keySecret` (required) a long random token in a `password` setting with no
       `default`, `provision` lists what a second device needs, no token in any error/status/log, offline tests
       with a 4 MiB blob both ways, and the person was told in plain Spanish who can read the data.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
@@ -854,6 +858,6 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   asking for it in a `password` setting (the person's credentials); committing `.kino-secrets.json`.
 - A sync provider that decodes, re-encodes or trims the blob, keeps extra copies of it (memory), puts the
   token in an error or status text, uses a password a person picks as `keySecret`, or promises the plugin
-  "cannot read" the data while declaring `keySecret`.
+  "cannot read" the data (with `keySecret`, always required, it can).
 - `setSettings` on a `url` or `password` setting, or a `link` whose `confirm` is the answering action or an
   action with its own `confirm` question: refused whole.

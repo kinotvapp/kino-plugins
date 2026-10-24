@@ -29,28 +29,28 @@ person's own) and [Sync Servidor](#examples) (a server the person runs).
 ## Who sees what { #who-sees-what }
 
 Kino compresses the snapshot and encrypts it as a whole (AES-256-GCM) before calling your plugin. The
-blob your code receives is ciphertext. Who can decrypt it depends on one manifest field,
-[`sync.keySecret`](#sync-block):
+blob your code receives is ciphertext, and Kino never hands your code the key. The key, though, always
+comes from your plugin's own settings:
 
-| | Without `keySecret` (random key) | With `keySecret` (derived key) |
-| --- | --- | --- |
-| The key | 32 random bytes made on the device, kept in its key store, never handed to the plugin | derived by Kino, on each device, from the value of one of your `password` settings (HKDF-SHA256) |
-| Can the plugin read the data? | **No** | **Yes**: your code reads that setting and the derivation is public |
-| Can the service read it? | **No** | **Yes**, if it holds that secret (Telegram issued the bot token, for example) |
-| Consent line | "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores", in red when the plugin also has `"fetchHosts": "any"` | always in red: "Sincronizará tus datos a través de su servicio: el plugin y su servicio podrán leerlos" |
-| A second device | in Kino 0.9.74 **no screen carries a random key to another device** (see below) | needs only the same settings, which "Enviar a otro aparato" hands over; the key never travels |
+- **Every provider declares [`sync.keySecret`](#sync-block)**, the `key` of one of its `password`
+  settings. A manifest with `syncProvider` and no `keySecret` is refused (`The "syncProvider" capability
+  needs a "sync" field whose "keySecret" is the key of one of the plugin's own "password" settings`), in
+  the app and in the kit. There is no random-key mode.
+- **Kino derives the sync key** on each device from that setting's value (HKDF-SHA256, host side). A
+  second device that has the same value derives the same key, so it opens the same copy and **no key
+  ever travels** between devices.
+- **So the plugin and its service CAN read the synced data**: the derivation is public and your code
+  reads that setting; a service that issued the token (Telegram, for a bot token) can too. The consent
+  sheet says so in **one red line**, the same for every provider: "Sincronizará tus datos a través de su
+  servicio: el plugin y su servicio podrán leerlos" ("Will sync your data through its service: the
+  plugin and its service can read it"). An update that adds the capability always waits for the
+  person's approval.
+- Say it plainly in your plugin's description and guide too: whoever holds the token can read the data.
 
 What is inside the copy: everything Kino already syncs between paired devices over the local network,
 the same rows (library, history, progress, settings, the installed plugins and their settings), for
-every profile this device syncs. Plugin passwords and the other secrets Kino syncs are in it too, each still sealed row by row
-with the sync key. Secrets sealed in a plugin's manifest never travel, as always.
-
-**In Kino 0.9.74 a provider without `keySecret` works for one device only.** Its random key stays on
-the device that made it, and no screen of this version hands it to another device (provisioning carries
-settings, never a key), so a second device reads the copy as "No se puede leer la copia guardada: se
-guardó con otra clave o no es de Kino". Both example providers declare `keySecret` for that reason. If
-your service can give the person a long random token, use it as `keySecret`, and say in your plugin's
-description who can read the data.
+every profile this device syncs. Plugin passwords and the other secrets Kino syncs are in it too, each
+still sealed row by row with the sync key. Secrets sealed in a plugin's manifest never travel, as always.
 
 ## The contract { #contract }
 
@@ -118,8 +118,10 @@ export async function syncStatus(_null) {                  // optional
 
 ## The `sync` block of the manifest { #sync-block }
 
-Optional, from `apiVersion` 12, and only with the `syncProvider` capability (otherwise the manifest is
-refused: `The "sync" field needs the "syncProvider" capability`). Every key is optional:
+From `apiVersion` 12, **required** with the `syncProvider` capability and only with it (otherwise the
+manifest is refused: `The "sync" field needs the "syncProvider" capability`; a provider without it or
+without `keySecret`: `The "syncProvider" capability needs a "sync" field whose "keySecret" is the key of one
+of the plugin's own "password" settings`). `keySecret` and `provision` are required; the rest is optional:
 
 | Key | Default | Rule |
 | --- | --- | --- |
@@ -127,8 +129,8 @@ refused: `The "sync" field needs the "syncProvider" capability`). Every key is o
 | `pullEveryMs` | 600000 (10 min) | a positive whole number; Kino raises it to at least 30 s |
 | `pushDebounceMs` | 300000 (5 min) | a positive whole number; Kino raises it to at least 5 s |
 | `maxBlobBytes` | 4194304 | the largest blob your service accepts, at most 4194304 (4 MiB) |
-| `keySecret` | none | the `key` of one of your own `password` settings, which must not have a `default` |
-| `provision` | none | at most 8 different keys of your own settings that hold a value (secret or not); must include `keySecret` when you declare one |
+| `keySecret` | **required** | the `key` of one of your own `password` settings, which must not have a `default` |
+| `provision` | **required** | at most 8 different keys of your own settings that hold a value (secret or not); must include `keySecret` |
 
 The messages Kino gives for a malformed block (all in English, shown at install):
 
@@ -142,7 +144,8 @@ The messages Kino gives for a malformed block (all in English, shown at install)
 never a password a person picks: anyone who gets a stored blob can try guesses offline. Until the person
 types it Kino runs no round (the row says "Falta el token: configúralo en Conectar"). Changing its value
 changes the key: the remote copy then no longer opens ("El token no coincide o los datos guardados no
-son de Kino") until the person corrects the token or resets sync on one device.
+son de Kino", with "Corregir el token" and "Restablecer sincronización") until the person corrects the token
+or resets sync on one device. Every other device needs the new value too ("Enviar a otro aparato", or typed).
 
 **`provision`** names what "Enviar a otro aparato" hands to a second device ([below](#provisioning)).
 Name everything the second device needs to run the same provider (for Telegram, the bot token **and**
@@ -188,32 +191,52 @@ runs while Kino calls it (no open connection between calls), so the place to not
 
 The person configures the provider on one device (the first one never needs a QR). For the second,
 Kino carries the settings your manifest names in `sync.provision`, encrypted end to end from one Kino
-to the other:
+to the other (to a key the receiving device makes for this one session):
 
 1. On the **second** device (say, the TV): the provider's row ▸ **"Recibir desde otro aparato"**
    ("Receive from another device"). For 3 minutes it shows a QR, an address on the local network and a
-   6-digit code. When the device can open one, it also offers a route **over the internet** ("Desde otra
-   red", a short-lived Cloudflare tunnel): a few words to type with the same code.
+   6-digit code. In parallel it tries to open a **second route over the internet** ("Desde otra red", a
+   Cloudflare quick tunnel); when it comes up, the screen also shows a few hyphenated **words** (the
+   tunnel's name). The QR waits for the tunnel at most a few seconds, then shows the local network only.
 2. On the **first** device: the same row ▸ **"Enviar a otro aparato"** ("Send to another device"). It
-   scans the QR; without a camera, or with the camera refused, it goes to **"Escribir dirección"**,
-   where the person types only the last number of the address (or, on "Otra red", the words) and the
-   code.
+   scans the QR, which lists the local-network addresses first and then
+   `https://<words>.trycloudflare.com/t/<token>`; the phone tries the local addresses first, then the
+   tunnel. Without a camera, or with the camera refused, it goes to **"Escribir dirección"**: **"Misma
+   red"** (the person types only the last number of the address) or **"Otra red"** (only the words;
+   Kino fills in `https://` and `.trycloudflare.com`), plus the 6-digit code. The phone accepts only those
+   two shapes, so a typo cannot send the settings anywhere else.
 3. The second device asks **"Recibido para &lt;plugin&gt;: ¿aplicar?"** and lists the settings by their
-   labels, never their values (a `url` setting shows its address, with a warning when it is on the local
+   labels, never secret values (a `url` setting shows its address, with a warning when it is on the local
    network). Only **Aplicar** saves them.
+
+**What protects the internet route, plainly.** The tunnel's words are **public**: the TV screen, the
+sender's DNS query and TLS name, and Cloudflare all see them. The `/t/<token>` path in the QR is defence
+in depth only (the typed route reaches the same session without it). The real gate, on every route, is
+the 6-digit code (plus, on a typed route, the receiver's key masked by that code), with **5 attempts** in
+all, of which at most 3 can come through the tunnel (after the third, only the tunnel closes and the
+local network keeps its attempts), a **single** valid message, a **3-minute** life, a ceiling of **40
+requests** on the tunnel, and the person's "¿aplicar?". The transport is never trusted. The residual risk
+is a denial of service: anyone who has the words can spend the tunnel's attempts and close that route.
+
+**About the tunnel.** It is the owner's
+[cloudflare-quick-tunnel-kotlin](https://github.com/kinotvapp/cloudflare-quick-tunnel-kotlin) library,
+built into the app and loaded only when a receiving screen opens. It uses TCP 7844 (TLS 1.3 + HTTP/2) to
+Cloudflare's edge, no QUIC; it asks `api.trycloudflare.com` for a tunnel and resolves the edge through
+public DNS (1.1.1.1, 1.0.0.1, 8.8.8.8). Cloudflare's quick tunnels are anonymous and meant for testing and
+development: no uptime guarantee, they can be rate-limited ("Cloudflare está limitando las rutas por
+internet…"), and a network that blocks them leaves the local route only. Your plugin has nothing to do
+with any of it.
 
 What this means for your plugin:
 
 - Only the settings in `sync.provision` travel, sealed like typed ones; anything else is refused. The
-  sync key never travels: with `keySecret` each device derives it from the same token.
+  sync key never travels: each device derives it from the same token.
 - "Enviar a otro aparato" is offered only when this device holds a value for every setting in
   `provision`. Fill the ones you find yourself (a chat id) with [`setSettings`](settings-form.md#set-settings),
   so the person never types them.
-- The receiver accepts one valid message, closes after 3 minutes, after 5 wrong codes or when the person
-  leaves the screen, and asks before applying anything. The plugin must already be installed there
-  ("Instala primero &lt;plugin&gt;").
-- On different networks with no internet route, the person installs the plugin on the second device,
-  opens **Conectar** and types the same settings there.
+- The plugin must already be installed on the receiving device ("Instala primero &lt;plugin&gt;").
+- With no route at all, the person installs the plugin on the second device, opens **Conectar** and
+  types the same settings there.
 
 ## Settings, profiles and what the person reads { #settings }
 
@@ -238,17 +261,18 @@ What this means for your plugin:
 
 - **The `keySecret` trade-off.** Derived keys make a second device easy (same token, nothing else) at
   the cost of confidentiality toward the plugin and the service. Say so plainly in your description and
-  your guide; the consent line already says it in red, and an update that adds `keySecret` always waits
-  for the person's approval.
+  your guide; the consent line already says it in red.
 - **Revoking the token.** If a token leaks or a device is lost, the person revokes it at the service
   (for Telegram, `/revoke` in @BotFather), types the new one on one device, and taps **"Restablecer
   sincronización"** ("Reset sync"): after a confirmation, that device's copy replaces the unreadable one,
-  encrypted with the new key. Then they send the settings to the other devices again. Document these steps
-  in your guide.
-- **Reset sync** replaces the remote copy with this device's; it never deletes data on the device.
-- **The service can withhold or delete the copy.** Without `keySecret` it cannot read or forge one: a
-  blob that does not decrypt with the device's key is refused, never applied. With `keySecret`, whoever
-  holds the token can do both.
+  encrypted with the new key. Then they give the other devices the new token ("Enviar a otro aparato", or
+  typed on each). Document these steps in your guide.
+- **Reset sync** replaces the remote copy with this device's, with the token it has now; it never deletes
+  data on the device. Kino's confirmation says so: "Se reemplaza la copia guardada en &lt;name&gt; por la de
+  este aparato, con el token que tienes ahora. Tus otros aparatos siguen sincronizando si usan el mismo
+  token; si lo cambiaste, pásales el nuevo con «Enviar a otro aparato» o escríbelo en cada uno."
+- **The service can withhold or delete the copy**, and whoever holds the token can read it or write a
+  new one. A blob that does not decrypt with the device's key is refused, never applied.
 - **Hosts.** `"hosts"` lists what your code reaches. A provider for a server the person runs at an
   address you cannot know needs a [`url` setting](manifest.md#own-servers) or `"fetchHosts": "any"` (red
   consent, public `https` only, never the home network): Sync Servidor uses `fetchHosts` with a `text`
@@ -260,7 +284,7 @@ What this means for your plugin:
 ## Test it locally { #test }
 
 - `node sdk/validate.mjs .` checks the `sync` block exactly as Kino does and prints the consent line
-  (red with `keySecret`).
+  (always red).
 - `sdk/run.mjs` has no command for the sync exports. Test them with `node --test`, as the examples do:
   load the plugin with `loadPlugin` (`sdk/sandbox.mjs`) and `createKino` (`sdk/kino-shim.mjs`), run it
   against a local imitation of your service, and check every answer with `checkSyncAnswer`

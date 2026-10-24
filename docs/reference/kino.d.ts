@@ -1603,12 +1603,9 @@ interface KinoManifestExternalResolver {
  * apiVersion 12, capability `"syncProvider"`: the plugin is the transport of the person's cross-device sync. Kino keeps the logic
  * (what is synced, merging, when to run) and encrypts the snapshot before handing it over; the plugin only stores and returns an
  * opaque blob, byte for byte. Needs the exports `syncPull` and `syncPush`; `syncStatus` is optional.
- * Who can read the data: WITHOUT `sync.keySecret` the key is random and stays in Kino, so the plugin cannot read the blob, and the
- * install sheet says "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores" (in red when
- * the plugin has `"fetchHosts": "any"`). WITH `sync.keySecret` the key is derived from one of your own settings, which your code
- * reads, so the plugin and its service CAN read the synced data; the sheet says so in red ("Sincronizará tus datos a través de su
- * servicio: el plugin y su servicio podrán leerlos"). An update that adds the capability, or adds `keySecret`, waits for the
- * person's approval again.
+ * Who can read the data: the key is derived from one of your own settings (`sync.keySecret`, required), which your code reads, so
+ * the plugin and its service CAN read the synced data; the install sheet says so in red ("Sincronizará tus datos a través de su
+ * servicio: el plugin y su servicio podrán leerlos"). An update that adds the capability waits for the person's approval again.
  */
 interface KinoSyncContext {
   /**
@@ -1627,7 +1624,7 @@ interface KinoSyncContext {
 type KinoSyncPullFn = (arg: KinoSyncContext) => Promise<{ blob: string /* base64 ciphertext */; version: string } | null>;
 
 /**
- * `syncPush` -- required with the capability "syncProvider". Store `blob` (base64 ciphertext: unreadable by the plugin unless it declares `sync.keySecret`) and return
+ * `syncPush` -- required with the capability "syncProvider". Store `blob` (base64 ciphertext, sealed with the key Kino derives from `sync.keySecret`) and return
  * the new opaque `version`. `arg.expectedVersion` is the version Kino last pulled (null if none): a provider that can detect that the remote
  * changed since throws `{ code: "conflict" }` and Kino pulls, merges and pushes again; one that cannot ignores it.
  */
@@ -1637,32 +1634,33 @@ type KinoSyncPushFn = (arg: KinoSyncContext & { blob: string; expectedVersion: s
 type KinoSyncStatusFn = (arg: null) => Promise<{ ready: boolean; message?: string }>;
 
 /**
- * apiVersion 12, manifest field `"sync"` (needs the `syncProvider` capability; refused without it). All keys optional:
+ * apiVersion 12, manifest field `"sync"` (needs the `syncProvider` capability; refused without it). Required with that capability:
+ * a provider without a `sync` block or without `keySecret` is refused. Every key but `keySecret` and `provision` is optional:
  *
- *     "sync": { "mode": "poll", "pullEveryMs": 600000, "pushDebounceMs": 300000, "maxBlobBytes": 4194304 }
+ *     "sync": { "mode": "poll", "pullEveryMs": 600000, "pushDebounceMs": 300000, "maxBlobBytes": 4194304,
+ *               "keySecret": "botToken", "provision": ["botToken", "chatId"] }
  *
  * `mode` is `"poll"` (default: Kino pulls on foreground and every `pullEveryMs`) or `"realtime"` (the provider signals remote changes).
  * Both times are positive whole milliseconds (defaults 600000 and 300000); Kino clamps them to its own floors. `maxBlobBytes` is the
  * largest blob the provider accepts (default and maximum 4194304).
  *
- * `keySecret` (optional) is the `key` of one of the plugin's own `"password"` settings (anything else refuses the manifest). Kino then
+ * `keySecret` (required) is the `key` of one of the plugin's own `"password"` settings (anything else refuses the manifest). Kino
  * derives the sync key from that setting's value on each device (HKDF-SHA256, host side), so the key never travels: a second device
- * only needs the same settings (for example the same bot token). The derivation is public and your code reads the setting, so with
- * `keySecret` the plugin and its service CAN read the synced data (the consent sheet says so in red). It must be a long random token
+ * only needs the same settings (for example the same bot token). The derivation is public and your code reads the setting, so the
+ * plugin and its service CAN read the synced data (the consent sheet says so in red). It must be a long random token
  * (a bot token, an API key), never a password a person picks: anyone holding a stored blob can try guesses offline. That setting
- * must not declare a `default` (the manifest is refused): the person types it, and until then Kino runs no sync round. Without it the
- * key is random and stays on the device that made it (the plugin cannot read the data); this Kino has no way to hand it to another
- * device, so a provider meant for more than one device declares `keySecret`. Changing that setting's
- * value changes the key: the copy stored remotely then no longer opens until the person resets sync on one device.
+ * must not declare a `default` (the manifest is refused): the person types it, and until then Kino runs no sync round. There is no
+ * key without it: a key one device made up could never reach another. Changing that setting's value changes the key: the copy
+ * stored remotely then no longer opens until the person resets sync on one device and gives the new value to the others.
  *
- * `provision` (optional) lists the `key`s of your own settings (secret or not, at most 8, no repeats) that pairing hands to another
- * device so it can run the same provider, for example `["botToken", "chatId"]`. It must include `keySecret` when that is declared.
+ * `provision` (required) lists the `key`s of your own settings (secret or not, at most 8, no repeats) that pairing hands to another
+ * device so it can run the same provider, for example `["botToken", "chatId"]`. It must include `keySecret`.
  */
 interface KinoManifestSync {
   mode?: "poll" | "realtime";
   pullEveryMs?: number;
   pushDebounceMs?: number;
   maxBlobBytes?: number;
-  keySecret?: string;
-  provision?: string[];
+  keySecret: string;
+  provision: string[];
 }

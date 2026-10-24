@@ -23,14 +23,14 @@ usas algo de esta versión.
   a tu `syncPush` un blob opaco en base64 (como mucho `sync.maxBlobBytes`, 4 MiB) para guardarlo, y tu
   `syncPull` lo devuelve byte por byte, con una `version` tuya; `kino.error("conflict", …)` hace que Kino
   traiga, combine y vuelva a enviar. El bloque `sync` del manifiesto fija cada cuánto (`poll` o
-  `realtime`), el tamaño del blob, `keySecret` (una llave derivada de uno de tus ajustes `password`: el
-  plugin y su servicio pueden leer los datos, dicho en rojo) y `provision` (los ajustes que "Enviar a otro
-  aparato" le pasa a un segundo aparato). La capacidad puede ser la única de un plugin.
+  `realtime`), el tamaño del blob, el `keySecret` obligatorio (Kino deriva la llave de sincronización de
+  uno de tus ajustes `password` en cada aparato, así que ninguna llave viaja y el plugin y su servicio
+  pueden leer los datos) y el `provision` obligatorio (los ajustes que "Enviar a otro aparato" le pasa a
+  un segundo aparato, por la red local o por un túnel rápido de Cloudflare). La capacidad puede ser la única de un plugin.
   [Proveedores de sincronización](sync-providers.md).
-- **Consentimiento**: "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en
-  sus servidores", o, con `keySecret`, en rojo, "Sincronizará tus datos a través de su servicio: el
-  plugin y su servicio podrán leerlos". Una actualización que agrega la capacidad o `keySecret` siempre
-  espera la aprobación de la persona.
+- **Consentimiento**: una línea en rojo, "Sincronizará tus datos a través de su servicio: el plugin y su
+  servicio podrán leerlos". Una actualización que agrega la capacidad siempre espera la aprobación de la
+  persona.
 - **Ayudas para configurar** (apiVersion 12): un ajuste `link` (un botón que abre una dirección `https`
   por el sistema solo cuando la persona lo toca; en un TV, la dirección y un QR) y un ajuste `help` (un
   botón que abre tus instrucciones en texto plano en una ventana), máximo 4 de cada uno.

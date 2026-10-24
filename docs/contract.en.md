@@ -982,8 +982,9 @@ export async function syncStatus(_null) { /* optional -> { ready, message? } */ 
   pulls, merges and pushes again. One that cannot tell ignores it.
 - **Limits**: the blob is at most the manifest's `sync.maxBlobBytes` (default and maximum 4 MiB), and
   only inside `syncPull`/`syncPush` may `kino.fetch` and the call's answer be that big.
-- **Consent**: declaring it shows a consent line and an update that adds it (or adds `sync.keySecret`)
-  waits for the person's approval.
+- **Key and consent**: the manifest must declare `sync.keySecret` (one of your `password` settings);
+  Kino derives the sync key from it on each device, so the plugin and its service can read the data.
+  One red consent line says so, and an update that adds the capability waits for the person's approval.
 
 The manifest's `sync` block, who can read what, the cadence, the realtime signal, the provisioning flow,
 the consent lines and the two example providers are on [Sync providers](sync-providers.md).
