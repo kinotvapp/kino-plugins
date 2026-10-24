@@ -11,6 +11,10 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   (Internet Archive; the simplest starting template, with the `sdk/` kit) and
   [kinotvapp/kino-plugin-own-server](https://github.com/kinotvapp/kino-plugin-own-server) ("Tu servidor"
   1.5.0, the complete API demo: your own media server and every feature up to apiVersion 7 end to end).
+- **Sync providers** (apiVersion 12, Kino 0.9.74): a plugin can carry the person's Kino sync between
+  their devices through a service: [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/),
+  with two example providers in Kino's repository (Sync-Gram, on a Telegram bot of the person's own, and
+  Sync Servidor, on a server they run).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

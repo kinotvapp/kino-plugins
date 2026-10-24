@@ -63,6 +63,14 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
     de cada capítulo como [copias perezosas con etiqueta](contract.md#lazy-copies). Es un ejemplo solo
     de esas dos funciones (Kino solo lista los plugins de la comunidad: cada autor responde por el suyo); "Tu servidor" sigue siendo el plugin de referencia completo.
 
+!!! note "Proveedores de sincronización: Sync-Gram y Sync Servidor"
+    Las referencias para un [proveedor de sincronización](sync-providers.md) (apiVersion 12, Kino 0.9.74) son
+    dos ejemplos del repositorio de Kino, en `docs/plugins/examples/`: **Sync-Gram** (`sync-telegram/`, un bot
+    de Telegram de la propia persona; no oficial, sin relación con Telegram) y **Sync Servidor**
+    (`sync-server/`, un servidor de Node de un solo archivo que corre la persona, que Kino no lista). Cada
+    uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los dos proveedores de
+    ejemplo](sync-providers.md#examples).
+
 ## El plugin de referencia { #reference-plugin }
 
 Para lo básico -- `search`, `home`, `browse`, `episodes` y `resolve` sobre un sitio público, sin

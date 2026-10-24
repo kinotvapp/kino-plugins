@@ -11,9 +11,12 @@ declara 6 solo si usas algo de eso, porque Kino 0.9.49 y anteriores rechazan un 
 | Nombre, descripción, autor | la hoja de consentimiento y cada tarjeta de tu plugin | `name`, `description`, `author` | 1 | [Manifiesto](manifest.md) |
 | Ícono | las tarjetas de tu plugin (Ajustes ▸ Plugins, Recomendados, "De la comunidad") | `icon`: un `.png` cuadrado, máximo 128 KB | 1 | [Manifiesto](manifest.md) |
 | Color de acento | la pestaña y los chips de tu plugin, tu nombre sobre tus resultados de búsqueda | `color`: `#RRGGBB` | 1 | [Manifiesto](manifest.md) |
-| Chips de la tienda | los chips de categoría de Recomendados, "De la comunidad", "Elige tus fuentes" | `categories` en el manifiesto | cualquiera | [Manifiesto](manifest.md) |
+| Chips de la tienda | los chips de categoría de Recomendados, "De la comunidad", "Elige tus plugins" | `categories` en el manifiesto | cualquiera | [Manifiesto](manifest.md) |
 | Un formulario de ajustes y su propia pestaña en Ajustes | Ajustes ▸ &lt;tu plugin&gt; | `settings` (`list` desde 4) | 1 | [Formulario de ajustes](settings-form.md#types) |
 | Títulos, líneas de estado, botones, revisión antes de guardar | esa misma pestaña | ajustes `section`, `status`, `action`; `settingsStatus`, `action`, `validateSettings` | 6 | [Formulario de ajustes](settings-form.md) |
+| Un botón de ayuda y un botón que abre una dirección | esa misma pestaña (y el formulario Conectar de un proveedor de sincronización) | ajustes `help` y `link` | 12 | [Ayudas para configurar](settings-form.md#aids) |
+| "¿Eres tú?" y llenar tus propios ajustes | esa misma pestaña | un `action` que responde `link` o `setSettings` | cualquiera (Kino 0.9.74) | [Formulario de ajustes](settings-form.md#link) |
+| Tu línea de estado como proveedor de sincronización | Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor | `syncStatus` | 12 | [Proveedores de sincronización](sync-providers.md#settings) |
 | Colores | tu sección, tu pestaña de Ajustes, el título de tu grupo en Categorías, el acento del reproductor mientras suena lo tuyo | `theme` | 6 | [Tus colores](section-theme.md#theme) |
 | Una sección propia, con pestañas y un destacado | barra lateral del TV, franja de chips arriba de Inicio en el celular | `"section": { "label" }` + `section({ tab })` | 6 | [Una sección propia](section-theme.md#section) |
 | Mosaicos en Categorías | Categorías, un grupo con tu nombre | `categories()` (con `browse`) | 6 | [Tus propias categorías](section-theme.md#categories) |
@@ -58,8 +61,9 @@ declara 6 solo si usas algo de eso, porque Kino 0.9.49 y anteriores rechazan un 
 ## Tu pestaña de ajustes { #settings }
 
 Todo plugin encendido tiene su propia pestaña en Ajustes, con su interruptor de
-[Modo debug](diagnostics.md#debug); uno con `settings` muestra ahí también su formulario. Nueve tipos de campo (`text`,
-`password`, `url`, `toggle`, `select`, `list`, y desde apiVersion 6 `section`, `status`, `action`),
+[Modo debug](diagnostics.md#debug); uno con `settings` muestra ahí también su formulario. Once tipos de campo (`text`,
+`password`, `url`, `toggle`, `select`, `list`, desde apiVersion 6 `section`, `status`, `action`, y desde
+apiVersion 12 `link` y `help`),
 valores por defecto, campos obligatorios, una revisión antes de guardar y botones que corren tu código:
 
 ```json

@@ -90,7 +90,7 @@ GitHub search, and a clear line gets more people to try it and star it.
 3. **In the app.** Open Plugins (on a phone: the **☰ → Plugins** menu; on a TV: **Ajustes →
    Plugins**), tab **"De la comunidad"**, and tap **Actualizar**. Your
    card shows your name, your description and "por &lt;your user&gt;". The same list shows in "Elige tus
-   fuentes", the screen Kino shows when there is no source yet.
+   plugins", the screen Kino shows when there is no source yet.
 
 ## How long it takes { #timing }
 

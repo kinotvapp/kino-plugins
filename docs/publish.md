@@ -4,7 +4,7 @@
 
 La gente siempre puede instalar tu plugin escribiendo `usuario/repositorio`, o pegando la URL de su
 `kino-plugin.json` ([más abajo](#manifest-url)). Para que **aparezca solo**
-en Kino (Ajustes ▸ Plugins ▸ "De la comunidad", y en "Elige tus fuentes" la primera vez), necesitas:
+en Kino (Ajustes ▸ Plugins ▸ "De la comunidad", y en "Elige tus plugins" la primera vez), necesitas:
 
 1. **El topic `kino-plugin` en el repositorio de GitHub.** Es la única forma en que la app descubre un
    plugin. Ponlo en el repositorio que tiene `kino-plugin.json` (About ▸ ⚙ ▸ Topics), y mantén el
@@ -159,7 +159,7 @@ Para aparecer:
    busca.
 3. Kino busca máximo cada 12 horas por dispositivo (y cuando la persona toca "Actualizar"), y muestra
    los resultados en su propia pestaña de la pantalla Plugins, "De la comunidad" (junto a
-   Recomendados; en "Elige tus fuentes", después de los plugins recomendados). Hasta Kino 0.9.53 se
+   Recomendados; en "Elige tus plugins", después de los plugins recomendados). Hasta Kino 0.9.53 se
    queda solo con los 30 resultados con más estrellas. Desde **Kino 0.9.54**
    los lee de a 100, la persona elige el orden ("Populares" o "Recientes"), "Cargar más" lee los 100
    siguientes y "Buscar en GitHub" encuentra un plugin por su nombre: mira
@@ -215,7 +215,7 @@ tarjeta durante un día.
   veredicto (404, 410, 451, demasiado grande, inválido, demasiado nuevo, `"discoverable": false`) lo
   descarta.
 - **En pantalla.** "De la comunidad" es su propia pestaña de la pantalla Plugins, junto a
-  "Recomendados" (en "Elige tus fuentes" va después de los plugins recomendados), en celulares y
+  "Recomendados" (en "Elige tus plugins" va después de los plugins recomendados), en celulares y
   televisores, en el orden de la búsqueda (primero los de más
   estrellas). La caja de búsqueda de arriba también la filtra, por nombre, descripción y
   "por &lt;owner&gt;". Un plugin ya instalado desde el mismo repositorio muestra "Instalado".
@@ -263,7 +263,7 @@ resultados lee la app y en qué orden:
   (`in:name,description`); antes se limpian (solo letras, dígitos, `.`, `_` y `-`, máximo 50
   caracteres, sin calificadores ni operadores de GitHub). Un nombre de repositorio y una descripción
   de GitHub claros ayudan a que te encuentren.
-- **"Elige tus fuentes"** tiene las mismas pestañas que la pantalla Plugins, entre ellas "De la
+- **"Elige tus plugins"** tiene las mismas pestañas que la pantalla Plugins, entre ellas "De la
   comunidad".
 
 ### Cuando GitHub no responde { #discovery-fallback }

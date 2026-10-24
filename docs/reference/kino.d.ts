@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 11; 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 12; 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -649,6 +649,33 @@ interface KinoManifestPanel { label: string; labelEn?: string; icon?: string; ic
 type KinoSettingsLayoutLeaf = { setting: string } | { type: "text"; text: string; textEn?: string } | { type: "image"; url: string; aspect?: "16:9" | "2:3" | "1:1" | "banner" };
 type KinoSettingsLayout = KinoLayoutNode<KinoSettingsLayoutLeaf>[];
 
+/**
+ * Configuration aids in the manifest's `settings` (apiVersion 12; no value, never in kino.config, never required).
+ * `link`: a button that opens `url` through the system ONLY when the person taps it (https only, no user info, at most 2048
+ * characters; https://t.me/... opens Telegram when installed), with Kino's "Abrir enlace" and the host under it; on TV the
+ * address as text plus a QR to open on a phone. Kino makes no request to that host. An address holding one of your secrets is
+ * not shown. `help`: a button (your `label`, else Kino's "Ayuda" / "Help") that opens a modal titled with your plugin's name with
+ * `title` (at most 60) and `body` (at most 2000; `body` or `bodyEn` required), plain text only: newlines are kept, markup is
+ * shown literally, nothing is clickable (use a `link` for an address); scrubbed of your secrets; a missing Spanish or English
+ * text falls back to the other. At most 4 of each per plugin; they count among the sections, statuses and actions.
+ */
+type KinoLinkSetting = { key: string; type: "link"; label: string; labelEn?: string; url: string; hint?: string; hintEn?: string };
+type KinoHelpSetting = { key: string; type: "help"; label?: string; labelEn?: string; title?: string; titleEn?: string; body?: string; bodyEn?: string };
+
+/** One entry of the manifest's `settings` (the manifest is JSON: this documents its shape, a `settings` array holds these). */
+type KinoManifestSetting =
+  | {
+      key: string; label: string; labelEn?: string;
+      type: "text" | "url" | "password" | "toggle" | "select" | "list" | "section" | "status" | "action";
+      hint?: string; hintEn?: string; required?: boolean; default?: string | boolean;
+      options?: { value: string; label: string; labelEn?: string }[];
+      fields?: { key: string; label: string; labelEn?: string; type: "text" | "url"; hint?: string; hintEn?: string; required?: boolean }[];
+      max?: number; confirm?: string; confirmEn?: string;
+    }
+  | KinoLinkSetting
+  | KinoHelpSetting;
+type KinoManifestSettings = KinoManifestSetting[];
+
 /** Your module's exports. `resolve` is required, and at least one of `search`/`home` (a catalog-only plugin: see [KinoCatalogOnlyPlugin]). */
 interface KinoPlugin {
   /** apiVersion 6, capability "migrate". Return null for anything that is not yours. 10 s per call. */
@@ -728,8 +755,8 @@ interface KinoPlugin {
    */
   /** apiVersion 6: required when a setting has `type: "status"`. One text per status setting key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. */
   settingsStatus?(): Promise<Record<string, string>>;
-  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. */
-  action?(key: string): Promise<{ message?: string; refresh?: boolean; clearSettings?: string[] } | null | void>;
+  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. `link` (Kino 0.9.74, additive `action.link`): Kino asks the person with its OWN question ("¿Eres tú, <candidate>?" / "Is this you, <candidate>?", naming your plugin by its manifest `name`) and runs the `confirm` action exactly once only if they confirm; Cancel runs nothing and your plugin hears nothing. `candidate`: 1 to 64 characters after trimming, runs of spaces collapsed; no control or invisible formatting characters, no space but the ASCII one, no blank fillers (U+115F, U+1160, U+3164, U+FFA0, U+2800); scrubbed of your secrets and shown as plain text. `confirm`: the key of ANOTHER `action` setting of this plugin that declares no `confirm`/`confirmEn` question of its own. Anything else refuses the link: your `message` still shows, with Kino's generic error. A `link` in the confirm action's own answer is ignored. `setSettings` (Kino 0.9.74, additive `action.setSettings`): up to 8 of your own `text` or `select` settings (never a `url`: only the person types a server; never a password, toggle or list) with string values, checked like typed values (a required one is never emptied; your `validateSettings` is not run); Kino saves them through the form's own save, so they reach the person's other devices like typed values. An unknown or secret key, a non-string, a bad value, a key also in `clearSettings`, a value holding one of your secrets or more than 8 keys refuse the whole field: nothing is applied and the form shows Kino's generic error under your message. */
+  action?(key: string): Promise<{ message?: string; refresh?: boolean; clearSettings?: string[]; setSettings?: Record<string, string>; link?: { candidate: string; confirm: string } } | null | void>;
   /**
    * apiVersion 6, optional: checks the values BEFORE Kino saves them (20 s). `null` accepts; `{ key: "mensaje" }`
    * refuses with the message under that field (a key that is not one of your valued settings refuses too, as a
@@ -1304,6 +1331,18 @@ declare namespace kino {
   function seed(session: Record<string, string | number>): void;
 
   /**
+   * Kino 0.9.74, additive: a `"sync": { "mode": "realtime" }` provider that can learn of a remote change tells Kino, so Kino pulls
+   * at once. Synchronous, cheap, answers nothing. Kino accepts at most one signal every 30 seconds and drops one that arrives while
+   * a pull is already running (that pull sees the remote), so call it when you notice the change, not in a loop. Throws
+   * `{ code: "not_allowed" }` unless the plugin declares the `syncProvider` capability with `mode: "realtime"`. Your code only runs
+   * while Kino calls it, so you cannot hold a connection open between calls: the place to notice a change and signal is
+   * `syncStatus` (not `syncPull`). Kino also keeps pulling every `pullEveryMs`. Feature-detect with `typeof kino.sync === "object"`.
+   */
+  namespace sync {
+    function remoteChanged(): void;
+  }
+
+  /**
    * apiVersion 6, with `"browser": true` (or `"pages"`) in the manifest (the person approves it in red): from `resolve` only, and only
    * a `resolve` the person started (they pressed play, or they started a download; never a background one), opens
    * `url` in a hidden web view, lets the page run its own player (muted; with `autoplay`, the default, it also clicks the
@@ -1558,4 +1597,72 @@ interface KinoManifestExternalResolver {
   fdroid?: true;
   /** A Downloader app code (3 to 10 digits) that fetches the app, for a TV. Shown, never installed by Kino. */
   downloader?: { code: string };
+}
+
+/**
+ * apiVersion 12, capability `"syncProvider"`: the plugin is the transport of the person's cross-device sync. Kino keeps the logic
+ * (what is synced, merging, when to run) and encrypts the snapshot before handing it over; the plugin only stores and returns an
+ * opaque blob, byte for byte. Needs the exports `syncPull` and `syncPush`; `syncStatus` is optional.
+ * Who can read the data: WITHOUT `sync.keySecret` the key is random and stays in Kino, so the plugin cannot read the blob, and the
+ * install sheet says "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores" (in red when
+ * the plugin has `"fetchHosts": "any"`). WITH `sync.keySecret` the key is derived from one of your own settings, which your code
+ * reads, so the plugin and its service CAN read the synced data; the sheet says so in red ("Sincronizará tus datos a través de su
+ * servicio: el plugin y su servicio podrán leerlos"). An update that adds the capability, or adds `keySecret`, waits for the
+ * person's approval again.
+ */
+interface KinoSyncContext {
+  /**
+   * The largest blob, in bytes after decoding, Kino will send or accept: the manifest's `maxBlobBytes`, at most 4194304 (4 MiB).
+   * Kino 0.9.74: while `syncPull`/`syncPush` run (only then), `kino.fetch` requests and response bodies, and the call's answer,
+   * may reach ceil(maxBlobBytes * 4/3) + 65536 characters/bytes instead of 1 MB / 5 MB, so the base64 blob fits in one request.
+   */
+  maxBlobBytes: number;
+}
+
+/**
+ * `syncPull` -- required with the capability "syncProvider". The latest stored blob and its version, or null when nothing is stored yet.
+ * Every sync export receives ONE argument (an object, or null for `syncStatus`). `blob` is standard base64 (RFC 4648, `+` and `/`,
+ * padded) WITHOUT line breaks, in both directions.
+ */
+type KinoSyncPullFn = (arg: KinoSyncContext) => Promise<{ blob: string /* base64 ciphertext */; version: string } | null>;
+
+/**
+ * `syncPush` -- required with the capability "syncProvider". Store `blob` (base64 ciphertext: unreadable by the plugin unless it declares `sync.keySecret`) and return
+ * the new opaque `version`. `arg.expectedVersion` is the version Kino last pulled (null if none): a provider that can detect that the remote
+ * changed since throws `{ code: "conflict" }` and Kino pulls, merges and pushes again; one that cannot ignores it.
+ */
+type KinoSyncPushFn = (arg: KinoSyncContext & { blob: string; expectedVersion: string | null }) => Promise<{ version: string }>;
+
+/** `syncStatus` -- optional with the capability "syncProvider": the status line of the plugin's sync settings. */
+type KinoSyncStatusFn = (arg: null) => Promise<{ ready: boolean; message?: string }>;
+
+/**
+ * apiVersion 12, manifest field `"sync"` (needs the `syncProvider` capability; refused without it). All keys optional:
+ *
+ *     "sync": { "mode": "poll", "pullEveryMs": 600000, "pushDebounceMs": 300000, "maxBlobBytes": 4194304 }
+ *
+ * `mode` is `"poll"` (default: Kino pulls on foreground and every `pullEveryMs`) or `"realtime"` (the provider signals remote changes).
+ * Both times are positive whole milliseconds (defaults 600000 and 300000); Kino clamps them to its own floors. `maxBlobBytes` is the
+ * largest blob the provider accepts (default and maximum 4194304).
+ *
+ * `keySecret` (optional) is the `key` of one of the plugin's own `"password"` settings (anything else refuses the manifest). Kino then
+ * derives the sync key from that setting's value on each device (HKDF-SHA256, host side), so the key never travels: a second device
+ * only needs the same settings (for example the same bot token). The derivation is public and your code reads the setting, so with
+ * `keySecret` the plugin and its service CAN read the synced data (the consent sheet says so in red). It must be a long random token
+ * (a bot token, an API key), never a password a person picks: anyone holding a stored blob can try guesses offline. That setting
+ * must not declare a `default` (the manifest is refused): the person types it, and until then Kino runs no sync round. Without it the
+ * key is random and stays on the device that made it (the plugin cannot read the data); this Kino has no way to hand it to another
+ * device, so a provider meant for more than one device declares `keySecret`. Changing that setting's
+ * value changes the key: the copy stored remotely then no longer opens until the person resets sync on one device.
+ *
+ * `provision` (optional) lists the `key`s of your own settings (secret or not, at most 8, no repeats) that pairing hands to another
+ * device so it can run the same provider, for example `["botToken", "chatId"]`. It must include `keySecret` when that is declared.
+ */
+interface KinoManifestSync {
+  mode?: "poll" | "realtime";
+  pullEveryMs?: number;
+  pushDebounceMs?: number;
+  maxBlobBytes?: number;
+  keySecret?: string;
+  provision?: string[];
 }

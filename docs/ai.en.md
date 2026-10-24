@@ -95,6 +95,11 @@ Before writing anything:
    touches the content itself.
 5. If I named a Nuvio repository, read https://kinotvapp.github.io/kino-plugins/en/nuvio-plugins/ (kino.nuvio,
    apiVersion 11, Kino 0.9.71) and copy the shape of its complete example.
+6. If my plugin is a sync provider (it carries Kino's own sync between my devices through a service: a bot,
+   a storage API, a server of mine), read https://kinotvapp.github.io/kino-plugins/en/sync-providers/ first
+   (apiVersion 12, Kino 0.9.74). Its references are two examples in Kino's repository: Sync-Gram
+   (docs/plugins/examples/sync-telegram, a Telegram bot of the person's own) for a third-party service, and
+   Sync Servidor (docs/plugins/examples/sync-server, a single-file Node server) for a server of my own.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -104,6 +109,7 @@ What I want:
 - Offline downloads: <<< yes / no >>>
 - Another app resolves the playable stream (a separate resolver app on the device): <<< no / yes: the app's package name, the protocol name it answers, what "ref" it expects, and how people get it: a GitHub release APK (with its sha256), F-Droid, a Downloader code for TV >>>
 - Nuvio scrapers: <<< none / the Nuvio repository (owner/repo) the plugin gets its links from >>>
+- Sync provider (the plugin carries Kino's sync between my devices instead of the local network): <<< no / yes: the service, whether it gives each person a long random token, and whether the service may read the synced data >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
@@ -167,6 +173,24 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   ref; it asks the person's permission, shows the app's progress and plays what it returns. Use it only when the
   plugin truly cannot produce a url, give it a fallback when possible, and do not promise a resolver app exists.
   Read https://kinotvapp.github.io/kino-plugins/en/resolver/ before using it.
+- Sync providers (apiVersion 12, Kino 0.9.74), only if I asked for one: declare the "syncProvider"
+  capability (it may be the only one) and export syncPull({ maxBlobBytes }) -> { blob, version } or null,
+  syncPush({ maxBlobBytes, blob, expectedVersion }) -> { version } and, optionally, syncStatus(null) ->
+  { ready, message? }. The blob is opaque base64 ciphertext made by Kino: store it and give it back byte
+  for byte, never decode it. Throw kino.error("conflict", …) when the remote copy changed since
+  expectedVersion, and kino.error("auth_required", …) when settings are missing or refused. Add a "sync"
+  block to the manifest: "maxBlobBytes" at most 4194304 (4 MiB; only inside syncPull and syncPush may
+  kino.fetch move that much); "keySecret" = the key of a "password" setting holding a long random token
+  (never a password a person picks, no "default"): Kino derives the sync key from it, so a second device
+  only needs the same settings, BUT the plugin and its service can then read the data and the consent line
+  says so in red; tell me. Without "keySecret" only one device can open the copy in Kino 0.9.74.
+  "provision" = the settings a second device needs (it must include "keySecret"). Never put the token in an
+  error, a status line or a log.
+- Configuration aids (apiVersion 12): a short "help" setting (what the person needs and where to get it)
+  and a "link" setting (an https button, e.g. https://t.me/BotFather). From Kino 0.9.74 an action may
+  answer link: { candidate, confirm } (Kino asks "Is this you, <candidate>?" before running the confirm
+  action) and setSettings: { key: value } to fill the plugin's own "text" or "select" settings (never a
+  "url" or a "password").
 - Feature-detect what older Kino lacks: kino.meta and kino.tmdb (Kino 0.9.53) only behind
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, and the hidden browser's
   captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
@@ -197,7 +221,10 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   and buttons in the settings, a section of its own, colors, telemetry, migrate, request signing,
   userMessage, adult, channels in Home rows; 6 needs Kino 0.9.50 or newer; 7 only for "tracking" or
   "segments", and it needs Kino 0.9.51 or newer; 8 only for "music" or "podcast" items or the details
-  export, and it needs Kino 0.9.54 or newer). A catalog that plays nothing declares "catalogOnly": true
+  export, and it needs Kino 0.9.54 or newer; 9 for the player panel or a hand-written "fetchHosts":
+  "any" (Kino 0.9.55); 10 only for "playlists" (Kino 0.9.65); 11 only for "externalResolve" (Kino 0.9.66);
+  12 only for "syncProvider", the "sync" block or a "link"/"help" setting (Kino 0.9.74; Kino 0.9.73 and
+  older refuse it)). A catalog that plays nothing declares "catalogOnly": true
   (Kino 0.9.54) and still exports a resolve that fails with not_found, for older Kino. A new id of my own (never
   "archive-org").
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
@@ -223,7 +250,10 @@ you hand the plugin over run this self-check and tell me the result of each line
   from a fixture (KINO_NUVIO_FIXTURE; if it says `Unknown capability`, my kit is old: update it, do not remove the
   capability), and the real scrapers are only tested in Kino 0.9.71 or newer;
 - if it has music or podcasts: "apiVersion": 8, every audio item has kind "music" or "podcast", and
-  (with "episodes") episodes() answers every audio ref, even a single track.
+  (with "episodes") episodes() answers every audio ref, even a single track;
+- if it is a sync provider: "apiVersion": 12, "syncProvider" declared, syncPull and syncPush exported,
+  "sync.maxBlobBytes" at most 4194304, tests that push and pull a 4 MiB blob and throw "conflict", and
+  you told me in plain words who can read the data (in red with "keySecret").
 
 At the end, walk me through:
 1. Publishing it: a public repository (never a fork) with the files at the root; the topic

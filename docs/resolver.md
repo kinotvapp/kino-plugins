@@ -203,7 +203,7 @@ HEVC se reproducen. **DLNA** se probó en una TV LG webOS real, que no lista HLS
 - **Nunca sabes qué app lo atendió ni cómo.** O el stream se reproduce, o `resolve` falla como cualquier otro
   fallo.
 - **Ofrecer la descarga.** Cuando el [`externalResolver`](manifest.md#external-resolver) de tu manifiesto trae
-  un `apk` (`url` de un archivo de un release de GitHub, `sha256`, `label` opcional) y falta la app, Kino
+  un `apk` (`url` de un archivo de un release de GitHub o de archive.org, `sha256`, `label` opcional) y falta la app, Kino
   muestra una hoja: puede descargarla de GitHub, comprueba que el archivo tenga exactamente ese `sha256` (si no,
   lo borra y no ofrece nada) y se lo entrega al instalador de Android, que le pregunta a la persona como con
   cualquier app. Kino no comprueba quién la firmó ni la ha revisado; la hoja lo dice.
@@ -215,6 +215,12 @@ HEVC se reproducen. **DLNA** se probó en una TV LG webOS real, que no lista HLS
   celular y por el código en la TV. Sé honesto con tu gente: el cliente oficial de F-Droid no tiene soporte real de Android TV (no
   aparece en el lanzador de la TV y a algunas pantallas no se llega con el control), así que para una TV lo práctico es el código de
   Downloader o el `apk`. Kino no ha verificado una versión concreta del cliente de F-Droid con este enlace en un aparato real.
+- **La app para un computador.** Si tu resolutor también corre en un computador, `externalResolver` puede llevar
+  `"desktop": { "windows": { "url": "...", "sha256": "..." }, "linux": { ... }, "macos": { ... } }`: cada uno un archivo de un
+  release de GitHub (un zip, mira "Desktop transport" en el protocolo del resolutor) y el `sha256` que deben tener sus bytes. Kino
+  en un computador lee solo la entrada de su propio sistema y nunca tu `apk`; Kino en Android nunca lee `desktop`. Las mismas
+  reglas que el `apk`: Kino lo descarga de GitHub, comprueba el `sha256` (si no, lo borra y no instala nada) y no ha revisado lo que
+  trae. Un sistema que no pongas simplemente no tiene app que ofrecer.
 
 ## Usar un resolutor desde tu plugin { #use }
 

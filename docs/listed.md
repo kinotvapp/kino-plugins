@@ -90,7 +90,7 @@ y una línea clara hace que más gente lo pruebe y le dé una estrella.
    `items`.
 3. **En la app.** Abre Plugins (en el celular: el menú **☰ → Plugins**; en el televisor:
    **Ajustes → Plugins**), pestaña **"De la comunidad"**, y toca **Actualizar**. Tu tarjeta sale con tu nombre, tu descripción y "por &lt;tu usuario&gt;". La misma
-   lista sale en "Elige tus fuentes", la pantalla que Kino muestra cuando no hay ninguna fuente.
+   lista sale en "Elige tus plugins", la pantalla que Kino muestra cuando no hay ninguna fuente.
 
 ## Cuánto tarda { #timing }
 

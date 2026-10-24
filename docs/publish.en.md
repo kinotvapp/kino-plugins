@@ -4,7 +4,7 @@
 
 People can always install your plugin by typing `owner/repo`, or by pasting the URL of its
 `kino-plugin.json` ([below](#manifest-url)). To make it **show up on its own** in
-Kino (Ajustes ▸ Plugins ▸ "De la comunidad", and the first-run "Elige tus fuentes"), you need:
+Kino (Ajustes ▸ Plugins ▸ "De la comunidad", and the first-run "Elige tus plugins"), you need:
 
 1. **The topic `kino-plugin` on the GitHub repository.** It is the only way the app discovers a
    plugin. Set it on the repository that holds `kino-plugin.json` (About ▸ ⚙ ▸ Topics), and keep the
@@ -154,7 +154,7 @@ To be listed:
    can be installed by address but is not searched.
 3. Kino searches at most every 12 hours per device (and when the person taps "Actualizar"), and shows
    the matches in their own tab of the Plugins screen, "De la comunidad" (beside Recomendados; in
-   "Elige tus fuentes", after the recommended plugins). Up to Kino 0.9.53 it keeps only the 30
+   "Elige tus plugins", after the recommended plugins). Up to Kino 0.9.53 it keeps only the 30
    most-starred matches. From **Kino 0.9.54** it reads them 100 at a time, the
    person picks the order ("Populares" or "Recientes"), "Cargar más" reads the next 100, and "Buscar
    en GitHub" finds a plugin by name: see [From Kino 0.9.54](#discovery-0954).
@@ -206,7 +206,7 @@ card falls back to the neutral look. The app keeps each card's colour and icon f
   spent) keeps the plugin as it was last seen; a verdict (404, 410, 451, too big, invalid, too new,
   `"discoverable": false`) drops it.
 - **On screen.** "De la comunidad" is its own tab of the Plugins screen, beside "Recomendados" (in
-  "Elige tus fuentes" it comes after the recommended plugins), on phones and TVs, in the search's order (most stars first). The search box above the
+  "Elige tus plugins" it comes after the recommended plugins), on phones and TVs, in the search's order (most stars first). The search box above the
   list filters it too, by name, description and "por &lt;owner&gt;". A plugin already installed from the
   same repository shows "Instalado".
 - **When it searches.** When the plugins screen opens: the copy saved on the device shows at once,
@@ -250,7 +250,7 @@ matches the app reads and in which order:
   words matched against your repository's **name and description** (`in:name,description`); the
   words are cleaned first (letters, digits, `.`, `_` and `-` only, at most 50 characters, no GitHub
   qualifiers or operators). A clear repository name and GitHub description help people find you.
-- **"Elige tus fuentes"** has the same tabs as the Plugins screen, "De la comunidad" among them.
+- **"Elige tus plugins"** has the same tabs as the Plugins screen, "De la comunidad" among them.
 
 ### When GitHub cannot answer { #discovery-fallback }
 

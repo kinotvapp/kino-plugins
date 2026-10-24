@@ -3,6 +3,50 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.74: `apiVersion` 12, sync providers, `link` and `help`, `setSettings` and "Is this you?" { #v0974 }
+
+(Not released yet.) **`apiVersion` 12 = Kino 0.9.74.** The contract (`contract.json`) now says
+`maxApiVersion` 12 and `kino.apiVersion` reports 12. Kino 0.9.73 and older refuse a manifest with
+`"apiVersion": 12` ("Este plugin necesita una versión más nueva de Kino"), so declare 12 only if you use
+one of its features.
+
+| Feature | From | How to tell |
+| --- | --- | --- |
+| The `syncProvider` capability (`syncPull`, `syncPush`, optional `syncStatus`) and the manifest's `sync` block | Kino 0.9.74, `apiVersion` 12 | nothing to check: an older Kino refuses `apiVersion` 12 |
+| The `link` and `help` setting types | Kino 0.9.74, `apiVersion` 12 | nothing to check: an older Kino refuses `apiVersion` 12 |
+| `kino.sync.remoteChanged()` for a `realtime` provider | Kino 0.9.74 | `typeof kino.sync === "object"` |
+| An action's `setSettings` and `link` answers | Kino 0.9.74, every `apiVersion` | nothing to check: an older Kino ignores both, so also say in `message` what to do |
+| `kino.fetch` caps raised inside `syncPull`/`syncPush` | Kino 0.9.74 | only inside those two calls |
+
+- **Sync providers** (apiVersion 12): a plugin can be the transport of the person's cross-device sync.
+  Kino keeps the logic, encrypts the snapshot and hands your `syncPush` an opaque base64 blob (at most
+  `sync.maxBlobBytes`, 4 MiB) to store and your `syncPull` returns it byte for byte, with a `version` of
+  yours; `kino.error("conflict", …)` makes Kino pull, merge and push again. The manifest's `sync` block
+  sets the cadence (`poll` or `realtime`), the blob size, `keySecret` (a key derived from one of your
+  `password` settings: the plugin and its service can read the data, said in red) and `provision` (the
+  settings "Enviar a otro aparato" hands to a second device). The capability may be a plugin's only one.
+  [Sync providers](sync-providers.md).
+- **Consent**: "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus
+  servidores", or, with `keySecret`, in red, "Sincronizará tus datos a través de su servicio: el plugin y
+  su servicio podrán leerlos". An update that adds the capability or `keySecret` always waits for the
+  person's approval.
+- **Configuration aids** (apiVersion 12): a `link` setting (a button that opens an `https` address
+  through the system only on the person's tap; on a TV, the address and a QR) and a `help` setting (a
+  button that opens your plain-text instructions in a modal), at most 4 of each.
+  [Configuration aids](settings-form.md#aids).
+- **`setSettings`** (Kino 0.9.74, additive): an action may fill up to 8 of your own `text` or `select`
+  settings, saved as if the person typed them; never a `url` or a `password`.
+  [Filling your own settings](settings-form.md#set-settings).
+- **"Is this you?"** (`action.link`, Kino 0.9.74, additive): an action answers
+  `link: { candidate, confirm }` and Kino asks the person with its own words before running the `confirm`
+  action. [Linking](settings-form.md#link).
+- **Plugin request logs keep only the host**: Kino's log line for each `kino.fetch` of a plugin now
+  carries the method, host, status, size and time, never the path or the query (a bot token in a path,
+  as in Telegram's Bot API, never reaches a log).
+- **Two example providers** in Kino's repository: Sync-Gram (`docs/plugins/examples/sync-telegram`, a
+  Telegram bot of the person's own) and Sync Servidor (`docs/plugins/examples/sync-server`, a server the
+  person runs, not listed). [The two example providers](sync-providers.md#examples).
+
 ## Kino 0.9.71: `apiVersion` 11, `kino.nuvio` { #v0971 }
 
 - **A plugin can use the scrapers of a Nuvio repository.** You declare the `nuvio` capability and `nuvioRepos` (1 to 4 repositories) and, inside your functions, call `kino.nuvio.available`, `use`, `scrapers` and `streams`: Kino installs the scrapers as the import does, with no screens, asks them for a title, and you sort, merge and label the copies. The scrapers belong to your plugin and are removed with it; torrent-only ones are never installed. Experiment: detect it with `typeof kino.nuvio === "object"`. [Plugins that use Nuvio scrapers](nuvio-plugins.md).

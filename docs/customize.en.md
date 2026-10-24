@@ -11,9 +11,12 @@ you use one of those, because Kino 0.9.49 and older refuse an apiVersion 6 plugi
 | Name, description, author | the consent sheet and every card of your plugin | `name`, `description`, `author` | 1 | [The manifest](manifest.md) |
 | Icon | your plugin's cards (Ajustes ▸ Plugins, Recomendados, "De la comunidad") | `icon`: a square `.png`, at most 128 KB | 1 | [The manifest](manifest.md) |
 | Accent color | your plugin's tab and chips, your name over your search results | `color`: `#RRGGBB` | 1 | [The manifest](manifest.md) |
-| Marketplace chips | the category chips of Recomendados, "De la comunidad", "Elige tus fuentes" | `categories` in the manifest | any | [The manifest](manifest.md) |
+| Marketplace chips | the category chips of Recomendados, "De la comunidad", "Elige tus plugins" | `categories` in the manifest | any | [The manifest](manifest.md) |
 | A settings form and its own Ajustes tab | Ajustes ▸ &lt;your plugin&gt; | `settings` (`list` from 4) | 1 | [The settings form](settings-form.md#types) |
 | Headings, status lines, buttons, checks before saving | the same tab | `section`, `status`, `action` settings; `settingsStatus`, `action`, `validateSettings` | 6 | [The settings form](settings-form.md) |
+| A help button and a button that opens an address | the same tab (and the Conectar form of a sync provider) | `help` and `link` settings | 12 | [Configuration aids](settings-form.md#aids) |
+| "Is this you?" and filling your own settings | the same tab | an `action` that answers `link` or `setSettings` | any (Kino 0.9.74) | [The settings form](settings-form.md#link) |
+| Your status line as a sync provider | Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor | `syncStatus` | 12 | [Sync providers](sync-providers.md#settings) |
 | Colors | your section, your Ajustes tab, your group title in Categorías, the player's accent while you play | `theme` | 6 | [Your colors](section-theme.md#theme) |
 | A section of your own, with tabs and a banner | TV sidebar, phone chip strip atop Inicio | `"section": { "label" }` + `section({ tab })` | 6 | [A section of your own](section-theme.md#section) |
 | Tiles in Categorías | Categorías, a group named after you | `categories()` (with `browse`) | 6 | [Your own categories](section-theme.md#categories) |
@@ -58,8 +61,9 @@ you use one of those, because Kino 0.9.49 and older refuse an apiVersion 6 plugi
 ## Your settings tab { #settings }
 
 Every enabled plugin gets its own tab in Ajustes, with its [Modo debug](diagnostics.md#debug) switch; one
-with `settings` shows their form there too. Nine field types (`text`, `password`,
-`url`, `toggle`, `select`, `list`, and from apiVersion 6 `section`, `status`, `action`), defaults,
+with `settings` shows their form there too. Eleven field types (`text`, `password`,
+`url`, `toggle`, `select`, `list`, from apiVersion 6 `section`, `status`, `action`, and from apiVersion 12
+`link` and `help`), defaults,
 required fields, a check before saving and buttons that run your code:
 
 ```json

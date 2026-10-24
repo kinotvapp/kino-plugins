@@ -21,7 +21,7 @@
   permission](contract.md#broad-video)); once chosen, the plugin's details say "Puede reproducir video
   desde cualquier servidor" next to "Quitar permiso de video amplio". A plugin with remembered refusals
   also shows "Olvidar rechazos de host".
-- **While `resolve` runs** the player shows "Resolviendo fuente &lt;name&gt;…", and after 5 s "…
+- **While `resolve` runs** the player shows "Resolviendo el video de &lt;name&gt;…", and after 5 s "…
   buscando enlaces (N s)".
 - **When a stream can't play**, the player says why in Spanish, never the player's own English: for
   example "Este aparato no puede reproducir este formato de video (4K/HEVC)", "El servidor del video
@@ -98,6 +98,29 @@ When a plugin answers `external` instead of a `url` ([External resolver apps](re
   can only be played, never downloaded.
 - **Sending it to a TV** goes through the phone like any plugin title; it was tried on a real Chromecast (and DLNA on an LG
   webOS TV, with an HLS answer) ([Casting a resolver's title](resolver.md#cast)).
+
+## Sync providers (Kino 0.9.74) { #sync-provider }
+
+When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
+
+- **The consent sheet** says "Guardará tu información de sincronización (cifrada; el plugin no puede
+  leerla) en sus servidores" ("Will store your sync data (encrypted; the plugin cannot read it) on its
+  servers"), or, in red when the plugin declares `sync.keySecret`, "Sincronizará tus datos a través de su
+  servicio: el plugin y su servicio podrán leerlos" ("Will sync your data through its service: the plugin
+  and its service can read it"). An update that adds either waits for approval.
+- **Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor** lists "Red local" and every installed
+  provider, each with a switch; only one is on at a time, or none. Turning one on asks "¿Sincronizar con
+  &lt;name&gt;?" ("La sincronización por red local se apaga mientras uses &lt;name&gt;"; "Si &lt;name&gt; ya
+  guarda datos de otro aparato, se combinan con los de este. Nunca se borra nada de ningún lado.") with
+  "Combinar con este aparato".
+- **The provider's row** shows "Sincronizado hace 3 min", "Esperando la primera sincronización", "Falló la
+  última sincronización: &lt;reason&gt;", "Falta el token: configúralo en Conectar" or "El token no
+  coincide o los datos guardados no son de Kino", the plugin's own `syncStatus` line, and the buttons
+  Conectar, Sincronizar ahora, Restablecer sincronización, Enviar a otro aparato and Recibir desde otro
+  aparato.
+- **Receiving on a second device**: a QR, an address and a 6-digit code for 3 minutes (and words for the
+  internet route), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
+  never their values, and "Aplicar".
 
 ## From Kino 0.9.54 { #v0954 }
 

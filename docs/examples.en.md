@@ -63,6 +63,13 @@ same files. A fork would work as a plugin too, but Kino's community search leave
     and languages as [labelled lazy copies](contract.md#lazy-copies). It is an example of those two
     features only (Kino just lists community plugins: each author is responsible for theirs); "Tu servidor" stays the complete reference plugin.
 
+!!! note "Sync providers: Sync-Gram and Sync Servidor"
+    The references for a [sync provider](sync-providers.md) (apiVersion 12, Kino 0.9.74) are two examples
+    in Kino's repository, under `docs/plugins/examples/`: **Sync-Gram** (`sync-telegram/`, a Telegram bot of
+    the person's own; unofficial, not affiliated with Telegram) and **Sync Servidor** (`sync-server/`, a
+    single-file Node server the person runs, not listed in Kino). Each has a guide in English and Spanish
+    and offline tests. See [The two example providers](sync-providers.md#examples).
+
 ## The reference plugin { #reference-plugin }
 
 For the basics -- `search`, `home`, `browse`, `episodes` and `resolve` over a public site, with no

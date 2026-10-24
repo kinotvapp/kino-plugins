@@ -127,9 +127,10 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [External resolver apps](resolver.md) | `externalResolve` (apiVersion 11): hand a title to an independently-installed app that turns it into a playable URL; the flow, `media`, `portable`, errors, casting, building the other side |
+| [Sync providers](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): carry the person's cross-device sync through a service your plugin talks to; who can read what, the `sync` block, cadence, conflicts, the 4 MiB limit, sending the settings to another device, Sync-Gram and Sync Servidor |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
-| [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `validateSettings`, a complete example, the own tab and syncing |
+| [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `setSettings` and "Is this you?", the `link` and `help` aids, `validateSettings`, a complete example, the own tab and syncing |
 | [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |
 | [Hidden browser](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` and `kino.browser.page`: when to use them, the safety model, never a captcha, timeouts and failures (apiVersion 6) |
 | [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |
@@ -141,7 +142,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Get listed in Kino](listed.md) | The five steps to show in "De la comunidad", how long it takes and how to check it |
 | [Publishing](publish.md) | Releases, updates and approvals, and appearing in "De la comunidad" |
 | [What people see](what-people-see.md) | The consent sheet, host dialogs, player messages, Configurar, statuses, disabling and uninstalling |
-| [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, Widevine, plain `http` |
+| [Cookbook](cookbook.md) | An HTML site with a login, a JSON API with a token, the person's own server, two sync providers, Widevine, plain `http` |
 | [Nuvio scrapers](nuvio.md) | How people install Nuvio scrapers, what the conversion builds, and its limits |
 | [Plugins that use Nuvio scrapers](nuvio-plugins.md) | `kino.nuvio` (apiVersion 11): your plugin names a Nuvio repository and Kino installs and uses its scrapers to look for links |
 | [Stremio addons](stremio.md) | How people install a Stremio addon, how each resource maps, what is refused, and its limits |

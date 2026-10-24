@@ -11,19 +11,19 @@
 | Loading the module (its top level) | 10 s |
 | Idle sandbox | closed after 5 minutes without calls |
 | Consecutive timeouts | 3 in a row and Kino disables the plugin ("No responde") |
-| `kino.fetch` | https only (or the person's own server as typed, or `http` on a host declared `insecureHttp`); 15 s default, 30 s maximum; response body at most 5 MB; the request (URL, headers and body) at most 1,048,576 characters; at most 60 requests per call, every hop counted, refused ones included (250 for a plugin converted from a Nuvio scraper); at most 6 fetches in flight at once; at most 3 host questions per call; at most 10 redirects per request; under `"fetchHosts": "any"`, a host reached only through it: https on port 443, a dotted name or public IPv4 address, at most 60 requests a minute per site and 600 every 10 minutes per plugin (250 / 2,500 for a converted Nuvio scraper), else `rate_limited` |
+| `kino.fetch` | https only (or the person's own server as typed, or `http` on a host declared `insecureHttp`); 15 s default, 30 s maximum; response body at most 5 MB; the request (URL, headers and body) at most 1,048,576 characters; inside a sync provider's `syncPull` and `syncPush` only, both the request and the response body may reach the declared blob's base64 plus 64 KB (ceil(`sync.maxBlobBytes` × 4/3) + 65,536); at most 60 requests per call, every hop counted, refused ones included (250 for a plugin converted from a Nuvio scraper); at most 6 fetches in flight at once; at most 3 host questions per call; at most 10 redirects per request; under `"fetchHosts": "any"`, a host reached only through it: https on port 443, a dotted name or public IPv4 address, at most 60 requests a minute per site and 600 every 10 minutes per plugin (250 / 2,500 for a converted Nuvio scraper), else `rate_limited` |
 | Cookies | 50 per domain, 64 KB in total per plugin |
 | `kino.storage` | 256 KB per plugin; an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
 | `kino.sleep` | 0 to 5,000 ms per call |
 | `kino.meta` (Kino 0.9.53) | at most 30 calls a minute per plugin; 8 s at most (each other `meta` plugin 6 s), inside your call's own limit; the query at most 4,096 characters; the answer at most 1,000,000 characters; cached 30 minutes |
-| `kino.tmdb` (Kino 0.9.53) | at most 40 calls per 10 s per plugin; on Kino's own key at most 20 per 10 s per plugin and 60 per 10 s for all plugins (then the person's key, else the cache or `rate_limited`); 15 s per call; a body at most 2 MB; at most 20 params of at most 500 characters; cached 10 minutes (bodies up to 512 KB); not counted in `kino.fetch`'s requests per call |
+| `kino.tmdb` (Kino 0.9.53) | at most 40 calls per 10 s per plugin; on Kino's own key at most 20 per 10 s per plugin and 60 per 10 s for all plugins (then the person's key, else the cache or `rate_limited`); 15 s per call; a body at most 2 MB; at most 20 params of at most 500 characters; cached and shared by all plugins, per route (12 hours for a series by id and its seasons and episodes; 30 days for a movie, person or collection by id, any title's credits, images and the like, and for `/find`, `/genre`, `/configuration`; 24 hours for `/search`; 3 hours for `/trending`, `/discover` and the lists; 10 minutes for anything else, an empty answer or a 404), bodies up to 512 KB; a cached answer does not count against these limits, and when TMDB fails (not when it refuses the key) the last copy is served; not counted in `kino.fetch`'s requests per call |
 | `kino.crypto` | data at most 5 MB per call; PBKDF2 at most 100,000 iterations and 64-byte keys; `randomBytes` at most 1,024 |
 | `kino.log` / `console.*` | 2,000 characters per message; when a call of a plugin whose manifest declares `telemetry` fails, its last 30 lines (each cut at 300 characters, scrubbed, 2,048 characters in all) go with the failure report |
-| What a function returns | at most 2,000,000 characters once turned into JSON |
+| What a function returns | at most 2,000,000 characters once turned into JSON (a sync provider's `syncPull` and `syncPush`: up to ceil(`sync.maxBlobBytes` × 4/3) + 65,536, set by its declared blob) |
 | Results | `search` 100 items; `home` 20 rows of 60; `browse` 100 per page; `episodes` 5,000 (and 50 `seasons`); `ref` 4,096 characters; `next` 2,048 characters; `id` matches `^[A-Za-z0-9._~-]{1,128}$` |
 | Live channels (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 per page, 10 pages at first and 5 more per scroll, 10,000 channels (200 pages) per category; `liveSearch` 100 channels, asked from 2 characters; `guide` 50 channels and 24 h per call, 100 entries per channel; `number` 1..9999 |
 | Tracking (apiVersion 7) | `progress` at most every 5 minutes of playback; `watched` once, with 3 minutes or less left and at least 90% played; at most 200 events waiting per plugin; an event not delivered within 7 days is dropped; a retryable failure waits 30 s, doubling up to 6 h, 12 tries at most |
-| Settings | at most 12 with a value, plus at most 16 `section`/`status`/`action` (apiVersion 6); `text` 500, `url` 2,048, `password` 500 characters |
+| Settings | at most 12 with a value, plus at most 16 `section`/`status`/`action`/`link`/`help` (apiVersion 6; `link` and `help` apiVersion 12, at most 4 of each); `text` 500, `url` 2,048, `password` 500 characters; a `link`'s address 2,048, a `help`'s title 60 and body 2,000 |
 | Error messages | your `kino.error` message is a detail for the log, cut at 200 characters; a `userMessage` for the person is at most 160 |
 | `hosts` | at least 1 entry, no upper limit from Kino 0.9.45 (only the manifest's 16 KB; Kino 0.9.44 and older refuse more than 20); from apiVersion 2, none (`[]`) when a `url` setting exists |
 | `secrets` (apiVersion 4) | at most 16; names match `^[A-Za-z][A-Za-z0-9_]{0,31}$`; a value is 1..4,096 bytes (1..8,192 from apiVersion 6); from apiVersion 6 a cipher key may be typed: `{ seal, use: "cipher-key", encoding: "hex" | "base64" }`, 16/24/32 bytes |
@@ -62,6 +62,15 @@ From Kino 0.9.54, also:
 | `details()` (apiVersion 8) | 20 s; it may read pages with `kino.browser.page`. See [A title's own details](contract.md#details) |
 | Audio items (apiVersion 8) | `artist` at most 200 characters; `music` and `podcast` items count against the same row and page sizes as any item. See [Music and podcasts](contract.md#music-podcasts) |
 | `kino.browser.capture` with `captureAll` (check `kino.browser.captureAll`) | at most 20 requests, ended 1 s after nothing new matched; `alsoMatch` 1..10 patterns of 1..500 characters; at most 64 headers per request; `cookies` at most 64, 16,384 characters in all. See [Every match, a cookie, an answer on timeout](browser.md#capture-all) |
+
+From Kino 0.9.74, also:
+
+| What | Limit |
+| --- | --- |
+| Sync provider (`syncProvider`, apiVersion 12) | `syncPull` and `syncPush` 60 s each, `syncStatus` 15 s; the blob at most `sync.maxBlobBytes`, at most 4,194,304 bytes (4 MiB) decoded; inside `syncPull`/`syncPush` only, a `kino.fetch` request, a response body and the answer up to ceil(`maxBlobBytes` × 4/3) + 65,536; `pullEveryMs` raised to at least 30 s, `pushDebounceMs` to at least 5 s; at most 60 rounds an hour; `provision` 8 keys. See [Sync providers](sync-providers.md#limits) |
+| `kino.sync.remoteChanged()` | one signal every 30 s at most; dropped while a pull runs |
+| `link` and `help` settings (apiVersion 12) | 4 of each; a link's `url` 2,048 characters, https only; a help's `title` 60 and `body` 2,000 |
+| Action answers `setSettings` and `link` (any apiVersion) | `setSettings` 8 keys of `text`/`select` settings; a link's `candidate` 1 to 64 characters |
 
 ## How your code lives { #lifecycle }
 

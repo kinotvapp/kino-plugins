@@ -3,6 +3,53 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Kino 0.9.74: `apiVersion` 12, proveedores de sincronización, `link` y `help`, `setSettings` y "¿Eres tú?" { #v0974 }
+
+(Todavía no publicada.) **`apiVersion` 12 = Kino 0.9.74.** El contrato (`contract.json`) dice ahora
+`maxApiVersion` 12 y `kino.apiVersion` informa 12. Kino 0.9.73 y anteriores rechazan un manifiesto con
+`"apiVersion": 12` ("Este plugin necesita una versión más nueva de Kino"), así que declara 12 solo si
+usas algo de esta versión.
+
+| Qué | Desde | Cómo saberlo |
+| --- | --- | --- |
+| La capacidad `syncProvider` (`syncPull`, `syncPush`, `syncStatus` opcional) y el bloque `sync` del manifiesto | Kino 0.9.74, `apiVersion` 12 | nada que revisar: un Kino anterior rechaza `apiVersion` 12 |
+| Los tipos de ajuste `link` y `help` | Kino 0.9.74, `apiVersion` 12 | nada que revisar: un Kino anterior rechaza `apiVersion` 12 |
+| `kino.sync.remoteChanged()` para un proveedor `realtime` | Kino 0.9.74 | `typeof kino.sync === "object"` |
+| Las respuestas `setSettings` y `link` de una acción | Kino 0.9.74, cualquier `apiVersion` | nada que revisar: un Kino anterior ignora las dos, así que di también en `message` qué hacer |
+| Topes de `kino.fetch` ampliados dentro de `syncPull`/`syncPush` | Kino 0.9.74 | solo dentro de esas dos llamadas |
+
+- **Proveedores de sincronización** (apiVersion 12): un plugin puede ser el transporte de la
+  sincronización entre los aparatos de la persona. Kino se queda con la lógica, cifra la copia y le pasa
+  a tu `syncPush` un blob opaco en base64 (como mucho `sync.maxBlobBytes`, 4 MiB) para guardarlo, y tu
+  `syncPull` lo devuelve byte por byte, con una `version` tuya; `kino.error("conflict", …)` hace que Kino
+  traiga, combine y vuelva a enviar. El bloque `sync` del manifiesto fija cada cuánto (`poll` o
+  `realtime`), el tamaño del blob, `keySecret` (una llave derivada de uno de tus ajustes `password`: el
+  plugin y su servicio pueden leer los datos, dicho en rojo) y `provision` (los ajustes que "Enviar a otro
+  aparato" le pasa a un segundo aparato). La capacidad puede ser la única de un plugin.
+  [Proveedores de sincronización](sync-providers.md).
+- **Consentimiento**: "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en
+  sus servidores", o, con `keySecret`, en rojo, "Sincronizará tus datos a través de su servicio: el
+  plugin y su servicio podrán leerlos". Una actualización que agrega la capacidad o `keySecret` siempre
+  espera la aprobación de la persona.
+- **Ayudas para configurar** (apiVersion 12): un ajuste `link` (un botón que abre una dirección `https`
+  por el sistema solo cuando la persona lo toca; en un TV, la dirección y un QR) y un ajuste `help` (un
+  botón que abre tus instrucciones en texto plano en una ventana), máximo 4 de cada uno.
+  [Ayudas para configurar](settings-form.md#aids).
+- **`setSettings`** (Kino 0.9.74, aditivo): una acción puede llenar hasta 8 de tus ajustes `text` o
+  `select`, guardados como si la persona los hubiera escrito; nunca un `url` ni un `password`.
+  [Llenar ajustes propios](settings-form.md#set-settings).
+- **"¿Eres tú?"** (`action.link`, Kino 0.9.74, aditivo): una acción responde
+  `link: { candidate, confirm }` y Kino le pregunta a la persona con sus propias palabras antes de correr
+  la acción `confirm`. [Vincular](settings-form.md#link).
+- **El registro de las peticiones de un plugin guarda solo el host**: la línea de Kino por cada
+  `kino.fetch` de un plugin ahora lleva el método, el host, el estado, el tamaño y el tiempo, nunca la
+  ruta ni la query (un token de bot en la ruta, como en la Bot API de Telegram, nunca llega a un
+  registro).
+- **Dos proveedores de ejemplo** en el repositorio de Kino: Sync-Gram
+  (`docs/plugins/examples/sync-telegram`, un bot de Telegram de la persona) y Sync Servidor
+  (`docs/plugins/examples/sync-server`, un servidor que corre la persona, no listado).
+  [Los dos proveedores de ejemplo](sync-providers.md#examples).
+
 ## Kino 0.9.71: `apiVersion` 11, `kino.nuvio` { #v0971 }
 
 - **Un plugin puede usar los scrapers de un repositorio de Nuvio.** Declaras la capacidad `nuvio` y `nuvioRepos` (de 1 a 4 repositorios) y, dentro de tus funciones, llamas a `kino.nuvio.available`, `use`, `scrapers` y `streams`: Kino instala los scrapers como la importación, sin pantallas, les pregunta por un título y tú ordenas, mezclas y etiquetas las copias. Los scrapers quedan bajo tu plugin y se quitan con él; los de solo torrents nunca se instalan. Experimento: detéctalo con `typeof kino.nuvio === "object"`. [Plugins que usan scrapers de Nuvio](nuvio-plugins.md).

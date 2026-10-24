@@ -3,8 +3,8 @@
 Los [ajustes](manifest.md#settings) de siempre guardan valores que tu código lee con `kino.config`.
 Desde `"apiVersion": 6` (Kino 0.9.50) el formulario también puede **mostrar** cosas y **hacer** cosas,
 y cada plugin instalado tiene su propia pestaña en Ajustes. Esta página tiene [todos los tipos de
-campo](#types), los tres tipos sin valor, las funciones que los llenan y los revisan, y
-[un ejemplo completo](#example).
+campo](#types), los tres tipos sin valor, las [dos ayudas para configurar](#aids) de apiVersion 12,
+las funciones que los llenan y los revisan, y [un ejemplo completo](#example).
 
 ## Su propia pestaña en Ajustes { #own-tab }
 
@@ -17,7 +17,7 @@ ajustes.
 ## Todos los tipos de campo { #types }
 
 El formulario muestra tus ajustes **en el orden del manifiesto**, cada uno con su `label` y, debajo, su
-`hint`. Nueve tipos:
+`hint`. Once tipos:
 
 | `type` | Lo que ve la persona | Lo que devuelve `kino.config.get(key)` | Desde |
 | --- | --- | --- | --- |
@@ -30,28 +30,33 @@ El formulario muestra tus ajustes **en el orden del manifiesto**, cada uno con s
 | `section` | un título, con `hint` como explicación | nada | apiVersion 6 |
 | `status` | una línea de solo lectura que llena tu `settingsStatus()` | nada | apiVersion 6 |
 | `action` | un botón que corre tu `action(key)` | nada | apiVersion 6 |
+| `link` | un botón que abre una dirección `https` por el sistema, solo cuando la persona lo toca ([Ayudas para configurar](#aids)) | nada | apiVersion 12 |
+| `help` | un botón ("Ayuda") que abre tus instrucciones en una ventana ([Ayudas para configurar](#aids)) | nada | apiVersion 12 |
 
 Lo que puede llevar cada entrada:
 
 | Atributo | Tipos | Regla |
 | --- | --- | --- |
 | `key` | todos | obligatorio, `^[a-z][a-zA-Z0-9_]{0,31}$`, único en la lista |
-| `label` | todos | obligatorio, de 1 a 40 caracteres |
-| `type` | todos | obligatorio, uno de los nueve de arriba |
+| `label` | todos | obligatorio, de 1 a 40 caracteres (en un `help` es opcional: sin él, el botón dice "Ayuda") |
+| `type` | todos | obligatorio, uno de los once de arriba |
 | `hint` | todos | opcional, máximo 80 caracteres: el ejemplo o la explicación debajo del campo. En una `section`, hasta 300 y se parte en varias líneas (Kino 0.9.51; antes de 0.9.51 se rechaza una de más de 80) |
 | `required` | `text`, `password`, `url`, `list` | opcional `true`/`false`. Un ajuste obligatorio sin valor detiene toda llamada ("Falta configurar") |
-| `default` | `text`, `password`, `toggle`, `select` | opcional. Nunca en `url` ni en `list` ("… no puede tener valor por defecto: usa "hint"") ni en los tres tipos sin valor; tiene que servir para su tipo (el `default` de un `select` es uno de sus `value`) |
+| `default` | `text`, `password`, `toggle`, `select` | opcional. Nunca en `url` ni en `list` ("… no puede tener valor por defecto: usa "hint"") ni en los tipos sin valor; tiene que servir para su tipo (el `default` de un `select` es uno de sus `value`) |
 | `options` | solo `select` | obligatorio: de 1 a 20 `{ "value", "label" }`, `value` de 1 a 40 caracteres y sin repetir, `label` de 1 a 40 |
 | `fields` | solo `list` | obligatorio: de 1 a 4, cada uno `{ key, label, type, hint?, required? }` con `type` `"text"` o `"url"`, sin `default` ("Solo un ajuste de tipo list tiene "fields"") |
 | `max` | solo `list` | opcional, número entero de 1 a 50 (20 por defecto): cuántas entradas |
 | `confirm` | solo `action`, apiVersion 6 | opcional, de 1 a 120 caracteres: se pregunta antes de correr la acción, con Cancelar enfocado ("Solo un ajuste de tipo action tiene "confirm"") |
+| `url` | solo `link`, apiVersion 12 | obligatorio: `https://`, sin usuario ni contraseña, máximo 2.048 caracteres |
+| `title`, `titleEn`, `body`, `bodyEn` | solo `help`, apiVersion 12 | el título (máximo 60) y el texto (máximo 2.000) de la ventana; `body` o `bodyEn` es obligatorio |
 | `labelEn`, `hintEn`, `confirmEn` | los de `label`, `hint`, `confirm` | opcionales, apiVersion 9 (Kino 0.9.55): el mismo texto en inglés, con los mismos límites ([Textos en inglés](#english)) |
 
 Cualquier otra clave de una entrada se ignora. Un manifiesto que incumple una regla se rechaza al
 instalar con un mensaje que nombra el ajuste (`El ajuste "quality" necesita opciones`); una `list` por
-debajo de apiVersion 4 o un `section`/`status`/`action` por debajo de apiVersion 6 también se rechazan.
-Límites: 12 ajustes con valor (`text`, `password`, `url`, `toggle`, `select`, `list`) y, desde
-apiVersion 6, 16 sin valor.
+debajo de apiVersion 4, un `section`/`status`/`action` por debajo de apiVersion 6 o un `link`/`help` por
+debajo de apiVersion 12 también se rechazan. Límites: 12 ajustes con valor (`text`, `password`, `url`,
+`toggle`, `select`, `list`) y, desde apiVersion 6, 16 sin valor (entre ellos, desde apiVersion 12, hasta
+4 `link` y 4 `help`).
 
 **No hay campos condicionales**: todo ajuste se muestra siempre, tenga lo que tenga otro. Usa un
 `section` con `hint` para decir qué campos van juntos ("Opcional: sin cuenta ves el catálogo gratis"),
@@ -128,6 +133,45 @@ Desde apiVersion 6 hay tres tipos que no guardan ningún valor (nunca están en 
   describen lo que acaba de hacer; `refresh: true` se sigue aceptando y no cambia nada. `confirm` (de 1 a 120 caracteres) pregunta antes, con Cancelar enfocado. **Export
   obligatorio** cuando existe un ajuste `action`.
 
+## Ayudas para configurar: `link` y `help` (apiVersion 12, Kino 0.9.74) { #aids }
+
+Dos tipos de ajuste le ayudan a la persona a configurar tu plugin. Ninguno guarda valor (nunca están en
+`kino.config`, nunca son `required`, sin `default`), y los dos cuentan entre los 16 ajustes sin valor.
+
+```json
+"settings": [
+  { "key": "steps", "type": "help", "title": "Qué necesitas", "titleEn": "What you need",
+    "body": "1. Crea un bot con @BotFather y copia su token.\n2. Pégalo aquí y toca Guardar.",
+    "bodyEn": "1. Create a bot with @BotFather and copy its token.\n2. Paste it here and tap Save." },
+  { "key": "botfather", "type": "link", "label": "Abrir @BotFather", "labelEn": "Open @BotFather", "url": "https://t.me/BotFather" },
+  { "key": "botToken", "label": "Token del bot", "type": "password" }
+]
+```
+
+- **`link`**: un botón que abre `url` por el sistema **solo cuando la persona lo toca** (en un celular,
+  `https://t.me/...` abre la app de Telegram si está instalada). Kino muestra su propio "Abrir enlace" y
+  el host debajo del botón, no le hace ninguna petición a ese host y no lo cuenta como un acceso a la red
+  de tu plugin. En un TV (casi nunca tiene navegador) el toque muestra la dirección como texto y como un
+  QR para abrirla en el celular. `url` tiene que ser `https://`, sin usuario ni contraseña, de máximo
+  2.048 caracteres; `label` es obligatorio. Una dirección que lleva uno de tus secretos guardados no se
+  muestra. Kino abre la forma canónica de la dirección (el host en minúsculas), la misma que nombra. No
+  hay otra forma de que un plugin le pida a Kino abrir una dirección.
+- **`help`**: un botón pequeño ("Ayuda" / "Help", o tu propio `label`) que abre una ventana con tus
+  instrucciones, titulada con el nombre de tu plugin. Solo texto plano: se conservan los saltos de línea,
+  las marcas se muestran tal cual y nada es tocable (para una dirección usa un `link`). `title` de máximo
+  60 caracteres, `body` de máximo 2.000 (`body` o `bodyEn` es obligatorio); si falta el texto en español o
+  en inglés se muestra el otro; a todo se le quitan tus secretos. En un TV se desplaza con el control, el
+  foco empieza en Cerrar y Atrás la cierra.
+
+La etiqueta de un `link` y la etiqueta, el título y el texto de un `help` no pueden llevar caracteres de
+control (el texto conserva sus saltos de línea), formato invisible ni cambios de dirección del texto; si
+no, se rechaza el manifiesto. Máximo 4 `link` y 4 `help` por plugin. Un Kino anterior rechaza
+apiVersion 12, así que un plugin que los usa declara `"apiVersion": 12`.
+
+**Que la ayuda sea corta y práctica**: qué datos necesita el plugin y dónde se consiguen, en pocas
+líneas. Si el plugin habla con un servidor propio de la persona, la ayuda no le enseña a armarlo: pon un
+`link` a la guía completa (el límite técnico de 2.000 caracteres no es una meta).
+
 ## Olvidar ajustes desde una acción (`clearSettings`) { #clear-settings }
 
 Una acción también puede **olvidar ajustes propios** con `clearSettings`: hasta 12 claves de tus ajustes
@@ -158,6 +202,78 @@ Límites:
   después de la duodécima se descarta con una línea en el log (`run.mjs` muestra `[dropped by Kino]`);
   un valor que no es un arreglo se ignora.
 - Una acción que lanza un error o se pasa del tiempo no vacía nada.
+
+## Llenar ajustes propios desde una acción (`setSettings`, Kino 0.9.74) { #set-settings }
+
+Una acción también puede **llenar ajustes propios** con `setSettings`: hasta 8 claves de tus ajustes
+`text` o `select`, cada una con un texto. Así una acción "Vincular" guarda el chat que encontró y la
+persona no escribe nada. Kino quita los espacios de los extremos de cada valor, lo revisa como uno
+escrito (largo, una de las opciones) y guarda los valores por el mismo Guardar del formulario: llegan a
+los otros aparatos de la persona y quedan en el perfil en uso como los escritos a mano, y tu sandbox se
+cierra como con cualquier cambio guardado. Es aditivo (sin `apiVersion` nueva): un Kino anterior lo
+ignora.
+
+```js
+return { message: "Vinculado", setSettings: { chatId: String(chat.id) } };
+```
+
+- **Nunca** un `url` (su valor se vuelve un servidor al que tu plugin puede llegar, así que solo la
+  persona lo escribe), **nunca** un `password` (un secreto lo escribe la persona), un `toggle`, una
+  `list` ni un ajuste sin valor; un ajuste `required` nunca se vacía así.
+- Kino **no** corre tu `validateSettings` con estos valores (tú los escogiste), y rechaza un valor que
+  contiene uno de tus secretos guardados en vez de copiarlo a un ajuste simple que se sincroniza.
+- Una clave desconocida o secreta, un valor que no es texto o que no pasa su revisión, una clave que
+  también está en `clearSettings`, un valor que contiene uno de tus secretos o más de 8 claves rechazan
+  **todo** el campo: no se aplica nada, tu `message` se muestra igual y Kino agrega debajo su error
+  genérico.
+- Funciona desde tu formulario de ajustes (cualquier acción, también la acción `confirm` de un
+  [vínculo](#link)).
+
+## Vincular: "¿Eres tú?" (`action.link`, Kino 0.9.74) { #link }
+
+Úsalo cuando una acción encuentra **a quién** vincular y la persona tiene que decir que es ella: por
+ejemplo un [proveedor de sincronización](sync-providers.md) cuyo bot lee el último mensaje ("escríbele
+algo a tu bot") y encuentra a `@ana`. Tu plugin nunca vincula por su cuenta: responde un candidato, y
+Kino pregunta.
+
+```js
+export async function action(key) {
+  if (key === "findMe") {
+    const who = await bot.latestSender();          // null mientras nadie haya escrito
+    if (!who) return { message: "Escríbele algo a tu bot y vuelve a tocar Buscar" };
+    kino.storage.set("pending", who.id);
+    return { link: { candidate: "@" + who.username, confirm: "linkMe" } };
+  }
+  if (key === "linkMe") {                           // solo corre después de que la persona confirma
+    const chat = kino.storage.get("pending");
+    return { message: "Vinculado", setSettings: { chatId: String(chat) } };
+  }
+}
+```
+
+- Kino muestra **su propia** pregunta, "¿Eres tú, @ana?" / "Is this you, @ana?", y nombra ahí a tu
+  plugin por el `name` de tu manifiesto. Tiene "Sí, soy yo" y Cancelar (Cancelar enfocado). No puedes
+  cambiar sus palabras.
+- **Cancelar no corre nada**: tu plugin no se llama ni se entera. Solo **"Sí, soy yo"** corre la acción
+  `confirm`, una sola vez, como si se oprimiera ese botón (los mismos ajustes, los mismos 30 s). Si no
+  puede empezar en ese momento (otra acción o un guardado está corriendo, o los cambios sin guardar de la
+  persona no se pueden guardar), la pregunta sigue abierta y lo dice.
+- `candidate`: un texto de 1 a 64 caracteres sin los espacios de los extremos, con los espacios seguidos
+  juntados en uno. No puede llevar caracteres de control ni de formato invisible, ningún espacio que no
+  sea el normal, ni los rellenos que no dibujan nada (U+115F, U+1160, U+3164, U+FFA0, U+2800). Pasa por el
+  mismo tapado de secretos que tus líneas de estado y se muestra como texto plano.
+- `confirm`: la `key` de **otro** ajuste `action` de tu plugin (no el que está respondiendo) que **no
+  tenga su propia pregunta `confirm`**: una acción que pregunta "¿Borrar todo?" nunca puede presentarse
+  como "¿Eres tú?".
+- Cualquier otra cosa rechaza el vínculo: tu `message` se muestra igual, con el error genérico de Kino
+  ("No se pudo completar. Inténtalo de nuevo.") debajo.
+- Un `message` en la misma respuesta también se muestra. Un `link` en la respuesta de la propia acción
+  `confirm` se ignora (no hay cadenas). Una pregunta a la vez: un vínculo nuevo reemplaza al que
+  esperaba, y salir del formulario lo descarta.
+- Un Kino anterior ignora `link` (es aditivo, sin `apiVersion` nueva): di también en `message` (o en una
+  línea de estado) qué hacer.
+- No hay forma de esconder un botón `action`: la acción que solo sirve como `confirm` se ve en el
+  formulario. Ponle una `hint` que diga cuándo usarla ("Solo después de Buscar mi chat").
 
 ## Validar antes de guardar (`validateSettings`) { #validate }
 
@@ -323,6 +439,9 @@ ellos. Lo que pasa y lo que no:
   vacía en sus otros aparatos (contraseñas incluidas). Un ajuste `required` nunca se vacía a distancia.
   Un aparato con una versión de Kino más vieja ignora los vaciados y conserva su valor.
 - **Nunca pasa:** `kino.storage`, las cookies, las filas de Inicio guardadas.
+- **Un proveedor de sincronización** además puede pasarle sus ajustes a otro aparato con "Enviar a otro
+  aparato" (los que nombra su `sync.provision`): mira
+  [Proveedores de sincronización](sync-providers.md#provisioning).
 
 Un valor que llega así se aplica **sin** tu `validateSettings` y, como cualquier cambio guardado, cierra
 tu sandbox. Así que escribe el plugin como si un ajuste pudiera cambiar en cualquier momento: ponle a

@@ -36,7 +36,7 @@
   servidor" ([el permiso amplio de video](contract.md#broad-video)); una vez elegido, los detalles del
   plugin dicen "Puede reproducir video desde cualquier servidor" junto a "Quitar permiso de video
   amplio". Un plugin con rechazos recordados también muestra "Olvidar rechazos de host".
-- **Mientras corre `resolve`** el reproductor muestra "Resolviendo fuente &lt;name&gt;…", y después
+- **Mientras corre `resolve`** el reproductor muestra "Resolviendo el video de &lt;name&gt;…", y después
   de 5 s "… buscando enlaces (N s)".
 - **Cuando un stream no se puede reproducir**, el reproductor dice por qué en español, nunca con el
   inglés del propio reproductor: por ejemplo "Este aparato no puede reproducir este formato de video
@@ -118,6 +118,28 @@ Cuando un plugin responde `external` en vez de una `url` ([Aplicaciones resoluto
   título así solo se puede reproducir, nunca descargar.
 - **Enviarlo a una TV** pasa por el celular como cualquier título de un plugin; se probó con un Chromecast real (y DLNA en una TV LG
   webOS, con una respuesta HLS) ([Enviar a la TV un título de un resolutor](resolver.md#cast)).
+
+## Proveedores de sincronización (Kino 0.9.74) { #sync-provider }
+
+Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-providers.md)):
+
+- **La hoja de consentimiento** dice "Guardará tu información de sincronización (cifrada; el plugin no
+  puede leerla) en sus servidores" o, en rojo cuando el plugin declara `sync.keySecret`, "Sincronizará tus
+  datos a través de su servicio: el plugin y su servicio podrán leerlos". Una actualización que agrega
+  cualquiera de las dos espera la aprobación.
+- **Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor** lista "Red local" y cada proveedor
+  instalado, cada uno con un interruptor; solo uno a la vez, o ninguno. Encender uno pregunta
+  "¿Sincronizar con &lt;nombre&gt;?" ("La sincronización por red local se apaga mientras uses
+  &lt;nombre&gt;"; "Si &lt;nombre&gt; ya guarda datos de otro aparato, se combinan con los de este. Nunca se
+  borra nada de ningún lado.") con "Combinar con este aparato".
+- **La fila del proveedor** muestra "Sincronizado hace 3 min", "Esperando la primera sincronización",
+  "Falló la última sincronización: &lt;razón&gt;", "Falta el token: configúralo en Conectar" o "El token
+  no coincide o los datos guardados no son de Kino", la línea de `syncStatus` del propio plugin, y los
+  botones Conectar, Sincronizar ahora, Restablecer sincronización, Enviar a otro aparato y Recibir desde
+  otro aparato.
+- **Recibir en un segundo aparato**: un QR, una dirección y un código de 6 dígitos durante 3 minutos (y
+  unas palabras para la ruta por internet), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
+  etiquetas de los ajustes que llegaron, nunca sus valores, y "Aplicar".
 
 ## Desde Kino 0.9.54 { #v0954 }
 

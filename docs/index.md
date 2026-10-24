@@ -133,9 +133,10 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
 | [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Aplicaciones resolutoras externas](resolver.md) | `externalResolve` (apiVersion 11): pasarle un título a una app instalada por separado que lo convierte en una URL reproducible; el flujo, `media`, `portable`, errores, enviar a la TV, construir el otro lado |
+| [Proveedores de sincronización](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): llevar la sincronización entre los aparatos de la persona por un servicio con el que habla tu plugin; quién puede leer qué, el bloque `sync`, cada cuánto, conflictos, el límite de 4 MiB, pasar los ajustes a otro aparato, Sync-Gram y Sync Servidor |
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
 | [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
-| [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
+| [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `setSettings` y "¿Eres tú?", las ayudas `link` y `help`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
 | [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
@@ -147,7 +148,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Aparecer en Kino](listed.md) | Los cinco pasos para salir en "De la comunidad", cuánto tarda y cómo comprobarlo |
 | [Publicar](publish.md) | Versiones, actualizaciones y aprobaciones, y cómo aparecer en "De la comunidad" |
 | [Lo que ve la persona](what-people-see.md) | La hoja de consentimiento, los diálogos de host, los mensajes del reproductor, Configurar, estados, desactivar y desinstalar |
-| [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, Widevine, `http` plano |
+| [Recetario](cookbook.md) | Un sitio HTML con login, una API JSON con token, el servidor propio de la persona, dos proveedores de sincronización, Widevine, `http` plano |
 | [Scrapers de Nuvio](nuvio.md) | Cómo instala la gente los scrapers de Nuvio, qué arma la conversión y sus límites |
 | [Plugins con scrapers de Nuvio](nuvio-plugins.md) | `kino.nuvio` (apiVersion 11): tu plugin nombra un repositorio de Nuvio y Kino instala y usa sus scrapers para buscar enlaces |
 | [Addons de Stremio](stremio.md) | Cómo instala la gente un addon de Stremio, cómo se traduce cada recurso, qué se rechaza y sus límites |

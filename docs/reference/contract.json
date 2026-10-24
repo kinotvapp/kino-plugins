@@ -1,23 +1,23 @@
 {
-  "$comment": "Kino plugin contract, apiVersion 1 to 11. The single source of truth for every number and rule a plugin meets. The app checks each value against its own code, and a test in the app pins this file to it; sdk/validate.mjs, sdk/run.mjs and the guide's tables read this file.",
-  "apiVersion": 11,
-  "maxApiVersion": 11,
-  "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54", "9": "0.9.55", "10": "0.9.65", "11": "0.9.66" },
+  "$comment": "Kino plugin contract, apiVersion 1 to 12. The single source of truth for every number and rule a plugin meets. The app checks each value against its own code, and a test in the app pins this file to it; sdk/validate.mjs, sdk/run.mjs and the guide's tables read this file.",
+  "apiVersion": 12,
+  "maxApiVersion": 12,
+  "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54", "9": "0.9.55", "10": "0.9.65", "11": "0.9.66", "12": "0.9.74" },
   "additiveFromApp": { "kino.meta": "0.9.53", "kino.tmdb": "0.9.53", "catalogOnly": "0.9.54", "kino.browser.captureAll": "0.9.54", "fetch.errorHost": "0.9.55", "kino.fetchAnyHost": "0.9.55",
-    "kino.meta.byTitle": "0.9.55", "kino.device": "0.9.55", "kino.seed": "0.9.55", "panel.loading": "0.9.64", "kino.nuvio": "0.9.71" },
+    "kino.meta.byTitle": "0.9.55", "kino.device": "0.9.55", "kino.seed": "0.9.55", "panel.loading": "0.9.64", "kino.nuvio": "0.9.71", "kino.sync.remoteChanged": "0.9.74", "action.link": "0.9.74", "action.setSettings": "0.9.74" },
   "capabilities": {
-    "names": ["search", "home", "browse", "episodes", "resolve", "download", "drm", "channels", "migrate", "scopedSearch", "meta", "subtitles", "tracking", "segments", "playlists", "externalResolve", "nuvio"],
+    "names": ["search", "home", "browse", "episodes", "resolve", "download", "drm", "channels", "migrate", "scopedSearch", "meta", "subtitles", "tracking", "segments", "playlists", "externalResolve", "nuvio", "syncProvider"],
     "required": ["resolve"],
     "atLeastOneOf": ["search", "home"],
-    "standalone": ["subtitles", "tracking", "segments"],
+    "standalone": ["subtitles", "tracking", "segments", "syncProvider"],
     "anyPluginExports": ["subtitles"],
     "declarative": ["download", "drm", "scopedSearch", "externalResolve", "nuvio"],
-    "apiVersions": { "download": 2, "drm": 2, "channels": 3, "migrate": 6, "scopedSearch": 6, "meta": 6, "tracking": 7, "segments": 7, "playlists": 10, "externalResolve": 11, "nuvio": 11 },
+    "apiVersions": { "download": 2, "drm": 2, "channels": 3, "migrate": 6, "scopedSearch": 6, "meta": 6, "tracking": 7, "segments": 7, "playlists": 10, "externalResolve": 11, "nuvio": 11, "syncProvider": 12 },
     "requires": { "scopedSearch": "search" },
     "requiresMessage": "The \"{capability}\" capability also needs \"{requires}\"",
-    "needsApproval": ["download", "drm", "channels", "migrate", "tracking", "nuvio"],
-    "exports": { "channels": ["liveCategories", "liveChannels"], "tracking": ["track"], "playlists": [] },
-    "optionalExports": { "channels": ["guide", "liveSearch"], "resolve": ["sign"], "playlists": ["playlists", "playlistItems", "playlistCreate", "playlistAddItem", "playlistRemoveItem", "playlistReorder"] }
+    "needsApproval": ["download", "drm", "channels", "migrate", "tracking", "nuvio", "syncProvider"],
+    "exports": { "channels": ["liveCategories", "liveChannels"], "tracking": ["track"], "playlists": [], "syncProvider": ["syncPull", "syncPush"] },
+    "optionalExports": { "channels": ["guide", "liveSearch"], "resolve": ["sign"], "playlists": ["playlists", "playlistItems", "playlistCreate", "playlistAddItem", "playlistRemoveItem", "playlistReorder"], "syncProvider": ["syncStatus"] }
   },
   "manifest": {
     "maxBytes": 16384,
@@ -82,7 +82,8 @@
       "minBrandDeltaE": 25
     },
     "secrets": { "apiVersion": 4, "namePattern": "^[A-Za-z][A-Za-z0-9_]{0,31}$", "maxSecrets": 16, "maxValueBytes": 4096, "prefix": "kino-sealed:v1:", "largeApiVersion": 6, "largeMaxValueBytes": 8192, "typed": { "apiVersion": 6, "uses": ["cipher-key"], "keyEncodings": ["hex", "base64"], "keyBytes": [16, 24, 32] } },
-    "signature": { "apiVersion": 5, "fromApp": "0.9.45", "domain": "kino-signed-entry:v1", "authorKeyHexChars": 64, "valueHexChars": 128, "consentLine": "Firmado por su autor", "authorKeyLabel": "Clave del autor", "badFieldMessage": "The \"signature\" field must be { \"authorKey\": 64 hex characters, \"value\": 128 hex characters } (node sdk/seal.mjs --sign)", "badSignatureMessage": "La firma del autor no es válida: el código no es el que firmó, o no es para este repositorio, este plugin o esta versión" }
+    "signature": { "apiVersion": 5, "fromApp": "0.9.45", "domain": "kino-signed-entry:v1", "authorKeyHexChars": 64, "valueHexChars": 128, "consentLine": "Firmado por su autor", "authorKeyLabel": "Clave del autor", "badFieldMessage": "The \"signature\" field must be { \"authorKey\": 64 hex characters, \"value\": 128 hex characters } (node sdk/seal.mjs --sign)", "badSignatureMessage": "La firma del autor no es válida: el código no es el que firmó, o no es para este repositorio, este plugin o esta versión" },
+    "sync": { "$comment": "apiVersion 12, only with the syncProvider capability. keySecret (optional) names one of the plugin's own password settings: Kino, host side, derives the sync key from that setting's value as the plugin's runtime reads it (the profile in use) (HKDF-SHA256, salt = saltPrefix + pluginId + \":\" + accountId, where accountId is the pluginId too), so the key never travels and a second device needs only the provider's own settings. The derivation is public and the plugin reads that setting, so with keySecret the plugin and its service CAN read the synced data (the consent line consentLineReadable, in red); it must be a high-entropy token, never a password a person picks (offline guessing from any blob). Without keySecret the key is random, the plugin cannot read the data (consentLine) and the key stays on the device that made it: no Kino path hands it to another device.", "apiVersion": 12, "requires": "syncProvider", "modes": ["poll", "realtime"], "defaults": { "mode": "poll", "pullEveryMs": 600000, "pushDebounceMs": 300000, "maxBlobBytes": 4194304 }, "maxBlobBytes": 4194304, "needsCapabilityMessage": "The \"sync\" field needs the \"syncProvider\" capability", "badMessage": "The \"sync\" field must be an object with an optional \"mode\" of \"poll\" or \"realtime\" and optional positive whole numbers \"pullEveryMs\", \"pushDebounceMs\" and \"maxBlobBytes\" (at most 4194304)", "consentLine": "Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores", "consentLineReadable": "Sincronizará tus datos a través de su servicio: el plugin y su servicio podrán leerlos", "keySecret": { "settingType": "password", "badMessage": "The \"keySecret\" of the \"sync\" field must be the key of one of the plugin's own \"password\" settings", "noDefaultMessage": "The setting the \"keySecret\" of the \"sync\" field names must not have a \"default\"", "kdf": "HKDF-SHA256", "saltPrefix": "kino-sync-key:v1", "info": "aes-256-gcm", "keyBytes": 32 }, "provision": { "$comment": "Optional: the keys of the plugin's own settings (secret or not) a pairing hands to another device so it can run the same provider; it must include keySecret when that is declared.", "maxNames": 8, "badMessage": "The \"provision\" of the \"sync\" field must be a list of at most 8 different keys of the plugin's own settings that hold a value", "needsKeySecretMessage": "The \"provision\" of the \"sync\" field must include its \"keySecret\"" } }
   },
   "hostRules": {
     "labelPattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
@@ -113,7 +114,13 @@
       "list": { "canBeRequired": true, "canHaveDefault": false },
       "section": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 },
       "status": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 },
-      "action": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 }
+      "action": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 },
+      "link": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 12 },
+      "help": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 12 }
+    },
+    "configAids": {
+      "$comment": "apiVersion 12 configuration aids in the settings form. link: { key, type: \"link\", label (+labelEn), url, hint? }: a button that opens url through the system only when the person taps it (https only, no user info, at most linkUrlMaxChars), with Kino's \"Abrir enlace\" and the host under it; on TV the address as text plus a QR. Kino makes no request to that host and it is no network access of the plugin's; an address holding one of the plugin's secrets is not shown. help: { key, type: \"help\", label? (+labelEn; default Kino's \"Ayuda\"), title? (+titleEn, at most helpTitleMaxChars), body (+bodyEn, at most helpBodyMaxChars; one of them required) }: a button that opens a modal titled with the plugin's name, plain text only (newlines kept, no markup, nothing clickable), scrubbed of the plugin's secrets; a missing base or English text falls back to the other. Their label, title and body may hold no control character (a body keeps its line breaks), invisible formatting or direction override. Kino opens a link's canonical address, the one whose host it shows. At most maxLinks links and maxHelps helps; they count among the sections, statuses and actions.",
+      "apiVersion": 12, "maxLinks": 4, "maxHelps": 4, "linkUrlMaxChars": 2048, "linkSchemes": ["https"], "helpTitleMaxChars": 60, "helpBodyMaxChars": 2000
     },
     "list": { "apiVersion": 4, "defaultMaxEntries": 20, "maxEntries": 50, "maxFields": 4, "fieldTypes": ["text", "url"] },
     "ui": {
@@ -124,6 +131,8 @@
       "messageMaxChars": 300,
       "fieldErrorMaxChars": 200,
       "clearSettings": { "maxEntries": 12 },
+      "setSettings": { "$comment": "Additive action.setSettings (no apiVersion): an action may answer setSettings: { <key>: <string> } to fill the plugin's own text or select settings (never a url: its value would become a server the plugin may reach, and only the person types one; never a password, toggle, list or valueless one). Kino does not run the plugin's validateSettings on them. Each value is trimmed and checked like a typed one; a required setting is never emptied; a key also in clearSettings, a value holding one of the plugin's secrets, a non-string, an unknown key or more than maxEntries keys refuse the whole field (nothing applied, Kino's generic error, the message still shows). Kino saves the values through the settings form's own save, so they reach the person's other devices and the profile in use like typed ones. Only from the plugin's own settings form.", "fromApp": "0.9.74", "maxEntries": 8, "types": ["text", "select"] },
+      "link": { "$comment": "Additive action.link (no apiVersion): an action may answer link: { candidate, confirm }. Kino shows its own question (\"Is this you, <candidate>?\") with Confirm and Cancel; Cancel runs nothing, Confirm runs the confirm action once. candidate: a string, 1 to candidateMaxChars after trimming, no control or invisible formatting characters, scrubbed like any plugin text, shown as plain text. Runs of spaces collapse to one; any space but the ASCII one and the fillers that draw nothing (U+115F, U+1160, U+3164, U+FFA0, U+2800) refuse it. The question names the asking plugin by its manifest name. confirm: the key of ANOTHER action setting of the same plugin that declares no confirm/confirmEn question of its own. Anything else refuses the link: the action's own message is still shown, with Kino's generic error. A link in the confirm action's own answer is ignored (no chains); one pending link at a time, a newer one replaces it, leaving the form drops it.", "fromApp": "0.9.74", "candidateMaxChars": 64, "confirmMustBeAnotherAction": true, "confirmWithOwnQuestionRefused": true, "nestedIgnored": true, "onlyAsciiSpace": true, "blankFillers": ["U+115F", "U+1160", "U+3164", "U+FFA0", "U+2800"] },
       "exports": { "status": "settingsStatus", "action": "action", "validate": "validateSettings" }
     }
   },
@@ -278,6 +287,7 @@
     "maxTimeoutMs": 30000,
     "maxBodyBytes": 5242880,
     "maxRequestChars": 1048576,
+    "syncCall": { "$comment": "A syncProvider's syncPull and syncPush calls (only those, only while Kino runs them) may move the blob the manifest declares: each kino.fetch request (its JSON, the base64 body included) and each response body may reach ceil(sync.maxBlobBytes * 4/3) + envelopeChars, and so may the call's answer, instead of maxRequestChars, maxBodyBytes and runtime.maxResultChars. Hosts, quotas, redirects and timeouts are unchanged. Kino 0.9.74.", "functions": ["syncPull", "syncPush"], "envelopeChars": 65536 },
     "maxRequestsPerCall": 60,
     "nuvioMaxRequestsPerCall": 250,
     "maxInFlight": 6,
@@ -461,6 +471,7 @@
     "timeoutMs": 15000,
     "maxBodyBytes": 2097152,
     "cacheTtlMs": 600000,
+    "cacheTtlByRouteMs": { "$comment": "KinoTmdbTtl.forPath: tv = a series by id, its seasons and episodes; stable = a movie, person or collection by id, any title's credits, images and the like, /find, /genre, /configuration; search = /search; lists = /trending, /discover and the lists; anything else, an empty answer or a 404: cacheTtlMs.", "tv": 43200000, "stable": 2592000000, "search": 86400000, "lists": 10800000 },
     "maxCachedEntries": 300,
     "maxCachedBodyChars": 524288,
     "$keyOrder": "Kino's own key first, behind its cache, in-flight dedup and the two kinoKey limits; the person's key (their Ajustes setting, else a Stremio addon's they agreed to) only when Kino's key gets one of personKeyOn; with neither, a cached copy up to staleMaxDays old, else rate_limited (unavailable when TMDB refused Kino's key). no_tmdb_key only on a build without a key of Kino's and a person without one. A key a plugin keeps in its own settings is never read.",

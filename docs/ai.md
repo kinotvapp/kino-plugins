@@ -97,6 +97,12 @@ Antes de escribir nada:
    contenido por sí mismo.
 5. Si dije un repositorio de Nuvio, lee https://kinotvapp.github.io/kino-plugins/nuvio-plugins/ (kino.nuvio,
    apiVersion 11, Kino 0.9.71) y copia la forma de su ejemplo completo.
+6. Si mi plugin es un proveedor de sincronización (lleva la sincronización propia de Kino entre mis aparatos
+   por un servicio: un bot, una API de almacenamiento, un servidor mío), lee primero
+   https://kinotvapp.github.io/kino-plugins/sync-providers/ (apiVersion 12, Kino 0.9.74). Sus referencias son
+   dos ejemplos del repositorio de Kino: Sync-Gram (docs/plugins/examples/sync-telegram, un bot de Telegram de
+   la propia persona) para un servicio de terceros, y Sync Servidor (docs/plugins/examples/sync-server, un
+   servidor de Node de un solo archivo) para un servidor mío.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -106,6 +112,7 @@ Lo que quiero:
 - Descargas para ver sin conexión: <<< sí / no >>>
 - Otra app resuelve el stream reproducible (una app resolutora aparte en el aparato): <<< no / sí: el nombre del paquete de la app, el protocolo que responde, qué "ref" espera y cómo la consigue la gente: un APK de un release de GitHub (con su sha256), F-Droid, un código de Downloader para la TV >>>
 - Scrapers de Nuvio: <<< ninguno / el repositorio de Nuvio (owner/repo) de donde el plugin saca los enlaces >>>
+- Proveedor de sincronización (el plugin lleva la sincronización de Kino entre mis aparatos en vez de la red local): <<< no / sí: el servicio, si le da a cada persona un token largo y aleatorio, y si el servicio puede leer los datos sincronizados >>>
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
@@ -170,6 +177,25 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   protocolo ni el ref; le pide permiso a la persona, muestra el progreso de la app y reproduce lo que devuelve.
   Úsalo solo cuando el plugin de verdad no pueda producir una url, dale una alternativa cuando se pueda y no
   prometas que existe una app resolutora. Lee https://kinotvapp.github.io/kino-plugins/resolver/ antes de usarlo.
+- Proveedores de sincronización (apiVersion 12, Kino 0.9.74), solo si te pedí uno: declara la capacidad
+  "syncProvider" (puede ser la única) y exporta syncPull({ maxBlobBytes }) -> { blob, version } o null,
+  syncPush({ maxBlobBytes, blob, expectedVersion }) -> { version } y, si quieres, syncStatus(null) ->
+  { ready, message? }. El blob es texto cifrado en base64 que hace Kino: guárdalo y devuélvelo byte por
+  byte, nunca lo decodifiques. Lanza kino.error("conflict", …) cuando la copia remota cambió desde
+  expectedVersion, y kino.error("auth_required", …) cuando faltan ajustes o el servicio los rechaza.
+  Agrega un bloque "sync" al manifiesto: "maxBlobBytes" como mucho 4194304 (4 MiB; solo dentro de
+  syncPull y syncPush puede kino.fetch mover tanto); "keySecret" = la clave de un ajuste "password" con un
+  token largo y aleatorio (nunca una contraseña que escoge una persona, sin "default"): Kino deriva de él
+  la llave de sincronización, así que un segundo aparato solo necesita los mismos ajustes, PERO entonces el
+  plugin y su servicio pueden leer los datos y la línea de consentimiento lo dice en rojo; dímelo. Sin
+  "keySecret" solo un aparato puede abrir la copia en Kino 0.9.74. "provision" = los ajustes que necesita
+  un segundo aparato (tiene que incluir "keySecret"). Nunca pongas el token en un error, una línea de
+  estado o un registro.
+- Ayudas para configurar (apiVersion 12): un ajuste "help" corto (qué necesita la persona y dónde lo
+  consigue) y un ajuste "link" (un botón https, p. ej. https://t.me/BotFather). Desde Kino 0.9.74 una
+  acción puede responder link: { candidate, confirm } (Kino pregunta "¿Eres tú, <candidate>?" antes de
+  correr la acción confirm) y setSettings: { clave: valor } para llenar ajustes "text" o "select" del
+  propio plugin (nunca un "url" ni un "password").
 - Detecta lo que a un Kino viejo le falta: kino.meta y kino.tmdb (Kino 0.9.53) solo detrás de
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, y las opciones captureAll del
   navegador oculto (Kino 0.9.54) solo cuando `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
@@ -200,7 +226,10 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   botones en los ajustes, una sección propia, colores, telemetry, migrate, firma por petición,
   userMessage, adult, canales en filas de Inicio; 6 necesita Kino 0.9.50 o más nuevo; 7 solo para
   "tracking" o "segments", y necesita Kino 0.9.51 o más nuevo; 8 solo para elementos "music" o
-  "podcast" o el export details, y necesita Kino 0.9.54 o más nuevo). Un catálogo que no reproduce
+  "podcast" o el export details, y necesita Kino 0.9.54 o más nuevo; 9 para el panel del reproductor o
+  un "fetchHosts": "any" escrito a mano (Kino 0.9.55); 10 solo para "playlists" (Kino 0.9.65); 11 solo
+  para "externalResolve" (Kino 0.9.66); 12 solo para "syncProvider", el bloque "sync" o un ajuste
+  "link"/"help" (Kino 0.9.74; Kino 0.9.73 y anteriores lo rechazan)). Un catálogo que no reproduce
   nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
   para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
@@ -227,7 +256,10 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   responde desde una fixture (KINO_NUVIO_FIXTURE; si dice `Unknown capability`, mi kit es viejo: actualízalo, no quites la
   capacidad), y los scrapers de verdad solo se prueban en Kino 0.9.71 o más nuevo;
 - si tiene música o podcasts: "apiVersion": 8, cada ítem de audio tiene kind "music" o "podcast", y
-  (con "episodes") episodes() responde por cada ref de audio, aunque sea una sola pista.
+  (con "episodes") episodes() responde por cada ref de audio, aunque sea una sola pista;
+- si es un proveedor de sincronización: "apiVersion": 12, "syncProvider" declarada, syncPull y syncPush
+  exportadas, "sync.maxBlobBytes" de máximo 4194304, pruebas que envían y traen un blob de 4 MiB y lanzan
+  "conflict", y me dijiste con palabras sencillas quién puede leer los datos (en rojo con "keySecret").
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y

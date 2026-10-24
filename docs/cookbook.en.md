@@ -526,6 +526,36 @@ computer's LAN address, not `127.0.0.1`: a loopback address is refused even as t
 `… . segments tt1254207 45000` then show what Kino would get; the repository's README lists every
 command, and `node --test test/*.test.mjs` runs its tests offline.
 
+## A sync provider on a server of your own (example: Sync Servidor) { #sync-server }
+
+`docs/plugins/examples/sync-server/` in Kino's repository (the plugin **Sync Servidor**, id
+`sync-server`, apiVersion 12, Kino 0.9.74) is a complete [sync provider](sync-providers.md) you can copy:
+a single-file Node server with no dependencies (`GET /blob` / `PUT /blob` with `If-Match`, a 409 on a
+version mismatch, a bearer token) and the plugin that talks to it (`"capabilities": ["syncProvider"]`
+alone, `"fetchHosts": "any"`, `sync.keySecret` and `sync.provision`, a 409 thrown as `conflict`). The
+person reaches the server through a Cloudflare tunnel, because a plugin only reaches public https hosts.
+Its README (English and Spanish) walks a person through it end to end: starting the server, the tunnel,
+installing the plugin from the server itself, Conectar, turning the provider on, sending the settings to
+a second device, and what to do when the token changes. It declares `maxBlobBytes` 4194304 (4 MiB):
+inside `syncPull`/`syncPush`, `kino.fetch` takes a blob of that size in one request. Its form carries a
+short [`help`](settings-form.md#aids) (what the person needs: the server's https address and its token)
+and a `link` to its guide. It is not listed in Kino.
+
+## A sync provider on a Telegram bot of the person's own (example: Sync-Gram) { #sync-gram }
+
+`docs/plugins/examples/sync-telegram/` (the plugin **Sync-Gram**, id `sync-gram`, apiVersion 12;
+unofficial, not affiliated with Telegram) syncs through a bot the person creates with @BotFather, with
+`"hosts": ["api.telegram.org"]` only and no server of anyone's: the copy is a document pinned in the
+person's private chat with the bot (`sendDocument`, `pinChatMessage`, `getChat` for the version and a
+race check, `getFile` to read it back). It shows how to upload a binary file as multipart/form-data
+through `kino.fetch` without decoding the blob (a `{ base64 }` body with your own `Content-Type`, the
+framing spliced around the blob's base64), how to link the person's chat with `getUpdates` and
+[`action.link`](settings-form.md#link) ("Is this you, @ana?") with the confirmed chat saved through
+[`setSettings`](settings-form.md#set-settings) so the person types nothing, a short `help` and a `link`
+to @BotFather, and how to keep the token out of every error text. `sync.keySecret` is the bot token and
+`sync.provision` is `["botToken", "chatId"]`. Its tests run against a local imitation of the Bot API;
+its README (English and Spanish) walks a person through it.
+
 ## A TMDB catalog with no key in the plugin (Kino 0.9.53) { #tmdb-catalog }
 
 A plugin whose Home rows and search come from TMDB (trending, discover by genre, a title's seasons) used to ask every
@@ -586,7 +616,7 @@ export async function home() {
 export async function search(query) {
   if (!query.q) return [];
   // Kino's key answers first, so this is rare. Uncaught, no_tmdb_key reaches the person as Kino's own sentence
-  // ("Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB"): nothing to word yourself.
+  // ("Agrega tu llave de TMDB en Ajustes de todos los perfiles ▸ Llaves"): nothing to word yourself.
   const r = await tmdb("/search/multi", { query: query.q, language: "es-MX", include_adult: false });
   return r.results.filter((m) => m.media_type === "movie" || m.media_type === "tv").map((m) => item(m, m.media_type));
 }

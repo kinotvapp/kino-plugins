@@ -9,6 +9,7 @@ kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks Eng
 kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
 kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
 kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
+kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync provider (see below); absent before
 ```
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
@@ -151,10 +152,16 @@ Desde Kino 0.9.54 los mensajes de error de Kino (`e.message`) están en inglés 
 Desde Kino 0.9.55, un `host_not_allowed` de `kino.fetch` trae `e.host`: el host que Kino rechazó (hasta 253 caracteres), para que no tengas que sacarlo del mensaje; falta en un Kino anterior y cuando no se rechazó un solo host.
 
 - **Límites:** 15 s por petición por defecto (30 s como máximo), un cuerpo de máximo 5 MB
-  (decodificado con el charset de su `Content-Type`, UTF-8 por defecto), y máximo 60 peticiones en una
-  llamada a tu plugin, incluidos los saltos de redirección y los rechazados (un plugin que Kino
+  (decodificado con el charset de su `Content-Type`, UTF-8 por defecto), una petición (URL, headers y
+  cuerpo; un cuerpo `{ base64 }` cuenta como su texto en base64) de máximo 1 MB, y máximo 60 peticiones
+  en una llamada a tu plugin, incluidos los saltos de redirección y los rechazados (un plugin que Kino
   convirtió desde un [scraper de Nuvio](nuvio.md) tiene 250). Máximo 6 de tus peticiones corren al
   mismo tiempo; las demás esperan su turno.
+- **Solo dentro de `syncPull` y `syncPush` de un proveedor de sincronización** (Kino 0.9.74), la
+  petición y el cuerpo de la respuesta pueden llegar a ceil(`sync.maxBlobBytes` × 4/3) + 64 KB en vez de
+  1 MB y 5 MB, y lo mismo el resultado de la llamada, para que el blob quepa en una sola petición. Los
+  hosts, los cupos, las redirecciones y los tiempos no cambian, y todas las demás llamadas del plugin
+  siguen con los topes de siempre. Mira [Proveedores de sincronización](sync-providers.md#limits).
 - **Los headers que pones** se envían tal cual, salvo `Host`, `Content-Length`, `Transfer-Encoding`,
   `Connection`, `Cookie2` y `Accept-Encoding` (Kino pide gzip por su cuenta y siempre te entrega el
   cuerpo descomprimido; un `Accept-Encoding` copiado de un navegador te traería bytes comprimidos). Si no pones `User-Agent`, Kino envía `Kino/<version> (plugin <id>)`. Un
@@ -192,8 +199,9 @@ tu módulo (`const KEY = kino.secret("apiKey");`): la revisión que Kino corre a
 responde un marcador para cada nombre que declara tu manifiesto, así que la instalación pasa.
 
 **Dónde el marcador se vuelve el valor: solo dentro de `kino.fetch`.** En la ruta y la query de la URL
-(codificado con porcentajes, para que el valor no pueda partir un segmento ni agregar un parámetro),
-dentro de un cuerpo JSON (escapado como JSON), y tal cual en los headers, un cuerpo de texto o un
+(codificado con porcentajes, para que el valor no pueda partir un segmento ni agregar un parámetro;
+un `:` queda tal cual, así que un token `id:secreto` como el de un bot de Telegram llega a
+`/bot<token>/…` como se envió), dentro de un cuerpo JSON (escapado como JSON), y tal cual en los headers, un cuerpo de texto o un
 campo de formulario. Un marcador en el esquema, el userinfo, el host, el puerto o el fragmento de la
 URL se deja como texto: un valor nunca pasa a ser parte del host al que Kino se conecta. Un header cuyo
 valor llevaría un carácter de control una vez puesto el secreto se rechaza en vez de enviarse.
@@ -459,7 +467,7 @@ Una puerta de solo lectura a la API v3 de TMDB. Tu plugin nunca lleva una llave:
    los plugins llegan a TMDB con la llave de Kino.
 2. **La llave de la persona, solo si la de Kino falla**: TMDB rechaza la llave de Kino (401/403), TMDB la limita (429), o
    se agotó uno de los dos límites de arriba. Entonces la misma petición sale otra vez con la llave que la persona
-   escribió en **Ajustes ▸ App ▸ Tu llave de TMDB** (opcional; una API key v3 de 32 caracteres hexadecimales, o un token
+   escribió en **Ajustes de todos los perfiles ▸ Llaves ▸ Tu llave de TMDB** (opcional; una API key v3 de 32 caracteres hexadecimales, o un token
    de lectura v4; se sincroniza entre sus aparatos) o, si no hay, con la que configuró en un **addon de Stremio
    instalado** (Kino busca en la configuración guardada de cada addon un campo cuyo nombre contenga "tmdb", ninguno se
    nombra en el código, y la usa solo después de que la persona dijo que sí una vez a "Usar la llave de TMDB de tu addon
@@ -468,8 +476,8 @@ Una puerta de solo lectura a la API v3 de TMDB. Tu plugin nunca lleva una llave:
    Kino, o el 429 de TMDB) o `unavailable` (TMDB rechazó la llave de Kino).
 
 `no_tmdb_key` queda para una versión de Kino sin llave propia y una persona sin llave: `e.userMessage` es entonces la
-frase de Kino para la persona, en su idioma: "Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB" /
-"Add your TMDB key in Settings ▸ Your TMDB key" (Kino 0.9.53 también mencionaba un addon de TMDB de Stremio). Si no
+frase de Kino para la persona, en su idioma: "Agrega tu llave de TMDB en Ajustes de todos los perfiles ▸ Llaves" /
+"Add your TMDB key in Settings for all profiles ▸ Keys" (Kino 0.9.53 también mencionaba un addon de TMDB de Stremio). Si no
 la atrapas, la persona lee esa misma frase. En esa versión, una llave de la persona que TMDB rechaza también es
 `no_tmdb_key`.
 
@@ -545,6 +553,33 @@ if (typeof kino.seed === "function") {
   `kinoSeed` del contrato trae las mismas claves y límites ([`contract.json`](reference/index.md)).
 - **En el kit de Node** `kino.seed` también existe: no envía nada, aplica el mismo filtro y registra qué claves
   conservaría Kino (nunca los valores), avisando cuando tu manifiesto no tiene `"telemetry"` y la app no enviaría nada.
+
+## `kino.sync.remoteChanged()`: avisarle a Kino que la copia remota cambió (Kino 0.9.74) { #sync }
+
+Solo para un [proveedor de sincronización](sync-providers.md) que declara
+`"sync": { "mode": "realtime" }`. Cuando tu código se entera de que otro aparato guardó una copia nueva,
+se lo dice a Kino, y Kino la trae de una vez en vez de esperar al siguiente `pullEveryMs`:
+
+```js
+export async function syncStatus() {
+  const head = await readRemoteHead();                       // una petición liviana, nunca el blob
+  if (typeof kino.sync === "object" && head.version !== kino.storage.get("lastSeen")) {
+    kino.storage.set("lastSeen", head.version);
+    kino.sync.remoteChanged();
+  }
+  return { ready: true };
+}
+```
+
+- **Síncrona y liviana**: no responde nada. Kino acepta como mucho un aviso cada 30 segundos y descarta
+  uno que llega mientras ya corre una lectura (esa lectura ya ve la copia remota), así que llámala cuando
+  notes un cambio, nunca en un ciclo.
+- **Avisa desde `syncStatus`, no desde `syncPull`**: un aviso enviado durante una lectura se descarta.
+  Tu código solo corre mientras Kino lo llama, así que no puedes dejar una conexión abierta entre
+  llamadas; de todos modos Kino sigue trayendo la copia cada `pullEveryMs`.
+- **`not_allowed` para cualquier otro plugin**: lanza `{ code: "not_allowed" }` salvo que el plugin
+  declare la capacidad `syncProvider` con `mode: "realtime"`.
+- **Detéctala** con `typeof kino.sync === "object"`: un Kino anterior no tiene `kino.sync`.
 
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 

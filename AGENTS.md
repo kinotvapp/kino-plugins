@@ -4,7 +4,9 @@ You are helping a person write a **Kino plugin**: a public GitHub repository wit
 (`kino-plugin.json`) and one JavaScript ES module (`plugin.js`) that Kino, an Android app for phones
 and TVs, runs inside a QuickJS sandbox. The plugin turns one source into search results, Home rows,
 episodes and playable streams: video, live TV channels, and (from apiVersion 8, Kino 0.9.54) music and
-podcasts; or, with `"catalogOnly": true`, a catalog that plays nothing (lists, ratings).
+podcasts; or, with `"catalogOnly": true`, a catalog that plays nothing (lists, ratings); or, with the
+`syncProvider` capability (apiVersion 12, Kino 0.9.74), the transport of the person's own Kino sync
+between their devices.
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
 before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
@@ -27,7 +29,9 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Live channels](https://kinotvapp.github.io/kino-plugins/en/live-channels/), and, when the plugin hands its titles to
    another installed app to turn them into a playable stream (apiVersion 11, Kino 0.9.66; the
    `externalResolve` capability),
-   [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/). For apiVersion 6
+   [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/), and, when the plugin
+   carries the person's Kino sync between their devices (apiVersion 12, Kino 0.9.74; the `syncProvider`
+   capability), [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
    shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
@@ -54,7 +58,15 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Music and podcasts](https://kinotvapp.github.io/kino-plugins/en/contract/#music-podcasts) in the
    contract (apiVersion 8, Kino 0.9.54) and `plugin.js` in
    [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio), the
-   reference audio plugin (`music` and `podcast` items, `episodes` for every audio ref).
+   reference audio plugin (`music` and `podcast` items, `episodes` for every audio ref). For a **sync
+   provider** (apiVersion 12, Kino 0.9.74), the references are two examples in Kino's repository,
+   under `docs/plugins/examples/`: **Sync-Gram** (`sync-telegram/`, id `sync-gram`, a Telegram bot of the
+   person's own: `"hosts": ["api.telegram.org"]`, a multipart upload through `kino.fetch` without decoding
+   the blob, `action.link` + `setSettings` to link the chat, `help` + `link` settings, `keySecret`) for a
+   provider on a third-party service, and **Sync Servidor** (`sync-server/`, id `sync-server`, a
+   single-file Node server with `GET`/`PUT /blob`, `If-Match` and 409, `"fetchHosts": "any"`) for a
+   provider on a server the person runs. Both have tests that run offline against a local imitation of
+   the service.
 
 Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): the contract is different.
 
@@ -79,9 +91,15 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   whole plugin with "Este plugin necesita una versión más nueva de Kino"). `apiVersion` 6 = Kino
   0.9.50: never declare 6 "just in case". `7` only for `tracking` or `segments` (Kino 0.9.51+); `8` only
   for `music`/`podcast` items or the optional `details(ref)` export (a movie's own details for its title
-  page; Kino 0.9.54+; Kino 0.9.53 and older refuse an apiVersion 8 plugin); `11` only for the `nuvio`
-  capability (`kino.nuvio`, Kino 0.9.71+; older Kino refuses an apiVersion 11 plugin). From
-  apiVersion 8 `details` is a reserved export name: never export a helper called `details`.
+  page; Kino 0.9.54+; Kino 0.9.53 and older refuse an apiVersion 8 plugin). From
+  apiVersion 8 `details` is a reserved export name: never export a helper called `details`. `9` for the
+  player panel, `settingsLayout`, the `labelEn`/`hintEn`/`confirmEn` texts or a hand-written
+  `"fetchHosts": "any"` (Kino 0.9.55+); `10` only for `playlists` (Kino 0.9.65+); `11` only for
+  `externalResolve` / `externalResolver` (Kino 0.9.66+) or the `nuvio` capability (`kino.nuvio`, Kino 0.9.71+;
+  older Kino refuses an apiVersion 11 plugin); `12` only for `syncProvider`, the manifest's
+  `sync` block or a `link`/`help` setting (**Kino 0.9.74+**; Kino 0.9.73 and older refuse an apiVersion 12
+  plugin). An action's `setSettings` and `link` answers need no new apiVersion (Kino 0.9.74; older Kino
+  ignores them).
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -105,6 +123,12 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   action buttons (an account to link and a "Cerrar sesión"), a section of its own and Categorías
   tiles, colors, `adult` marks for 18+ content, `telemetry` so its errors reach Kino's error tracker,
   `migrate` when the plugin replaces an older one. Each has a cost (approval prompts, more code): ask.
+- **A sync provider?** Only when the person wants their Kino data (library, history, progress,
+  settings, plugins) to travel between their devices through a service instead of the local network:
+  a bot, a storage API, a server they run. Settle with them: the service, whether it gives each person a
+  **long random token** (then `sync.keySecret`, and the plugin and its service CAN read the data, shown in
+  red), what a second device needs (`sync.provision`), and the hosts. It is not a way to add content.
+  See "Sync providers" in section 4.
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
 - If the person wants a **CloudStream plugin** in Kino, stop too: from Kino 0.9.54 Kino installs the plugins of a
@@ -144,6 +168,8 @@ exact message Kino shows, never a summary.
    exports are required by a manifest field, not a capability: `section` (by `"section"`),
    `settingsStatus` (by a `status` setting), `action` (by an `action` setting), `sign` (by any stream
    with `signing: "request"`), `panel` (by `"panel"`, apiVersion 9; `panelAction` and `playerEvent` are optional); `categories` (needs `browse`) and `validateSettings` are optional.
+   `syncProvider` (apiVersion 12) requires `syncPull` and `syncPush` (`syncStatus` optional), each taking one
+   object argument (`null` for `syncStatus`).
    Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
@@ -200,7 +226,8 @@ exact message Kino shows, never a summary.
 9. **Updates**: raise `version` every time (an equal or lower version never reaches anyone). Adding
    hosts, `permissions`, `download`, `drm`, `channels`, `migrate`, `telemetry` (or `true` → `"verbose"`),
    `liveStreamHosts`, `streamHosts`, `browser` (or `true` → `"pages"`), an `insecureHttp` host, or `secrets` to a plugin that had none
-   makes the update wait for the person's approval. From Kino 0.9.50 updates are also checked at app
+   makes the update wait for the person's approval; so does adding `syncProvider` or `sync.keySecret`
+   (never approved on its own). From Kino 0.9.50 updates are also checked at app
    start (at most every 12 h), a badge counts the waiting ones, and a failed call of a plugin whose
    update waits says "Hay una versión nueva de <name>: actualízala en Ajustes ▸ Plugins".
 
@@ -276,11 +303,11 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | --- | --- |
 | Manifest / entry file / icon | 16 KB / 1 MB / 128 KB |
 | Memory / stack | 64 MB / 1 MB |
-| Time per call | `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `details` 20 s (apiVersion 8) (`resolve` 75 s for an approved `"browser": true` or `"pages"` plugin, and for one Kino generates from a Nuvio scraper or a Stremio addon); `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; `subtitles` 10 s; `track` 10 s and `segments` 8 s (apiVersion 7); apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; `meta` 6 s per plugin (no answer after that); all fetches and sleeps count (not the time the person spends answering a host question) |
+| Time per call | `syncPull` and `syncPush` 60 s, `syncStatus` 15 s (apiVersion 12); `search` 15 s; `home`, `browse`, `episodes`, `resolve` 20 s; `details` 20 s (apiVersion 8) (`resolve` 75 s for an approved `"browser": true` or `"pages"` plugin, and for one Kino generates from a Nuvio scraper or a Stremio addon); `liveCategories`, `liveChannels`, `guide` 20 s; `liveSearch` 15 s; `subtitles` 10 s; `track` 10 s and `segments` 8 s (apiVersion 7); apiVersion 6: `section`, `categories`, `validateSettings` 20 s, `settingsStatus` 10 s, `action` 30 s, `migrate` 10 s, `sign` 1.5 s; `meta` 6 s per plugin (no answer after that); all fetches and sleeps count (not the time the person spends answering a host question) |
 | Module top level | 10 s |
 | Idle sandbox | closed after 5 minutes |
 | Timeouts | 3 in a row disable the plugin ("No responde") |
-| `kino.fetch` | 15 s default, 30 s max; body 5 MB; request 1,048,576 characters; 60 requests per call (every redirect hop counts, refused ones too); 6 in flight at once; 3 host questions per call; 10 redirects |
+| `kino.fetch` | 15 s default, 30 s max; body 5 MB; request 1,048,576 characters (a `{ base64 }` body counted as its base64 text; inside `syncPull`/`syncPush` only, request, body and the answer up to ceil(`sync.maxBlobBytes` × 4/3) + 65,536); 60 requests per call (every redirect hop counts, refused ones too); 6 in flight at once; 3 host questions per call; 10 redirects |
 | Cookies | 50 per domain, 64 KB total |
 | `kino.storage` | 256 KB; `ttlMs` 1..2,592,000,000 (30 days) |
 | `kino.sleep` | 0..5,000 ms |
@@ -291,7 +318,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
 | Live (apiVersion 3) | 200 categories; 500 channels/page, 10 pages at first then 5 more per scroll, up to 10,000 channels (200 pages)/category; `liveSearch` keeps 100 channels, asked from 2 characters; `guide` 50 channels, 24 h, 100 entries/channel; `number` 1..9999 |
-| Settings | 12 with a value, plus 16 `section`/`status`/`action` (apiVersion 6); `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields; `status` text 200, action `message` 300, `confirm` 120, `clearSettings` 12 keys |
+| Settings | 12 with a value, plus 16 `section`/`status`/`action`/`link`/`help` (apiVersion 6; `link`/`help` apiVersion 12, 4 of each, link `url` 2,048, help `title` 60 and `body` 2,000); `text` 500, `url` 2,048, `password` 500 characters; a `list` holds up to `max` entries (1..50, default 20), each of 1..4 `text`/`url` fields; `status` text 200, action `message` 300, `confirm` 120, `clearSettings` 12 keys |
 | `secrets` (apiVersion 4) | 16; names `^[A-Za-z][A-Za-z0-9_]{0,31}$`; values 1..4,096 bytes (1..8,192 at apiVersion 6); typed cipher keys 16/24/32 bytes (apiVersion 6) |
 | Stream (apiVersion 6) | `alternatives` 8 (any apiVersion; lazy and concrete together); `label` 48 chars; lazy `ref` 512 chars; `alternateHosts` 6; `signContext` 4,096 chars; 3 `resolve` retries |
 | Hidden browser (apiVersion 6) | one page at a time in the whole app; `capture` `timeoutMs` ≤ 25,000 (default 18,000), ≤ 8 media, 10 subtitles; `page` `timeoutMs` ≤ 25,000 (default 15,000; Kino cuts it to the call's remaining time minus 1.5 s; pass ~12,000 in `search`), never from `categories`, top document on your hosts, 20 reads a minute; automatic fallback waits ≤ 20 s per lazy copy |
@@ -299,6 +326,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.nuvio` (apiVersion 11, Kino 0.9.71) | 20 calls a minute per plugin; 1 to 4 `nuvioRepos`; up to 12 scrapers per `use`/`streams` call (`streams` asks 4 at a time); 60 s per scraper (`timeoutMs` 2,000 to 60,000); installs 45 s each; `available` up to 200 scrapers; scraper filter up to 64 ids; query 4,096 characters; `resolve` 75 s |
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
+| Sync provider (apiVersion 12) | blob ≤ `sync.maxBlobBytes` ≤ 4,194,304 bytes decoded; `pullEveryMs` ≥ 30 s, `pushDebounceMs` ≥ 5 s; 60 rounds an hour; `provision` 8 keys; `kino.sync.remoteChanged()` once per 30 s; action `setSettings` 8 keys, link `candidate` 64 characters |
 
 **Home categories** (the optional "Home por categorías"; the full vocabulary and aliases are at
 <https://kinotvapp.github.io/kino-plugins/en/categories/>): preferably group the plugin's content in
@@ -356,6 +384,73 @@ answer may carry an advisory `media` and a `portable` universal HLS copy for cas
 installed: do not present it as always available, and give the title a fallback when you can. If you do not
 need it, do not use it. Full rules, what the person sees and the cast caveats (Chromecast and DLNA each tried on one real receiver, with an HLS answer):
 [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/).
+
+**Sync providers (`syncProvider`, apiVersion 12, Kino 0.9.74)**: only when the person wants their Kino
+sync to travel through a service (a bot, a storage API, a server they run) instead of the local network.
+Kino keeps all the logic (what syncs, merging, scheduling), compresses and encrypts the snapshot
+(AES-256-GCM) and hands the plugin an opaque blob; the plugin moves bytes. Full rules:
+[Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/).
+
+- **Exports**, each with ONE object argument: `syncPull({ maxBlobBytes })` → `{ blob, version }` or `null`
+  when nothing is stored; `syncPush({ maxBlobBytes, blob, expectedVersion })` → `{ version }`; optional
+  `syncStatus(null)` → `{ ready, message? }`. `blob` is standard base64 (RFC 4648, padded, no line breaks)
+  both ways: store it and return it **byte for byte**, never decode or re-encode it. `version` is a
+  non-blank string of yours; `expectedVersion` is the one Kino last pulled (`null` if none).
+- **Conflict**: when the service can tell the remote changed since `expectedVersion`, throw
+  `kino.error("conflict", "…")`; Kino pulls, merges and pushes again (it stops after a few retries). Without
+  compare-and-set, ignore `expectedVersion` (last write wins). Throw `auth_required` when settings are
+  missing or refused: the person reads "al proveedor le falta configuración, revísala en Conectar".
+- **`syncStatus`**: one cheap request, never the blob. Kino asks it before every round: `ready: false`
+  skips the round quietly (asked again a pull period later, or when settings are saved); its `message`
+  (scrubbed) is the provider row's line. During a failed round the person reads Kino's own reason, not your
+  error text, so put guidance in the `message`.
+- **The manifest's `sync` block** (needs the capability): `mode` `"poll"` (default) or `"realtime"`;
+  `pullEveryMs` (default 600000, floor 30 s); `pushDebounceMs` (default 300000, floor 5 s); `maxBlobBytes`
+  (default and maximum 4194304 = 4 MiB, decoded); `keySecret`; `provision`. Kino runs at most 60 rounds an
+  hour, pushes after the last change of a burst, and the playback position only when playback stops.
+- **`keySecret`** = the `key` of one of the plugin's own `password` settings, with no `default`, holding a
+  **long random token** (bot token, API key, a token the server prints), never a password a person picks
+  (offline guessing). Kino derives the key from it on each device (HKDF-SHA256), so a second device needs
+  only the same settings and **the key never travels**; but the plugin and its service CAN then read the
+  data, and the consent line says so in red ("Sincronizará tus datos a través de su servicio: el plugin y
+  su servicio podrán leerlos"). Without `keySecret` the key is random, the plugin cannot read the data
+  ("Guardará tu información de sincronización (cifrada; el plugin no puede leerla) en sus servidores", red
+  with `"fetchHosts": "any"`), and **in Kino 0.9.74 no screen carries that key to another device**: the copy
+  then opens on one device only. Changing the token changes the key ("El token no coincide o los datos
+  guardados no son de Kino"): the person fixes the token or taps "Restablecer sincronización".
+- **`provision`** = at most 8 of the plugin's own valued settings that "Enviar a otro aparato" hands to a
+  second device (QR or typed address and a 6-digit code, local network or a short-lived internet route;
+  the person confirms "Recibido para <plugin>: ¿aplicar?"); it must include `keySecret`. Fill what you
+  find yourself (a chat id) with `setSettings` so the person types nothing.
+- **Size**: inside `syncPull`/`syncPush` only, `kino.fetch` requests (JSON, base64 body included),
+  response bodies and the call's answer may reach ceil(`maxBlobBytes` × 4/3) + 64 KB; every other call
+  keeps 1 MB / 5 MB / 2,000,000. A 4 MiB blob needs 25-30 MB of the 64 MB engine memory: never make extra
+  copies of it (build a multipart body around its base64, as Sync-Gram does). `syncPull`/`syncPush` 60 s,
+  `syncStatus` 15 s.
+- **`kino.sync.remoteChanged()`** (Kino 0.9.74, only with `mode: "realtime"`, else `not_allowed`): tell Kino
+  the remote moved so it pulls now; at most one signal per 30 s, dropped during a pull; call it from
+  `syncStatus`, never from `syncPull`. Feature-detect `typeof kino.sync === "object"`.
+- **Hosts and secrets**: declare the service's hosts. A server the person runs at an unknown address needs a
+  `url` setting or `"fetchHosts": "any"` (public https only, never the home network: a server at home needs
+  a public tunnel). Never put the token in an error, a status line or a log; scrub the service's own error
+  texts. Kino logs only the host of each plugin request.
+- **Testing**: `node sdk/validate.mjs .` checks the `sync` block and prints the consent line; `run.mjs` has no
+  sync command: write `node --test` tests like the examples (`loadPlugin` from `sdk/sandbox.mjs`,
+  `createKino` from `sdk/kino-shim.mjs`, `checkSyncAnswer` from `sdk/contract.mjs`) against a local imitation
+  of the service, with a 4 MiB blob both ways and a conflict.
+
+**Configuration aids and action answers (Kino 0.9.74)**: a `"type": "link"` setting (`label`, `url`
+`https://` only, no user info, ≤ 2,048; a button that opens it through the system only on the person's tap;
+on a TV, the address and a QR; Kino makes no request to it) and a `"type": "help"` setting (optional
+`label`, `title` ≤ 60, `body` ≤ 2,000 plain text, `titleEn`/`bodyEn`; a modal titled with the plugin's
+name), at most 4 of each, no value, apiVersion 12. Keep a help short: what the plugin needs and where to get
+it; link to a full guide. An `action` may answer `setSettings: { key: "value" }` (≤ 8 of the plugin's own
+`text`/`select` settings, never `url`, `password`, `toggle`, `list`; saved and synced like typed values,
+without `validateSettings`; any bad entry refuses the whole field) and `link: { candidate, confirm }` (Kino
+asks "¿Eres tú, <candidate>?" in its own words; `candidate` 1 to 64 plain characters; `confirm` is
+**another** `action` key without its own `confirm` question; only "Sí, soy yo" runs it, once). Both are
+ignored by older Kino: also say in `message` what to do.
+[The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/#aids).
 
 **Feature-detect what older Kino lacks**: `kino.meta` and `kino.tmdb` (Kino 0.9.53, no new apiVersion)
 only behind `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`; the hidden
@@ -632,7 +727,8 @@ people. See
 - [ ] `version` raised; `apiVersion` is the lowest that works (6 only for an apiVersion 6 feature:
       it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+; 8 only for
       `music`/`podcast` items or `details`: it needs Kino 0.9.54+; 10 only for the `playlists`
-      capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability (Kino 0.9.66+) or the `nuvio` capability (Kino 0.9.71+)).
+      capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability (Kino 0.9.66+) or the `nuvio` capability (Kino 0.9.71+);
+      12 only for `syncProvider`, the `sync` block or a `link`/`help` setting: it needs Kino 0.9.74+).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
@@ -649,6 +745,11 @@ people. See
       `url`; the plugin does not promise an app is installed, keeps a fallback copy when it can, and never uses `external`
       when it can produce the URL itself. Its `hosts` list only what the plugin's own code fetches, not what the resolver
       app reaches.
+- [ ] Sync provider: `"apiVersion": 12`, `syncProvider` declared, `syncPull` and `syncPush` exported with one
+      object argument, the blob stored and returned byte for byte, `conflict` thrown when the remote moved,
+      `sync.maxBlobBytes` ≤ 4194304, `keySecret` (if any) a long random token in a `password` setting with no
+      `default`, `provision` lists what a second device needs, no token in any error/status/log, offline tests
+      with a 4 MiB blob both ways, and the person was told in plain Spanish who can read the data.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
@@ -687,7 +788,7 @@ Every rule, as the app applies it (full detail:
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (8 from Kino 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (12 from Kino 0.9.74, 11 on 0.9.66 to 0.9.73, 10 on 0.9.65, 9 on 0.9.55 to 0.9.64, 8 on 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
    `own-server`), never the template's `archive-org`; the same id installed from
@@ -751,3 +852,8 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - Copying a browser's `Accept-Encoding` or `Host` header and expecting it to be sent.
 - Pasting a secret into `kino-plugin.json` or `plugin.js` instead of sealing it (author keys) or
   asking for it in a `password` setting (the person's credentials); committing `.kino-secrets.json`.
+- A sync provider that decodes, re-encodes or trims the blob, keeps extra copies of it (memory), puts the
+  token in an error or status text, uses a password a person picks as `keySecret`, or promises the plugin
+  "cannot read" the data while declaring `keySecret`.
+- `setSettings` on a `url` or `password` setting, or a `link` whose `confirm` is the answering action or an
+  action with its own `confirm` question: refused whole.

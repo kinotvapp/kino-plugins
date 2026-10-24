@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 11)
+# The contract (apiVersion 1 to 12)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -29,7 +29,11 @@ watches](#tracking)) and `segments` ([Where the intro and credits are](#segments
 `"apiVersion": 8` (Kino 0.9.54): the audio item kinds `music` and `podcast`
 ([Music and podcasts](#music-podcasts)) and the optional `details` export ([A title's own
 details](#details)). And at every `apiVersion`, from Kino 0.9.54, a plugin that lists titles but plays
-none can say so with `"catalogOnly": true` ([Catalog-only plugins](#catalog-only)).
+none can say so with `"catalogOnly": true` ([Catalog-only plugins](#catalog-only)). From
+`"apiVersion": 12` (Kino 0.9.74) a plugin can be the transport of the person's cross-device sync with
+`syncPull`, `syncPush` and the optional `syncStatus` ([Being the person's sync transport](#sync-provider)).
+At every `apiVersion`, from Kino 0.9.74, an `action` may also answer `setSettings` and `link`
+([The settings form](settings-form.md#set-settings)).
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
 
@@ -671,7 +675,7 @@ Two ways to offer it:
 
 - **A subtitle provider**: `"capabilities": ["subtitles"]` and nothing else. No `resolve`, `search` or
   `home` needed; the plugin appears nowhere but the subtitle search and Ajustes ▸ Plugins (it is not a
-  source in "Elige tus fuentes"). The consent screen says "Agrega subtítulos a tus películas y series".
+  source in "Elige tus plugins"). The consent screen says "Agrega subtítulos a tus películas y series".
   Older Kino versions refuse a capability they do not know: they do not install it.
 - **Alongside your videos**: keep your capabilities and just export `subtitles` (declaring `subtitles`
   too adds the consent line, but older Kino versions would then refuse the plugin). Kino asks every
@@ -796,7 +800,7 @@ What Kino 0.9.54 and later do with it:
 - **Its `resolve` is never called.** If a title of it reaches the player anyway, the player says
   "&lt;name&gt; solo muestra el catálogo: no reproduce videos. Busca este título en tus otros plugins."
   (or its English version), with "Ver en otros plugins" under it.
-- **It is not a source in "Elige tus fuentes"**, and Kino files it under Utilidades when the manifest
+- **It is not a source in "Elige tus plugins"**, and Kino files it under Utilidades when the manifest
   has no `categories`.
 - The consent sheet says "Solo catálogo: no reproduce videos" ("Catalog only: doesn't play videos"). It
   is no grant: an update that adds or drops the field applies without asking.
@@ -956,6 +960,33 @@ The call is a background one (8 s, never "No responde"); Kino waits for it at mo
 `node sdk/run.mjs <plugin dir> segments tt0133093 8160000` (a movie and its length) or
 `segments tmdb:1396 1 2 2880000` (an episode, by the show's id): it prints what Kino keeps, what it
 dropped and why, and the button it makes of it.
+
+## Being the person's sync transport (`syncProvider`, apiVersion 12, Kino 0.9.74) { #sync-provider }
+
+A plugin that declares `"capabilities": ["syncProvider"]` (alone or next to others) and
+`"apiVersion": 12` carries the person's sync between their devices through a service it talks to: a
+bot, a storage API, a server the person runs. Kino keeps all the logic (what syncs, merging, when to
+run) and encrypts the snapshot before your code sees it; your plugin only stores an opaque blob and
+gives it back byte for byte:
+
+```js
+export async function syncPull({ maxBlobBytes }) { /* -> { blob, version } or null when nothing is stored */ }
+export async function syncPush({ maxBlobBytes, blob, expectedVersion }) { /* -> { version } */ }
+export async function syncStatus(_null) { /* optional -> { ready, message? } */ }
+```
+
+- **One object argument** each (`null` for `syncStatus`). `blob` is standard base64 (RFC 4648, `+` and
+  `/`, padded) without line breaks, in both directions. `version` is an opaque string of yours.
+- **Conflicts**: `syncPush` gets the version Kino last pulled (`expectedVersion`, `null` if none). A
+  provider that can tell the remote changed since throws `kino.error("conflict", "…")`; Kino then
+  pulls, merges and pushes again. One that cannot tell ignores it.
+- **Limits**: the blob is at most the manifest's `sync.maxBlobBytes` (default and maximum 4 MiB), and
+  only inside `syncPull`/`syncPush` may `kino.fetch` and the call's answer be that big.
+- **Consent**: declaring it shows a consent line and an update that adds it (or adds `sync.keySecret`)
+  waits for the person's approval.
+
+The manifest's `sync` block, who can read what, the cadence, the realtime signal, the provisioning flow,
+the consent lines and the two example providers are on [Sync providers](sync-providers.md).
 
 ## Errors people understand { #errors }
 

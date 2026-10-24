@@ -199,7 +199,7 @@ screen turning off.
 - **You never learn which app handled it, or how.** Either the stream plays, or `resolve` fails like any other
   failure.
 - **Offering the download.** When your manifest's [`externalResolver`](manifest.md#external-resolver) has an
-  `apk` (`url` on a GitHub release asset, `sha256`, optional `label`) and the app is missing, Kino shows a
+  `apk` (`url` on a GitHub release asset or an archive.org file, `sha256`, optional `label`) and the app is missing, Kino shows a
   sheet: it can download it from GitHub, checks the file has exactly that `sha256` (otherwise it is deleted and
   nothing is offered) and hands it to Android's installer, which asks the person as for any app. Kino does not
   check who signed it and has not reviewed it; the sheet says so.
@@ -211,6 +211,12 @@ screen turning off.
   with the code on a TV. Be honest with your users: the official F-Droid client has no real Android TV support (it does not appear
   in the TV's launcher and some screens cannot be reached with a remote), so for a TV the Downloader code or the `apk` is the
   practical route. Kino has not verified a particular F-Droid client build against this link on a real device.
+- **The app for a computer.** If your resolver also runs on a computer, `externalResolver` may carry
+  `"desktop": { "windows": { "url": "...", "sha256": "..." }, "linux": { ... }, "macos": { ... } }`: each a GitHub release
+  asset (a zip, see "Desktop transport" in the resolver protocol) and the `sha256` its bytes must have. Kino on a computer
+  reads only the entry for its own system and never your `apk`; Kino on Android never reads `desktop`. Same rules as the
+  `apk`: Kino downloads it from GitHub, checks the `sha256` (otherwise it is deleted and nothing is installed) and has not
+  reviewed what is in it. A system you leave out simply has no app offered.
 
 ## Using a resolver from your plugin { #use }
 

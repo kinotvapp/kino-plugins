@@ -3,7 +3,8 @@
 The usual [settings](manifest.md#settings) hold values your code reads with `kino.config`. From
 `"apiVersion": 6` (Kino 0.9.50) the form can also **show** and **do** things, and every installed plugin
 gets its own tab in Ajustes. This page has [every field type](#types), the three types without
-a value, the exports that fill and check them, and [a complete example](#example).
+a value, the [two configuration aids](#aids) of apiVersion 12, the exports that fill and check them, and
+[a complete example](#example).
 
 ## Its own tab in Ajustes { #own-tab }
 
@@ -16,7 +17,7 @@ settings.
 ## Every field type { #types }
 
 The form shows your settings **in the order of the manifest**, each with its `label` and, under it, its
-`hint`. Nine types:
+`hint`. Eleven types:
 
 | `type` | What the person sees | What `kino.config.get(key)` returns | Since |
 | --- | --- | --- | --- |
@@ -29,27 +30,32 @@ The form shows your settings **in the order of the manifest**, each with its `la
 | `section` | a heading, with `hint` as its explanation | nothing | apiVersion 6 |
 | `status` | a read-only line your `settingsStatus()` fills | nothing | apiVersion 6 |
 | `action` | a button that runs your `action(key)` | nothing | apiVersion 6 |
+| `link` | a button that opens an `https` address through the system, only when the person taps it ([Configuration aids](#aids)) | nothing | apiVersion 12 |
+| `help` | a button ("Ayuda") that opens your instructions in a modal ([Configuration aids](#aids)) | nothing | apiVersion 12 |
 
 What each entry may carry:
 
 | Attribute | Types | Rule |
 | --- | --- | --- |
 | `key` | all | required, `^[a-z][a-zA-Z0-9_]{0,31}$`, unique in the list |
-| `label` | all | required, 1 to 40 characters |
-| `type` | all | required, one of the nine above |
+| `label` | all | required, 1 to 40 characters (optional on a `help`: without it the button says "Ayuda") |
+| `type` | all | required, one of the eleven above |
 | `hint` | all | optional, at most 80 characters: the example or explanation under the field. On a `section`, up to 300, wrapped over several lines (Kino 0.9.51; builds before 0.9.51 refuse one over 80) |
 | `required` | `text`, `password`, `url`, `list` | optional `true`/`false`. A required setting with no value stops every call ("Falta configurar") |
-| `default` | `text`, `password`, `toggle`, `select` | optional. Never on `url` or `list` ("… no puede tener valor por defecto: usa "hint"") nor on the three types without a value; it must fit its type (a `select` default is one of its `values`) |
+| `default` | `text`, `password`, `toggle`, `select` | optional. Never on `url` or `list` ("… no puede tener valor por defecto: usa "hint"") nor on the types without a value; it must fit its type (a `select` default is one of its `values`) |
 | `options` | `select` only | required: 1 to 20 `{ "value", "label" }`, `value` 1..40 characters and unique, `label` 1..40 |
 | `fields` | `list` only | required: 1 to 4, each `{ key, label, type, hint?, required? }` with `type` `"text"` or `"url"`, no `default` ("Solo un ajuste de tipo list tiene "fields"") |
 | `max` | `list` only | optional whole number 1..50 (default 20): how many entries |
 | `confirm` | `action` only, apiVersion 6 | optional, 1 to 120 characters: asked before the action runs, with Cancelar focused ("Solo un ajuste de tipo action tiene "confirm"") |
+| `url` | `link` only, apiVersion 12 | required: `https://`, no user name or password, at most 2,048 characters |
+| `title`, `titleEn`, `body`, `bodyEn` | `help` only, apiVersion 12 | the modal's title (at most 60) and text (at most 2,000); `body` or `bodyEn` is required |
 | `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, apiVersion 9 (Kino 0.9.55): the same text in English, with the same limits ([English texts](#english)) |
 
 Any other key in an entry is ignored. A manifest that breaks a rule is refused at install with a
 message that names the setting (`El ajuste "quality" necesita opciones`); a `list` below apiVersion 4
-or a `section`/`status`/`action` below apiVersion 6 is refused too. Limits: 12 settings with a value
-(`text`, `password`, `url`, `toggle`, `select`, `list`) plus, from apiVersion 6, 16 without one.
+a `section`/`status`/`action` below apiVersion 6 or a `link`/`help` below apiVersion 12 is refused too.
+Limits: 12 settings with a value (`text`, `password`, `url`, `toggle`, `select`, `list`) plus, from
+apiVersion 6, 16 without one (among them, from apiVersion 12, at most 4 `link` and 4 `help`).
 
 There are **no conditional fields**: every setting is always shown, whatever another one holds. Use a
 `section` with a `hint` to say which fields go together ("Opcional: sin cuenta ves el catálogo gratis"),
@@ -122,6 +128,45 @@ no `default`), at most 16 of them on top of the 12 valued settings:
   `confirm` (1 to 120 characters) asks first, with Cancelar focused. **Required export** when an
   `action` setting exists.
 
+## Configuration aids: `link` and `help` (apiVersion 12, Kino 0.9.74) { #aids }
+
+Two setting types help the person configure your plugin. Neither holds a value (never in
+`kino.config`, never `required`, no `default`), and both count among the 16 settings without a value.
+
+```json
+"settings": [
+  { "key": "steps", "type": "help", "title": "Qué necesitas", "titleEn": "What you need",
+    "body": "1. Crea un bot con @BotFather y copia su token.\n2. Pégalo aquí y toca Guardar.",
+    "bodyEn": "1. Create a bot with @BotFather and copy its token.\n2. Paste it here and tap Save." },
+  { "key": "botfather", "type": "link", "label": "Abrir @BotFather", "labelEn": "Open @BotFather", "url": "https://t.me/BotFather" },
+  { "key": "botToken", "label": "Token del bot", "type": "password" }
+]
+```
+
+- **`link`**: a button that opens `url` through the system **only when the person taps it** (on a
+  phone, `https://t.me/...` opens the Telegram app when it is installed). Kino shows its own "Abrir
+  enlace" and the host under the button, makes no request to that host, and does not count it as a
+  network access of your plugin. On a TV (usually without a browser) the tap shows the address as text
+  and as a QR to open on a phone. `url` must be `https://`, without a user name or password, at most
+  2,048 characters; `label` is required. An address that holds one of your stored secrets is not shown.
+  Kino opens the canonical form of the address (host in lower case), the same one it names. There is no
+  other way for a plugin to have Kino open an address.
+- **`help`**: a small button ("Ayuda" / "Help", or your own `label`) that opens a modal with your
+  instructions, titled with your plugin's name. Plain text only: newlines are kept, markup is shown
+  literally, nothing in it is tappable (use a `link` for an address). `title` at most 60 characters,
+  `body` at most 2,000 (`body` or `bodyEn` is required); a missing Spanish or English text falls back to
+  the other; everything is scrubbed of your secrets. On a TV it scrolls with the remote, focus starts on
+  Cerrar and Back closes it.
+
+A link's label and a help's label, title and body may not hold control characters (a body keeps its
+line breaks), invisible formatting or direction overrides; the manifest is refused otherwise. At most 4
+links and 4 helps per plugin. Older Kino builds refuse apiVersion 12, so a plugin that uses them
+declares `"apiVersion": 12`.
+
+**Keep the help short and practical**: what the plugin needs and where to get it, in a few lines. If
+the plugin talks to a server the person runs, the help does not teach how to build it: add a `link` to
+the complete guide (the technical cap of 2,000 characters is not a target).
+
 ## Forgetting settings from an action (`clearSettings`) { #clear-settings }
 
 An action may also **forget settings of your own** with `clearSettings`: up to 12 keys of your declared
@@ -151,6 +196,73 @@ Limits:
   setting (clearing it would make every later call fail), repeats, or comes after the twelfth is dropped
   with a log line (`run.mjs` shows `[dropped by Kino]`); a value that is not an array is ignored.
 - An action that throws or times out clears nothing.
+
+## Filling your own settings from an action (`setSettings`, Kino 0.9.74) { #set-settings }
+
+An action may also **fill settings of your own** with `setSettings`: up to 8 keys of your `text` or
+`select` settings, each with a string value. It is how a "Vincular" action stores the chat it found, so
+the person types nothing. Kino trims each value, checks it like a typed one (length, one of the
+options) and saves the values through the form's own Guardar: they reach the person's other devices and
+stay in the profile in use like typed values, and your sandbox closes as for any saved change. It is
+additive (no new `apiVersion`): an older Kino ignores it.
+
+```js
+return { message: "Vinculado", setSettings: { chatId: String(chat.id) } };
+```
+
+- **Never** a `url` (its value becomes a server your plugin may reach, so only the person types one),
+  **never** a `password` (a secret stays the person's to type), a `toggle`, a `list` or a setting
+  without a value; a `required` setting is never emptied this way.
+- Kino does **not** run your `validateSettings` on these values (you chose them), and it refuses a value
+  that contains one of your stored secrets instead of copying it into a plain, synced setting.
+- An unknown or secret key, a value that is not a string or fails its check, a key that is also in
+  `clearSettings`, a value that holds one of your stored secrets, or more than 8 keys refuse the
+  **whole** field: nothing is applied, your `message` still shows and Kino adds its generic error under it.
+- It works from your settings form (any action, including the `confirm` action of a [link](#link)).
+
+## Linking: "Is this you?" (`action.link`, Kino 0.9.74) { #link }
+
+Use it when an action finds **who** to link and the person must say it is them: for example a
+[sync provider](sync-providers.md) whose bot reads the latest message ("write something to your bot")
+and finds `@ana`. Your plugin never links on its own: it answers a candidate, and Kino asks.
+
+```js
+export async function action(key) {
+  if (key === "findMe") {
+    const who = await bot.latestSender();          // null while nobody wrote yet
+    if (!who) return { message: "Escríbele algo a tu bot y vuelve a tocar Buscar" };
+    kino.storage.set("pending", who.id);
+    return { link: { candidate: "@" + who.username, confirm: "linkMe" } };
+  }
+  if (key === "linkMe") {                           // runs only after the person confirms
+    const chat = kino.storage.get("pending");
+    return { message: "Vinculado", setSettings: { chatId: String(chat) } };
+  }
+}
+```
+
+- Kino shows **its own** question, "¿Eres tú, @ana?" / "Is this you, @ana?", and names your plugin in
+  it by the `name` of your manifest. It has "Sí, soy yo" / "Yes, it's me" and Cancelar (Cancelar
+  focused). You cannot change its words.
+- **Cancelar runs nothing**: your plugin is not called and hears nothing. Only **"Sí, soy yo"** runs the
+  `confirm` action, exactly once, like a press of that button (same settings, same 30 s). If it cannot
+  start right then (another action or a save is running, or the person's unsaved edits cannot be
+  saved), the question stays open and says so.
+- `candidate`: a string, 1 to 64 characters after trimming, with runs of spaces collapsed to one. It may
+  not hold control or invisible formatting characters, any space but the ordinary one, or the fillers
+  that draw nothing (U+115F, U+1160, U+3164, U+FFA0, U+2800). It goes through the same secret scrubbing
+  as your status lines and is shown as plain text.
+- `confirm`: the `key` of **another** `action` setting of your plugin (not the one that is answering)
+  that has **no `confirm` question of its own**: an action that asks "¿Borrar todo?" can never be
+  presented as "Is this you?".
+- Anything else refuses the link: your `message` is still shown, with Kino's generic error ("No se pudo
+  completar. Inténtalo de nuevo.") under it.
+- A `message` in the same answer is shown too. A `link` in the `confirm` action's own answer is ignored
+  (no chains). One question at a time: a newer link replaces a waiting one, and leaving the form drops it.
+- An older Kino ignores `link` (it is additive, no new `apiVersion`), so also say in `message` (or a
+  status line) what to do.
+- There is no way to hide an `action` button: the action that only serves as a `confirm` shows in the
+  form. Give it a `hint` that says when to use it ("Solo después de Buscar mi chat").
 
 ## Checking before saving (`validateSettings`) { #validate }
 
@@ -313,6 +425,8 @@ crosses, and what does not:
   other devices too (passwords included). A `required` setting is never cleared remotely. A device
   running an older Kino build ignores clears and keeps its value.
 - **Never crosses:** `kino.storage`, cookies, the cached Home rows.
+- **A sync provider** can also hand its settings to another device with "Enviar a otro aparato" (the
+  ones its `sync.provision` names): see [Sync providers](sync-providers.md#provisioning).
 
 A value that arrives this way is applied **without** your `validateSettings`, and, like any saved
 change, closes your sandbox. So write the plugin as if a setting can change under it at any time: key
