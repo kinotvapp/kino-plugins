@@ -528,7 +528,7 @@ command, and `node --test test/*.test.mjs` runs its tests offline.
 
 ## A sync provider on a server of your own (example: Sync Servidor) { #sync-server }
 
-`docs/plugins/examples/sync-server/` in Kino's repository (the plugin **Sync Servidor**, id
+[kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server) (the plugin **Sync Servidor**, id
 `sync-server`, apiVersion 12, Kino 0.9.74) is a complete [sync provider](sync-providers.md) you can copy:
 a single-file Node server with no dependencies (`GET /blob` / `PUT /blob` with `If-Match`, a 409 on a
 version mismatch, a bearer token) and the plugin that talks to it (`"capabilities": ["syncProvider"]`
@@ -539,11 +539,12 @@ installing the plugin from the server itself, Conectar, turning the provider on,
 a second device, and what to do when the token changes. It declares `maxBlobBytes` 4194304 (4 MiB):
 inside `syncPull`/`syncPush`, `kino.fetch` takes a blob of that size in one request. Its form carries a
 short [`help`](settings-form.md#aids) (what the person needs: the server's https address and its token)
-and a `link` to its guide. It is not listed in Kino.
+and a `link` to its guide. It is not listed in Kino: people install it by pasting its repository
+address, `kinotvapp/kino-plugin-sync-server/plugin`.
 
 ## A sync provider on a Telegram bot of the person's own (example: Sync-Gram) { #sync-gram }
 
-`docs/plugins/examples/sync-telegram/` (the plugin **Sync-Gram**, id `sync-gram`, apiVersion 12;
+[kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) (the plugin **Sync-Gram**, id `sync-gram`, apiVersion 12;
 unofficial, not affiliated with Telegram) syncs through a bot the person creates with @BotFather, with
 `"hosts": ["api.telegram.org"]` only and no server of anyone's: the copy is a document pinned in the
 person's private chat with the bot (`sendDocument`, `pinChatMessage`, `getChat` for the version and a

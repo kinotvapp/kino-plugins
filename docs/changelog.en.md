@@ -51,9 +51,9 @@ one of its features.
 - **Plugin request logs keep only the host**: Kino's log line for each `kino.fetch` of a plugin now
   carries the method, host, status, size and time, never the path or the query (a bot token in a path,
   as in Telegram's Bot API, never reaches a log).
-- **Two example providers** in Kino's repository: Sync-Gram (`docs/plugins/examples/sync-telegram`, a
-  Telegram bot of the person's own) and Sync Servidor (`docs/plugins/examples/sync-server`, a server the
-  person runs, not listed). [The two example providers](sync-providers.md#examples).
+- **Two example providers**, public repositories: Sync-Gram
+  ([kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram), a Telegram bot of the person's own, recommended) and Sync Servidor
+  ([kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server), a server the person runs, not listed). [The two example providers](sync-providers.md#examples).
 
 ## Kino 0.9.71: `apiVersion` 11, `kino.nuvio` { #v0971 }
 

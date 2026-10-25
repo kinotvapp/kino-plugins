@@ -54,9 +54,9 @@ usas algo de esta versión.
   `kino.fetch` de un plugin ahora lleva el método, el host, el estado, el tamaño y el tiempo, nunca la
   ruta ni la query (un token de bot en la ruta, como en la Bot API de Telegram, nunca llega a un
   registro).
-- **Dos proveedores de ejemplo** en el repositorio de Kino: Sync-Gram
-  (`docs/plugins/examples/sync-telegram`, un bot de Telegram de la persona) y Sync Servidor
-  (`docs/plugins/examples/sync-server`, un servidor que corre la persona, no listado).
+- **Dos proveedores de ejemplo**, repositorios públicos: Sync-Gram
+  ([kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram), un bot de Telegram de la persona, recomendado) y Sync Servidor
+  ([kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server), un servidor que corre la persona, no listado).
   [Los dos proveedores de ejemplo](sync-providers.md#examples).
 
 ## Kino 0.9.71: `apiVersion` 11, `kino.nuvio` { #v0971 }

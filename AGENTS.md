@@ -59,11 +59,12 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    contract (apiVersion 8, Kino 0.9.54) and `plugin.js` in
    [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio), the
    reference audio plugin (`music` and `podcast` items, `episodes` for every audio ref). For a **sync
-   provider** (apiVersion 12, Kino 0.9.74), the references are two examples in Kino's repository,
-   under `docs/plugins/examples/`: **Sync-Gram** (`sync-telegram/`, id `sync-gram`, a Telegram bot of the
+   provider** (apiVersion 12, Kino 0.9.74), the references are two public repositories:
+   **Sync-Gram** (`kinotvapp/kino-plugin-sync-gram`, id `sync-gram`, a Telegram bot of the
    person's own: `"hosts": ["api.telegram.org"]`, a multipart upload through `kino.fetch` without decoding
    the blob, `action.link` + `setSettings` to link the chat, `help` + `link` settings, `keySecret`) for a
-   provider on a third-party service, and **Sync Servidor** (`sync-server/`, id `sync-server`, a
+   provider on a third-party service, and **Sync Servidor** (`kinotvapp/kino-plugin-sync-server`, not listed, installed as
+   `kinotvapp/kino-plugin-sync-server/plugin`; id `sync-server`, a
    single-file Node server with `GET`/`PUT /blob`, `If-Match` and 409, `"fetchHosts": "any"`) for a
    provider on a server the person runs. Both have tests that run offline against a local imitation of
    the service.

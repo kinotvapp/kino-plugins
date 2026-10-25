@@ -532,7 +532,7 @@ del repositorio lista todos los comandos, y `node --test test/*.test.mjs` corre 
 
 ## Un proveedor de sincronización en un servidor propio (ejemplo: Sync Servidor) { #sync-server }
 
-`docs/plugins/examples/sync-server/` en el repositorio de Kino (el plugin **Sync Servidor**, id
+[kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server) (el plugin **Sync Servidor**, id
 `sync-server`, apiVersion 12, Kino 0.9.74) es un [proveedor de sincronización](sync-providers.md)
 completo que puedes copiar: un servidor de Node de un solo archivo y sin dependencias (`GET /blob` /
 `PUT /blob` con `If-Match`, un 409 cuando la versión no coincide, un token de portador) y el plugin que
@@ -544,11 +544,11 @@ servidor, Conectar, encender el proveedor, pasar los ajustes a un segundo aparat
 cambia el token. Declara `maxBlobBytes` 4194304 (4 MiB): dentro de `syncPull`/`syncPush`, `kino.fetch`
 lleva un blob de ese tamaño en una sola petición. Su formulario trae un [`help`](settings-form.md#aids)
 corto (lo que necesita la persona: la dirección https del servidor y su token) y un `link` a su guía.
-Kino no lo lista.
+Kino no lo lista: se instala pegando la dirección de su repositorio, `kinotvapp/kino-plugin-sync-server/plugin`.
 
 ## Un proveedor de sincronización en un bot de Telegram de la persona (ejemplo: Sync-Gram) { #sync-gram }
 
-`docs/plugins/examples/sync-telegram/` (el plugin **Sync-Gram**, id `sync-gram`, apiVersion 12; no
+[kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) (el plugin **Sync-Gram**, id `sync-gram`, apiVersion 12; no
 oficial, sin relación con Telegram) sincroniza a través de un bot que la persona crea con @BotFather,
 solo con `"hosts": ["api.telegram.org"]` y sin servidor de nadie: la copia es un documento fijado en el
 chat privado de la persona con el bot (`sendDocument`, `pinChatMessage`, `getChat` para la versión y

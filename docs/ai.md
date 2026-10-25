@@ -100,9 +100,10 @@ Antes de escribir nada:
 6. Si mi plugin es un proveedor de sincronización (lleva la sincronización propia de Kino entre mis aparatos
    por un servicio: un bot, una API de almacenamiento, un servidor mío), lee primero
    https://kinotvapp.github.io/kino-plugins/sync-providers/ (apiVersion 12, Kino 0.9.74). Sus referencias son
-   dos ejemplos del repositorio de Kino: Sync-Gram (docs/plugins/examples/sync-telegram, un bot de Telegram de
-   la propia persona) para un servicio de terceros, y Sync Servidor (docs/plugins/examples/sync-server, un
-   servidor de Node de un solo archivo) para un servidor mío.
+   dos repositorios públicos: Sync-Gram (https://github.com/kinotvapp/kino-plugin-sync-gram, un bot de Telegram
+   de la propia persona) para un servicio de terceros, y Sync Servidor
+   (https://github.com/kinotvapp/kino-plugin-sync-server, un servidor de Node de un solo archivo) para un
+   servidor mío.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>

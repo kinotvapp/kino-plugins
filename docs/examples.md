@@ -65,9 +65,10 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
 
 !!! note "Proveedores de sincronización: Sync-Gram y Sync Servidor"
     Las referencias para un [proveedor de sincronización](sync-providers.md) (apiVersion 12, Kino 0.9.74) son
-    dos ejemplos del repositorio de Kino, en `docs/plugins/examples/`: **Sync-Gram** (`sync-telegram/`, un bot
-    de Telegram de la propia persona; no oficial, sin relación con Telegram) y **Sync Servidor**
-    (`sync-server/`, un servidor de Node de un solo archivo que corre la persona, que Kino no lista). Cada
+    dos repositorios públicos: **Sync-Gram** ([kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram), un bot de Telegram de la propia persona; no
+    oficial, sin relación con Telegram; recomendado en Kino) y **Sync Servidor** ([kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server), un servidor
+    de Node de un solo archivo que corre la persona; Kino no lo lista, se instala pegando la dirección de su
+    repositorio). Cada
     uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los dos proveedores de
     ejemplo](sync-providers.md#examples).
 

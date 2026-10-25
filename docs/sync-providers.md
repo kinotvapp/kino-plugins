@@ -1,17 +1,140 @@
 # Proveedores de sincronización (apiVersion 12, Kino 0.9.74) { #sync-providers }
 
-Kino mantiene al día los aparatos de una persona (biblioteca, historial, progreso, ajustes, sus plugins
-y los ajustes de los plugins). De fábrica eso viaja por la **red local**, entre aparatos emparejados.
-Desde `"apiVersion": 12` (Kino 0.9.74) un plugin puede ser **el transporte**: un **proveedor de
-sincronización** guarda una copia cifrada de esos datos en un servicio con el que habla (un bot, una
-API de almacenamiento, un servidor de la persona), y los otros aparatos de la persona la leen de ahí,
-desde cualquier red.
+Un **proveedor de sincronización** es un plugin que lleva la sincronización propia de Kino entre los
+aparatos de una persona por un servicio que tú eliges, en lugar de la red local. Kino hace todo el
+trabajo de sincronizar y le entrega a tu plugin un archivo cifrado para guardarlo y devolverlo: tu
+plugin solo mueve bytes.
 
-El plugin mueve bytes y nada más. Kino decide qué se sincroniza, combina, programa las rondas y cifra la
-copia antes de que tu código la vea.
+## Para qué sirve { #ideas }
 
-Dos proveedores completos muestran cada parte de esta página: [Sync-Gram](#examples) (un bot de
-Telegram de la propia persona) y [Sync Servidor](#examples) (un servidor que corre la persona).
+Desde `"apiVersion": 12` (Kino 0.9.74), cualquier cosa que pueda guardar un archivo de hasta 4 MiB detrás
+de una API `https` pública puede llevar la biblioteca, el historial, el progreso y los ajustes de una
+persona:
+
+- **Tu propio servidor o NAS**, por una dirección `https` pública (un túnel): `kino.fetch` nunca llega
+  directo a la red local.
+- **Un disco en la nube o un servicio de almacenamiento** con una API `https` y un token largo y
+  aleatorio por persona.
+- **Un bot de chat de la propia persona**, como [Sync-Gram](#examples): la copia es un archivo fijado en
+  su chat privado con el bot.
+- **Un repositorio privado de Git**, con la copia como un solo archivo escrito por la API del servicio.
+- **Una Raspberry Pi en casa** con un servidor pequeño como [Sync Servidor](#examples), detrás de un túnel
+  `https`.
+- **El servidor de una empresa o un colegio** con una dirección `https` pública que le da un token a
+  cada persona.
+- **Sincronizar sin compartir el Wi-Fi**: aparatos en lugares distintos siguen al día, tan seguido como
+  la persona elija (cada 1 a 60 minutos).
+
+## Cómo habla con Kino { #how-it-works }
+
+```text
+ celular / TV (Kino)                      tu plugin                         tu servicio
+ ───────────────────                      ─────────                         ───────────
+ arma la copia y la cifra         ──▶  syncPush({ blob, expectedVersion }) ──▶ guarda los bytes
+ combina lo que lee de vuelta     ◀──  syncPull() → { blob, version }     ◀── devuelve los bytes
+```
+
+1. Kino arma una copia de todo lo que ya sincroniza (cada perfil que sincroniza el aparato), la comprime
+   y la cifra entera (AES-256-GCM).
+2. Llama a tu `syncPull()`: devuelves la copia guardada en base64 con una `version` tuya, o `null` si
+   todavía no hay nada. Kino la abre, la combina con los datos del aparato y arma la copia nueva.
+3. Llama a tu `syncPush({ blob, expectedVersion })`: guardas los bytes tal cual y devuelves la `version`
+   nueva. Si tu servicio sabe que otro aparato guardó una copia después de `expectedVersion`, lanzas
+   `kino.error("conflict", …)` y Kino trae, combina y vuelve a enviar.
+4. Eso es todo lo que hace tu código. Kino nunca le pasa una fila ni la llave; pero la llave se deriva de
+   uno de los ajustes `password` de tu propio plugin (el [`sync.keySecret`](#sync-block) obligatorio), que tu
+   código puede leer, así que **el plugin y su servicio pueden leer los datos**, y la hoja de
+   consentimiento lo dice en rojo ([quién ve qué](#who-sees-what)).
+
+Lo que Kino hace por ti, sin código tuyo:
+
+- **El horario**: cuándo traer y enviar, una espera después de los cambios, como mucho 60 rondas por
+  hora, esperas más largas después de fallas y el **"Sincronizar cada"** de la persona (1 a 60 minutos) en
+  la tarjeta de tu proveedor.
+- **Combinar y resolver conflictos**: se combinan las filas de los dos lados (gana la más nueva, los
+  borrados se conservan); un `conflict` que avisas se reintenta hasta 3 veces.
+- **Perfiles**: cada perfil que sincroniza el aparato viaja en la misma copia.
+- **Otro aparato**: "Enviar a otro aparato" le pasa tus ajustes a un segundo aparato con un QR o un código
+  escrito, por la red local o por un túnel temporal de Cloudflare ([pasar los ajustes](#provisioning)).
+- **Ajustes y pantallas**: tu formulario de ajustes, la lista de proveedores con tu tarjeta, su línea de
+  estado (de tu `syncStatus` opcional) y un botón "Sincronización ▸ Proveedor" en la página de tu plugin.
+
+## Haz el tuyo en 4 pasos { #build }
+
+El ejemplo habla con un servidor tuyo en `https://sync.example.com` con dos llamadas: `GET /blob` responde
+`200 { "blob", "version" }` (o `404` si está vacío) y `PUT /blob` con `If-Match: <versión>` responde
+`200 { "version" }` (o `409` si la versión guardada es otra).
+
+**1. El manifiesto** (`kino-plugin.json`):
+
+```json
+{
+  "id": "my-sync",
+  "name": "My Sync",
+  "version": "1.0.0",
+  "apiVersion": 12,
+  "entry": "plugin.js",
+  "description": "Syncs your Kino devices through my server.",
+  "author": "me",
+  "hosts": ["sync.example.com"],
+  "capabilities": ["syncProvider"],
+  "settings": [
+    { "key": "token", "label": "Token", "type": "password", "required": true,
+      "hint": "The long random token your account page shows", "devices": ["phone"] }
+  ],
+  "sync": { "mode": "poll", "keySecret": "token", "provision": ["token"] }
+}
+```
+
+`keySecret` nombra el ajuste del que sale la llave de sincronización; `provision` lista lo que "Enviar a
+otro aparato" le pasa a un segundo aparato (tiene que incluir `keySecret`); `"devices": ["phone"]` dibuja
+el campo del token solo en el celular, porque un TV lo recibe.
+
+**2. El código** (`plugin.js`):
+
+```js
+const API = "https://sync.example.com";
+const auth = () => ({ Authorization: "Bearer " + kino.config.get("token") });
+
+// The stored copy and its version, or null when nothing is stored yet.
+export async function syncPull() {
+  const r = await kino.fetch(API + "/blob", { headers: auth() });
+  if (r.status === 404) return null;
+  if (r.status === 401) throw kino.error("auth_required", "token refused");
+  if (!r.ok) throw kino.error("unavailable", "pull " + r.status);
+  const { blob, version } = r.json();
+  return { blob, version };
+}
+
+// Stores the copy only if the server still holds expectedVersion; a 409 means another device was faster.
+export async function syncPush({ blob, expectedVersion }) {
+  const r = await kino.fetch(API + "/blob", {
+    method: "PUT",
+    headers: { ...auth(), "If-Match": expectedVersion ?? "" },
+    body: { json: { blob } },
+  });
+  if (r.status === 409) throw kino.error("conflict", "the stored copy changed");
+  if (r.status === 401) throw kino.error("auth_required", "token refused");
+  if (!r.ok) throw kino.error("unavailable", "push " + r.status);
+  return { version: r.json().version };
+}
+```
+
+**3. Pruébalo con el kit**: `node sdk/validate.mjs .` revisa el manifiesto y el bloque `sync` como lo hace
+Kino (estos dos archivos lo pasan) y muestra la línea roja de consentimiento; luego prueba las dos
+funciones contra una imitación local de tu servicio con `node --test` ([probar en local](#test)).
+
+**4. Publícalo**: un repositorio público de GitHub con los archivos en la raíz y el topic `kino-plugin`
+([publicar](publish.md)); la gente lo instala escribiendo `usuario/repositorio`. Fírmalo si quieres que
+se sepa que cada actualización es tuya, y pide [aparecer en la lista](listed.md) si lo quieres entre los
+plugins recomendados de Kino.
+
+El resto de esta página es la referencia. Dos proveedores completos, con guías que cualquiera puede
+seguir, son repositorios públicos:
+[kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) y
+[kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server)
+([los dos ejemplos](#examples)); el kit es
+[kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk).
 
 ## ¿Es la herramienta correcta? { #when }
 
@@ -321,10 +444,11 @@ Lo que eso significa para tu plugin:
 
 ## Los dos proveedores de ejemplo { #examples }
 
-Los dos están en el repositorio de Kino, en `docs/plugins/examples/`, con una guía en español y en
-inglés que una persona puede seguir de principio a fin, y pruebas que no necesitan red.
+Los dos son repositorios públicos que puedes leer, copiar o usar como plantilla, cada uno con una guía en
+español y en inglés que una persona puede seguir de principio a fin, y pruebas que no necesitan red.
 
-- **Sync-Gram** (`sync-telegram/`, id `sync-gram`; no oficial, sin relación con Telegram): un bot de
+- **Sync-Gram**, [kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram)
+  (id `sync-gram`; no oficial, sin relación con Telegram): un bot de
   Telegram que la persona crea con @BotFather. Solo `"hosts": ["api.telegram.org"]`; la copia es un
   documento fijado en el chat privado de la persona con el bot (`sendDocument`, `pinChatMessage`,
   `getChat` para la versión y para revisar una carrera, `getFile` para leerla de vuelta). Muestra un envío
@@ -333,12 +457,13 @@ inglés que una persona puede seguir de principio a fin, y pruebas que no necesi
   y cada error limpio del token. `keySecret` es el token del bot y `provision` es
   `["botToken", "chatId"]`. Su preparación es `"devices": ["phone"]` con títulos de sección numerados, y su
   acción de confirmar es `linkOnly`. Es la referencia para un proveedor sobre un servicio de terceros.
-  También está publicado y firmado como
-  [kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) y aparece en los
-  plugins recomendados de Kino desde Kino 0.9.74 (`requires: ["syncProvider"]`, así que un Kino anterior
-  nunca lo muestra).
-- **Sync Servidor** (`sync-server/`, id `sync-server`): un servidor de Node de un solo archivo y sin
+  Está firmado y aparece en los plugins recomendados de Kino desde Kino 0.9.74
+  (`requires: ["syncProvider"]`, así que un Kino anterior nunca lo muestra).
+- **Sync Servidor**, [kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server)
+  (id `sync-server`): un servidor de Node de un solo archivo y sin
   dependencias (`GET /blob`, `PUT /blob` con `If-Match`, un 409 cuando la versión no coincide, un token de
   portador) y el plugin que habla con él (`"fetchHosts": "any"`, `keySecret` y `provision`, un 409 lanzado
   como `conflict`), al que se llega por un túnel de Cloudflare. Es la referencia para un proveedor sobre el
-  servidor propio de la persona. Kino no lo lista: se instala escribiendo su dirección.
+  servidor propio de la persona. Kino **no lo lista**: se instala pegando la dirección de su repositorio,
+  `kinotvapp/kino-plugin-sync-server/plugin` (firmado), o la de su propio servidor,
+  `https://<dirección>/plugin/kino-plugin.json`.

@@ -97,9 +97,10 @@ Before writing anything:
    apiVersion 11, Kino 0.9.71) and copy the shape of its complete example.
 6. If my plugin is a sync provider (it carries Kino's own sync between my devices through a service: a bot,
    a storage API, a server of mine), read https://kinotvapp.github.io/kino-plugins/en/sync-providers/ first
-   (apiVersion 12, Kino 0.9.74). Its references are two examples in Kino's repository: Sync-Gram
-   (docs/plugins/examples/sync-telegram, a Telegram bot of the person's own) for a third-party service, and
-   Sync Servidor (docs/plugins/examples/sync-server, a single-file Node server) for a server of my own.
+   (apiVersion 12, Kino 0.9.74). Its references are two public repositories: Sync-Gram
+   (https://github.com/kinotvapp/kino-plugin-sync-gram, a Telegram bot of the person's own) for a third-party
+   service, and Sync Servidor (https://github.com/kinotvapp/kino-plugin-sync-server, a single-file Node
+   server) for a server of my own.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
