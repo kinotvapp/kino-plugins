@@ -202,7 +202,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   { bytes: base64 } of exactly that range, built with kino.crypto.convert, never a JavaScript loop over
   the bytes), thousands of records to search ("catalog", kino.catalog), a bigger device-only storage
   ("storageLarge"), a QR on the settings form ("qr" setting) or the phone's scanner from an action
-  ("qrScan", kino.qr.scan), pictures only the plugin can fetch ("imageSource" and an image export). Read
+  ("qrScan", kino.qr.scan), a password that must stay on one device such as a 2FA password sent once ("sync": false
+  on that password setting, never in sync.provision), pictures only the plugin can fetch ("imageSource" and an image export). Read
   https://kinotvapp.github.io/kino-plugins/en/bytes/, /en/catalog/, /en/images/ and /en/qr/ first; test read
   with node sdk/run.mjs --size <bytes> . read <handle> <offset> <length> and a Node test (askRead or a fake
   WebSocket); feature-detect every kino.crypto byte operation you use (they depend on the Kino version).

@@ -751,6 +751,11 @@ type KinoManifestSetting =
        * after Kino's own "¿Eres tú?" (a find-then-confirm pair shows the person one button).
        */
       linkOnly?: boolean;
+      /**
+       * apiVersion 13, on a `password` only: `false` keeps the value on the device where it was typed (never sent to a paired
+       * device, never set or cleared by one, in no backup, kit or sync provision). Default `true`.
+       */
+      sync?: boolean;
     }
   | KinoLinkSetting
   | KinoHelpSetting;

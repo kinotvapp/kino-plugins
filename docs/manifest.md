@@ -284,6 +284,15 @@ pestaña de tu plugin en Ajustes), y tu código lee su valor con `kino.config.ge
 | `link` | ninguno (apiVersion 12) | no (no guarda valor) | no | — |
 | `help` | ninguno (apiVersion 12) | no (no guarda valor) | no | — |
 
+**Una contraseña que se queda en un aparato (`"sync": false`, apiVersion 13, en desarrollo).** Un `password` puede decir
+`"sync": false` para quedarse en el aparato donde la persona lo escribió: para un valor que solo tiene sentido una vez, en
+un aparato, como una contraseña de verificación en dos pasos que tu plugin manda enseguida y después borra
+(`clearSettings`). Nunca se envía a un aparato emparejado, un valor que manda otro aparato nunca lo pone ni lo borra, y no
+va en ninguna copia de seguridad, ningún kit ni el `provision` de un proveedor de sincronización (un manifiesto cuyo
+`sync.provision` lo nombra se rechaza). `sync` en algo que no es un password, o que no es un booleano, rechaza el
+manifiesto; por debajo de apiVersion 13, y en un Kino que no lo tiene, la clave se ignora (la contraseña se sincroniza
+como siempre). [Formulario de ajustes](settings-form.md#sync-false).
+
 - `link` y `help` (apiVersion 12, Kino 0.9.74) son ayudas para configurar: un botón que abre una
   dirección `https` por el sistema y un botón que abre tus instrucciones en una ventana. Mira
   [Ayudas para configurar](settings-form.md#aids).

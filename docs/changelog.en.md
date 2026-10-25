@@ -19,6 +19,7 @@ you use one of its features, and publish such a plugin once that version is out.
 | The `qrScan` capability, `kino.qr.scan`, and the settings form's `qr` type | `apiVersion` 13 | the same |
 | The `imageSource` capability, `{ source: "plugin", handle }` images and the `image` export | `apiVersion` 13 | the same |
 | `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | the next Kino version (`kino.apiVersion` 13), every manifest `apiVersion` | `typeof kino.crypto.convert === "function"` |
+| `"sync": false` on a `password` setting (stays on this device) | `apiVersion` 13 | nothing to check: an older Kino ignores the key and syncs the password |
 | Async `kino.*` answers freed once your code has them; a GC after a call over half the 64 MB; faster `atob`/`btoa` | the next Kino version, every `apiVersion` | nothing to check |
 
 - **Sockets** (`socket`): `kino.ws.open("wss://…")` to a host you declare, port 443 only, at most 4 sockets, 8 MiB
@@ -43,6 +44,9 @@ you use one of its features, and publish such a plugin once that version is out.
 - **The kit**: `run.mjs . resolve` accepts byte streams, `run.mjs --size <bytes> . read …` and `run.mjs --out <file> . image …`
   call your exports as Kino does (`askRead`, `askImage` from tests), and `init.mjs --with byteSource,images,catalog,socket`
   scaffolds an apiVersion 13 plugin. [Test it locally](test-locally.md#api13).
+- **A password that stays on one device**: a `password` setting may say `"sync": false` (a two-step verification
+  password sent once and cleared): never sent to a paired device, in no backup, kit or `sync.provision`.
+  [The settings form](settings-form.md#sync-false).
 - **Engine memory** (the next Kino version, every `apiVersion`): the answer of an awaited `kino.*` call no longer stays in
   your 64 MB until the sandbox closes, and Kino collects garbage after a call that leaves the engine over half its limit.
   [How your code lives](engine-limits.md#lifecycle).

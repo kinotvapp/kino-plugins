@@ -483,6 +483,9 @@ before using it:
   synced or backed up). <https://kinotvapp.github.io/kino-plugins/en/catalog/>
 - `storageLarge` → `kino.storage` at 16 MB but **device-only and out of backups, and it moves the existing keys there**:
   credentials go in sealed secrets or settings.
+- `"sync": false` on a `password` setting → its value stays on the device where it was typed (a two-step
+  verification password sent once and then cleared with `clearSettings`); never in `sync.provision`; only on a password,
+  only a boolean. <https://kinotvapp.github.io/kino-plugins/en/settings-form/#sync-false>
 - `qrScan` → `kino.qr.scan({ title })` only from an `action` or `panelAction`; `unavailable` on a TV; handle `null`,
   `timeout`, `permission_denied`, `busy`. A `qr` setting (no capability) shows a code from `settingsStatus()`, refreshed
   every `refreshMs`. <https://kinotvapp.github.io/kino-plugins/en/qr/>
@@ -813,7 +816,8 @@ people. See
 - [ ] apiVersion 13 (in development): `byteSource` exports `read` and answers exactly the range asked as base64,
       with no JavaScript loop over the bytes; `imageSource` exports `image` and puts no secret in a handle;
       `kino.ws` only to declared hosts, every socket closed; `kino.qr.scan` only from an `action`/`panelAction`;
-      `storageLarge` and `kino.catalog` hold nothing that must survive a restore; `run.mjs . read` and a Node test
+      `storageLarge` and `kino.catalog` hold nothing that must survive a restore; a `"sync": false` password is a
+      one-device value only and is not in `sync.provision`; `run.mjs . read` and a Node test
       (`askRead`) cover `read`, `run.mjs . image` covers `image`; every `kino.crypto` byte operation you use is
       feature-detected (they depend on the Kino version, not on the manifest).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved

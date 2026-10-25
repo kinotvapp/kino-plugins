@@ -20,6 +20,7 @@ Node ya lo conoce todo.
 | La capacidad `qrScan`, `kino.qr.scan` y el tipo de ajuste `qr` | `apiVersion` 13 | lo mismo |
 | La capacidad `imageSource`, las imágenes `{ source: "plugin", handle }` y el export `image` | `apiVersion` 13 | lo mismo |
 | `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | la próxima versión de Kino (`kino.apiVersion` 13), con cualquier `apiVersion` en el manifiesto | `typeof kino.crypto.convert === "function"` |
+| `"sync": false` en un ajuste `password` (se queda en este aparato) | `apiVersion` 13 | nada que revisar: un Kino más viejo ignora la clave y sincroniza la contraseña |
 | Las respuestas de `kino.*` con `await` se liberan cuando tu código las tiene; recolección de basura después de una llamada que pasa la mitad de los 64 MB; `atob`/`btoa` más rápidos | la próxima versión de Kino, cualquier `apiVersion` | nada que revisar |
 
 - **Sockets** (`socket`): `kino.ws.open("wss://…")` a un host que declaras, solo por el puerto 443, máximo 4 sockets,
@@ -47,6 +48,9 @@ Node ya lo conoce todo.
 - **El kit**: `run.mjs . resolve` acepta streams de bytes, `run.mjs --size <bytes> . read …` y `run.mjs --out <archivo> .
   image …` llaman tus exports como Kino (`askRead`, `askImage` desde las pruebas), e `init.mjs --with
   byteSource,images,catalog,socket` arma un plugin de apiVersion 13. [Probar en local](test-locally.md#api13).
+- **Una contraseña que se queda en un aparato**: un ajuste `password` puede decir `"sync": false` (una contraseña de
+  verificación en dos pasos que se manda una vez y se borra): nunca se envía a un aparato emparejado, no va en copias de
+  seguridad, kits ni `sync.provision`. [Formulario de ajustes](settings-form.md#sync-false).
 - **Memoria del motor** (la próxima versión de Kino, cualquier `apiVersion`): la respuesta de una llamada `kino.*` con
   `await` ya no se queda en tus 64 MB hasta que se cierra el sandbox, y Kino recoge la basura después de una llamada que
   deja el motor por encima de la mitad de su límite. [Cómo vive tu código](engine-limits.md#lifecycle).

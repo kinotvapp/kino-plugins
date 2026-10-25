@@ -53,6 +53,7 @@ Lo que puede llevar cada entrada:
 | `labelEn`, `hintEn`, `confirmEn` | los de `label`, `hint`, `confirm` | opcionales, apiVersion 9 (Kino 0.9.55): el mismo texto en inglés, con los mismos límites ([Textos en inglés](#english)) |
 | `devices` | todos | opcional, apiVersion 12: `["phone"]`, `["tv"]` o los dos, los aparatos que lo dibujan ([un tipo de aparato](#devices)) |
 | `linkOnly` | `action` | opcional `true`/`false`, apiVersion 12: nunca se dibuja, solo corre como `confirm` de un `link` ([linkOnly](#link-only)) |
+| `sync` | `password` | opcional `true`/`false`, apiVersion 13 (en desarrollo): `false` deja el valor en este aparato ([sync: false](#sync-false)) |
 
 Cualquier otra clave de una entrada se ignora. Un manifiesto que incumple una regla se rechaza al
 instalar con un mensaje que nombra el ajuste (`El ajuste "quality" necesita opciones`); una `list` por
@@ -475,6 +476,26 @@ ves el catálogo gratis" hasta que escriba una cuenta; Guardar revisa la cuenta 
 "Cerrar sesión" pregunta primero y después vacía el correo y la contraseña en todos sus aparatos; cada
 espejo aparece como una copia más en el menú Servidor del reproductor.
 
+## Una contraseña que se queda en este aparato (`"sync": false`, apiVersion 13, en desarrollo) { #sync-false }
+
+Todavía no está en un Kino publicado. Un `password` puede decir `"sync": false` para quedarse en el aparato donde la
+persona lo escribió: úsalo para un valor que solo tiene sentido una vez, en un aparato, como una contraseña de
+verificación en dos pasos que tu plugin manda enseguida y después borra (`clearSettings`). Sin eso una contraseña llega a
+los aparatos emparejados de la persona, sellada de punta a punta, como cualquier otra contraseña ([abajo](#other-devices)).
+
+```json
+{ "key": "tg_password", "label": "Contraseña de verificación", "type": "password", "sync": false }
+```
+
+- El valor nunca se envía a un aparato emparejado, y un valor que manda otro aparato nunca lo pone ni lo borra.
+- No va en ninguna copia de seguridad, ningún kit ni el `provision` de un proveedor de sincronización: un manifiesto cuyo
+  `sync.provision` lo nombra se rechaza ("The \"provision\" of the \"sync\" field can't name a setting with \"sync\":
+  false").
+- Tu plugin lo lee con `kino.config.get` y lo borra como cualquier contraseña.
+- `sync` en algo que no es un password rechaza el manifiesto ("Only a setting of type password has \"sync\"
+  (\"key\")"), y también un valor que no sea `true` o `false`. Por debajo de apiVersion 13, y en un Kino que no lo tiene,
+  la clave se ignora y la contraseña se sincroniza como siempre. `node sdk/validate.mjs` revisa todo esto como la app.
+
 ## En los otros aparatos de la persona { #other-devices }
 
 Cuando la persona empareja dos de sus aparatos (celular y TV), Kino mantiene sus plugins al día entre
@@ -486,7 +507,7 @@ ellos. Lo que pasa y lo que no:
   la persona aprobó en el primero; si ahora pides más (un host, permiso o capacidad nueva), espera en
   "Plugins de tus otros aparatos" con la hoja de consentimiento normal.
 - **Pasa:** los valores de los ajustes `text`, `select`, `toggle`, `url` y `list` (una `list` que tiene
-  un campo `password` no viaja), y los ajustes `password`, sellados de punta a punta con la llave que los
+  un campo `password` no viaja), y los ajustes `password` (salvo uno con `"sync": false`, apiVersion 13), sellados de punta a punta con la llave que los
   aparatos acordaron al emparejarse, nunca legibles en el camino.
 - **Pasa:** los vaciados. Un campo que la persona vacía, o el `clearSettings` de una acción, también se
   vacía en sus otros aparatos (contraseñas incluidas). Un ajuste `required` nunca se vacía a distancia.

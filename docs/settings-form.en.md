@@ -53,6 +53,7 @@ What each entry may carry:
 | `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, apiVersion 9 (Kino 0.9.55): the same text in English, with the same limits ([English texts](#english)) |
 | `devices` | all | optional, apiVersion 12: `["phone"]`, `["tv"]` or both, the devices that draw it ([one kind of device](#devices)) |
 | `linkOnly` | `action` | optional `true`/`false`, apiVersion 12: never drawn, run only as a link's `confirm` ([linkOnly](#link-only)) |
+| `sync` | `password` | optional `true`/`false`, apiVersion 13 (in development): `false` keeps the value on this device ([sync: false](#sync-false)) |
 
 Any other key in an entry is ignored. A manifest that breaks a rule is refused at install with a
 message that names the setting (`El ajuste "quality" necesita opciones`); a `list` below apiVersion 4
@@ -456,6 +457,25 @@ el catálogo gratis" until they type an account; Guardar checks the account befo
 "Cerrar sesión" asks first, then empties the correo and the contraseña on every device of theirs; each
 mirror shows up as one more copy in the player's Servidor menu.
 
+## A password that stays on this device (`"sync": false`, apiVersion 13, in development) { #sync-false }
+
+Not in a released Kino yet. A `password` may say `"sync": false` to stay on the device where the person typed it: use it
+for a value that only makes sense once, on one device, such as a two-step verification password your plugin sends right
+away and then clears (`clearSettings`). Without it a password reaches the person's paired devices, sealed end to end,
+like every other password ([below](#other-devices)).
+
+```json
+{ "key": "tg_password", "label": "Contraseña de verificación", "type": "password", "sync": false }
+```
+
+- The value is never sent to a paired device, and a value another device sends never sets or clears it.
+- It is in no backup, no kit and no sync provider's `provision`: a manifest whose `sync.provision` names it is refused
+  ("The \"provision\" of the \"sync\" field can't name a setting with \"sync\": false").
+- Your plugin reads it with `kino.config.get` and clears it as any password.
+- `sync` on anything but a password refuses the manifest ("Only a setting of type password has \"sync\" (\"key\")"), and
+  so does a value that is not `true` or `false`. Below apiVersion 13, and in a Kino build without it, the key is ignored
+  and the password syncs as usual. `node sdk/validate.mjs` checks all of this like the app.
+
 ## On the person's other devices { #other-devices }
 
 When the person pairs two of their devices (phone and TV), Kino keeps their plugins in step. What
@@ -467,7 +487,7 @@ crosses, and what does not:
   more (a new host, permission or capability), it waits in "Plugins de tus otros aparatos" for the
   normal consent sheet.
 - **Crosses:** the values of `text`, `select`, `toggle`, `url` and `list` settings (a `list` that has a
-  `password` field does not travel), and `password` settings, sealed end to end with the key the devices
+  `password` field does not travel), and `password` settings (except one with `"sync": false`, apiVersion 13), sealed end to end with the key the devices
   agreed when they paired, never readable on the way.
 - **Crosses:** clears. A field the person empties, or an action's `clearSettings`, empties it on their
   other devices too (passwords included). A `required` setting is never cleared remotely. A device

@@ -279,6 +279,14 @@ screen (Ajustes ▸ Plugins), and your code reads its value with `kino.config.ge
 | `help` | none (apiVersion 12) | no (holds no value) | no | — |
 <!-- contract:settings:end -->
 
+**A password that stays on one device (`"sync": false`, apiVersion 13, in development).** A `password` may say
+`"sync": false` to stay on the device where the person typed it: for a value that only makes sense once, on one device,
+such as a two-step verification password your plugin sends right away and then clears (`clearSettings`). It is never
+sent to a paired device, a value another device sends never sets or clears it, and it is in no backup, no kit and no
+sync provider's `provision` (a manifest whose `sync.provision` names it is refused). `sync` on anything but a password,
+or not a boolean, refuses the manifest; below apiVersion 13, and in a Kino without it, the key is ignored (the password
+syncs as usual). [The settings form](settings-form.md#sync-false).
+
 - `link` and `help` (apiVersion 12, Kino 0.9.74) are configuration aids: a button that opens an
   `https` address through the system and a button that opens your instructions in a modal. See
   [Configuration aids](settings-form.md#aids).
