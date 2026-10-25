@@ -1049,7 +1049,7 @@ en [Proveedores de sincronización](sync-providers.md).
 
 ## Bytes e imágenes que sirve tu plugin (apiVersion 13, en desarrollo) { #apiversion-13 }
 
-apiVersion 13 todavía no está en un Kino publicado (viene en la próxima versión; 0.9.75 es provisional). Agrega seis
+apiVersion 13 llega en Kino 0.9.74 junto con apiVersion 12; esa versión todavía no está publicada. Agrega seis
 capacidades, ninguna con línea de consentimiento propia:
 
 | Capacidad | Export | Qué da | Página |

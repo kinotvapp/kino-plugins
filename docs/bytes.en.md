@@ -1,10 +1,10 @@
 # Sockets and plugin-served bytes (`socket` and `byteSource`, apiVersion 13) { #bytes }
 
 !!! note "apiVersion 13 is in development"
-    Nothing on this page is in a released Kino yet. apiVersion 13 is planned for the next Kino version (0.9.75 is
-    provisional); today's Kino (0.9.74) supports up to apiVersion 12 and refuses a manifest with `"apiVersion": 13`
-    ("Este plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and
-    test a plugin now and publish it when that version is out.
+    Nothing on this page is in a released Kino yet. apiVersion 13 arrives in Kino 0.9.74, the next release, together with
+    apiVersion 12; it is not published yet. Every Kino before 0.9.74 refuses a manifest with `"apiVersion": 13` ("Este
+    plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and test a
+    plugin now and publish it when Kino 0.9.74 is out.
 
 Some services are not HTTP at all: a messaging service speaks its own protocol over a WebSocket, and the video lives in
 messages, not behind a URL. Two capabilities cover that case. Declare either or both, with `"apiVersion": 13`:
@@ -175,8 +175,8 @@ kino.crypto.aesIgeVerify(keyHex, ivHex, dataHex, {   // AES-IGE decrypt + SHA-25
   `macOffset: 8`: one call instead of a decryption, a join of the key slice with the plaintext and a hash.
 - A sealed value is refused in every field of these five. Anything malformed fails with "invalid crypto operation".
 - They are gated on the Kino you run on, not on your manifest: Kino gives every plugin the `kino.crypto` of its own
-  version, so a Kino that predates one of them lacks it whatever `apiVersion` you declare (`convert` and `aesIgeVerify`
-  arrived after the first apiVersion 13 builds). Feature-detect each one and keep a fallback:
+  version, so a Kino that predates one of them lacks it whatever `apiVersion` you declare (Kino 0.9.74 has all five, an
+  older Kino none; development builds before 0.9.74 lack `convert` and `aesIgeVerify`). Feature-detect each one and keep a fallback:
   `typeof kino.crypto.convert === "function"`. The kit does the same: it offers what its own contract has. No capability
   is needed. Every `kino.crypto` call takes at most 5 MB of data.
 

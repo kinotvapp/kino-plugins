@@ -1002,7 +1002,7 @@ the consent lines and the two example providers are on [Sync providers](sync-pro
 
 ## Bytes and images your plugin serves (apiVersion 13, in development) { #apiversion-13 }
 
-apiVersion 13 is not in a released Kino yet (it is planned for the next version; 0.9.75 is provisional). It adds six
+apiVersion 13 arrives in Kino 0.9.74 together with apiVersion 12; that release is not published yet. It adds six
 capabilities, none with a consent line of its own:
 
 | Capability | Export | What it gives | Page |

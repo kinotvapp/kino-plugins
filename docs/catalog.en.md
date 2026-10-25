@@ -1,10 +1,10 @@
 # Catalog and large storage (`catalog`, `storageLarge`, apiVersion 13) { #catalog }
 
 !!! note "apiVersion 13 is in development"
-    Nothing on this page is in a released Kino yet. apiVersion 13 is planned for the next Kino version (0.9.75 is
-    provisional); today's Kino (0.9.74) supports up to apiVersion 12 and refuses a manifest with `"apiVersion": 13`
-    ("Este plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and
-    test a plugin now and publish it when that version is out.
+    Nothing on this page is in a released Kino yet. apiVersion 13 arrives in Kino 0.9.74, the next release, together with
+    apiVersion 12; it is not published yet. Every Kino before 0.9.74 refuses a manifest with `"apiVersion": 13` ("Este
+    plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and test a
+    plugin now and publish it when Kino 0.9.74 is out.
 
 A plugin whose source is a big library (every video of a Telegram channel, a site's whole archive, a self-hosted media
 folder) needs to find things in thousands of records. Keeping them in `kino.storage` and filtering in JavaScript means

@@ -15,7 +15,7 @@ kino.catalog       // apiVersion 13 (in development), capability "catalog": a SQ
 kino.qr            // apiVersion 13 (in development), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 ```
 
-`kino.apiVersion` vale 12 en Kino 0.9.74; la próxima versión de Kino, todavía en desarrollo, responde 13.
+`kino.apiVersion` responde 13 en Kino 0.9.74 (la próxima versión, todavía sin publicar) y 11 en Kino 0.9.71 a 0.9.73.
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
 manifiesto; `kino.appVersion` es la versión de Kino.)
@@ -289,7 +289,7 @@ kino.crypto.uuid()
 Para protocolos binarios (MTProto y parecidos), la próxima versión de Kino (en desarrollo) tiene cinco operaciones más
 sobre textos en cualquiera de las tres codificaciones. Dependen del Kino en el que corres, no de tu manifiesto: cada plugin
 recibe el `kino.crypto` de la versión de ese Kino, declare el `apiVersion` que declare, y un Kino anterior a una de ellas no
-la tiene (`convert` y `aesIgeVerify` llegaron después de las primeras versiones con apiVersion 13). Revisa cada una y ten
+la tiene (Kino 0.9.74 tiene las cinco, un Kino más viejo ninguna; las versiones de desarrollo anteriores a 0.9.74 no tienen `convert` ni `aesIgeVerify`). Revisa cada una y ten
 un plan B: `typeof kino.crypto.convert === "function"`. No necesitan capacidad.
 
 ```js

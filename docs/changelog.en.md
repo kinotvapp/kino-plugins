@@ -3,12 +3,12 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Next Kino version (in development): `apiVersion` 13, sockets, plugin-served bytes and images, a catalog, QR codes { #v13 }
+## Kino 0.9.74 (not released yet): `apiVersion` 13, sockets, plugin-served bytes and images, a catalog, QR codes { #v13 }
 
-(Not released yet.) **`apiVersion` 13 is in development for the next Kino version**; the contract (`contract.json`) says
-`maxApiVersion` 13 and names Kino 0.9.75 for it, provisionally (which release ships it is not decided). Today's Kino (0.9.74)
-refuses a manifest with `"apiVersion": 13` ("Este plugin necesita una versión más nueva de Kino"), so declare 13 only if
-you use one of its features, and publish such a plugin once that version is out. The Node kit already knows all of it.
+(Not released yet.) **`apiVersion` 13 = Kino 0.9.74, the next release, together with `apiVersion` 12** ([below](#v0974));
+it is not published yet. The contract (`contract.json`) says `maxApiVersion` 13 and `apiVersionFromApp` gives 0.9.74 for
+both. Every Kino before 0.9.74 refuses a manifest with `"apiVersion": 13` ("Este plugin necesita una versión más nueva de
+Kino"), so declare 13 only if you use one of its features, and publish such a plugin once Kino 0.9.74 is out. The Node kit already knows all of it.
 
 | Feature | From | How to tell |
 | --- | --- | --- |
@@ -18,9 +18,9 @@ you use one of its features, and publish such a plugin once that version is out.
 | The `catalog` capability and `kino.catalog` | `apiVersion` 13 | the same |
 | The `qrScan` capability, `kino.qr.scan`, and the settings form's `qr` type | `apiVersion` 13 | the same |
 | The `imageSource` capability, `{ source: "plugin", handle }` images and the `image` export | `apiVersion` 13 | the same |
-| `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | the next Kino version (`kino.apiVersion` 13), every manifest `apiVersion` | `typeof kino.crypto.convert === "function"` |
+| `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | Kino 0.9.74 (`kino.apiVersion` 13), every manifest `apiVersion` | `typeof kino.crypto.convert === "function"` |
 | `"sync": false` on a `password` setting (stays on this device) | `apiVersion` 13 | nothing to check: an older Kino ignores the key and syncs the password |
-| Async `kino.*` answers freed once your code has them; a GC after a call over half the 64 MB; faster `atob`/`btoa` | the next Kino version, every `apiVersion` | nothing to check |
+| Async `kino.*` answers freed once your code has them; a GC after a call over half the 64 MB; faster `atob`/`btoa` | Kino 0.9.74, every `apiVersion` | nothing to check |
 
 - **Sockets** (`socket`): `kino.ws.open("wss://…")` to a host you declare, port 443 only, at most 4 sockets, 8 MiB
   queued per socket, 786,000 bytes per frame; frames as `Uint8Array` or, much faster, as `hex`/`base64` strings.
@@ -39,7 +39,7 @@ you use one of its features, and publish such a plugin once that version is out.
   the card comes on screen, one at a time, never while one of your byte streams plays. [Images from the plugin](images.md).
 - **Byte operations in `kino.crypto`**: AES-256-IGE, a decryption checked by its SHA-256 MAC in one call, big-number
   `modPow`, `gunzip` and a native `convert` between `utf8`, `hex` and `base64`. They are gated on the Kino version, not on
-  your manifest (`convert` and `aesIgeVerify` arrived after the first apiVersion 13 builds): feature-detect each one.
+  your manifest (Kino 0.9.74 has all five, an older Kino none): feature-detect each one.
   [Byte operations](bytes.md#crypto).
 - **The kit**: `run.mjs . resolve` accepts byte streams, `run.mjs --size <bytes> . read …` and `run.mjs --out <file> . image …`
   call your exports as Kino does (`askRead`, `askImage` from tests), and `init.mjs --with byteSource,images,catalog,socket`
@@ -47,14 +47,14 @@ you use one of its features, and publish such a plugin once that version is out.
 - **A password that stays on one device**: a `password` setting may say `"sync": false` (a two-step verification
   password sent once and cleared): never sent to a paired device, in no backup, kit or `sync.provision`.
   [The settings form](settings-form.md#sync-false).
-- **Engine memory** (the next Kino version, every `apiVersion`): the answer of an awaited `kino.*` call no longer stays in
+- **Engine memory** (Kino 0.9.74, every `apiVersion`): the answer of an awaited `kino.*` call no longer stays in
   your 64 MB until the sandbox closes, and Kino collects garbage after a call that leaves the engine over half its limit.
   [How your code lives](engine-limits.md#lifecycle).
 
 ## Kino 0.9.74: `apiVersion` 12, sync providers, `link` and `help`, `setSettings` and "Is this you?" { #v0974 }
 
 (Not released yet.) **`apiVersion` 12 = Kino 0.9.74.** The contract (`contract.json`) now says
-`maxApiVersion` 12 and `kino.apiVersion` reports 12. Kino 0.9.73 and older refuse a manifest with
+`maxApiVersion` 13 and `kino.apiVersion` reports 13, because [apiVersion 13](#v13) ships in the same release. Kino 0.9.73 and older refuse a manifest with
 `"apiVersion": 12` ("Este plugin necesita una versión más nueva de Kino"), so declare 12 only if you use
 one of its features.
 

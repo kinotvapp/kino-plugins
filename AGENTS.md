@@ -107,10 +107,10 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `sync` block or a `link`/`help` setting (**Kino 0.9.74+**; Kino 0.9.73 and older refuse an apiVersion 12
   plugin). An action's `setSettings` and `link` answers need no new apiVersion (Kino 0.9.74; older Kino
   ignores them). `13` only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a
-  `qr` setting: **in development, no released Kino accepts it** (today's Kino refuses an apiVersion 13 plugin), so
-  use it only when the person agrees to wait for the next Kino version, and say so plainly. `kino.crypto`'s byte
+  `qr` setting: **Kino 0.9.74, the next release, not published yet** (every Kino before 0.9.74 refuses an apiVersion
+  13 plugin, as it refuses 12), so use it only when the person agrees to wait for Kino 0.9.74, and say so plainly. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
-  manifest (`convert` and `aesIgeVerify` arrived after the first apiVersion 13 builds): feature-detect each one with
+  manifest (Kino 0.9.74 has all five, an older Kino none): feature-detect each one with
   `typeof kino.crypto.convert === "function"` and keep a fallback.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them

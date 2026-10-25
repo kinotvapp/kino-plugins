@@ -1,10 +1,10 @@
 # QR codes: showing one and scanning one (`qr` and `qrScan`, apiVersion 13) { #qr }
 
 !!! note "apiVersion 13 is in development"
-    Nothing on this page is in a released Kino yet. apiVersion 13 is planned for the next Kino version (0.9.75 is
-    provisional); today's Kino (0.9.74) supports up to apiVersion 12 and refuses a manifest with `"apiVersion": 13`
-    ("Este plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and
-    test a plugin now and publish it when that version is out.
+    Nothing on this page is in a released Kino yet. apiVersion 13 arrives in Kino 0.9.74, the next release, together with
+    apiVersion 12; it is not published yet. Every Kino before 0.9.74 refuses a manifest with `"apiVersion": 13` ("Este
+    plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and test a
+    plugin now and publish it when Kino 0.9.74 is out.
 
 Some sign-ins are easier with a camera than with a keyboard, above all on a TV: the new device shows a QR code, and a
 phone that already holds the account scans it and says "yes, let this device in". Kino gives you both halves, and

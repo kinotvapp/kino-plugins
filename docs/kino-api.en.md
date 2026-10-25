@@ -15,7 +15,7 @@ kino.catalog       // apiVersion 13 (in development), capability "catalog": a SQ
 kino.qr            // apiVersion 13 (in development), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 ```
 
-`kino.apiVersion` is 12 on Kino 0.9.74; the next Kino version, still in development, reports 13.
+`kino.apiVersion` reports 13 on Kino 0.9.74 (the next release, not published yet) and 11 on Kino 0.9.71 to 0.9.73.
 
 ### `kino.lang`: the person's language { #lang }
 
@@ -266,7 +266,7 @@ kino.crypto.uuid()
 For binary protocols (MTProto and the like), the next Kino version (in development) has five more operations on
 strings in any of the three encodings. They are gated on the Kino you run on, not on your manifest: every plugin gets the
 `kino.crypto` of that Kino's own version, whatever `apiVersion` it declares, and a Kino that predates one of them lacks it
-(`convert` and `aesIgeVerify` arrived after the first apiVersion 13 builds). Feature-detect each one and keep a fallback:
+(Kino 0.9.74 has all five, an older Kino none; development builds before 0.9.74 lack `convert` and `aesIgeVerify`). Feature-detect each one and keep a fallback:
 `typeof kino.crypto.convert === "function"`. No capability is needed.
 
 ```js

@@ -1,10 +1,10 @@
 # Sockets y bytes que sirve el plugin (`socket` y `byteSource`, apiVersion 13) { #bytes }
 
 !!! note "apiVersion 13 está en desarrollo"
-    Nada de esta página está todavía en un Kino publicado. apiVersion 13 viene en la próxima versión de Kino (0.9.75 es
-    provisional); el Kino de hoy (0.9.74) llega hasta apiVersion 12 y rechaza un manifiesto con `"apiVersion": 13`
+    Nada de esta página está todavía en un Kino publicado. apiVersion 13 llega en Kino 0.9.74, la próxima versión, junto
+    con apiVersion 12; todavía no está publicada. Todo Kino anterior a 0.9.74 rechaza un manifiesto con `"apiVersion": 13`
     ("Este plugin necesita una versión más nueva de Kino"). El contrato y el kit ya lo conocen, así que puedes escribir y
-    probar un plugin desde ya y publicarlo cuando salga esa versión.
+    probar un plugin desde ya y publicarlo cuando salga Kino 0.9.74.
 
 Algunos servicios no son HTTP: un servicio de mensajería habla su propio protocolo sobre un WebSocket, y el video vive
 en mensajes, no detrás de una URL. Dos capacidades cubren ese caso. Declara una o las dos, con `"apiVersion": 13`:
@@ -182,8 +182,8 @@ kino.crypto.aesIgeVerify(keyHex, ivHex, dataHex, {   // AES-IGE decrypt + SHA-25
 - Un valor sellado se rechaza en cualquier campo de estas cinco. Cualquier cosa mal formada falla con "invalid crypto
   operation".
 - Dependen del Kino en el que corres, no de tu manifiesto: Kino le da a cada plugin el `kino.crypto` de su propia
-  versión, así que un Kino anterior a una de ellas no la tiene, declares el `apiVersion` que declares (`convert` y
-  `aesIgeVerify` llegaron después de las primeras versiones con apiVersion 13). Revisa cada una y ten un plan B:
+  versión, así que un Kino anterior a una de ellas no la tiene, declares el `apiVersion` que declares (Kino 0.9.74 tiene las cinco,
+  un Kino más viejo ninguna; las versiones de desarrollo anteriores a 0.9.74 no tienen `convert` ni `aesIgeVerify`). Revisa cada una y ten un plan B:
   `typeof kino.crypto.convert === "function"`. El kit hace lo mismo: ofrece lo que tiene su propio contrato. No
   necesitan capacidad. Cada llamada de `kino.crypto` recibe máximo 5 MB de datos.
 

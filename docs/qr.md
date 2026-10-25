@@ -1,10 +1,10 @@
 # Códigos QR: mostrar uno y escanear uno (`qr` y `qrScan`, apiVersion 13) { #qr }
 
 !!! note "apiVersion 13 está en desarrollo"
-    Nada de esta página está todavía en un Kino publicado. apiVersion 13 viene en la próxima versión de Kino (0.9.75 es
-    provisional); el Kino de hoy (0.9.74) llega hasta apiVersion 12 y rechaza un manifiesto con `"apiVersion": 13`
+    Nada de esta página está todavía en un Kino publicado. apiVersion 13 llega en Kino 0.9.74, la próxima versión, junto
+    con apiVersion 12; todavía no está publicada. Todo Kino anterior a 0.9.74 rechaza un manifiesto con `"apiVersion": 13`
     ("Este plugin necesita una versión más nueva de Kino"). El contrato y el kit ya lo conocen, así que puedes escribir y
-    probar un plugin desde ya y publicarlo cuando salga esa versión.
+    probar un plugin desde ya y publicarlo cuando salga Kino 0.9.74.
 
 Algunos inicios de sesión son más fáciles con una cámara que con un teclado, sobre todo en una TV: el aparato nuevo
 muestra un código QR, y un teléfono que ya tiene la cuenta lo escanea y dice "sí, deja entrar a este aparato". Kino te da

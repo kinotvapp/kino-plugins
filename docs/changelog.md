@@ -3,12 +3,13 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Próxima versión de Kino (en desarrollo): `apiVersion` 13, sockets, bytes e imágenes que sirve el plugin, un catálogo, códigos QR { #v13 }
+## Kino 0.9.74 (todavía sin publicar): `apiVersion` 13, sockets, bytes e imágenes que sirve el plugin, un catálogo, códigos QR { #v13 }
 
-(Todavía no publicada.) **`apiVersion` 13 está en desarrollo para la próxima versión de Kino**; el contrato
-(`contract.json`) dice `maxApiVersion` 13 y le asigna Kino 0.9.75, de forma provisional (no se ha decidido en qué versión
-sale). El Kino de hoy (0.9.74) rechaza un manifiesto con `"apiVersion": 13` ("Este plugin necesita una versión más nueva
-de Kino"), así que declara 13 solo si usas una de sus funciones, y publica ese plugin cuando salga esa versión. El kit de
+(Todavía no publicada.) **`apiVersion` 13 = Kino 0.9.74, la próxima versión, junto con `apiVersion` 12**
+([abajo](#v0974)); todavía no está publicada. El contrato (`contract.json`) dice `maxApiVersion` 13 y `apiVersionFromApp`
+da 0.9.74 para las dos. Todo Kino anterior a 0.9.74 rechaza un manifiesto con `"apiVersion": 13` ("Este plugin necesita
+una versión más nueva de Kino"), así que declara 13 solo si usas una de sus funciones, y publica ese plugin cuando salga
+Kino 0.9.74. El kit de
 Node ya lo conoce todo.
 
 | Función | Desde | Cómo saberlo |
@@ -19,9 +20,9 @@ Node ya lo conoce todo.
 | La capacidad `catalog` y `kino.catalog` | `apiVersion` 13 | lo mismo |
 | La capacidad `qrScan`, `kino.qr.scan` y el tipo de ajuste `qr` | `apiVersion` 13 | lo mismo |
 | La capacidad `imageSource`, las imágenes `{ source: "plugin", handle }` y el export `image` | `apiVersion` 13 | lo mismo |
-| `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | la próxima versión de Kino (`kino.apiVersion` 13), con cualquier `apiVersion` en el manifiesto | `typeof kino.crypto.convert === "function"` |
+| `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | Kino 0.9.74 (`kino.apiVersion` 13), con cualquier `apiVersion` en el manifiesto | `typeof kino.crypto.convert === "function"` |
 | `"sync": false` en un ajuste `password` (se queda en este aparato) | `apiVersion` 13 | nada que revisar: un Kino más viejo ignora la clave y sincroniza la contraseña |
-| Las respuestas de `kino.*` con `await` se liberan cuando tu código las tiene; recolección de basura después de una llamada que pasa la mitad de los 64 MB; `atob`/`btoa` más rápidos | la próxima versión de Kino, cualquier `apiVersion` | nada que revisar |
+| Las respuestas de `kino.*` con `await` se liberan cuando tu código las tiene; recolección de basura después de una llamada que pasa la mitad de los 64 MB; `atob`/`btoa` más rápidos | Kino 0.9.74, cualquier `apiVersion` | nada que revisar |
 
 - **Sockets** (`socket`): `kino.ws.open("wss://…")` a un host que declaras, solo por el puerto 443, máximo 4 sockets,
   8 MiB en cola por socket, 786.000 bytes por frame; frames como `Uint8Array` o, mucho más rápido, como textos
@@ -43,7 +44,7 @@ Node ya lo conoce todo.
 - **Operaciones de bytes en `kino.crypto`**: AES-256-IGE, un descifrado revisado con su MAC SHA-256 en una sola llamada,
   `modPow` de números grandes, `gunzip` y un `convert` nativo entre `utf8`, `hex` y `base64`.
   Dependen de la versión de Kino, no de tu manifiesto
-  (`convert` y `aesIgeVerify` llegaron después de las primeras versiones con apiVersion 13): revisa cada una.
+  (Kino 0.9.74 tiene las cinco, un Kino más viejo ninguna): revisa cada una.
   [Operaciones de bytes](bytes.md#crypto).
 - **El kit**: `run.mjs . resolve` acepta streams de bytes, `run.mjs --size <bytes> . read …` y `run.mjs --out <archivo> .
   image …` llaman tus exports como Kino (`askRead`, `askImage` desde las pruebas), e `init.mjs --with
@@ -51,14 +52,14 @@ Node ya lo conoce todo.
 - **Una contraseña que se queda en un aparato**: un ajuste `password` puede decir `"sync": false` (una contraseña de
   verificación en dos pasos que se manda una vez y se borra): nunca se envía a un aparato emparejado, no va en copias de
   seguridad, kits ni `sync.provision`. [Formulario de ajustes](settings-form.md#sync-false).
-- **Memoria del motor** (la próxima versión de Kino, cualquier `apiVersion`): la respuesta de una llamada `kino.*` con
+- **Memoria del motor** (Kino 0.9.74, cualquier `apiVersion`): la respuesta de una llamada `kino.*` con
   `await` ya no se queda en tus 64 MB hasta que se cierra el sandbox, y Kino recoge la basura después de una llamada que
   deja el motor por encima de la mitad de su límite. [Cómo vive tu código](engine-limits.md#lifecycle).
 
 ## Kino 0.9.74: `apiVersion` 12, proveedores de sincronización, `link` y `help`, `setSettings` y "¿Eres tú?" { #v0974 }
 
 (Todavía no publicada.) **`apiVersion` 12 = Kino 0.9.74.** El contrato (`contract.json`) dice ahora
-`maxApiVersion` 12 y `kino.apiVersion` informa 12. Kino 0.9.73 y anteriores rechazan un manifiesto con
+`maxApiVersion` 13 y `kino.apiVersion` informa 13, porque [apiVersion 13](#v13) sale en la misma versión. Kino 0.9.73 y anteriores rechazan un manifiesto con
 `"apiVersion": 12` ("Este plugin necesita una versión más nueva de Kino"), así que declara 12 solo si
 usas algo de esta versión.
 
