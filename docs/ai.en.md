@@ -195,6 +195,16 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "url" or a "password"). The confirm action carries "linkOnly": true, so the person sees one button.
   Setup a TV cannot do (a token pasted on the phone) carries "devices": ["phone"]: the TV receives it with
   "Recibir desde otro aparato".
+- apiVersion 13 (in development for the next Kino version: NO released Kino installs it yet; tell me before
+  using it), only if my source needs it: a service that speaks over a WebSocket ("socket", kino.ws, wss:// to
+  my declared hosts, frames as hex/base64 strings), video the plugin serves itself ("byteSource":
+  resolve answers { source: "plugin", handle, size, mime } and read({ handle, offset, length }) answers
+  { bytes: base64 } of exactly that range, built with kino.crypto.convert, never a JavaScript loop over
+  the bytes), thousands of records to search ("catalog", kino.catalog), a bigger device-only storage
+  ("storageLarge"), a QR on the settings form ("qr" setting) or the phone's scanner from an action
+  ("qrScan", kino.qr.scan), pictures only the plugin can fetch ("imageSource" and an image export). Read
+  https://kinotvapp.github.io/kino-plugins/en/bytes/, /en/catalog/, /en/images/ and /en/qr/ first; test read
+  with a Node test and a fake WebSocket (the kit's run.mjs cannot).
 - Feature-detect what older Kino lacks: kino.meta and kino.tmdb (Kino 0.9.53) only behind
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, and the hidden browser's
   captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
@@ -228,7 +238,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   export, and it needs Kino 0.9.54 or newer; 9 for the player panel or a hand-written "fetchHosts":
   "any" (Kino 0.9.55); 10 only for "playlists" (Kino 0.9.65); 11 only for "externalResolve" (Kino 0.9.66);
   12 only for "syncProvider", the "sync" block or a "link"/"help" setting (Kino 0.9.74; Kino 0.9.73 and
-  older refuse it)). A catalog that plays nothing declares "catalogOnly": true
+  older refuse it); 13 only for "socket", "byteSource", "storageLarge", "catalog", "qrScan", "imageSource"
+  or a "qr" setting (in development: no released Kino accepts it yet)). A catalog that plays nothing declares "catalogOnly": true
   (Kino 0.9.54) and still exports a resolve that fails with not_found, for older Kino. A new id of my own (never
   "archive-org").
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
@@ -258,7 +269,9 @@ you hand the plugin over run this self-check and tell me the result of each line
 - if it is a sync provider: "apiVersion": 12, "syncProvider" declared, syncPull and syncPush exported,
   "sync.maxBlobBytes" at most 4194304, tests that push and pull a 4 MiB blob and throw "conflict",
   "sync.keySecret" and "sync.provision" declared, and you told me in plain words that the plugin and its
-  service can read the data.
+  service can read the data;
+- if it uses apiVersion 13: you told me no released Kino installs it yet, read is covered by a Node test
+  that checks every range byte for byte, no handle holds a secret, and every socket is closed.
 
 At the end, walk me through:
 1. Publishing it: a public repository (never a fork) with the files at the root; the topic

@@ -120,6 +120,23 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   Cloudflare quick tunnel opens, the words for "Otra red"), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
   never their values, and "Aplicar".
 
+## The next Kino version (apiVersion 13, in development) { #v13 }
+
+Not in a released Kino yet. With the apiVersion 13 capabilities ([What's new](changelog.md#v13)):
+
+- **No new consent line**: `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan` and `imageSource` add nothing to
+  the consent sheet (a socket reaches only the hosts the sheet already lists).
+- **A byte stream plays like any video**, and casts to a Chromecast or a DLNA TV from the phone over the home network.
+  When your `read` fails the person reads your error, or "El plugin no entregó los datos del video" for a wrong answer.
+  Its titles show the download button, but such a video never downloads.
+- **The QR scanner**: the camera full screen with "&lt;plugin name&gt; quiere leer un código QR", your `title`, "Apunta la
+  cámara al código QR" and a close button; a code that is too long reads "Este código no es válido para &lt;plugin&gt;".
+  Without the camera permission Kino asks for it, and explains why with Retry and Cancel if the person refuses.
+- **A `qr` setting** is a QR code on the plugin's settings form, redrawn every `refreshMs`; with no text it reads "Sin
+  información".
+- **Images from the plugin** appear card by card as they come on screen; a picture that fails, or a title saved with one
+  on another device, shows the usual placeholder. The person never sees an error for a picture.
+
 ## From Kino 0.9.54 { #v0954 }
 
 With nothing new in your manifest, except where said:

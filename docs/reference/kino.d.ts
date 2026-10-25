@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 12; 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 13; 13 adds the socket capability (kino.ws, outbound WebSockets) and the byteSource capability (a stream whose bytes the plugin serves through its read export) and the storageLarge capability (a 16 MiB kino.storage for a plugin that keeps a catalog) and the catalog capability (kino.catalog, a searchable SQLite catalog of up to 100,000 items per plugin in a 64 MiB file) and the qrScan capability (kino.qr.scan, the phone's camera scanner for a QR code) and the settings form's qr setting (a QR whose text settingsStatus gives, refreshed every refreshMs) and the kino.crypto operations aesIge, modPow, gunzip, convert and aesIgeVerify and the imageSource capability (a poster, backdrop, still or hero image the plugin serves through its image export, KinoImageRef); 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -56,9 +56,14 @@ interface KinoItem {
    */
   artist?: string;
   year?: string | number;
-  /** http or https, at most 2048 characters; a public name or a public IPv4 address, never the home network or a local name (over http not even a name without a dot), except the person's own server. */
-  poster?: string;
-  backdrop?: string;
+  /**
+   * http or https, at most 2048 characters; a public name or a public IPv4 address, never the home network or a local name
+   * (over http not even a name without a dot), except the person's own server. apiVersion 13 with "imageSource": or an
+   * image reference ({@link KinoImageRef}) whose bytes your `image` export serves.
+   */
+  poster?: string | KinoImageRef;
+  /** Like `poster`: a URL, or with "imageSource" (apiVersion 13) a {@link KinoImageRef}. */
+  backdrop?: string | KinoImageRef;
   overview?: string;
   originalTitle?: string;
   /** At most 5, each at most 30 characters. */
@@ -113,7 +118,8 @@ interface KinoEpisode {
   number: number;
   ref: string;
   title?: string;
-  still?: string;
+  /** Like an item's `poster`: a URL, or with "imageSource" (apiVersion 13) a {@link KinoImageRef}. */
+  still?: string | KinoImageRef;
   overview?: string;
   /** YYYY-MM-DD. Since Kino 0.9.55 shown under the episode in the list (phone and TV), worded in the app's language. */
   airDate?: string;
@@ -123,8 +129,9 @@ interface KinoEpisode {
 
 interface KinoSeriesInfo {
   title?: string;
-  poster?: string;
-  backdrop?: string;
+  /** Like an item's: a URL, or with "imageSource" (apiVersion 13) a {@link KinoImageRef}. */
+  poster?: string | KinoImageRef;
+  backdrop?: string | KinoImageRef;
   overview?: string;
   genres?: string[];
   year?: string | number;
@@ -285,6 +292,64 @@ interface KinoStream {
   portable?: { url: string; mime?: "application/x-mpegURL" | "application/vnd.apple.mpegurl" };
 }
 
+/**
+ * apiVersion 13, capability "byteSource": a stream whose bytes the plugin itself serves, instead of a URL. Kino pulls them
+ * by calling the plugin's `read` export (see `KinoPlugin.read`). `handle` is opaque to Kino (1..512 characters, the plugin
+ * decides what it means); `size` is the total byte length; `mime` the media type (e.g. "video/mp4"). It casts to a
+ * Chromecast or a DLNA TV (served from the phone over the LAN, every byte still from `read`) when `mime` is a video or audio
+ * file type other than MPEG-TS; it is never downloaded (declaring "download" is pointless for such streams).
+ */
+interface KinoPluginByteStream {
+  source: "plugin";
+  handle: string;
+  size: number;
+  mime: string;
+}
+
+/**
+ * apiVersion 13, capability "imageSource": a picture whose bytes your plugin serves, instead of a URL. Accepted wherever
+ * an item's `poster` or `backdrop`, an episode's `still`, a series' (or `details`') `poster`/`backdrop` or a section hero's
+ * `image` is read; anywhere else (a channel logo, a category's art, a `meta` answer, a layout image), and from a plugin
+ * that does not declare "imageSource", it is ignored like a bad URL. `handle` is yours and opaque to Kino: 1 to 512
+ * characters, no control characters (a malformed reference is simply no image, the item stays).
+ *
+ * When a card with such an image comes on screen, Kino calls your `image({ handle })` export ({@link KinoPlugin.image}),
+ * at most one call at a time for your plugin, never while one of your byte streams is open or your `read` runs (it waits
+ * for that to end, at most 20 s), and keeps the picture in its image cache: the same handle of the same installed version is asked once.
+ * Make handles stable (the same picture, the same handle) and never put a secret in one: Kino stores it like a poster URL
+ * wherever the title is saved (library, history), which sync to the person's other devices and go into backups. There it
+ * shows the placeholder, and a saved row keeps it (Kino never rewrites it): a reference only loads on the device whose Kino
+ * read it from your answer.
+ *
+ * @example
+ * export async function home() {
+ *   return [{ id: "new", title: "New", items: [
+ *     { id: "v1", ref: "video:1", title: "Holiday", kind: "movie", poster: { source: "plugin", handle: "thumb:1" } },
+ *   ] }];
+ * }
+ * export async function image({ handle }) {
+ *   const bytes = kino.storage.get(handle);              // a base64 JPEG you saved when you indexed the video
+ *   if (!bytes) throw kino.error("not_found", "no thumbnail");
+ *   return { bytes, mime: "image/jpeg" };
+ * }
+ */
+interface KinoImageRef {
+  source: "plugin";
+  handle: string;
+}
+
+/**
+ * What `image({ handle })` answers (apiVersion 13, "imageSource"): the picture, base64-encoded (canonical: the standard
+ * alphabet, padded, no whitespace), at most 262,144 bytes (256 KB) once decoded, and its type, one of "image/jpeg",
+ * "image/png" or "image/webp", which the bytes must really be (their first bytes are checked). Anything else, a throw or
+ * no answer within 10 s shows the card's placeholder, and Kino does not ask for that handle again for 5 minutes; two
+ * timeouts in a row pause all your images for 5 minutes.
+ */
+interface KinoImageAnswer {
+  bytes: string;
+  mime: "image/jpeg" | "image/png" | "image/webp";
+}
+
 /** What a stream's source says about the media itself (`KinoStream.media`). */
 interface KinoStreamMedia {
   /** The file's own name or a title for it. */
@@ -443,8 +508,8 @@ interface KinoSectionAnswer {
   tabs?: { id: string; label: string }[];
   /** The tab this answer is for; an unknown or missing one reads as the first tab. */
   tab?: string;
-  /** A banner above the rows: `title` as an item title, `text` at most 300 characters, `image` http or https (the Images rule). */
-  hero?: { title: string; image?: string; text?: string };
+  /** A banner above the rows: `title` as an item title, `text` at most 300 characters, `image` http or https (the Images rule), or with "imageSource" (apiVersion 13) a {@link KinoImageRef}. */
+  hero?: { title: string; image?: string | KinoImageRef; text?: string };
   /** The same shape and limits as `home`. */
   rows: KinoRow[];
 }
@@ -719,7 +784,21 @@ interface KinoPlugin {
   /** Kino 0.9.54, optional, no capability, asked only from apiVersion 8 (a RESERVED export name from apiVersion 8): a movie item's details for its title page. 20 s. */
   details?(ref: string): Promise<KinoSeriesInfo | null>;
   /** `options.retry` (apiVersion 6) only when Kino resolves again after the origin refused your stream. `attempt` is 1 to 3; `status` is the origin's HTTP status when Kino heard one. */
-  resolve(ref: string, options?: { retry?: { reason: "conflict" | "expired"; attempt: number; status?: 401 | 403 | 409 } }): Promise<KinoStream>;
+  resolve(ref: string, options?: { retry?: { reason: "conflict" | "expired"; attempt: number; status?: 401 | 403 | 409 } }): Promise<KinoStream | KinoPluginByteStream>;
+  /**
+   * apiVersion 13, required with "byteSource". Kino calls it to play a `{ source: "plugin" }` stream: `handle` is the one
+   * you returned, `offset` is a multiple of 4096, `length` is at most 1048576 (1 MiB). Answer with the bytes of that range,
+   * base64-encoded; fewer than `length` only at the end of the data.
+   */
+  read?(arg: { handle: string; offset: number; length: number }): Promise<{ bytes: string }>;
+  /**
+   * apiVersion 13, required with "imageSource". Kino calls it to draw a {@link KinoImageRef} you returned: `handle` is
+   * yours. Answer the picture as {@link KinoImageAnswer} within 10 s. It runs in the background (nobody is asked
+   * anything, a slow answer never marks your plugin "No responde"), one call at a time for your plugin and never while
+   * one of your byte streams is open; a call that started always runs to its end, so a connection you keep stays open. A
+   * timeout discards your sandbox (QuickJS cannot be interrupted), and with it that connection.
+   */
+  image?(arg: { handle: string }): Promise<KinoImageAnswer>;
   /**
    * apiVersion 6, needed when a stream says `signing: "request"`: headers for one request, computed with
    * kino.crypto / kino.secret only. kino.fetch answers host_not_allowed; kino.storage, kino.cookies and
@@ -768,7 +847,13 @@ interface KinoPlugin {
    * limits. Kino shows them when the app is in English; the base texts stay the Spanish default and the fallback. apiVersion 9
    * (Kino 0.9.55): below it the keys are unknown and ignored. Your code never sees them: keys and values are the same in both languages.
    */
-  /** apiVersion 6: required when a setting has `type: "status"`. One text per status setting key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. */
+  /**
+   * apiVersion 6: required when a setting has `type: "status"` (or, apiVersion 13, `type: "qr"`). One text per status setting
+   * key, shown as-is (at most 200 characters; a missing key or a non-text reads "Sin información"). 10 s. A `qr` setting's
+   * key holds the text its QR encodes: 1 to 512 characters, no control character, an http(s) address only https on a public
+   * host; anything else (or a text holding a sealed secret) draws no QR. Asked when the form opens, after every action and,
+   * with a `qr` setting's `refreshMs`, every that many ms while the form is on screen (never while the previous call runs).
+   */
   settingsStatus?(): Promise<Record<string, string>>;
   /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. `link` (Kino 0.9.74, additive `action.link`): Kino asks the person with its OWN question ("¿Eres tú, <candidate>?" / "Is this you, <candidate>?", naming your plugin by its manifest `name`) and runs the `confirm` action exactly once only if they confirm; Cancel runs nothing and your plugin hears nothing. `candidate`: 1 to 64 characters after trimming, runs of spaces collapsed; no control or invisible formatting characters, no space but the ASCII one, no blank fillers (U+115F, U+1160, U+3164, U+FFA0, U+2800); scrubbed of your secrets and shown as plain text. `confirm`: the key of ANOTHER `action` setting of this plugin that declares no `confirm`/`confirmEn` question of its own. Anything else refuses the link: your `message` still shows, with Kino's generic error. A `link` in the confirm action's own answer is ignored. `setSettings` (Kino 0.9.74, additive `action.setSettings`): up to 8 of your own `text` or `select` settings (never a `url`: only the person types a server; never a password, toggle or list) with string values, checked like typed values (a required one is never emptied; your `validateSettings` is not run); Kino saves them through the form's own save, so they reach the person's other devices like typed values. An unknown or secret key, a non-string, a bad value, a key also in `clearSettings`, a value holding one of your secrets or more than 8 keys refuse the whole field: nothing is applied and the form shows Kino's generic error under your message. */
   action?(key: string): Promise<{ message?: string; refresh?: boolean; clearSettings?: string[]; setSettings?: Record<string, string>; link?: { candidate: string; confirm: string } } | null | void>;
@@ -1226,6 +1311,106 @@ interface CsLink {
   headers: Record<string, string>;
 }
 
+/** apiVersion 13, `kino.ws.open`: a connected WebSocket carrying binary messages. */
+interface KinoWebSocket {
+  /** Sends one binary message of at most 786000 bytes (`"too_large"` above). `await` it: it rejects with code `"closed"` when the socket is no longer open. */
+  send(data: Uint8Array): Promise<void>;
+  /**
+   * Sends one binary message given as a string in `encoding`: `"hex"` (an even number of digits, either case) or `"base64"`
+   * (standard alphabet, padded, no whitespace). Kino decodes it natively, so no JavaScript loop touches the bytes: for a
+   * binary protocol whose bytes already live as hex in your code (`kino.crypto` results, a packet you built), this is the
+   * fast path. The 786000-byte cap is on the decoded bytes (`"too_large"`); a string that is not exactly that encoding
+   * rejects with `"invalid_request"`, as does an `encoding` other than these two.
+   * @example
+   * await ws.send("efefefef", { encoding: "hex" });
+   * await ws.send(kino.crypto.aesIge("encrypt", key, iv, plain, { keyEncoding: "hex", ivEncoding: "hex", inputEncoding: "hex", outputEncoding: "hex" }), { encoding: "hex" });
+   */
+  send(data: string, options: { encoding: "hex" | "base64" }): Promise<void>;
+  /**
+   * Waits up to `timeoutMs` (default 30000, at most 60000) for the next message: resolves with it, or with null when none
+   * came in time. Rejects with code `"closed"` once the socket is closed and nothing is left queued (`"limit"` when it was
+   * closed for holding more than 8 MiB of unread messages).
+   */
+  recv(timeoutMs?: number): Promise<Uint8Array | null>;
+  /**
+   * As `recv(timeoutMs)`, but the message comes as a string in `encoding`, `"hex"` (lower case) or `"base64"` (padded),
+   * encoded natively by Kino. Building a `Uint8Array` costs a JavaScript pass over every byte (QuickJS interprets each
+   * iteration); for anything big prefer an encoded frame and hand it on as it is, e.g. to `kino.crypto` with the same
+   * `inputEncoding`. Rejects with `"invalid_request"` for an `encoding` other than these two, before waiting.
+   * @example
+   * const hex = await ws.recv(10000, { encoding: "hex" });   // "0a1b..." (2 characters per byte), or null
+   */
+  recv(timeoutMs: number | undefined, options: { encoding: "hex" | "base64" }): Promise<string | null>;
+  /** Closes the socket; later calls reject with `"closed"`. Closing twice is harmless. */
+  close(): Promise<void>;
+}
+
+/**
+ * apiVersion 13, `kino.catalog`: one item as you give it to `upsert`. Only these four fields are kept; anything else is
+ * dropped before it reaches Kino.
+ */
+interface KinoCatalogUpsertItem {
+  /**
+   * Your own key for the item (a message id, a video id, a URL), 1 to 128 characters (longer is `"too_large"`, empty or not a
+   * string is `"invalid_request"`). Upserting an id that is already there REPLACES that item whole (title, sort and data).
+   */
+  id: string;
+  /**
+   * What `search` matches and what the "title" order sorts by: at most 300 characters (longer is `"too_large"`). Kino keeps
+   * a copy lower-cased and without accents for the search ("Película" is found by "pelicula", "PELICULA" or "película").
+   */
+  title: string;
+  /**
+   * A whole number for the "newest" (descending) and "oldest" (ascending) orders, for example a date in ms or a message id.
+   * Default 0. Must be a safe integer (at most 2^53 - 1 in size); a fraction, `NaN` or `Infinity` is `"invalid_request"`.
+   */
+  sort?: number;
+  /**
+   * Small display fields you want back with the item (a poster URL, a duration, a file reference), a plain object whose
+   * JSON is at most 4,096 bytes in UTF-8 (`"too_large"` above; an array, a string or a number is `"invalid_request"`).
+   * Not searched. Not a place for blobs or credentials.
+   */
+  data?: Record<string, unknown> | null;
+}
+
+/** apiVersion 13, `kino.catalog`: one stored item as `search` and `get` answer it. */
+interface KinoCatalogItem {
+  id: string;
+  title: string;
+  /** 0 when you gave none. */
+  sort: number;
+  /** The object you stored, parsed again; null when you gave none. */
+  data: Record<string, unknown> | null;
+}
+
+/** apiVersion 13, `kino.catalog.search`'s options. Every field is optional; anything else is dropped. */
+interface KinoCatalogSearchOptions {
+  /**
+   * Words to find, at most 256 characters (`"too_large"` above). Split on whitespace; EVERY word must appear somewhere in
+   * the title (AND, any order, as a substring: "gat roj" finds "Gato rojo"), ignoring case, accents and control characters
+   * other than whitespace (a NUL, an escape code). `%`, `_` and `\`
+   * are plain characters, never wildcards. Empty, blank or absent lists everything.
+   */
+  q?: string;
+  /** Items per page: default 50, at most 100 (`"too_large"` above, `"invalid_request"` below 1, for a fraction, `NaN` or `Infinity`). */
+  limit?: number;
+  /** Items to skip: default 0, at most 1,000,000 (`"too_large"` above, `"invalid_request"` for a negative, fractional or non-finite number). */
+  offset?: number;
+  /**
+   * "newest" (default): `sort` descending, then `id`; "oldest": `sort` ascending, then `id`; "title": the title without case
+   * or accents, then the title as written, then `id`. Ties are always broken by `id`, so paging is stable.
+   */
+  order?: "newest" | "oldest" | "title";
+}
+
+/** apiVersion 13, `kino.catalog.search`'s answer: one page and the count of every match. */
+interface KinoCatalogPage {
+  /** At most `limit` items, in the order asked. */
+  items: KinoCatalogItem[];
+  /** How many items match `q` in all (not just this page): compare it with `offset + items.length` to know if there is more. */
+  total: number;
+}
+
 declare namespace kino {
   const apiVersion: number;
   /** Kino's version name, for example "0.9.56" ("sdk" in the Node kit). */
@@ -1418,15 +1603,25 @@ declare namespace kino {
     function select(html: string, css: string): KinoHtmlMatch[];
   }
 
+  /**
+   * 256 KB in total for this plugin. apiVersion 13, capability "storageLarge" (declarative, nothing to export): 16 MiB in
+   * total, 2 MiB per value, at most 1000 keys of at most 256 characters instead, for a plugin that keeps a catalog (shard
+   * it into values of about 512 KB); the same API and TTL rules, one file per value on the device. Going over throws
+   * code `"too_large"`: "plugin storage full (256 KB)", or with storageLarge "plugin storage full (16 MB)" /
+   * "plugin storage full (2 MB per value)" / "plugin storage full (1000 keys)"; a longer key is `"invalid_request"`.
+   * The storageLarge store is device-only: never synced and NOT in backups. Declaring storageLarge moves the plugin's
+   * existing keys into it, out of the backed-up 256 KB store: keep credentials and sessions in sealed secrets or the
+   * person's settings, or in a plugin without the capability.
+   */
   namespace storage {
-    /** 256 KB in total for this plugin. Returns `null` once the entry has expired (see `set`). */
+    /** Returns `null` once the entry has expired (see `set`). */
     function get(key: string): string | null;
     /**
      * `options.ttlMs` makes the entry expire: after that many milliseconds, `get` returns `null` and
      * `keys()` leaves it out, even across a restart of the app. A whole number greater than 0,
      * at most 2,592,000,000 ms (30 days); anything else throws before the entry is touched. Leave
      * out `options` (or `ttlMs`) for a permanent entry, exactly as before this option existed. An
-     * expired entry never counts against the 256 KB cap: it is dropped the next time your plugin
+     * expired entry never counts against the cap (256 KB, or 16 MiB with storageLarge): it is dropped the next time your plugin
      * reads or writes storage.
      */
     function set(key: string, value: string, options?: { ttlMs?: number }): void;
@@ -1439,6 +1634,140 @@ declare namespace kino {
     /** A setting's value (string; boolean for a toggle; an array of `{ [field.key]: string }` for a `list`, apiVersion 4); undefined when unset with no default (a `url` setting never has one). Read-only. */
     function get(key: string): string | boolean | Array<Record<string, string>> | undefined;
     function all(): Record<string, string | boolean | Array<Record<string, string>>>;
+  }
+
+  /**
+   * apiVersion 13, capability "socket": an outbound WebSocket. `url` must be wss:// (port 443) on a host the manifest declares and the
+   * person approved -- never the local network or an IP literal. At most 4 open sockets per plugin and 8 MiB queued unread.
+   */
+  namespace ws {
+    /**
+     * Opens the socket and resolves once it is connected. Rejects with an error whose `code` is `"host_not_allowed"` (it
+     * also carries the offending `host`), `"not_https"` (not a wss:// address) or `"limit"` (4 sockets already open); also `"network"` and `"timeout"` when the connection cannot be made.
+     */
+    function open(url: string, options?: { protocol?: string }): Promise<KinoWebSocket>;
+  }
+
+  /**
+   * apiVersion 13, capability "catalog" (declarative, nothing to export, no consent line): a searchable catalog of your own
+   * items, kept by Kino in ONE SQLite database file for your plugin alone, so you can index and search thousands of videos
+   * without holding them in your 64 MB of QuickJS memory. Undefined without the capability, and inside `sign()`.
+   *
+   * Limits (contract.json `catalog`): at most 100,000 items per plugin; `id` 1 to 128 characters; `title` at most 300
+   * characters; `data` at most 4,096 bytes of JSON; at most 500 items per `upsert` and 500 ids per `get` or `remove`;
+   * `search` `limit` default 50, at most 100, `offset` at most 1,000,000, `q` at most 256 characters; the file at most 64 MiB.
+   * Both item limits hold at once: 100,000 items fit only at about 670 bytes of file per item on average (measured with a
+   * 50-character title: about 370 bytes with no `data`, about 920 with 500 bytes of `data`, about 4,850 with 4,000 bytes,
+   * so only about 13,800 items at that size). Keep `data` small.
+   *
+   * Every refusal is a KinoError whose `code` says what to do: `"invalid_request"` (a wrong shape or type: fix the call),
+   * `"too_large"` (one value or one batch over its limit, named in the message: split it or shorten it), `"limit"` (the
+   * catalog is full, 100,000 items or 64 MiB: remove old items first) and `"unavailable"` (Kino could not read or write the
+   * file right now: try again later; the message says "damaged and has been reset to empty" when the file was corrupt and
+   * Kino started an empty one: rebuild it). A refused `upsert` writes nothing of its batch.
+   *
+   * Isolation and privacy: no other plugin can read or change your catalog, and your plugin never writes SQL (only these
+   * six operations, every value bound). It stays on the device: never synced and NOT in backups, so after a restore or a
+   * reinstall it is empty: rebuild it from your source. Credentials and sessions never belong here.
+   */
+  namespace catalog {
+    /**
+     * Adds or replaces up to 500 items in one transaction (all or nothing: one bad item refuses its whole batch, so clean
+     * them first). Answers how many items were written.
+     * @example
+     *   const items = videos
+     *     .filter((v) => String(v.id).length <= 128)
+     *     .map((v) => ({ id: String(v.id), title: String(v.caption || "").slice(0, 300).replace(/[\uD800-\uDBFF]$/, "") || "Video " + v.id, sort: Number.isSafeInteger(v.date) ? v.date : 0, data: { file: String(v.fileRef) } }));
+     *   for (let i = 0; i < items.length; i += 500) await kino.catalog.upsert(items.slice(i, i + 500));
+     */
+    function upsert(items: KinoCatalogUpsertItem[]): Promise<{ count: number }>;
+    /**
+     * One page of the items whose title holds every word of `q` (case and accents ignored), plus `total`, the count of
+     * every match. Reads only the page asked for.
+     * @example
+     *   const offset = 40;
+     *   const page = await kino.catalog.search({ q: "pelicula 2001", limit: 20, offset, order: "newest" });
+     *   const more = page.total > offset + page.items.length;
+     */
+    function search(options?: KinoCatalogSearchOptions): Promise<KinoCatalogPage>;
+    /**
+     * The items with these ids (at most 500 per call), in the order asked; an id that is not there is skipped and a repeated
+     * one comes once.
+     * @example
+     *   const [item] = await kino.catalog.get([ref]); // ref: the catalog id your resolve(ref) got
+     */
+    function get(ids: string[]): Promise<KinoCatalogItem[]>;
+    /**
+     * Deletes the items with these ids (at most 500 per call). Answers how many were there and are now gone.
+     * @example
+     *   await kino.catalog.remove(staleIds);
+     */
+    function remove(ids: string[]): Promise<{ count: number }>;
+    /**
+     * Deletes every item: Kino deletes the file itself, so the space goes back to the device.
+     * @example
+     *   await kino.catalog.clear(); // then upsert everything again
+     */
+    function clear(): Promise<void>;
+    /**
+     * How many items the catalog holds.
+     * @example
+     *   if ((await kino.catalog.count()) === 0) await rebuild();
+     */
+    function count(): Promise<number>;
+  }
+
+  /**
+   * apiVersion 13, capability "qrScan" (declarative, nothing to export, no consent line): ask the person to scan a QR code
+   * with the phone's camera. Undefined without the capability, and inside `sign()`.
+   *
+   * Kino opens its own camera scanner full screen over whatever the person was doing. At the top it shows, from the top:
+   * "<your plugin's installed name> wants to read a QR code", your `title` (your `titleEn` when Kino speaks English, else
+   * `title`; each at most 80 characters, at most two lines on screen, with no control, bidi or format character), and
+   * Kino's instruction; a close button beside them. The first code the camera decodes that holds 1 to 4,096 characters
+   * answers the call; a longer one is ignored, the scanner says "This code is not valid for <your plugin>" and keeps looking.
+   *
+   * Rules: only from a settings `action` or a `panelAction` (the person pressed one of your buttons), never from Home,
+   * search, a play, a list, a title page, your section, `settingsStatus` or any background call; that call's own time limit
+   * stops while the scanner is up. At most one scan on screen at a time, for the whole app. The scanner closes by itself
+   * after 120 s. On a device without a camera, and on Kino's TV interface, it never opens.
+   *
+   * Errors (a KinoError whose `code` says what to do): `"busy"` (a scan is already open, yours or another plugin's: wait
+   * for it), `"timeout"` (nothing was scanned in 120 s: offer to try again), `"unavailable"` (this device cannot scan: no
+   * camera, or a TV: show the code another way, such as a settings `qr` setting), `"not_allowed"` (called from anything but
+   * a settings `action` or a `panelAction`: "kino.qr.scan only runs from a settings action or panelAction"; scan from a
+   * button), `"permission_denied"` (the person did not give Kino the camera: say they can allow it in the phone's
+   * settings) and `"invalid_request"` (a `title` or `titleEn` that is not a string, is over 80 characters or holds a
+   * control or formatting character: fix the call).
+   *
+   * Privacy: you get only the decoded text of the code the person pointed the camera at, never an image; it is data from
+   * the world (check it before you trust it), and only your plugin gets it.
+   *
+   * To SHOW a QR instead (say, on the new device a login is for), use a settings `qr` setting: `{ "key": "login", "label":
+   * "...", "type": "qr", "refreshMs": 5000 }`, whose text is your `settingsStatus()` answer under that key (at most 512
+   * characters); Kino asks again when the form opens, after every action and every `refreshMs` (2000 to 60000) while the
+   * form is on screen, so a code that expires is replaced in place.
+   */
+  namespace qr {
+    /**
+     * Opens the scanner; resolves with the scanned text, or null when the person closed the scanner (the close button,
+     * Back, leaving the screen).
+     * @example
+     *   // In action("link"): the person pressed "Vincular otro aparato" in your settings.
+     *   let text;
+     *   try {
+     *     text = await kino.qr.scan({ title: "Escanea el código del otro aparato", titleEn: "Scan the other device's code" });
+     *   } catch (e) {
+     *     if (e.code === "unavailable") return { message: "Este aparato no puede escanear: usa tu teléfono" };
+     *     if (e.code === "permission_denied") return { message: "Permite la cámara en los ajustes del teléfono" };
+     *     throw e;
+     *   }
+     *   if (text === null) return { message: "Cancelado" };
+     *   if (!text.startsWith("exampleapp://login?token=")) return { message: "Ese no es un código de inicio de sesión" };
+     *   await acceptLogin(text);
+     *   return { message: "Listo: el otro aparato ya entró" };
+     */
+    function scan(options?: { title?: string; titleEn?: string }): Promise<string | null>;
   }
 
   namespace cookies {
@@ -1458,6 +1787,38 @@ declare namespace kino {
     function decrypt(alg: KinoCipher, options: KinoCipherOptions): string;
     /** iterations at most 100000, keyLength at most 64 bytes. Password uses keyEncoding, salt inputEncoding. */
     function pbkdf2(hash: "sha1" | "sha256" | "sha512", password: string, salt: string, iterations: number, keyLength: number, options?: { keyEncoding?: KinoEncoding; inputEncoding?: KinoEncoding; outputEncoding?: KinoEncoding }): string;
+    /**
+     * apiVersion 13: MTProto's AES-256-IGE (`c_i = E(m_i xor c_{i-1}) xor m_{i-1}`). `dir` is "encrypt" or "decrypt"; `key` is
+     * 32 bytes, `iv` 32 bytes (two blocks) and `data` a multiple of 16 bytes, each read with its encoding (key and iv with
+     * keyEncoding/ivEncoding, data with inputEncoding; default utf8). Output base64 by default. Anything malformed fails
+     * with the fixed text "invalid crypto operation". A sealed value is refused in every field.
+     */
+    function aesIge(dir: "encrypt" | "decrypt", key: string, iv: string, data: string, options?: { keyEncoding?: KinoEncoding; ivEncoding?: KinoEncoding; inputEncoding?: KinoEncoding; outputEncoding?: KinoEncoding }): string;
+    /**
+     * apiVersion 13: `base ^ exp mod mod` over big-endian hex strings (no 0x prefix; each at most 4096 bits). The answer is hex,
+     * left-padded with zeros to the modulus' byte width. A zero modulus or an empty string in any of the three fails with
+     * "invalid crypto operation" (write zero as "0").
+     */
+    function modPow(base: string, exp: string, mod: string): string;
+    /** apiVersion 13: inflates a gzip stream (input base64 by default, output utf8 by default); the output is at most 5 MB. */
+    function gunzip(data: string, options?: { inputEncoding?: KinoEncoding; outputEncoding?: KinoEncoding }): string;
+    /**
+     * apiVersion 13: `data` read in `from` and written in `to` (`"hex"` to `"base64"` and back, `"utf8"` to bytes...), in native
+     * code: no JavaScript loop over the bytes. Hex comes out lower case, base64 padded with the standard alphabet; base64 in may
+     * be URL-safe or unpadded. At most 5 MB of bytes. A bad input fails with `"data" is not valid hex` / `base64`, an unknown
+     * encoding with `unknown encoding: <name>`. A sealed value is refused.
+     */
+    function convert(data: string, from: KinoEncoding, to: KinoEncoding): string;
+    /**
+     * apiVersion 13: AES-256-IGE decryption (as `aesIge("decrypt", ...)`) checked by a MAC in the same call: the SHA-256 digest of
+     * `macPrefix` followed by the plaintext, bytes `macOffset` to `macOffset + mac.length` (1 to 32 bytes inside the 32-byte digest),
+     * must equal `mac`, compared in constant time. On a match it answers the plaintext (base64 by default); on a mismatch it fails
+     * with the fixed text "the mac doesn't match" and answers nothing. `mac` and `macPrefix` are read with `macEncoding` (default
+     * hex), `key`/`iv`/`data` as in `aesIge`. MTProto 2.0's msg_key check is `macPrefix` = 32 bytes of the auth key, `macOffset` 8,
+     * `mac` = the 16-byte msg_key. Anything malformed (sizes, an offset that is not a whole number or runs past the digest) fails
+     * with "invalid crypto operation". A sealed value is refused in every field.
+     */
+    function aesIgeVerify(key: string, iv: string, data: string, options: { mac: string; macPrefix?: string; macOffset?: number; macEncoding?: KinoEncoding; keyEncoding?: KinoEncoding; ivEncoding?: KinoEncoding; inputEncoding?: KinoEncoding; outputEncoding?: KinoEncoding }): string;
     /** 1..1024 bytes, hex by default. */
     function randomBytes(n: number, outputEncoding?: KinoEncoding): string;
     /** A random (v4) UUID. */

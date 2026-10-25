@@ -1,22 +1,22 @@
 {
-  "$comment": "Kino plugin contract, apiVersion 1 to 12. The single source of truth for every number and rule a plugin meets. The app checks each value against its own code, and a test in the app pins this file to it; sdk/validate.mjs, sdk/run.mjs and the guide's tables read this file.",
-  "apiVersion": 12,
-  "maxApiVersion": 12,
-  "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54", "9": "0.9.55", "10": "0.9.65", "11": "0.9.66", "12": "0.9.74" },
+  "$comment": "Kino plugin contract, apiVersion 1 to 13. The single source of truth for every number and rule a plugin meets. The app checks each value against its own code, and a test in the app pins this file to it; sdk/validate.mjs, sdk/run.mjs and the guide's tables read this file. apiVersionFromApp[\"13\"] (0.9.75) is PROVISIONAL: which Kino release first ships apiVersion 13 is not decided yet (12 is the sync-providers release, Kino 0.9.74).",
+  "apiVersion": 13,
+  "maxApiVersion": 13,
+  "apiVersionFromApp": { "6": "0.9.50", "7": "0.9.51", "8": "0.9.54", "9": "0.9.55", "10": "0.9.65", "11": "0.9.66", "12": "0.9.74", "13": "0.9.75" },
   "additiveFromApp": { "kino.meta": "0.9.53", "kino.tmdb": "0.9.53", "catalogOnly": "0.9.54", "kino.browser.captureAll": "0.9.54", "fetch.errorHost": "0.9.55", "kino.fetchAnyHost": "0.9.55",
     "kino.meta.byTitle": "0.9.55", "kino.device": "0.9.55", "kino.seed": "0.9.55", "panel.loading": "0.9.64", "kino.nuvio": "0.9.71", "kino.sync.remoteChanged": "0.9.74", "action.link": "0.9.74", "action.setSettings": "0.9.74" },
   "capabilities": {
-    "names": ["search", "home", "browse", "episodes", "resolve", "download", "drm", "channels", "migrate", "scopedSearch", "meta", "subtitles", "tracking", "segments", "playlists", "externalResolve", "nuvio", "syncProvider"],
+    "names": ["search", "home", "browse", "episodes", "resolve", "download", "drm", "channels", "migrate", "scopedSearch", "meta", "subtitles", "tracking", "segments", "playlists", "externalResolve", "nuvio", "syncProvider", "socket", "byteSource", "storageLarge", "catalog", "qrScan", "imageSource"],
     "required": ["resolve"],
     "atLeastOneOf": ["search", "home"],
     "standalone": ["subtitles", "tracking", "segments", "syncProvider"],
     "anyPluginExports": ["subtitles"],
-    "declarative": ["download", "drm", "scopedSearch", "externalResolve", "nuvio"],
-    "apiVersions": { "download": 2, "drm": 2, "channels": 3, "migrate": 6, "scopedSearch": 6, "meta": 6, "tracking": 7, "segments": 7, "playlists": 10, "externalResolve": 11, "nuvio": 11, "syncProvider": 12 },
+    "declarative": ["download", "drm", "scopedSearch", "externalResolve", "nuvio", "socket", "storageLarge", "catalog", "qrScan"],
+    "apiVersions": { "download": 2, "drm": 2, "channels": 3, "migrate": 6, "scopedSearch": 6, "meta": 6, "tracking": 7, "segments": 7, "playlists": 10, "externalResolve": 11, "nuvio": 11, "syncProvider": 12, "socket": 13, "byteSource": 13, "storageLarge": 13, "catalog": 13, "qrScan": 13, "imageSource": 13 },
     "requires": { "scopedSearch": "search" },
     "requiresMessage": "The \"{capability}\" capability also needs \"{requires}\"",
     "needsApproval": ["download", "drm", "channels", "migrate", "tracking", "nuvio", "syncProvider"],
-    "exports": { "channels": ["liveCategories", "liveChannels"], "tracking": ["track"], "playlists": [], "syncProvider": ["syncPull", "syncPush"] },
+    "exports": { "channels": ["liveCategories", "liveChannels"], "tracking": ["track"], "playlists": [], "syncProvider": ["syncPull", "syncPush"], "byteSource": ["read"], "imageSource": ["image"] },
     "optionalExports": { "channels": ["guide", "liveSearch"], "resolve": ["sign"], "playlists": ["playlists", "playlistItems", "playlistCreate", "playlistAddItem", "playlistRemoveItem", "playlistReorder"], "syncProvider": ["syncStatus"] }
   },
   "manifest": {
@@ -115,6 +115,7 @@
       "section": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 },
       "status": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 },
       "action": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 6 },
+      "qr": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 13, "maxChars": 512 },
       "link": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 12 },
       "help": { "canBeRequired": false, "canHaveDefault": false, "hasValue": false, "apiVersion": 12 }
     },
@@ -497,7 +498,12 @@
   },
   "storage": {
     "maxTotalBytes": 262144,
-    "maxTtlMs": 2592000000
+    "maxTtlMs": 2592000000,
+    "largeApiVersion": 13,
+    "largeMaxTotalBytes": 16777216,
+    "largeMaxValueBytes": 2097152,
+    "largeMaxKeys": 1000,
+    "largeMaxKeyChars": 256
   },
   "crypto": {
     "hashes": ["md5", "sha1", "sha256", "sha512"],
@@ -507,6 +513,11 @@
     "pbkdf2MaxIterations": 100000,
     "pbkdf2MaxKeyBytes": 64,
     "randomMaxBytes": 1024,
+    "bytesOps": {
+      "apiVersion": 13,
+      "ops": ["aesIge", "modPow", "gunzip", "convert", "aesIgeVerify"],
+      "modPowMaxBits": 4096
+    },
     "maxDataBytes": 5242880,
     "errorCode": "crypto_error",
     "keyPairs": {
@@ -519,6 +530,70 @@
       "maxKeysPerRuntime": 64,
       "maxSignatureBytes": 512
     }
+  },
+  "socket": {
+    "apiVersion": 13,
+    "maxSockets": 4,
+    "maxQueuedBytes": 8388608,
+    "maxRecvMs": 60000,
+    "maxSendBytes": 786000,
+    "encodings": ["hex", "base64"],
+    "errorCodes": ["host_not_allowed", "not_https", "limit", "closed", "network", "timeout", "invalid_request", "too_large"]
+  },
+  "byteSource": {
+    "apiVersion": 13,
+    "maxSessions": 2,
+    "maxLanSessions": 2,
+    "chunkBytes": 1048576,
+    "alignmentBytes": 4096,
+    "readAheadChunks": 3,
+    "cacheChunks": 8,
+    "maxHandleChars": 512
+  },
+  "catalog": {
+    "apiVersion": 13,
+    "fileName": "catalog.db",
+    "maxItems": 100000,
+    "maxIdChars": 128,
+    "maxTitleChars": 300,
+    "maxDataBytes": 4096,
+    "maxUpsertBatch": 500,
+    "defaultSearchLimit": 50,
+    "maxSearchLimit": 100,
+    "maxOffset": 1000000,
+    "maxQueryChars": 256,
+    "maxDbBytes": 67108864,
+    "maxRequestChars": 6291456,
+    "orders": ["newest", "oldest", "title"],
+    "errorCodes": ["invalid_request", "too_large", "limit", "unavailable"]
+  },
+  "qr": {
+    "$comment": "apiVersion 13. kino.qr.scan({ title?, titleEn? }) (capability qrScan, declarative, no approval): Kino's camera scanner full screen on the phone, under the installed plugin's name, the plugin's title (titleEn in English) and Kino's instruction. Resolves with the decoded text (1 to maxScanChars characters) or null when the person closes it (the close button, Back, leaving the screen, or the call ending). A scan runs only from a settings action or a panelAction (the person pressed one of the plugin's buttons; anything else is not_allowed), whose clock is paused while the scanner is up; one scan on screen at a time for the whole app (a second one, from any plugin, is busy). unavailable: this device cannot scan (no camera, or Kino's TV interface). title and titleEn hold no control, bidi or format character (invalid_request); a code over maxScanChars is ignored and the scanner says it is not valid for the plugin. Showing a QR needs no capability: the settings form's qr setting (settingsQr), whose text is settingsStatus()'s answer under its key, asked again when the form opens, after every action and every refreshMs while the form is on screen.",
+    "apiVersion": 13,
+    "capability": "qrScan",
+    "maxScanChars": 4096,
+    "timeoutMs": 120000,
+    "maxTitleChars": 80,
+    "errorCodes": ["busy", "timeout", "unavailable", "permission_denied", "invalid_request", "not_allowed"],
+    "settingsQr": { "type": "qr", "maxChars": 512, "minRefreshMs": 2000, "maxRefreshMs": 60000 }
+  },
+  "images": {
+    "$comment": "imageSource (apiVersion 13): a poster, backdrop, still or section hero image may be { source: \"plugin\", handle } instead of a URL; Kino loads it from the plugin's required image({ handle }) export, which answers { bytes: <base64>, mime }. One call in flight per plugin, never while that plugin has an open byte stream or a read queued, running or ended under readQuietMs ago (a timed-out call discards the plugin's runtime: QuickJS cannot be interrupted), kept in the image disk cache per plugin, installed version and handle; a failed handle is left alone for failureTtlMs; pauseAfterTimeouts timeouts in a row pause the plugin's images for pauseMs.",
+    "apiVersion": 13,
+    "capability": "imageSource",
+    "export": "image",
+    "source": "plugin",
+    "fields": ["poster", "backdrop", "still", "hero.image"],
+    "maxHandleChars": 512,
+    "maxBytes": 262144,
+    "mimes": ["image/jpeg", "image/png", "image/webp"],
+    "timeoutMs": 10000,
+    "maxInFlightPerPlugin": 1,
+    "readQuietMs": 2000,
+    "maxWaitMs": 20000,
+    "failureTtlMs": 300000,
+    "pauseAfterTimeouts": 2,
+    "pauseMs": 300000
   },
   "sleep": {
     "maxMs": 5000

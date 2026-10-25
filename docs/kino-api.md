@@ -10,7 +10,12 @@ kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach
 kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
 kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync provider (see below); absent before
+kino.ws            // apiVersion 13 (in development), capability "socket": outbound WebSockets (see below); absent otherwise
+kino.catalog       // apiVersion 13 (in development), capability "catalog": a SQLite catalog of your items; absent otherwise
+kino.qr            // apiVersion 13 (in development), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 ```
+
+`kino.apiVersion` vale 12 en Kino 0.9.74; la próxima versión de Kino, todavía en desarrollo, responde 13.
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
 manifiesto; `kino.appVersion` es la versión de Kino.)
@@ -278,6 +283,28 @@ kino.crypto.uuid()
 | `generateKeyPair` (apiVersion 6) | `ec`, `ed25519`, `x25519`; `ec` en `P-256`, `P-384`; máximo 64 llaves privadas vivas por runtime (una nueva descarta la más vieja) |
 | `sign`, `verify` (apiVersion 6) | ECDSA con `SHA-256`, `SHA-384` como `der` o `ieee-p1363`; Ed25519; una firma de máximo 512 bytes |
 | `importKey`, `deriveSharedSecret` (apiVersion 6) | llaves públicas como `jwk`, `spki`, `raw`; ECDH (misma curva) y X25519 |
+
+### Operaciones de bytes (apiVersion 13, en desarrollo) { #crypto-bytes }
+
+Para protocolos binarios (MTProto y parecidos), un Kino cuyo `kino.apiVersion` es 13 o más (la próxima versión, en
+desarrollo) tiene cinco operaciones más sobre textos en cualquiera de las tres codificaciones, para todo plugin sin
+importar el `apiVersion` que declare su manifiesto, y sin capacidad; un Kino más viejo no las tiene, así que revisa con
+`typeof kino.crypto.convert === "function"`.
+
+```js
+kino.crypto.aesIge("decrypt", keyHex, ivHex, dataHex, { keyEncoding: "hex", ivEncoding: "hex", inputEncoding: "hex", outputEncoding: "hex" })
+kino.crypto.aesIgeVerify(keyHex, ivHex, dataHex, { mac: msgKeyHex, macPrefix: authKeySliceHex, macOffset: 8,
+  keyEncoding: "hex", ivEncoding: "hex", inputEncoding: "hex", outputEncoding: "hex" })   // decrypt + SHA-256 MAC check
+kino.crypto.modPow(baseHex, expHex, modHex)   // big-endian hex (at most 4,096 bits), padded to the modulus' width
+kino.crypto.gunzip(b64)                       // base64 in, text out by default
+kino.crypto.convert(hex, "hex", "base64")     // re-encode natively, no JavaScript loop over the bytes
+```
+
+`aesIge` es AES-256-IGE (llave de 32 bytes, iv de 32 bytes, datos múltiplos de 16 bytes); `aesIgeVerify` responde el
+texto descifrado solo cuando los bytes `macOffset` a `macOffset + mac.length` de `SHA-256(macPrefix || plaintext)` son
+iguales a `mac`, y si no falla con "the mac doesn't match". Un valor sellado se rechaza en cualquier campo; cualquier cosa
+mal formada falla con "invalid crypto operation". Para qué existen y cómo usarlas sobre un trozo de 1 MiB: [Sockets y
+bytes del plugin](bytes.md#crypto).
 
 ### Pares de llaves, firmas y acuerdo de llaves (apiVersion 6) { #key-pairs }
 
@@ -581,6 +608,32 @@ export async function syncStatus() {
   declare la capacidad `syncProvider` con `mode: "realtime"`.
 - **Detéctala** con `typeof kino.sync === "object"`: un Kino anterior no tiene `kino.sync`.
 
+## `kino.ws`: WebSockets (apiVersion 13, en desarrollo) { #ws }
+
+Con la capacidad `socket`: `await kino.ws.open(url, { protocol? })` abre un WebSocket de salida y responde un socket con
+`send(data, { encoding? })`, `recv(timeoutMs?, { encoding? })` y `close()`. `wss://` por el puerto 443 a un host que tu
+manifiesto declara y que la persona aprobó, nunca la red local ni una IP literal; máximo 4 sockets abiertos por plugin,
+8 MiB en cola sin leer por socket, 786.000 bytes por frame enviado, 60 s por `recv`. Los frames son `Uint8Array`, o
+textos `hex` / `base64` con `{ encoding }` (el camino rápido: ningún ciclo de JavaScript sobre los bytes). Errores:
+`not_https`, `host_not_allowed` (con `host`), `limit`, `closed`, `network`, `timeout`, `too_large`, `invalid_request`.
+La guía completa: [Sockets y bytes del plugin](bytes.md#ws).
+
+## `kino.catalog` (apiVersion 13, en desarrollo) { #catalog }
+
+Con la capacidad `catalog`: `upsert(items)`, `search({ q?, limit?, offset?, order? })`, `get(ids)`, `remove(ids)`,
+`clear()` y `count()` sobre un catálogo SQLite de tus propios ítems (hasta 100.000, en un solo archivo de 64 MiB solo
+para tu plugin, solo en el aparato). Cada llamada es `async`; no hay SQL. La guía completa, con cada regla, límite y
+error: [Catálogo y almacenamiento grande](catalog.md).
+
+## `kino.qr.scan(options?)` (apiVersion 13, en desarrollo) { #qr }
+
+Con la capacidad `qrScan`: abre el lector de cámara de Kino en pantalla completa en el teléfono y resuelve con el texto
+leído (de 1 a 4.096 caracteres) o con `null` cuando la persona lo cierra. `{ title?, titleEn? }`, de máximo 80
+caracteres cada uno. Solo desde un ajuste `action` o un `panelAction` (`not_allowed` desde cualquier otra cosa);
+`unavailable` en una TV o sin cámara; `busy`, `timeout` (120 s), `permission_denied`, `invalid_request`. Mostrar un QR no
+necesita capacidad: el tipo `qr` del formulario de ajustes. Mira [Códigos QR](qr.md) para las reglas, los errores y una
+receta de inicio de sesión entre dos aparatos.
+
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo
@@ -677,12 +730,18 @@ valores); pasarse lanza `Error("plugin storage full (256 KB)")` (Kino 0.9.53 y a
 `"almacenamiento del plugin lleno (256 KB)"`). Se borra cuando la
 persona desinstala el plugin, y **no** se borra cuando cambia tus ajustes.
 
+**Un almacén más grande (`storageLarge`, apiVersion 13, en desarrollo).** Un plugin que declara `storageLarge` tiene la
+misma API con 16 MB en total, máximo 2 MB por valor y máximo 1.000 llaves de máximo 256 caracteres, guardado en un
+archivo por valor **solo en el aparato: nunca se sincroniza y no va en ninguna copia de seguridad** (declararlo también
+mueve ahí tus llaves existentes). Guarda las credenciales en secretos sellados o en los ajustes, y parte los datos grandes
+en valores de unos 512 KB. Para buscar entre miles de registros usa `kino.catalog`. [Las reglas](catalog.md#storage-large).
+
 El tercer argumento de `set` es opcional: déjalo por fuera para una entrada permanente, exactamente
 como antes de que existiera esta opción. Pasa `{ ttlMs }` para que la entrada venza -- después de esa
 cantidad de milisegundos `get` devuelve `null` y `keys()` ya no la lista, incluso después de reiniciar
 la app. `ttlMs` tiene que ser un número entero mayor que 0 y de máximo 2.592.000.000 (30 días);
 cualquier otra cosa lanza un error antes de tocar tu entrada, igual que ya pasa con un valor demasiado
-grande. Una entrada vencida nunca cuenta para el tope de 256 KB: se descarta la próxima vez que tu
+grande. Una entrada vencida nunca cuenta para el tope de 256 KB (16 MB con `storageLarge`): se descarta la próxima vez que tu
 plugin lee o escribe en el almacenamiento. Ejemplo, una fila de Inicio guardada por una hora:
 
 ```js

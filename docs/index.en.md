@@ -128,6 +128,10 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [External resolver apps](resolver.md) | `externalResolve` (apiVersion 11): hand a title to an independently-installed app that turns it into a playable URL; the flow, `media`, `portable`, errors, casting, building the other side |
 | [Sync providers](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): carry the person's cross-device sync through a service your plugin talks to; who can read what, the `sync` block, cadence, conflicts, the 4 MiB limit, sending the settings to another device, Sync-Gram and Sync Servidor |
+| [Sockets and plugin-served bytes](bytes.md) | apiVersion 13, in development: `kino.ws` WebSockets, streams your plugin serves through `read` (played and cast by Kino), `kino.crypto`'s byte operations, a complete WebSocket example with its test |
+| [Catalog and large storage](catalog.md) | apiVersion 13, in development: `kino.catalog`, a SQLite catalog of up to 100,000 items searched by Kino, and `storageLarge` |
+| [Images from the plugin](images.md) | apiVersion 13, in development: posters and stills your plugin serves through `image` |
+| [QR codes](qr.md) | apiVersion 13, in development: the settings form's `qr` type and `kino.qr.scan`, with a two-device login recipe |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
 | [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `setSettings` and "Is this you?", the `link` and `help` aids, `validateSettings`, a complete example, the own tab and syncing |

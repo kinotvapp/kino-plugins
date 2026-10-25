@@ -16,6 +16,11 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   with two example providers in public repositories:
   [Sync-Gram](https://github.com/kinotvapp/kino-plugin-sync-gram), on a Telegram bot of the person's own, and
   [Sync Servidor](https://github.com/kinotvapp/kino-plugin-sync-server), on a server they run (not listed).
+- **apiVersion 13** (in development for the next Kino version, not in any released Kino yet): sockets and
+  streams the plugin serves itself ([Sockets and plugin-served bytes](https://kinotvapp.github.io/kino-plugins/en/bytes/)),
+  a SQLite catalog and a larger storage ([Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/)),
+  images the plugin serves ([Images from the plugin](https://kinotvapp.github.io/kino-plugins/en/images/)) and QR codes
+  ([QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/)).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

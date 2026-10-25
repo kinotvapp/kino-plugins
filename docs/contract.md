@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 12)
+# El contrato (apiVersion 1 a 13)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -34,7 +34,14 @@ catálogo](#catalog-only)). Desde `"apiVersion": 12` (Kino 0.9.74) un plugin pue
 la sincronización entre los aparatos de la persona con `syncPull`, `syncPush` y el opcional `syncStatus`
 ([Ser el transporte de la sincronización](#sync-provider)). En cualquier `apiVersion`, desde Kino 0.9.74,
 un `action` también puede responder `setSettings` y `link` ([Formulario de
-ajustes](settings-form.md#set-settings)).
+ajustes](settings-form.md#set-settings)). Desde `"apiVersion": 13` (en desarrollo, la próxima versión de Kino): `read`
+para un stream que sirve tu plugin e `image` para una imagen que sirve ([Bytes e imágenes que sirve tu
+plugin](#apiversion-13)).
+
+```js
+export async function read({ handle, offset, length }) { /* -> { bytes: base64 } (apiVersion 13, byteSource) */ }
+export async function image({ handle }) { /* -> { bytes: base64, mime } (apiVersion 13, imageSource) */ }
+```
 
 ([`kino.d.ts`](reference/index.md) tiene las mismas formas como declaraciones de TypeScript.)
 
@@ -272,7 +279,7 @@ el resto sobrevive; lo que pasa de un tope se corta. Un `Stream` es todo o nada.
 | Campos de texto | `title` es obligatorio y no vacío, hasta 200 caracteres. `overview` hasta 2000; `lang` y `quality` hasta 20 (por ejemplo `"es"`, `"1080p"`); `year` hasta 10 (se acepta un número y se convierte). El texto más largo se corta; el texto de `SeriesInfo` y `Episode` se corta igual (200 caracteres para títulos, 2000 para sinopsis). |
 | Campos extra del ítem | Todos opcionales; uno mal puesto se ignora, no el ítem. `genres` máximo 5, cada uno de máximo 30 caracteres; `badges` (se muestran como chips, p. ej. `"HD"`, `"Latino"`) máximo 3 de máximo 20; `rating` de 0 a 10; `runtimeMinutes` de 1 a 1000; `ids.tmdb` un entero positivo (Kino lo usa para emparejar tu título con TMDB, para volver a encontrarlo desde la búsqueda y para enriquecer su página de información -- mira abajo); `ids.imdb` cumple `^tt\d{5,10}$` (también enriquece la página de información de una película cuando no tienes `ids.tmdb`). El `airDate` de un capítulo es `YYYY-MM-DD`. |
 | `adult` | Desde apiVersion 6, `adult: true` marca una entrada +18: Kino la muestra solo mientras el código +18 de la persona está desbloqueado en ese aparato (Ajustes ▸ Control parental), y la vuelve a esconder cuando lo bloquea; por debajo de apiVersion 6 se descarta. Aplica en Inicio, en la búsqueda, en "Ver más", en tu sección y en Categorías. Mira [Contenido +18](#adult). |
-| Imágenes | `poster`, `backdrop` y `still` tienen que ser URL `http` o `https` de máximo 2048 caracteres, o se ignoran (las versiones de Kino anteriores a la que aceptó `http` en imágenes ignoran las `http`). Las imágenes las carga Kino directamente y **no** se revisan contra `hosts` (son solo para mostrar), y Kino no envía tus headers ni tus cookies con ellas. Es la única excepción a la regla de hosts, con un límite: una imagen en la red local, en una dirección IP privada o reservada, o en un nombre local (`localhost`, `.local`, `.lan`, …) también se ignora, y también un nombre sin punto por `http` (`router`, `nas`), salvo que esté en un servidor que la persona escribió en tus ajustes. Una dirección IPv4 pública sirve. |
+| Imágenes | `poster`, `backdrop` y `still` tienen que ser URL `http` o `https` de máximo 2048 caracteres, o se ignoran (las versiones de Kino anteriores a la que aceptó `http` en imágenes ignoran las `http`). Las imágenes las carga Kino directamente y **no** se revisan contra `hosts` (son solo para mostrar), y Kino no envía tus headers ni tus cookies con ellas. Es la única excepción a la regla de hosts, con un límite: una imagen en la red local, en una dirección IP privada o reservada, o en un nombre local (`localhost`, `.local`, `.lan`, …) también se ignora, y también un nombre sin punto por `http` (`router`, `nas`), salvo que esté en un servidor que la persona escribió en tus ajustes. Una dirección IPv4 pública sirve. Desde apiVersion 13 (en desarrollo) un plugin que declara `imageSource` puede responder, en lugar de una URL, una **referencia** de imagen `{ "source": "plugin", "handle": "…" }` en `poster`, `backdrop`, `still` y la `image` del encabezado de una sección: Kino le pide entonces los bytes a su export `image` ([Imágenes del plugin](images.md)); de cualquier otro plugin, o en cualquier otro lugar, una referencia se ignora. Sin URI `data:`: un texto siempre es una URL. |
 
 ### `ids.tmdb` enriquece la página de información, no solo el emparejamiento { #tmdb }
 
@@ -300,6 +307,10 @@ export `details`, AniList y los plugins `meta`, está en [Los detalles propios d
 Los títulos de música y podcast nunca se emparejan con TMDB.
 
 ### Las reglas del `Stream` { #stream }
+
+Desde apiVersion 13 (en desarrollo), un plugin que declara `byteSource` puede responder en su lugar un stream sin URL,
+`{ source: "plugin", handle, size, mime }`, cuyos bytes Kino le pide a tu export `read`; las reglas de abajo sobre `url`
+no aplican a él, y sus propias reglas están en [Sockets y bytes del plugin](bytes.md#byte-source).
 
 - `url` tiene que ser `https` y su host tiene que ser uno de tus `hosts`, igual que el host de cada
   URL de subtítulos, o estar en un servidor que la persona escribió en tus ajustes (exactamente ese
@@ -793,7 +804,8 @@ cuenta):
   primero), ordenados.
 - Imágenes (`poster`, `backdrop`, `logo`, el `still` de un capítulo, la `photo` del reparto): la regla de
   imágenes de un ítem. Una URL se lee primero como texto, y una de más de 2048 caracteres se descarta
-  (nunca se corta en una dirección rota).
+  (nunca se corta en una dirección rota). Una respuesta de `meta` solo recibe URL: una referencia de imagen
+  (`imageSource`, apiVersion 13) se ignora aquí.
 - Una respuesta cuyas únicas partes útiles son `year` y/o `runtimeMinutes` cuenta como no responder,
   igual que `null`.
 
@@ -1034,6 +1046,26 @@ export async function syncStatus(_null) { /* opcional -> { ready, message? } */ 
 El bloque `sync` del manifiesto, quién puede leer qué, cada cuánto corre, el aviso en tiempo real, el
 paso de los ajustes a otro aparato, las líneas de consentimiento y los dos proveedores de ejemplo están
 en [Proveedores de sincronización](sync-providers.md).
+
+## Bytes e imágenes que sirve tu plugin (apiVersion 13, en desarrollo) { #apiversion-13 }
+
+apiVersion 13 todavía no está en un Kino publicado (viene en la próxima versión; 0.9.75 es provisional). Agrega seis
+capacidades, ninguna con línea de consentimiento propia:
+
+| Capacidad | Export | Qué da | Página |
+| --- | --- | --- | --- |
+| `socket` | ninguno | `kino.ws`, WebSockets de salida (`wss://`, puerto 443) a tus hosts declarados | [Sockets y bytes del plugin](bytes.md#ws) |
+| `byteSource` | `read({ handle, offset, length })` → `{ bytes }` | `resolve()` puede responder `{ source: "plugin", handle, size, mime }`; Kino lo reproduce (y lo envía al televisor) desde tu `read` | [Sockets y bytes del plugin](bytes.md#byte-source) |
+| `storageLarge` | ninguno | `kino.storage` guarda 16 MB (2 MB por valor), solo en el aparato | [Catálogo y almacenamiento grande](catalog.md#storage-large) |
+| `catalog` | ninguno | `kino.catalog`, un catálogo SQLite de hasta 100.000 de tus ítems, en el que busca Kino | [Catálogo y almacenamiento grande](catalog.md) |
+| `qrScan` | ninguno | `kino.qr.scan()`, el lector de cámara del teléfono, desde una acción de los ajustes o del panel | [Códigos QR](qr.md) |
+| `imageSource` | `image({ handle })` → `{ bytes, mime }` | `poster`, `backdrop`, `still` y la `image` del encabezado de una sección pueden ser `{ source: "plugin", handle }` | [Imágenes del plugin](images.md) |
+
+También agrega el tipo de ajuste `qr` ([Un código QR](settings-form.md#qr)), y esa misma versión de Kino les trae a
+todos los plugins, sin importar su `apiVersion`, las operaciones de bytes de `kino.crypto` `aesIge`, `aesIgeVerify`,
+`modPow`, `gunzip` y `convert` ([Operaciones de bytes](kino-api.md#crypto-bytes)). Un plugin
+que declara una de las capacidades por debajo de `"apiVersion": 13` se rechaza ("The \"catalog\" capability needs
+apiVersion 13"); un `read` o un `image` exportado sin su capacidad nunca se llama.
 
 ## Errores que la gente entiende { #errors }
 

@@ -225,6 +225,17 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   que desinstalarlo y reinstalarlo). Luego `node sdk/seal.mjs --sign --repo USUARIO/REPO` DESPUÉS del
   último cambio en plugin.js o en "version" y otra vez después de cada cambio posterior; nunca subas
   el .pem. Nunca imprimas el contenido de la clave en el chat.
+- apiVersion 13 (en desarrollo para la próxima versión de Kino: NINGÚN Kino publicado lo instala todavía;
+  avísame antes de usarlo), solo si mi fuente lo necesita: un servicio que habla por WebSocket ("socket",
+  kino.ws, wss:// a mis hosts declarados, frames como textos hex/base64), video que sirve el propio plugin
+  ("byteSource": resolve responde { source: "plugin", handle, size, mime } y read({ handle, offset, length })
+  responde { bytes: base64 } de exactamente ese rango, armado con kino.crypto.convert, nunca con un ciclo de
+  JavaScript sobre los bytes), miles de registros para buscar ("catalog", kino.catalog), un almacenamiento
+  más grande solo en el aparato ("storageLarge"), un QR en el formulario de ajustes (ajuste "qr") o el lector
+  del teléfono desde una acción ("qrScan", kino.qr.scan), imágenes que solo el plugin puede traer
+  ("imageSource" y un export image). Lee primero https://kinotvapp.github.io/kino-plugins/bytes/,
+  /catalog/, /images/ y /qr/; prueba read con una prueba de Node y un WebSocket de mentira (el run.mjs del
+  kit no puede).
 - apiVersion: el más bajo que funcione (3 para canales, 4 solo para secrets, "streamHosts": "any" o un
   ajuste de tipo "list", 5 solo para un plugin firmado, 6 solo si usas algo de apiVersion 6: estados y
   botones en los ajustes, una sección propia, colores, telemetry, migrate, firma por petición,
@@ -233,7 +244,9 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   "podcast" o el export details, y necesita Kino 0.9.54 o más nuevo; 9 para el panel del reproductor o
   un "fetchHosts": "any" escrito a mano (Kino 0.9.55); 10 solo para "playlists" (Kino 0.9.65); 11 solo
   para "externalResolve" (Kino 0.9.66); 12 solo para "syncProvider", el bloque "sync" o un ajuste
-  "link"/"help" (Kino 0.9.74; Kino 0.9.73 y anteriores lo rechazan)). Un catálogo que no reproduce
+  "link"/"help" (Kino 0.9.74; Kino 0.9.73 y anteriores lo rechazan); 13 solo para "socket", "byteSource",
+  "storageLarge", "catalog", "qrScan", "imageSource" o un ajuste "qr" (en desarrollo: ningún Kino publicado
+  lo acepta todavía)). Un catálogo que no reproduce
   nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
   para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
@@ -264,7 +277,9 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
 - si es un proveedor de sincronización: "apiVersion": 12, "syncProvider" declarada, syncPull y syncPush
   exportadas, "sync.maxBlobBytes" de máximo 4194304, pruebas que envían y traen un blob de 4 MiB y lanzan
   "conflict", con "sync.keySecret" y "sync.provision" declarados, y me dijiste con palabras sencillas que el
-  plugin y su servicio pueden leer los datos.
+  plugin y su servicio pueden leer los datos;
+- si usa apiVersion 13: me dijiste que ningún Kino publicado lo instala todavía, read tiene una prueba de
+  Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra.
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y

@@ -3,6 +3,45 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Next Kino version (in development): `apiVersion` 13, sockets, plugin-served bytes and images, a catalog, QR codes { #v13 }
+
+(Not released yet.) **`apiVersion` 13 is in development for the next Kino version**; the contract (`contract.json`) says
+`maxApiVersion` 13 and names Kino 0.9.75 for it, provisionally (which release ships it is not decided). Today's Kino (0.9.74)
+refuses a manifest with `"apiVersion": 13` ("Este plugin necesita una versión más nueva de Kino"), so declare 13 only if
+you use one of its features, and publish such a plugin once that version is out. The Node kit already knows all of it.
+
+| Feature | From | How to tell |
+| --- | --- | --- |
+| The `socket` capability and `kino.ws` (`hex`/`base64` frames) | `apiVersion` 13 | nothing to check: an older Kino refuses `apiVersion` 13 |
+| The `byteSource` capability, `{ source: "plugin", handle, size, mime }` streams and the `read` export | `apiVersion` 13 | the same |
+| The `storageLarge` capability (16 MB `kino.storage`, device-only) | `apiVersion` 13 | the same |
+| The `catalog` capability and `kino.catalog` | `apiVersion` 13 | the same |
+| The `qrScan` capability, `kino.qr.scan`, and the settings form's `qr` type | `apiVersion` 13 | the same |
+| The `imageSource` capability, `{ source: "plugin", handle }` images and the `image` export | `apiVersion` 13 | the same |
+| `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | the next Kino version (`kino.apiVersion` 13), every manifest `apiVersion` | `typeof kino.crypto.convert === "function"` |
+| Async `kino.*` answers freed once your code has them; a GC after a call over half the 64 MB; faster `atob`/`btoa` | the next Kino version, every `apiVersion` | nothing to check |
+
+- **Sockets** (`socket`): `kino.ws.open("wss://…")` to a host you declare, port 443 only, at most 4 sockets, 8 MiB
+  queued per socket, 786,000 bytes per frame; frames as `Uint8Array` or, much faster, as `hex`/`base64` strings.
+  [Sockets and plugin-served bytes](bytes.md#ws).
+- **Plugin-served bytes** (`byteSource`): `resolve()` answers a stream with no URL and Kino asks your `read` for 1 MiB at
+  a time, plays it in its player and casts it to Chromecast and DLNA from the phone. A complete example over a WebSocket,
+  with its test: [Sockets and plugin-served bytes](bytes.md#example).
+- **A catalog of your own** (`catalog`): `kino.catalog` keeps up to 100,000 items in one SQLite file per plugin and
+  searches them (every word, no case or accents, no SQL on your side); device-only, never synced, not in backups.
+  **`storageLarge`** makes `kino.storage` 16 MB for a few big values, device-only too. [Catalog and large storage](catalog.md).
+- **QR codes**: the settings form's `qr` type draws a QR from your `settingsStatus()` and refreshes it every `refreshMs`;
+  `kino.qr.scan()` (`qrScan`) opens the phone's camera scanner from a settings action or a panel action. A two-device
+  login recipe: [QR codes](qr.md#recipe).
+- **Images from the plugin** (`imageSource`): a `poster`, `backdrop`, `still` or section hero `image` may be
+  `{ source: "plugin", handle }`; Kino asks your `image` export for the bytes (at most 256 KB, JPEG, PNG or WebP) when
+  the card comes on screen, one at a time, never while one of your byte streams plays. [Images from the plugin](images.md).
+- **Byte operations in `kino.crypto`**: AES-256-IGE, a decryption checked by its SHA-256 MAC in one call, big-number
+  `modPow`, `gunzip` and a native `convert` between `utf8`, `hex` and `base64`. [Byte operations](bytes.md#crypto).
+- **Engine memory** (the next Kino version, every `apiVersion`): the answer of an awaited `kino.*` call no longer stays in
+  your 64 MB until the sandbox closes, and Kino collects garbage after a call that leaves the engine over half its limit.
+  [How your code lives](engine-limits.md#lifecycle).
+
 ## Kino 0.9.74: `apiVersion` 12, sync providers, `link` and `help`, `setSettings` and "Is this you?" { #v0974 }
 
 (Not released yet.) **`apiVersion` 12 = Kino 0.9.74.** The contract (`contract.json`) now says
@@ -246,7 +285,9 @@ nothing on it makes you change your plugin. How to use each one and still run on
   failed with `not_allowed`, so a TMDB catalog could show one Home row instead of all of them until a restart. From
   0.9.54 they keep answering until that call's evaluation ends. [The `kino` API](kino-api.md#tmdb).
 - **`no_tmdb_key`'s sentence for the person** is now "Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB"
-  ("Add your TMDB key in Settings ▸ Your TMDB key"); 0.9.53's also pointed to a Stremio TMDB addon. Nothing to change:
+  ("Add your TMDB key in Settings ▸ Your TMDB key"); 0.9.53's also pointed to a Stremio TMDB addon. Today's Kino says
+  "Agrega tu llave de TMDB en Ajustes de todos los perfiles ▸ Llaves" ("Add your TMDB key in Settings for all profiles ▸
+  Keys"), where the key now lives. Nothing to change:
   match on `e.code`, never on the text. [The `kino` API](kino-api.md#tmdb).
 
 ## Kino 0.9.53: `kino.meta` and `kino.tmdb` { #v0953 }
@@ -265,7 +306,7 @@ calls exist only from Kino 0.9.53, so feature-detect them (`typeof kino.meta ===
   behind Kino's TMDB cache (on disk, shared with its own screens, a copy up to 7 days old when TMDB is down) and limits of
   its own (20 calls per 10 s per plugin, 60 per 10 s for all plugins), so plugins cannot spend Kino's quota. Only when
   Kino's key fails (TMDB answers 401/403/429 for it, or one of those limits is spent) does the same request go again with
-  the person's key: the one they type in Ajustes ("Tu llave de TMDB", optional, synced between their devices), else the
+  the person's key: the one they type in Ajustes ("Tu llave de TMDB", today under Ajustes de todos los perfiles ▸ Llaves; optional, synced between their devices), else the
   one they configured in an installed Stremio addon, once they agree. A key your plugin keeps in its own settings is never
   used. Kino adds the key; your code never sees any, and TMDB needs no entry in your `hosts`. `no_tmdb_key` (with Kino's
   sentence for the person in `e.userMessage`: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio

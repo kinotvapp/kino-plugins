@@ -240,6 +240,30 @@ plugin una vez como cada uno. [`kino.seed`](kino-api.md#seed) no envía nada a n
 app (las claves y límites de `kinoSeed` en el contrato) y registra qué claves conservaría Kino, nunca sus valores, porque
 son tokens; sin `"telemetry"` en tu manifiesto, la línea dice que la app no enviaría nada.
 
+## apiVersion 13 (en desarrollo) { #api13 }
+
+El kit ya conoce apiVersion 13, que ningún Kino publicado soporta todavía ([Novedades](changelog.md#v13)): `validate.mjs`
+revisa las seis capacidades nuevas (cada una rechazada por debajo de 13, `read` obligatorio con `byteSource` e `image` con
+`imageSource`) y el tipo de ajuste `qr` con su `refreshMs`. Lo que hace cada una en el kit:
+
+- **`kino.ws`** corre sobre el `WebSocket` global de Node con las reglas de la app: solo `wss://`, un host declarado por
+  el puerto 443, sin IP literal ni nombre local, 4 sockets, el tope de tamaño de frame, frames `hex`/`base64` aceptados y
+  rechazados con las mismas palabras de la app. Cambia `globalThis.WebSocket` por una imitación para probar sin red
+  ([un ejemplo](bytes.md#testing)).
+- **`byteSource`**: el kit no tiene un comando `read`, y `run.mjs . resolve` lee una respuesta `{ source: "plugin" }` con
+  las reglas de un stream con URL (dice "the video has an invalid address"): llama `resolve` y `read` desde tus propias
+  pruebas.
+- **`kino.catalog`** es el catálogo de la app en memoria, para una corrida: las mismas respuestas y los mismos errores
+  (los dos corren los mismos vectores de prueba compartidos), con el tamaño del archivo estimado en lugar de medido.
+- **`storageLarge`** le da a `kino.storage` los límites de la app: 16 MB, 2 MB por valor y 1.000 llaves.
+- **`kino.qr.scan`** necesita una imitación: `createKino(manifest, { qrScan: async ({ title }) => "texto" })`; sin ella,
+  o con `--device tv`, falla con `unavailable`. Revisa de dónde viene la llamada como la app ([Códigos QR](qr.md#kit)).
+- **`imageSource`**: `checkOutput` conserva o descarta una referencia como la app, y `askImage(plugin, manifest, ref)` de
+  `sdk/kino-shim.mjs` le pide la imagen a tu `image` como lo hace Kino ([Imágenes del plugin](images.md#kit));
+  `run.mjs` no tiene un comando `image`.
+- Las operaciones de bytes de **`kino.crypto`** (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) dan las
+  respuestas de la app.
+
 ## Lo que el kit de Node no reproduce { #differences }
 
 Kino es la autoridad; el kit solo se le aproxima para que puedas iterar rápido. Antes de publicar,

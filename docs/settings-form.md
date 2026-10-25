@@ -17,7 +17,7 @@ ajustes.
 ## Todos los tipos de campo { #types }
 
 El formulario muestra tus ajustes **en el orden del manifiesto**, cada uno con su `label` y, debajo, su
-`hint`. Once tipos:
+`hint`. Once tipos, y un duodécimo, `qr`, desde apiVersion 13 (en desarrollo):
 
 | `type` | Lo que ve la persona | Lo que devuelve `kino.config.get(key)` | Desde |
 | --- | --- | --- | --- |
@@ -32,6 +32,7 @@ El formulario muestra tus ajustes **en el orden del manifiesto**, cada uno con s
 | `action` | un botón que corre tu `action(key)` | nada | apiVersion 6 |
 | `link` | un botón que abre una dirección `https` por el sistema, solo cuando la persona lo toca ([Ayudas para configurar](#aids)) | nada | apiVersion 12 |
 | `help` | un botón ("Ayuda") que abre tus instrucciones en una ventana ([Ayudas para configurar](#aids)) | nada | apiVersion 12 |
+| `qr` | un código QR dibujado en el aparato con un texto que devuelve tu `settingsStatus()` ([Un código QR](#qr)) | nada | apiVersion 13 (en desarrollo) |
 
 Lo que puede llevar cada entrada:
 
@@ -134,6 +135,28 @@ Desde apiVersion 6 hay tres tipos que no guardan ningún valor (nunca están en 
   `settingsStatus()` después de cada acción (y al abrir el formulario), así que las líneas de estado
   describen lo que acaba de hacer; `refresh: true` se sigue aceptando y no cambia nada. `confirm` (de 1 a 120 caracteres) pregunta antes, con Cancelar enfocado. **Export
   obligatorio** cuando existe un ajuste `action`.
+
+## Un código QR: `qr` (apiVersion 13, en desarrollo) { #qr }
+
+Un cuarto tipo sin valor, que cuenta entre los 16: un código QR dibujado en el formulario, en el aparato (nada sale a la
+red para dibujarlo). Es la forma de que una TV muestre un código de inicio de sesión para que lo escanee un teléfono.
+
+```json
+{ "key": "login", "label": "Escanéalo desde tu teléfono", "labelEn": "Scan it from your phone", "type": "qr", "refreshMs": 5000 }
+```
+
+- **Su texto** es lo que tu `settingsStatus()` devuelve bajo esa llave, como una línea `status`, pero entero: de 1 a 512
+  caracteres sin caracteres de control; una dirección `http`/`https` solo si es https en un host público (nunca la red de
+  la casa); cualquier otro texto (un enlace de app como `exampleapp://login?token=…`, un código para vincular) se dibuja
+  tal cual. Un texto más largo, algo que no es texto, o uno que lleva uno de tus secretos sellados no dibuja QR (la línea
+  dice "Sin información").
+- **`refreshMs`** (de 2000 a 60000; solo un ajuste `qr` lo tiene): Kino pregunta `settingsStatus()` cuando se abre el
+  formulario, después de cada acción y cada esa cantidad de ms mientras el formulario está en pantalla y la app al frente.
+  Un refresco nunca empieza mientras la llamada anterior siga corriendo, y el QR en pantalla se queda hasta que el texto
+  nuevo lo reemplaza. Así un código que vence cada 30 s sigue sirviendo, y una línea de estado al lado pasa a "Listo"
+  cuando ya se usó el código.
+- **Export obligatorio:** `settingsStatus`. Mostrar un QR no necesita capacidad; escanear uno (`kino.qr.scan`) necesita
+  `qrScan`. La receta completa entre dos aparatos: [Códigos QR](qr.md#recipe).
 
 ## Ayudas para configurar: `link` y `help` (apiVersion 12, Kino 0.9.74) { #aids }
 

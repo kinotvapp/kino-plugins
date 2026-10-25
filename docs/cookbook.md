@@ -566,7 +566,7 @@ paso.
 
 Un plugin cuyas filas de Inicio y búsqueda salen de TMDB (tendencias, descubrir por género, las temporadas de un título)
 antes le pedía a cada persona una llave de TMDB en sus propios ajustes. Con [`kino.tmdb`](kino-api.md#tmdb) Kino pone la
-llave: primero la suya, detrás de su caché y sus límites, y la de la persona (la de Ajustes, o la de su addon de TMDB de
+llave: primero la suya, detrás de su caché y sus límites, y la de la persona (la de Ajustes de todos los perfiles ▸ Llaves, o la de su addon de TMDB de
 Stremio, si acepta) solo cuando la de Kino falla. El plugin no lleva ninguna ni declara un host de TMDB para eso. El ajuste
 propio del plugin queda solo para Kino 0.9.52 y anteriores.
 

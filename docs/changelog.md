@@ -3,6 +3,49 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Próxima versión de Kino (en desarrollo): `apiVersion` 13, sockets, bytes e imágenes que sirve el plugin, un catálogo, códigos QR { #v13 }
+
+(Todavía no publicada.) **`apiVersion` 13 está en desarrollo para la próxima versión de Kino**; el contrato
+(`contract.json`) dice `maxApiVersion` 13 y le asigna Kino 0.9.75, de forma provisional (no se ha decidido en qué versión
+sale). El Kino de hoy (0.9.74) rechaza un manifiesto con `"apiVersion": 13` ("Este plugin necesita una versión más nueva
+de Kino"), así que declara 13 solo si usas una de sus funciones, y publica ese plugin cuando salga esa versión. El kit de
+Node ya lo conoce todo.
+
+| Función | Desde | Cómo saberlo |
+| --- | --- | --- |
+| La capacidad `socket` y `kino.ws` (frames `hex`/`base64`) | `apiVersion` 13 | no hay nada que revisar: un Kino más viejo rechaza `apiVersion` 13 |
+| La capacidad `byteSource`, los streams `{ source: "plugin", handle, size, mime }` y el export `read` | `apiVersion` 13 | lo mismo |
+| La capacidad `storageLarge` (`kino.storage` de 16 MB, solo en el aparato) | `apiVersion` 13 | lo mismo |
+| La capacidad `catalog` y `kino.catalog` | `apiVersion` 13 | lo mismo |
+| La capacidad `qrScan`, `kino.qr.scan` y el tipo de ajuste `qr` | `apiVersion` 13 | lo mismo |
+| La capacidad `imageSource`, las imágenes `{ source: "plugin", handle }` y el export `image` | `apiVersion` 13 | lo mismo |
+| `kino.crypto.aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert` | la próxima versión de Kino (`kino.apiVersion` 13), con cualquier `apiVersion` en el manifiesto | `typeof kino.crypto.convert === "function"` |
+| Las respuestas de `kino.*` con `await` se liberan cuando tu código las tiene; recolección de basura después de una llamada que pasa la mitad de los 64 MB; `atob`/`btoa` más rápidos | la próxima versión de Kino, cualquier `apiVersion` | nada que revisar |
+
+- **Sockets** (`socket`): `kino.ws.open("wss://…")` a un host que declaras, solo por el puerto 443, máximo 4 sockets,
+  8 MiB en cola por socket, 786.000 bytes por frame; frames como `Uint8Array` o, mucho más rápido, como textos
+  `hex`/`base64`. [Sockets y bytes del plugin](bytes.md#ws).
+- **Bytes que sirve el plugin** (`byteSource`): `resolve()` responde un stream sin URL y Kino le pide a tu `read` 1 MiB a
+  la vez, lo reproduce en su reproductor y lo envía a Chromecast y DLNA desde el teléfono. Un ejemplo completo sobre un
+  WebSocket, con su prueba: [Sockets y bytes del plugin](bytes.md#example).
+- **Un catálogo propio** (`catalog`): `kino.catalog` guarda hasta 100.000 ítems en un archivo SQLite por plugin y busca
+  en ellos (cada palabra, sin mayúsculas ni tildes, sin SQL de tu lado); solo en el aparato, nunca se sincroniza, no va
+  en las copias de seguridad. **`storageLarge`** deja `kino.storage` en 16 MB para unos pocos valores grandes, también
+  solo en el aparato. [Catálogo y almacenamiento grande](catalog.md).
+- **Códigos QR**: el tipo de ajuste `qr` dibuja un QR con lo que devuelve tu `settingsStatus()` y lo refresca cada
+  `refreshMs`; `kino.qr.scan()` (`qrScan`) abre el lector de cámara del teléfono desde una acción de los ajustes o del
+  panel. Una receta de inicio de sesión entre dos aparatos: [Códigos QR](qr.md#recipe).
+- **Imágenes del plugin** (`imageSource`): un `poster`, un `backdrop`, un `still` o la `image` del encabezado de una
+  sección puede ser `{ source: "plugin", handle }`; Kino le pide los bytes a tu export `image` (máximo 256 KB, JPEG, PNG o
+  WebP) cuando la tarjeta aparece en pantalla, una a la vez, nunca mientras se reproduce uno de tus streams de bytes.
+  [Imágenes del plugin](images.md).
+- **Operaciones de bytes en `kino.crypto`**: AES-256-IGE, un descifrado revisado con su MAC SHA-256 en una sola llamada,
+  `modPow` de números grandes, `gunzip` y un `convert` nativo entre `utf8`, `hex` y `base64`.
+  [Operaciones de bytes](bytes.md#crypto).
+- **Memoria del motor** (la próxima versión de Kino, cualquier `apiVersion`): la respuesta de una llamada `kino.*` con
+  `await` ya no se queda en tus 64 MB hasta que se cierra el sandbox, y Kino recoge la basura después de una llamada que
+  deja el motor por encima de la mitad de su límite. [Cómo vive tu código](engine-limits.md#lifecycle).
+
 ## Kino 0.9.74: `apiVersion` 12, proveedores de sincronización, `link` y `help`, `setSettings` y "¿Eres tú?" { #v0974 }
 
 (Todavía no publicada.) **`apiVersion` 12 = Kino 0.9.74.** El contrato (`contract.json`) dice ahora
@@ -262,7 +305,8 @@ ignora), y nada de esto te obliga a cambiar tu plugin. Cómo usar cada cosa y se
   sola fila en el Inicio en vez de todas hasta reiniciar. Desde 0.9.54 siguen respondiendo hasta que termina la
   evaluación de esa llamada. [La API `kino`](kino-api.md#tmdb).
 - **La frase de `no_tmdb_key` para la persona** ahora es «Agrega tu llave de TMDB en Ajustes ▸ Tu llave de TMDB»
-  («Add your TMDB key in Settings ▸ Your TMDB key»); la de 0.9.53 también mencionaba un addon de TMDB de Stremio. No hay
+  («Add your TMDB key in Settings ▸ Your TMDB key»); la de 0.9.53 también mencionaba un addon de TMDB de Stremio. El Kino
+  de hoy dice «Agrega tu llave de TMDB en Ajustes de todos los perfiles ▸ Llaves», que es donde vive ahora la llave. No hay
   nada que cambiar: compara `e.code`, nunca el texto. [La API `kino`](kino-api.md#tmdb).
 
 ## Kino 0.9.53: `kino.meta` y `kino.tmdb` { #v0953 }
@@ -283,7 +327,7 @@ alguna sin esa comprobación.
   cuando TMDB no responde) y de límites propios (20 llamadas cada 10 s por plugin, 60 cada 10 s entre todos los plugins),
   para que los plugins no gasten la cuota de Kino. Solo cuando la llave de Kino falla (TMDB le responde 401/403/429, o se
   agota uno de esos límites) la misma petición sale otra vez con la llave de la persona: la que escribe en Ajustes ("Tu
-  llave de TMDB", opcional, sincronizada entre sus aparatos) o, si no hay, la que configuró en un addon de Stremio
+  llave de TMDB", hoy en Ajustes de todos los perfiles ▸ Llaves; opcional, sincronizada entre sus aparatos) o, si no hay, la que configuró en un addon de Stremio
   instalado, si acepta usarla. Una llave que tu plugin guarda en sus propios ajustes nunca se usa. Kino pone la llave; tu
   código nunca ve ninguna, y TMDB no necesita una entrada en tus `hosts`. `no_tmdb_key` (con la frase de Kino para la
   persona en `e.userMessage`: "Agrega tu llave de TMDB en Ajustes, o instala un addon de TMDB de Stremio configurado con

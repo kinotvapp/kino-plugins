@@ -70,6 +70,11 @@ same files. A fork would work as a plugin too, but Kino's community search leave
     Node server the person runs; not listed in Kino, installed by pasting its repository address). Each has a guide in English and Spanish
     and offline tests. See [The two example providers](sync-providers.md#examples).
 
+!!! note "apiVersion 13 (in development): a byte-stream example"
+    No published example plugin uses apiVersion 13 yet (no released Kino accepts it). The guide has a complete
+    `socket` + `byteSource` plugin, a video library behind a WebSocket, with the Node test that checks every range it
+    serves: [A complete example](bytes.md#example). The catalog, image and QR pages each carry a complete example too.
+
 ## The reference plugin { #reference-plugin }
 
 For the basics -- `search`, `home`, `browse`, `episodes` and `resolve` over a public site, with no

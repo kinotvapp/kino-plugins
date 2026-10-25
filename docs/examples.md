@@ -72,6 +72,12 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
     uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los dos proveedores de
     ejemplo](sync-providers.md#examples).
 
+!!! note "apiVersion 13 (en desarrollo): un ejemplo de stream de bytes"
+    Ningún plugin de ejemplo publicado usa apiVersion 13 todavía (ningún Kino publicado lo acepta). La guía tiene un
+    plugin completo con `socket` y `byteSource`, una biblioteca de videos detrás de un WebSocket, con la prueba de Node
+    que revisa cada rango que sirve: [Un ejemplo completo](bytes.md#example). Las páginas del catálogo, de las imágenes y
+    de los QR también traen cada una un ejemplo completo.
+
 ## El plugin de referencia { #reference-plugin }
 
 Para lo básico -- `search`, `home`, `browse`, `episodes` y `resolve` sobre un sitio público, sin

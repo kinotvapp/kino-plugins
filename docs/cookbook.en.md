@@ -561,7 +561,7 @@ its README (English and Spanish) walks a person through it.
 
 A plugin whose Home rows and search come from TMDB (trending, discover by genre, a title's seasons) used to ask every
 person for a TMDB key in its own settings. With [`kino.tmdb`](kino-api.md#tmdb) Kino brings the key: its own first, behind
-its cache and limits, and the person's (the one in Ajustes, or the one of their Stremio TMDB addon, once they agree) only
+its cache and limits, and the person's (the one in Ajustes de todos los perfiles ▸ Llaves, or the one of their Stremio TMDB addon, once they agree) only
 when Kino's fails. The plugin carries none and declares no TMDB host for it. The plugin's own setting stays only for Kino
 0.9.52 and older.
 

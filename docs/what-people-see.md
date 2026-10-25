@@ -139,6 +139,25 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   cuando abre el túnel rápido de Cloudflare, las palabras para "Otra red"), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
   etiquetas de los ajustes que llegaron, nunca sus valores, y "Aplicar".
 
+## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }
+
+Todavía no está en un Kino publicado. Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):
+
+- **Ninguna línea de consentimiento nueva**: `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan` e `imageSource`
+  no le agregan nada a la hoja de consentimiento (un socket solo llega a los hosts que la hoja ya muestra).
+- **Un stream de bytes se reproduce como cualquier video**, y se envía a un Chromecast o a un televisor DLNA desde el
+  teléfono por la red de la casa. Cuando tu `read` falla la persona lee tu error, o "El plugin no entregó los datos del
+  video" si la respuesta está mal. Sus títulos muestran el botón de descarga, pero ese video nunca se descarga.
+- **El lector de QR**: la cámara en pantalla completa con "&lt;nombre del plugin&gt; quiere leer un código QR", tu
+  `title`, "Apunta la cámara al código QR" y un botón de cerrar; un código demasiado largo dice "Este código no es
+  válido para &lt;plugin&gt;". Sin el permiso de la cámara Kino lo pide, y si la persona lo niega explica por qué, con
+  Reintentar y Cancelar.
+- **Un ajuste `qr`** es un código QR en el formulario de ajustes del plugin, que se redibuja cada `refreshMs`; sin texto
+  dice "Sin información".
+- **Las imágenes del plugin** aparecen tarjeta por tarjeta a medida que llegan a la pantalla; una imagen que falla, o un
+  título guardado con una en otro aparato, muestra la imagen de relleno de siempre. La persona nunca ve un error por una
+  imagen.
+
 ## Desde Kino 0.9.54 { #v0954 }
 
 Sin nada nuevo en tu manifiesto, salvo donde se diga:

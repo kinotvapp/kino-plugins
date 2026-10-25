@@ -17,7 +17,7 @@ settings.
 ## Every field type { #types }
 
 The form shows your settings **in the order of the manifest**, each with its `label` and, under it, its
-`hint`. Eleven types:
+`hint`. Eleven types, and a twelfth, `qr`, from apiVersion 13 (in development):
 
 | `type` | What the person sees | What `kino.config.get(key)` returns | Since |
 | --- | --- | --- | --- |
@@ -32,6 +32,7 @@ The form shows your settings **in the order of the manifest**, each with its `la
 | `action` | a button that runs your `action(key)` | nothing | apiVersion 6 |
 | `link` | a button that opens an `https` address through the system, only when the person taps it ([Configuration aids](#aids)) | nothing | apiVersion 12 |
 | `help` | a button ("Ayuda") that opens your instructions in a modal ([Configuration aids](#aids)) | nothing | apiVersion 12 |
+| `qr` | a QR code drawn on the device from a text your `settingsStatus()` returns ([A QR code](#qr)) | nothing | apiVersion 13 (in development) |
 
 What each entry may carry:
 
@@ -129,6 +130,26 @@ no `default`), at most 16 of them on top of the 12 valued settings:
   or times out, the person sees the error text instead. Kino asks `settingsStatus()` again after every action (and when the form opens), so the status lines describe what it just did; `refresh: true` is still accepted and changes nothing.
   `confirm` (1 to 120 characters) asks first, with Cancelar focused. **Required export** when an
   `action` setting exists.
+
+## A QR code: `qr` (apiVersion 13, in development) { #qr }
+
+A fourth type that holds no value, counted among the 16: a QR code drawn on the form, on the device (nothing goes to a
+network to draw it). It is how a TV shows a login code for a phone to scan.
+
+```json
+{ "key": "login", "label": "Escanéalo desde tu teléfono", "labelEn": "Scan it from your phone", "type": "qr", "refreshMs": 5000 }
+```
+
+- **Its text** is what your `settingsStatus()` returns under that key, like a `status` line, but kept whole: 1 to 512
+  characters with no control character; an `http`/`https` address only https on a public host (never the home network);
+  any other text (an app link such as `exampleapp://login?token=…`, a pairing code) is drawn as it is. A longer text, a
+  non-text or one that holds one of your sealed secrets draws no QR (the line reads "Sin información").
+- **`refreshMs`** (2000 to 60000; only a `qr` setting has it): Kino asks `settingsStatus()` when the form opens, after
+  every action and every that many ms while the form is on screen and the app in front. A refresh never starts while the
+  previous call is still running, and the QR on screen stays up until the new text replaces it. That is how a code that
+  expires every 30 s stays scannable, and how a status line next to it turns into "Listo" once the code was used.
+- **Required export:** `settingsStatus`. Showing a QR needs no capability; scanning one (`kino.qr.scan`) needs `qrScan`.
+  The whole two-device recipe: [QR codes](qr.md#recipe).
 
 ## Configuration aids: `link` and `help` (apiVersion 12, Kino 0.9.74) { #aids }
 

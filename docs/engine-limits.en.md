@@ -13,17 +13,22 @@
 | Consecutive timeouts | 3 in a row and Kino disables the plugin ("No responde") |
 | `kino.fetch` | https only (or the person's own server as typed, or `http` on a host declared `insecureHttp`); 15 s default, 30 s maximum; response body at most 5 MB; the request (URL, headers and body) at most 1,048,576 characters; inside a sync provider's `syncPull` and `syncPush` only, both the request and the response body may reach the declared blob's base64 plus 64 KB (ceil(`sync.maxBlobBytes` × 4/3) + 65,536); at most 60 requests per call, every hop counted, refused ones included (250 for a plugin converted from a Nuvio scraper); at most 6 fetches in flight at once; at most 3 host questions per call; at most 10 redirects per request; under `"fetchHosts": "any"`, a host reached only through it: https on port 443, a dotted name or public IPv4 address, at most 60 requests a minute per site and 600 every 10 minutes per plugin (250 / 2,500 for a converted Nuvio scraper), else `rate_limited` |
 | Cookies | 50 per domain, 64 KB in total per plugin |
-| `kino.storage` | 256 KB per plugin; an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
+| `kino.storage` | 256 KB per plugin (with `storageLarge`, apiVersion 13: 16 MB in total, 2 MB per value, 1,000 keys of at most 256 characters); an entry's optional `ttlMs` is 1..2,592,000,000 ms (30 days) |
 | `kino.sleep` | 0 to 5,000 ms per call |
 | `kino.meta` (Kino 0.9.53) | at most 30 calls a minute per plugin; 8 s at most (each other `meta` plugin 6 s), inside your call's own limit; the query at most 4,096 characters; the answer at most 1,000,000 characters; cached 30 minutes |
 | `kino.tmdb` (Kino 0.9.53) | at most 40 calls per 10 s per plugin; on Kino's own key at most 20 per 10 s per plugin and 60 per 10 s for all plugins (then the person's key, else the cache or `rate_limited`); 15 s per call; a body at most 2 MB; at most 20 params of at most 500 characters; cached and shared by all plugins, per route (12 hours for a series by id and its seasons and episodes; 30 days for a movie, person or collection by id, any title's credits, images and the like, and for `/find`, `/genre`, `/configuration`; 24 hours for `/search`; 3 hours for `/trending`, `/discover` and the lists; 10 minutes for anything else, an empty answer or a 404), bodies up to 512 KB; a cached answer does not count against these limits, and when TMDB fails (not when it refuses the key) the last copy is served; not counted in `kino.fetch`'s requests per call |
 | `kino.crypto` | data at most 5 MB per call; PBKDF2 at most 100,000 iterations and 64-byte keys; `randomBytes` at most 1,024 |
+| `kino.ws` (apiVersion 13) | at most 4 open sockets per plugin (the fifth is refused with `limit`); at most 8 MiB (8,388,608 bytes) of received messages queued unread per socket, past that the socket closes with `limit`; a frame to send at most 786,000 bytes once decoded, also when sent as a `hex` or `base64` string (`too_large`); one `recv` waits at most 60 s; `wss://` to a declared, approved host only; memory: what is queued unread sits on Kino's heap (up to 32 MiB with every socket full), what you keep from it counts in your 64 MB sandbox; not measured on 1 GB TV boxes, so read what arrives and keep little |
+| `byteSource` (apiVersion 13) | at most 2 open streams at once on the device (another is refused), and apart from them at most 2 served to TVs (one per Chromecast and DLNA cast); each `read` asks for 1 MiB (1,048,576 bytes) at an offset that is a multiple of 1,048,576 (so always a multiple of 4,096), the last one running past `size`; 3 chunks ahead are read while one plays; Kino keeps the last 8 chunks read per stream; `handle` 1 to 512 characters; memory: each open stream holds up to about 12 MiB of Kino's heap (the chunks kept, the ones read ahead and the one in flight), so 2 on the device plus 2 served to TVs can reach about 48 MiB, besides your 64 MB sandbox; not measured on 1 GB TV boxes |
+| `kino.catalog` (apiVersion 13) | at most 100,000 items per plugin (then `limit`), as long as they fit in the file: about 670 bytes per item on average, so keep `data` small; `id` 1 to 128 characters, `title` at most 300 characters, `data` at most 4,096 bytes of JSON; at most 500 items or ids per call; `search`: `q` at most 256 characters, `limit` default 50, at most 100, `offset` at most 1,000,000; the database file at most 64 MiB (then `limit`); one SQLite file per plugin, on the device only |
+| `kino.qr.scan` (apiVersion 13) | one scanner on screen at a time (another scan, from any plugin, is `busy`); it closes after 120 s (`timeout`); `title` and `titleEn` at most 80 characters; the scanned text 1 to 4,096 characters (a longer code is ignored); only from a settings `action` or a `panelAction` (else `not_allowed`), never on a TV or a device without a camera (`unavailable`); a settings `qr` setting's text at most 512 characters, asked again every 2,000 to 60,000 ms (`refreshMs`) |
+| Images from the plugin (`imageSource`, apiVersion 13) | `handle` 1 to 512 characters, no control character; `image` answers at most 256 KB once decoded (262,144 bytes), canonical base64, `image/jpeg`, `image/png`, `image/webp` only; 10 s per call; at most 1 image call in flight per plugin, none while one of your byte streams is open or your `read` is queued or running or ended less than 2 s ago (an image waits up to 20 s, then is skipped); a timed-out call discards your sandbox (QuickJS cannot be interrupted); a failed handle is not asked again for 5 minutes; 2 timeouts in a row pause your images for 5 minutes; each image asked once, then kept in Kino's image disk cache per plugin, version and handle |
 | `kino.log` / `console.*` | 2,000 characters per message; when a call of a plugin whose manifest declares `telemetry` fails, its last 30 lines (each cut at 300 characters, scrubbed, 2,048 characters in all) go with the failure report |
 | What a function returns | at most 2,000,000 characters once turned into JSON (a sync provider's `syncPull` and `syncPush`: up to ceil(`sync.maxBlobBytes` × 4/3) + 65,536, set by its declared blob) |
 | Results | `search` 100 items; `home` 20 rows of 60; `browse` 100 per page; `episodes` 5,000 (and 50 `seasons`); `ref` 4,096 characters; `next` 2,048 characters; `id` matches `^[A-Za-z0-9._~-]{1,128}$` |
 | Live channels (apiVersion 3) | `liveCategories` 200; `liveChannels` 500 per page, 10 pages at first and 5 more per scroll, 10,000 channels (200 pages) per category; `liveSearch` 100 channels, asked from 2 characters; `guide` 50 channels and 24 h per call, 100 entries per channel; `number` 1..9999 |
 | Tracking (apiVersion 7) | `progress` at most every 5 minutes of playback; `watched` once, with 3 minutes or less left and at least 90% played; at most 200 events waiting per plugin; an event not delivered within 7 days is dropped; a retryable failure waits 30 s, doubling up to 6 h, 12 tries at most |
-| Settings | at most 12 with a value, plus at most 16 `section`/`status`/`action`/`link`/`help` (apiVersion 6; `link` and `help` apiVersion 12, at most 4 of each); `text` 500, `url` 2,048, `password` 500 characters; a `link`'s address 2,048, a `help`'s title 60 and body 2,000 |
+| Settings | at most 12 with a value, plus at most 16 `section`/`status`/`action`/`link`/`help` (apiVersion 6; `link` and `help` apiVersion 12, at most 4 of each) and `qr` (apiVersion 13); `text` 500, `url` 2,048, `password` 500 characters; a `link`'s address 2,048, a `help`'s title 60 and body 2,000 |
 | Error messages | your `kino.error` message is a detail for the log, cut at 200 characters; a `userMessage` for the person is at most 160 |
 | `hosts` | at least 1 entry, no upper limit from Kino 0.9.45 (only the manifest's 16 KB; Kino 0.9.44 and older refuse more than 20); from apiVersion 2, none (`[]`) when a `url` setting exists |
 | `secrets` (apiVersion 4) | at most 16; names match `^[A-Za-z][A-Za-z0-9_]{0,31}$`; a value is 1..4,096 bytes (1..8,192 from apiVersion 6); from apiVersion 6 a cipher key may be typed: `{ seal, use: "cipher-key", encoding: "hex" | "base64" }`, 16/24/32 bytes |
@@ -72,6 +77,16 @@ From Kino 0.9.74, also:
 | `link` and `help` settings (apiVersion 12) | 4 of each; a link's `url` 2,048 characters, https only; a help's `title` 60 and `body` 2,000 |
 | Action answers `setSettings` and `link` (any apiVersion) | `setSettings` 8 keys of `text`/`select` settings; a link's `candidate` 1 to 64 characters |
 
+From apiVersion 13 (in development, the next Kino version), also:
+
+| What | Limit |
+| --- | --- |
+| `read` (`byteSource`) | 20 s per call, one at a time per plugin; a range of at most 1 MiB at an offset that is a multiple of 4,096; after 3 timed-out reads in a row Kino stops reading that stream until it is opened again. See [Sockets and plugin-served bytes](bytes.md#byte-source) |
+| `image` (`imageSource`) | 10 s per call, in the background (never "No responde"); see the row above and [Images from the plugin](images.md#what-kino-does) |
+| `kino.crypto` byte operations | `modPow` numbers of at most 4,096 bits; `aesIge`/`aesIgeVerify` a 32-byte key, a 32-byte iv and data a multiple of 16 bytes; 5 MB of data per call like the rest of `kino.crypto` |
+| `qr` setting | the text 1 to 512 characters; `refreshMs` 2,000 to 60,000; it counts among the 16 settings that hold no value |
+| `storageLarge` | 16 MB in total, 2 MB per value, 1,000 keys of at most 256 characters; device-only, never synced, not in any backup |
+
 ## How your code lives { #lifecycle }
 
 - **One call at a time.** Calls to the same plugin run one after another. The sandbox is reused
@@ -86,6 +101,12 @@ From Kino 0.9.74, also:
 - **Errors reach people.** If your function throws, that call fails and the person sees an error that
   names your plugin, and the text of your `Error` can be part of it. Write those messages for a
   person, in Spanish, short.
+- **Memory over a long call (next Kino version, apiVersion 13 in development).** Each plugin has 64 MB of engine
+  memory. Until Kino 0.9.74 the answer of every awaited `kino.*` call (a `kino.fetch` body, a socket frame) stayed in
+  that memory until the sandbox closed, so a plugin that moved many megabytes in one sandbox's life could run out of it
+  on its second video. From the next version an answer is freed once your code has it, and after a call that leaves the
+  engine over half its limit Kino runs its garbage collector, so only what your code still holds counts. It applies at
+  every `apiVersion`. Still keep few big strings alive at once: a hex string costs 2 bytes per byte, then its base64.
 - **Runaway code.** Running out of memory or stack fails the call. A synchronous infinite loop
   (`while (true) {}`) **cannot be interrupted**: at the time limit Kino stops waiting for the call
   and discards the sandbox, but the loop keeps spinning on its own thread until it ends, which for a

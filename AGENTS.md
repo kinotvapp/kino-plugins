@@ -6,7 +6,8 @@ and TVs, runs inside a QuickJS sandbox. The plugin turns one source into search 
 episodes and playable streams: video, live TV channels, and (from apiVersion 8, Kino 0.9.54) music and
 podcasts; or, with `"catalogOnly": true`, a catalog that plays nothing (lists, ratings); or, with the
 `syncProvider` capability (apiVersion 12, Kino 0.9.74), the transport of the person's own Kino sync
-between their devices.
+between their devices. apiVersion 13 (in development for the next Kino version, **not in any released Kino**) adds
+sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes.
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
 before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
@@ -31,7 +32,12 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    `externalResolve` capability),
    [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/), and, when the plugin
    carries the person's Kino sync between their devices (apiVersion 12, Kino 0.9.74; the `syncProvider`
-   capability), [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/). For apiVersion 6
+   capability), [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/), and, only when the
+   person accepts that the plugin will not install on any released Kino yet (apiVersion 13, in development),
+   [Sockets and plugin-served bytes](https://kinotvapp.github.io/kino-plugins/en/bytes/),
+   [Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/),
+   [Images from the plugin](https://kinotvapp.github.io/kino-plugins/en/images/) and
+   [QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
    shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
@@ -100,7 +106,11 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   older Kino refuses an apiVersion 11 plugin); `12` only for `syncProvider`, the manifest's
   `sync` block or a `link`/`help` setting (**Kino 0.9.74+**; Kino 0.9.73 and older refuse an apiVersion 12
   plugin). An action's `setSettings` and `link` answers need no new apiVersion (Kino 0.9.74; older Kino
-  ignores them).
+  ignores them). `13` only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a
+  `qr` setting: **in development, no released Kino accepts it** (today's Kino refuses an apiVersion 13 plugin), so
+  use it only when the person agrees to wait for the next Kino version, and say so plainly. `kino.crypto`'s byte
+  operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) come with that same Kino at any
+  `apiVersion`: feature-detect them with `typeof kino.crypto.convert === "function"`.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -171,7 +181,8 @@ exact message Kino shows, never a summary.
    `settingsStatus` (by a `status` setting), `action` (by an `action` setting), `sign` (by any stream
    with `signing: "request"`), `panel` (by `"panel"`, apiVersion 9; `panelAction` and `playerEvent` are optional); `categories` (needs `browse`) and `validateSettings` are optional.
    `syncProvider` (apiVersion 12) requires `syncPull` and `syncPush` (`syncStatus` optional), each taking one
-   object argument (`null` for `syncStatus`).
+   object argument (`null` for `syncStatus`). `byteSource` (apiVersion 13) requires `read` and `imageSource`
+   (apiVersion 13) requires `image`; `socket`, `storageLarge`, `catalog` and `qrScan` are declarative.
    Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
@@ -315,7 +326,13 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.sleep` | 0..5,000 ms |
 | `kino.meta` (Kino 0.9.53) | 30 calls a minute per plugin; 8 s at most, inside your call's own limit; answers cached 30 minutes |
 | `kino.tmdb` (Kino 0.9.53) | 40 calls per 10 s per plugin; 15 s per call; body 2 MB; not counted in `kino.fetch`'s 60 requests |
-| `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024 |
+| `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024; `modPow` 4,096 bits (next Kino) |
+| `kino.ws` (apiVersion 13, in development) | `wss://` to a declared host, port 443; 4 sockets; 8 MiB queued unread per socket; 786,000 bytes per frame sent (decoded); `recv` ≤ 60 s |
+| `byteSource` (apiVersion 13, in development) | `read` 20 s, one at a time, ≤ 1 MiB at an offset multiple of 4,096; `handle` 1..512 chars; 2 streams open on the device (+2 served to TVs); 3 timed-out reads in a row stop the stream |
+| `kino.catalog` (apiVersion 13, in development) | 100,000 items and a 64 MiB file; `id` 1..128, `title` 300, `data` 4,096 bytes of JSON; 500 per `upsert`/`get`/`remove`; `search` `limit` ≤ 100, `offset` ≤ 1,000,000, `q` ≤ 256 |
+| `storageLarge` (apiVersion 13, in development) | 16 MB total, 2 MB per value, 1,000 keys of ≤ 256 chars; device-only, never synced, not in backups |
+| `kino.qr.scan` / `qr` setting (apiVersion 13, in development) | only from a settings `action` or `panelAction`, phone only; 120 s; `title` ≤ 80; scanned text ≤ 4,096; a `qr` setting's text ≤ 512, `refreshMs` 2,000..60,000 |
+| `image` (`imageSource`, apiVersion 13, in development) | 10 s; base64 JPEG/PNG/WebP ≤ 262,144 bytes decoded; `handle` 1..512; one call at a time per plugin, never while a byte stream of yours plays |
 | Log message | 2,000 characters; for a plugin with `"telemetry"` (apiVersion 6; no other plugin sends lines), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
@@ -443,6 +460,32 @@ Kino keeps all the logic (what syncs, merging, scheduling), compresses and encry
   sync command: write `node --test` tests like the examples (`loadPlugin` from `sdk/sandbox.mjs`,
   `createKino` from `sdk/kino-shim.mjs`, `checkSyncAnswer` from `sdk/contract.mjs`) against a local imitation
   of the service, with a 4 MiB blob both ways and a conflict.
+
+**apiVersion 13 (in development, the next Kino version; no released Kino accepts it)**: use these only when the
+person needs them and accepts the wait; never present them as already in the app. Each has its own page, read it whole
+before using it:
+
+- `socket` → `kino.ws.open("wss://host/path")` to a host in `hosts` (port 443, never an IP or the LAN), at most 4 sockets.
+  Ask for frames as strings, `recv(ms, { encoding: "hex" })` / `send(hexOrB64, { encoding })`: a JavaScript loop over
+  1 MiB of bytes costs about a second on a phone. Close what you open. Keep sessions in sealed secrets or `kino.storage`.
+  <https://kinotvapp.github.io/kino-plugins/en/bytes/>
+- `byteSource` → `resolve()` answers `{ source: "plugin", handle, size, mime }` (no `url`); export
+  `read({ handle, offset, length })` answering `{ bytes: <base64> }` of exactly that range (fewer only at the end), in
+  under 20 s. Build the base64 with `kino.crypto.convert(hex, "hex", "base64")` or a `kino.crypto` step's
+  `outputEncoding: "base64"`, never in a JavaScript loop. Never declare `download` for such streams. The kit's
+  `run.mjs` cannot check a byte stream or call `read`: write a Node test with a fake `globalThis.WebSocket`, as the
+  page's example does.
+- `catalog` → `kino.catalog.upsert/search/get/remove/clear/count` for thousands of records: index from `home()` a few
+  pages per call, answer `search()` from the catalog only, keep `data` small, rebuild when `count()` is 0 (it is never
+  synced or backed up). <https://kinotvapp.github.io/kino-plugins/en/catalog/>
+- `storageLarge` → `kino.storage` at 16 MB but **device-only and out of backups, and it moves the existing keys there**:
+  credentials go in sealed secrets or settings.
+- `qrScan` → `kino.qr.scan({ title })` only from an `action` or `panelAction`; `unavailable` on a TV; handle `null`,
+  `timeout`, `permission_denied`, `busy`. A `qr` setting (no capability) shows a code from `settingsStatus()`, refreshed
+  every `refreshMs`. <https://kinotvapp.github.io/kino-plugins/en/qr/>
+- `imageSource` → `poster`/`backdrop`/`still`/hero `image` may be `{ source: "plugin", handle }` only when no public URL
+  exists; export `image({ handle })` answering `{ bytes: <base64>, mime }` (JPEG, PNG or WebP, ≤ 256 KB). Never put a
+  secret in a handle: it is saved and synced like a poster URL. <https://kinotvapp.github.io/kino-plugins/en/images/>
 
 **Configuration aids and action answers (Kino 0.9.74)**: a `"type": "link"` setting (`label`, `url`
 `https://` only, no user info, ≤ 2,048; a button that opens it through the system only on the person's tap;
@@ -739,7 +782,9 @@ people. See
       it needs Kino 0.9.50+; 7 only for `tracking` or `segments`: it needs Kino 0.9.51+; 8 only for
       `music`/`podcast` items or `details`: it needs Kino 0.9.54+; 10 only for the `playlists`
       capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability (Kino 0.9.66+) or the `nuvio` capability (Kino 0.9.71+);
-      12 only for `syncProvider`, the `sync` block or a `link`/`help` setting: it needs Kino 0.9.74+).
+      12 only for `syncProvider`, the `sync` block or a `link`/`help` setting: it needs Kino 0.9.74+;
+      13 only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a `qr` setting:
+      in development, no released Kino accepts it yet, and the person was told).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
@@ -761,6 +806,11 @@ people. See
       `sync.maxBlobBytes` ≤ 4194304, `keySecret` (required) a long random token in a `password` setting with no
       `default`, `provision` lists what a second device needs, no token in any error/status/log, offline tests
       with a 4 MiB blob both ways, and the person was told in plain Spanish who can read the data.
+- [ ] apiVersion 13 (in development): `byteSource` exports `read` and answers exactly the range asked as base64,
+      with no JavaScript loop over the bytes; `imageSource` exports `image` and puts no secret in a handle;
+      `kino.ws` only to declared hosts, every socket closed; `kino.qr.scan` only from an `action`/`panelAction`;
+      `storageLarge` and `kino.catalog` hold nothing that must survive a restore; a Node test covers `read`
+      (the kit's `run.mjs` cannot).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
