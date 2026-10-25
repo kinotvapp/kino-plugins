@@ -23,8 +23,13 @@ person's own) and [Sync Servidor](#examples) (a server the person runs).
   Proveedor** ("Settings for all profiles ▸ Sync ▸ Provider") the list has **Red local** and every
   installed provider, each with a switch. Turning one on turns the previous one off (Kino asks first:
   "¿Sincronizar con &lt;name&gt;?", with "Combinar con este aparato"); turning the active one off leaves
-  sync off. The choice and its key belong to that device and never sync: each device turns its
-  provider on itself, with the settings it typed or [received](#provisioning).
+  sync off. The choice belongs to that device and never syncs: each device turns its provider on
+  itself, with the settings it typed or [received](#provisioning). Each provider is drawn as its own
+  card there, with its status, its consent line, its buttons and its "Sincronizar cada".
+- Your plugin's own page in Ajustes (phone and TV) starts with Kino's button **"Sincronización ▸
+  Proveedor"**, which opens that list (on the TV with your provider's card focused); you declare nothing
+  for it. Mark the setup the TV cannot do with [`devices`](settings-form.md#devices) so the TV shows only
+  what it needs.
 
 ## Who sees what { #who-sees-what }
 
@@ -164,6 +169,10 @@ A round is pull, merge, push. With `mode: "poll"` Kino runs one:
   advances;
 - when the person taps "Sincronizar ahora" ("Sync now").
 
+`pullEveryMs` is only the default: each provider's card in Sincronización ▸ Proveedor has **"Sincronizar
+cada"** (1, 5, 10, 30 or 60 minutes, starting at your value rounded to the nearest one), chosen per device
+and never synced. Your plugin is not told and needs nothing for it; the push debounce stays yours.
+
 There are at most 60 rounds in any hour, whatever asks. A failed round waits the pull interval doubled
 per consecutive failure (up to 30 minutes); the changes it carried stay pending.
 
@@ -230,13 +239,15 @@ with any of it.
 What this means for your plugin:
 
 - Only the settings in `sync.provision` travel, sealed like typed ones; anything else is refused. The
-  sync key never travels: each device derives it from the same token.
+  sync key never travels: each device derives it from the same token. Received values are saved like
+  typed ones but, as with an action's `setSettings`, Kino does **not** run your `validateSettings` on them.
 - "Enviar a otro aparato" is offered only when this device holds a value for every setting in
   `provision`. Fill the ones you find yourself (a chat id) with [`setSettings`](settings-form.md#set-settings),
   so the person never types them.
 - The plugin must already be installed on the receiving device ("Instala primero &lt;plugin&gt;").
-- With no route at all, the person installs the plugin on the second device, opens **Conectar** and
-  types the same settings there.
+- With no route at all, the person types the same settings in the second device's own form, unless
+  your plugin draws them on the phone only ([`devices`](settings-form.md#devices)): then receiving them
+  is the TV's way.
 
 ## Settings, profiles and what the person reads { #settings }
 
@@ -303,8 +314,11 @@ person can follow end to end, and tests that need no network.
   version and a race check, `getFile` to read it back). It shows a multipart upload through `kino.fetch`
   without decoding the blob, linking the chat with `getUpdates` and `action.link`, the confirmed chat
   saved with `setSettings`, a short `help` and a `link` to @BotFather, and every error scrubbed of the
-  token. `keySecret` is the bot token and `provision` is `["botToken", "chatId"]`. It is the reference for
-  a provider on a third-party service.
+  token. `keySecret` is the bot token and `provision` is `["botToken", "chatId"]`. Its setup is
+  `"devices": ["phone"]` with numbered section titles, and its confirm action is `linkOnly`. It is the
+  reference for a provider on a third-party service. It is also published, signed, as
+  [kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) and listed in
+  Kino's recommended plugins from Kino 0.9.74 (`requires: ["syncProvider"]`, so older Kino never shows it).
 - **Sync Servidor** (`sync-server/`, id `sync-server`): a single-file Node server with no dependencies
   (`GET /blob`, `PUT /blob` with `If-Match`, a 409 on a version mismatch, a bearer token) and the plugin
   that talks to it (`"fetchHosts": "any"`, `keySecret` and `provision`, a 409 thrown as `conflict`), reached

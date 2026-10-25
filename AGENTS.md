@@ -453,7 +453,13 @@ it; link to a full guide. An `action` may answer `setSettings: { key: "value" }`
 without `validateSettings`; any bad entry refuses the whole field) and `link: { candidate, confirm }` (Kino
 asks "¿Eres tú, <candidate>?" in its own words; `candidate` 1 to 64 plain characters; `confirm` is
 **another** `action` key without its own `confirm` question; only "Sí, soy yo" runs it, once). Both are
-ignored by older Kino: also say in `message` what to do.
+ignored by older Kino: also say in `message` what to do. Mark that confirm action `"linkOnly": true`
+(apiVersion 12) so it is never drawn and the person sees one button. Any settings item may carry
+`"devices": ["phone"]` or `["tv"]` (apiVersion 12): it is drawn only there, but its value is still stored,
+synced, provisioned and read through `kino.config`; a sync provider draws its setup on the phone only,
+because the TV receives it with "Recibir desde otro aparato". Kino itself puts a "Sincronización ▸
+Proveedor" button at the top of every provider's page and a per-device "Sincronizar cada" on its card
+(`pullEveryMs` is only the default).
 [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/#aids).
 
 **Feature-detect what older Kino lacks**: `kino.meta` and `kino.tmdb` (Kino 0.9.53, no new apiVersion)

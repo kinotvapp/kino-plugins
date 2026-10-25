@@ -14,6 +14,7 @@ one of its features.
 | --- | --- | --- |
 | The `syncProvider` capability (`syncPull`, `syncPush`, optional `syncStatus`) and the manifest's `sync` block | Kino 0.9.74, `apiVersion` 12 | nothing to check: an older Kino refuses `apiVersion` 12 |
 | The `link` and `help` setting types | Kino 0.9.74, `apiVersion` 12 | nothing to check: an older Kino refuses `apiVersion` 12 |
+| `devices` on settings and `linkOnly` on an action | Kino 0.9.74, `apiVersion` 12 | nothing to check: an older Kino refuses `apiVersion` 12 |
 | `kino.sync.remoteChanged()` for a `realtime` provider | Kino 0.9.74 | `typeof kino.sync === "object"` |
 | An action's `setSettings` and `link` answers | Kino 0.9.74, every `apiVersion` | nothing to check: an older Kino ignores both, so also say in `message` what to do |
 | `kino.fetch` caps raised inside `syncPull`/`syncPush` | Kino 0.9.74 | only inside those two calls |
@@ -33,6 +34,14 @@ one of its features.
   through the system only on the person's tap; on a TV, the address and a QR) and a `help` setting (a
   button that opens your plain-text instructions in a modal), at most 4 of each.
   [Configuration aids](settings-form.md#aids).
+- **`devices`** (apiVersion 12): any settings item can be drawn on the phone only (`["phone"]`) or the
+  TV only (`["tv"]`); its value is still stored, synced and provisioned.
+  [Settings for one kind of device](settings-form.md#devices).
+- **`linkOnly`** (apiVersion 12): an action that is never drawn and runs only as a `link`'s `confirm`.
+  [Actions only a link runs](settings-form.md#link-only).
+- **What Kino adds to a provider**: each provider's page starts with the "Sincronización ▸ Proveedor"
+  button; each provider is its own card in that list, with "Sincronizar cada" (1 to 60 minutes, per
+  device; `pullEveryMs` is only the default). [Sync providers](sync-providers.md).
 - **`setSettings`** (Kino 0.9.74, additive): an action may fill up to 8 of your own `text` or `select`
   settings, saved as if the person typed them; never a `url` or a `password`.
   [Filling your own settings](settings-form.md#set-settings).

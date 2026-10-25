@@ -14,6 +14,7 @@ usas algo de esta versión.
 | --- | --- | --- |
 | La capacidad `syncProvider` (`syncPull`, `syncPush`, `syncStatus` opcional) y el bloque `sync` del manifiesto | Kino 0.9.74, `apiVersion` 12 | nada que revisar: un Kino anterior rechaza `apiVersion` 12 |
 | Los tipos de ajuste `link` y `help` | Kino 0.9.74, `apiVersion` 12 | nada que revisar: un Kino anterior rechaza `apiVersion` 12 |
+| `devices` en los ajustes y `linkOnly` en una acción | Kino 0.9.74, `apiVersion` 12 | nada que revisar: un Kino anterior rechaza `apiVersion` 12 |
 | `kino.sync.remoteChanged()` para un proveedor `realtime` | Kino 0.9.74 | `typeof kino.sync === "object"` |
 | Las respuestas `setSettings` y `link` de una acción | Kino 0.9.74, cualquier `apiVersion` | nada que revisar: un Kino anterior ignora las dos, así que di también en `message` qué hacer |
 | Topes de `kino.fetch` ampliados dentro de `syncPull`/`syncPush` | Kino 0.9.74 | solo dentro de esas dos llamadas |
@@ -35,6 +36,14 @@ usas algo de esta versión.
   por el sistema solo cuando la persona lo toca; en un TV, la dirección y un QR) y un ajuste `help` (un
   botón que abre tus instrucciones en texto plano en una ventana), máximo 4 de cada uno.
   [Ayudas para configurar](settings-form.md#aids).
+- **`devices`** (apiVersion 12): cualquier elemento de los ajustes puede dibujarse solo en el celular
+  (`["phone"]`) o solo en el TV (`["tv"]`); el valor sigue guardado, sincronizado y provisionado.
+  [Ajustes para un tipo de aparato](settings-form.md#devices).
+- **`linkOnly`** (apiVersion 12): una acción que nunca se dibuja y solo corre como `confirm` de un `link`.
+  [Acciones que solo corre un link](settings-form.md#link-only).
+- **Lo que Kino agrega a un proveedor**: la página de cada proveedor empieza con el botón "Sincronización ▸
+  Proveedor"; cada proveedor es su propia tarjeta en esa lista, con "Sincronizar cada" (1 a 60 minutos,
+  por aparato; `pullEveryMs` es solo el valor de partida). [Proveedores de sincronización](sync-providers.md).
 - **`setSettings`** (Kino 0.9.74, aditivo): una acción puede llenar hasta 8 de tus ajustes `text` o
   `select`, guardados como si la persona los hubiera escrito; nunca un `url` ni un `password`.
   [Llenar ajustes propios](settings-form.md#set-settings).

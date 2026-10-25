@@ -50,6 +50,8 @@ What each entry may carry:
 | `url` | `link` only, apiVersion 12 | required: `https://`, no user name or password, at most 2,048 characters |
 | `title`, `titleEn`, `body`, `bodyEn` | `help` only, apiVersion 12 | the modal's title (at most 60) and text (at most 2,000); `body` or `bodyEn` is required |
 | `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, apiVersion 9 (Kino 0.9.55): the same text in English, with the same limits ([English texts](#english)) |
+| `devices` | all | optional, apiVersion 12: `["phone"]`, `["tv"]` or both, the devices that draw it ([one kind of device](#devices)) |
+| `linkOnly` | `action` | optional `true`/`false`, apiVersion 12: never drawn, run only as a link's `confirm` ([linkOnly](#link-only)) |
 
 Any other key in an entry is ignored. A manifest that breaks a rule is refused at install with a
 message that names the setting (`El ajuste "quality" necesita opciones`); a `list` below apiVersion 4
@@ -167,6 +169,31 @@ declares `"apiVersion": 12`.
 the plugin talks to a server the person runs, the help does not teach how to build it: add a `link` to
 the complete guide (the technical cap of 2,000 characters is not a target).
 
+## Settings for one kind of device (`devices`, apiVersion 12, Kino 0.9.74) { #devices }
+
+Any settings item (a field, a section, a status, an action, a link or a help) may say which devices
+draw it: `"devices": ["phone"]`, `["tv"]` or both; without it the item shows everywhere.
+
+```json
+{ "key": "botToken", "label": "Token del bot", "labelEn": "Bot token", "type": "password", "devices": ["phone"] }
+```
+
+It is only about drawing. On a device it leaves out, the form neither draws nor checks the item (a
+hidden `required` field never blocks Guardar there), but its value is still stored, saved back
+unchanged, synced to the person's other devices, handed over by `sync.provision` and read by your code
+through `kino.config`. Use it for setup a TV cannot do well, like a token pasted on the phone: Sync-Gram
+and Sync Servidor draw their setup only on the phone, and the TV receives the values with "Recibir desde
+otro aparato". An unknown device, an empty list or a repeated one refuses the manifest (`"devices" of the
+setting "<key>" must be a list of different devices: "phone", "tv"`); below apiVersion 12 the key is
+ignored. The Node kit renders no form: `validate.mjs` only checks the field.
+
+## Actions only a link runs (`linkOnly`, apiVersion 12, Kino 0.9.74) { #link-only }
+
+An `action` may say `"linkOnly": true`: it is never drawn on any device and runs only as the `confirm`
+of another action's [`link`](#link), after Kino's own question. A "find, then confirm" pair then shows
+the person one button (Sync-Gram's *Verificar mensaje en el chat*); without it the confirm action is a
+second button. `linkOnly` on anything but an action, or not a boolean, refuses the manifest.
+
 ## Forgetting settings from an action (`clearSettings`) { #clear-settings }
 
 An action may also **forget settings of your own** with `clearSettings`: up to 12 keys of your declared
@@ -261,8 +288,8 @@ export async function action(key) {
   (no chains). One question at a time: a newer link replaces a waiting one, and leaving the form drops it.
 - An older Kino ignores `link` (it is additive, no new `apiVersion`), so also say in `message` (or a
   status line) what to do.
-- There is no way to hide an `action` button: the action that only serves as a `confirm` shows in the
-  form. Give it a `hint` that says when to use it ("Solo después de Buscar mi chat").
+- An action that only serves as a `confirm` can be hidden with [`"linkOnly": true`](#link-only): the person
+  then sees one button, and only Kino's question runs the confirm action.
 
 ## Checking before saving (`validateSettings`) { #validate }
 

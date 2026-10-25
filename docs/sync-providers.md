@@ -24,8 +24,13 @@ Telegram de la propia persona) y [Sync Servidor](#examples) (un servidor que cor
   Proveedor** la lista tiene **Red local** y cada proveedor instalado, cada uno con un interruptor.
   Encender uno apaga el anterior (Kino pregunta antes: "¿Sincronizar con &lt;nombre&gt;?", con
   "Combinar con este aparato"); apagar el activo deja la sincronización apagada. La elección es por
-  aparato. La elección y su llave son de ese aparato y nunca se sincronizan: cada aparato enciende su
-  proveedor él mismo, con los ajustes que escribió o que [recibió](#provisioning).
+  aparato y nunca se sincroniza: cada aparato enciende su proveedor él mismo, con los ajustes que
+  escribió o que [recibió](#provisioning). Ahí cada proveedor se dibuja como su propia tarjeta, con su
+  estado, su línea de consentimiento, sus botones y su "Sincronizar cada".
+- La página propia de tu plugin en Ajustes (celular y TV) empieza con el botón **"Sincronización ▸
+  Proveedor"** de Kino, que abre esa lista (en el TV con la tarjeta de tu proveedor enfocada); no declaras
+  nada para eso. Marca con [`devices`](settings-form.md#devices) la preparación que el TV no puede hacer,
+  para que el TV muestre solo lo que necesita.
 
 ## Quién ve qué { #who-sees-what }
 
@@ -171,6 +176,11 @@ Una ronda es traer, combinar y enviar. Con `mode: "poll"` Kino corre una:
   nunca mientras avanza;
 - cuando la persona toca "Sincronizar ahora".
 
+`pullEveryMs` es solo el valor de partida: la tarjeta de cada proveedor en Sincronización ▸ Proveedor tiene
+**"Sincronizar cada"** (1, 5, 10, 30 o 60 minutos, empezando por tu valor redondeado al más cercano), elegido
+en cada aparato y nunca sincronizado. A tu plugin no se le avisa y no necesita nada para eso; la espera
+antes de enviar sigue siendo la tuya.
+
 Hay como mucho 60 rondas en cualquier hora, pida quien pida. Una ronda que falla espera el intervalo de
 lectura multiplicado por dos por cada falla seguida (hasta 30 minutos); los cambios que llevaba siguen
 pendientes.
@@ -243,13 +253,16 @@ nada que ver con eso.
 Lo que eso significa para tu plugin:
 
 - Solo viajan los ajustes de `sync.provision`, sellados como los escritos a mano; cualquier otro se
-  rechaza. La llave de sincronización nunca viaja: cada aparato la deriva del mismo token.
+  rechaza. La llave de sincronización nunca viaja: cada aparato la deriva del mismo token. Los valores
+  recibidos se guardan como los escritos, pero, como con el `setSettings` de una acción, Kino **no** corre
+  tu `validateSettings` con ellos.
 - "Enviar a otro aparato" solo se ofrece cuando este aparato tiene un valor para cada ajuste de
   `provision`. Llena tú mismo los que encuentras (el id de un chat) con
   [`setSettings`](settings-form.md#set-settings), para que la persona nunca los escriba.
 - El plugin tiene que estar instalado en el aparato que recibe ("Instala primero &lt;plugin&gt;").
-- Sin ninguna ruta, la persona instala el plugin en el segundo aparato, abre **Conectar** y escribe ahí
-  los mismos ajustes.
+- Sin ninguna ruta, la persona escribe los mismos ajustes en el formulario del segundo aparato, salvo que
+  tu plugin los dibuje solo en el celular ([`devices`](settings-form.md#devices)): entonces el TV los
+  recibe.
 
 ## Ajustes, perfiles y lo que lee la persona { #settings }
 
@@ -318,7 +331,12 @@ inglés que una persona puede seguir de principio a fin, y pruebas que no necesi
   multipart por `kino.fetch` sin decodificar el blob, cómo vincular el chat con `getUpdates` y
   `action.link`, el chat confirmado guardado con `setSettings`, un `help` corto y un `link` a @BotFather,
   y cada error limpio del token. `keySecret` es el token del bot y `provision` es
-  `["botToken", "chatId"]`. Es la referencia para un proveedor sobre un servicio de terceros.
+  `["botToken", "chatId"]`. Su preparación es `"devices": ["phone"]` con títulos de sección numerados, y su
+  acción de confirmar es `linkOnly`. Es la referencia para un proveedor sobre un servicio de terceros.
+  También está publicado y firmado como
+  [kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) y aparece en los
+  plugins recomendados de Kino desde Kino 0.9.74 (`requires: ["syncProvider"]`, así que un Kino anterior
+  nunca lo muestra).
 - **Sync Servidor** (`sync-server/`, id `sync-server`): un servidor de Node de un solo archivo y sin
   dependencias (`GET /blob`, `PUT /blob` con `If-Match`, un 409 cuando la versión no coincide, un token de
   portador) y el plugin que habla con él (`"fetchHosts": "any"`, `keySecret` y `provision`, un 409 lanzado

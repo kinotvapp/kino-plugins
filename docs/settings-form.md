@@ -50,6 +50,8 @@ Lo que puede llevar cada entrada:
 | `url` | solo `link`, apiVersion 12 | obligatorio: `https://`, sin usuario ni contraseña, máximo 2.048 caracteres |
 | `title`, `titleEn`, `body`, `bodyEn` | solo `help`, apiVersion 12 | el título (máximo 60) y el texto (máximo 2.000) de la ventana; `body` o `bodyEn` es obligatorio |
 | `labelEn`, `hintEn`, `confirmEn` | los de `label`, `hint`, `confirm` | opcionales, apiVersion 9 (Kino 0.9.55): el mismo texto en inglés, con los mismos límites ([Textos en inglés](#english)) |
+| `devices` | todos | opcional, apiVersion 12: `["phone"]`, `["tv"]` o los dos, los aparatos que lo dibujan ([un tipo de aparato](#devices)) |
+| `linkOnly` | `action` | opcional `true`/`false`, apiVersion 12: nunca se dibuja, solo corre como `confirm` de un `link` ([linkOnly](#link-only)) |
 
 Cualquier otra clave de una entrada se ignora. Un manifiesto que incumple una regla se rechaza al
 instalar con un mensaje que nombra el ajuste (`El ajuste "quality" necesita opciones`); una `list` por
@@ -172,6 +174,34 @@ apiVersion 12, así que un plugin que los usa declara `"apiVersion": 12`.
 líneas. Si el plugin habla con un servidor propio de la persona, la ayuda no le enseña a armarlo: pon un
 `link` a la guía completa (el límite técnico de 2.000 caracteres no es una meta).
 
+## Ajustes para un tipo de aparato (`devices`, apiVersion 12, Kino 0.9.74) { #devices }
+
+Cualquier elemento de los ajustes (un campo, una sección, un estado, una acción, un `link` o un `help`)
+puede decir en qué aparatos se dibuja: `"devices": ["phone"]`, `["tv"]` o los dos; sin él se muestra en
+todos.
+
+```json
+{ "key": "botToken", "label": "Token del bot", "labelEn": "Bot token", "type": "password", "devices": ["phone"] }
+```
+
+Solo cambia lo que se dibuja. En un aparato que deja fuera, el formulario no dibuja ni revisa ese
+elemento (un campo `required` oculto nunca bloquea Guardar ahí), pero su valor sigue guardado, se guarda
+igual al guardar, se sincroniza con los otros aparatos de la persona, viaja con `sync.provision` y tu
+código lo lee con `kino.config`. Úsalo para la preparación que un TV no hace bien, como un token que se
+pega en el celular: Sync-Gram y Sync Servidor dibujan su preparación solo en el celular, y el TV recibe los
+valores con "Recibir desde otro aparato". Un aparato desconocido, una lista vacía o uno repetido rechazan
+el manifiesto (`"devices" of the setting "<key>" must be a list of different devices: "phone", "tv"`);
+por debajo de apiVersion 12 la clave se ignora. El kit de Node no dibuja un formulario: `validate.mjs`
+solo revisa el campo.
+
+## Acciones que solo corre un `link` (`linkOnly`, apiVersion 12, Kino 0.9.74) { #link-only }
+
+Una `action` puede decir `"linkOnly": true`: nunca se dibuja en ningún aparato y solo corre como el
+`confirm` del [`link`](#link) de otra acción, después de la pregunta de Kino. Así un par "buscar, luego
+confirmar" le muestra a la persona un solo botón (*Verificar mensaje en el chat* de Sync-Gram); sin él, la
+acción de confirmar es un segundo botón. `linkOnly` en algo que no es una acción, o que no es `true` o
+`false`, rechaza el manifiesto.
+
 ## Olvidar ajustes desde una acción (`clearSettings`) { #clear-settings }
 
 Una acción también puede **olvidar ajustes propios** con `clearSettings`: hasta 12 claves de tus ajustes
@@ -272,8 +302,8 @@ export async function action(key) {
   esperaba, y salir del formulario lo descarta.
 - Un Kino anterior ignora `link` (es aditivo, sin `apiVersion` nueva): di también en `message` (o en una
   línea de estado) qué hacer.
-- No hay forma de esconder un botón `action`: la acción que solo sirve como `confirm` se ve en el
-  formulario. Ponle una `hint` que diga cuándo usarla ("Solo después de Buscar mi chat").
+- Una acción que solo sirve de `confirm` se puede ocultar con [`"linkOnly": true`](#link-only): la persona
+  ve entonces un solo botón, y solo la pregunta de Kino corre la acción de confirmar.
 
 ## Validar antes de guardar (`validateSettings`) { #validate }
 

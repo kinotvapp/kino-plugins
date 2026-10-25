@@ -191,7 +191,9 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   and a "link" setting (an https button, e.g. https://t.me/BotFather). From Kino 0.9.74 an action may
   answer link: { candidate, confirm } (Kino asks "Is this you, <candidate>?" before running the confirm
   action) and setSettings: { key: value } to fill the plugin's own "text" or "select" settings (never a
-  "url" or a "password").
+  "url" or a "password"). The confirm action carries "linkOnly": true, so the person sees one button.
+  Setup a TV cannot do (a token pasted on the phone) carries "devices": ["phone"]: the TV receives it with
+  "Recibir desde otro aparato".
 - Feature-detect what older Kino lacks: kino.meta and kino.tmdb (Kino 0.9.53) only behind
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, and the hidden browser's
   captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)

@@ -659,8 +659,17 @@ type KinoSettingsLayout = KinoLayoutNode<KinoSettingsLayoutLeaf>[];
  * shown literally, nothing is clickable (use a `link` for an address); scrubbed of your secrets; a missing Spanish or English
  * text falls back to the other. At most 4 of each per plugin; they count among the sections, statuses and actions.
  */
-type KinoLinkSetting = { key: string; type: "link"; label: string; labelEn?: string; url: string; hint?: string; hintEn?: string };
-type KinoHelpSetting = { key: string; type: "help"; label?: string; labelEn?: string; title?: string; titleEn?: string; body?: string; bodyEn?: string };
+type KinoLinkSetting = { key: string; type: "link"; label: string; labelEn?: string; url: string; hint?: string; hintEn?: string; devices?: KinoSettingDevice[] };
+type KinoHelpSetting = { key: string; type: "help"; label?: string; labelEn?: string; title?: string; titleEn?: string; body?: string; bodyEn?: string; devices?: KinoSettingDevice[] };
+
+/**
+ * apiVersion 12 (additive): `devices` on any settings item, the devices whose Kino draws it: `["phone"]`, `["tv"]` or both
+ * (absent = every device; an unknown device, an empty list or a repeat refuses the manifest). Host side only: on a device it
+ * leaves out the item is neither drawn nor checked, but its value is still stored, saved back unchanged, synced, provisioned
+ * and read through `kino.config`. Use it for setup a TV cannot do (a token pasted on the phone, sent with "Enviar a otro
+ * aparato"). Ignored below apiVersion 12.
+ */
+type KinoSettingDevice = "phone" | "tv";
 
 /** One entry of the manifest's `settings` (the manifest is JSON: this documents its shape, a `settings` array holds these). */
 type KinoManifestSetting =
@@ -671,6 +680,12 @@ type KinoManifestSetting =
       options?: { value: string; label: string; labelEn?: string }[];
       fields?: { key: string; label: string; labelEn?: string; type: "text" | "url"; hint?: string; hintEn?: string; required?: boolean }[];
       max?: number; confirm?: string; confirmEn?: string;
+      devices?: KinoSettingDevice[];
+      /**
+       * apiVersion 12, on an `action` only: never drawn on any device; it runs only as the `confirm` of another action's `link`,
+       * after Kino's own "¿Eres tú?" (a find-then-confirm pair shows the person one button).
+       */
+      linkOnly?: boolean;
     }
   | KinoLinkSetting
   | KinoHelpSetting;
