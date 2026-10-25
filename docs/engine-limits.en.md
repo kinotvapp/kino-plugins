@@ -83,7 +83,7 @@ From apiVersion 13 (in development, the next Kino version), also:
 | --- | --- |
 | `read` (`byteSource`) | 20 s per call, one at a time per plugin; a range of at most 1 MiB at an offset that is a multiple of 4,096; after 3 timed-out reads in a row Kino stops reading that stream until it is opened again. See [Sockets and plugin-served bytes](bytes.md#byte-source) |
 | `image` (`imageSource`) | 10 s per call, in the background (never "No responde"); see the row above and [Images from the plugin](images.md#what-kino-does) |
-| `kino.crypto` byte operations | `modPow` numbers of at most 4,096 bits; `aesIge`/`aesIgeVerify` a 32-byte key, a 32-byte iv and data a multiple of 16 bytes; 5 MB of data per call like the rest of `kino.crypto` |
+| `kino.crypto` byte operations (gated on the Kino version, not the manifest: feature-detect) | `modPow` numbers of at most 4,096 bits; `aesIge`/`aesIgeVerify` a 32-byte key, a 32-byte iv and data a multiple of 16 bytes; 5 MB of data per call like the rest of `kino.crypto` |
 | `qr` setting | the text 1 to 512 characters; `refreshMs` 2,000 to 60,000; it counts among the 16 settings that hold no value |
 | `storageLarge` | 16 MB in total, 2 MB per value, 1,000 keys of at most 256 characters; device-only, never synced, not in any backup |
 

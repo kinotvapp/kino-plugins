@@ -243,17 +243,23 @@ with `imageSource`) and the settings form's `qr` type with its `refreshMs`. What
 - **`kino.ws`** runs over Node's global `WebSocket` with the app's rules: `wss://` only, a declared host on port 443, no
   IP literal or local name, 4 sockets, the frame cap, `hex`/`base64` frames accepted and refused word for word like the
   app. Swap `globalThis.WebSocket` for a fake to test offline ([an example](bytes.md#testing)).
-- **`byteSource`**: the kit has no `read` command, and `run.mjs . resolve` reads a `{ source: "plugin" }` answer with the
-  rules of a URL stream (it reports "the video has an invalid address"): call `resolve` and `read` from your own tests.
+- **`byteSource`**: `run.mjs . resolve` accepts a `{ source: "plugin", handle, size, mime }` answer with the app's rules;
+  `node sdk/run.mjs --size <total bytes> . read <handle> <offset> <length>` calls your `read` as Kino's proxy does and
+  prints the byte count, the sha256 and the first bytes; `askRead(plugin, manifest, stream, offset, length)` does the same
+  from a test ([Sockets and plugin-served bytes](bytes.md#testing)).
 - **`kino.catalog`** is the app's catalog in memory, for one run: the same answers and errors (both run the same shared
   test vectors), with the file size estimated instead of measured.
 - **`storageLarge`** gives `kino.storage` the 16 MB, 2 MB per value and 1,000-key limits of the app.
 - **`kino.qr.scan`** needs a fake: `createKino(manifest, { qrScan: async ({ title }) => "text" })`; without one, or with
   `--device tv`, it fails with `unavailable`. It checks where the call comes from like the app ([QR codes](qr.md#kit)).
 - **`imageSource`**: `checkOutput` keeps or drops a reference like the app, and `askImage(plugin, manifest, ref)` from
-  `sdk/kino-shim.mjs` asks your `image` the way Kino does ([Images from the plugin](images.md#kit)); `run.mjs` has no
-  `image` command.
+  `sdk/kino-shim.mjs` asks your `image` the way Kino does ([Images from the plugin](images.md#kit));
+  `node sdk/run.mjs --out poster.jpg . image <handle>` writes what it answers.
 - **`kino.crypto`**'s byte operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) give the app's answers.
+  They depend on the Kino version, not on your manifest, so the kit offers what its own contract has: feature-detect each
+  one in your plugin (`typeof kino.crypto.convert === "function"`).
+- **`init.mjs --with byteSource,images,catalog,socket`** (any of them) scaffolds an apiVersion 13 plugin that declares
+  those capabilities, with a working, commented example of each (`read`, `image`, `kino.catalog`, `kino.ws`).
 
 ## What the Node kit does not reproduce { #differences }
 

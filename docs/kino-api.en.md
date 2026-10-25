@@ -261,12 +261,13 @@ kino.crypto.uuid()
 | `importKey`, `deriveSharedSecret` (apiVersion 6) | public keys as `jwk`, `spki`, `raw`; ECDH (same curve) and X25519 |
 <!-- contract:crypto:end -->
 
-### Byte operations (apiVersion 13, in development) { #crypto-bytes }
+### Byte operations (the next Kino version, in development: feature-detect) { #crypto-bytes }
 
-For binary protocols (MTProto and the like), a Kino whose `kino.apiVersion` is 13 or more (the next version, in
-development) has five more operations on strings in any of the three encodings, for every plugin whatever the
-`apiVersion` its manifest declares, with no capability; an older Kino lacks them, so feature-detect with
-`typeof kino.crypto.convert === "function"`.
+For binary protocols (MTProto and the like), the next Kino version (in development) has five more operations on
+strings in any of the three encodings. They are gated on the Kino you run on, not on your manifest: every plugin gets the
+`kino.crypto` of that Kino's own version, whatever `apiVersion` it declares, and a Kino that predates one of them lacks it
+(`convert` and `aesIgeVerify` arrived after the first apiVersion 13 builds). Feature-detect each one and keep a fallback:
+`typeof kino.crypto.convert === "function"`. No capability is needed.
 
 ```js
 kino.crypto.aesIge("decrypt", keyHex, ivHex, dataHex, { keyEncoding: "hex", ivEncoding: "hex", inputEncoding: "hex", outputEncoding: "hex" })

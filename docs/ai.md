@@ -234,8 +234,9 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   más grande solo en el aparato ("storageLarge"), un QR en el formulario de ajustes (ajuste "qr") o el lector
   del teléfono desde una acción ("qrScan", kino.qr.scan), imágenes que solo el plugin puede traer
   ("imageSource" y un export image). Lee primero https://kinotvapp.github.io/kino-plugins/bytes/,
-  /catalog/, /images/ y /qr/; prueba read con una prueba de Node y un WebSocket de mentira (el run.mjs del
-  kit no puede).
+  /catalog/, /images/ y /qr/; prueba read con node sdk/run.mjs --size <bytes> . read <handle> <offset> <length> y
+  una prueba de Node (askRead o un WebSocket de mentira); revisa con typeof cada operación de bytes de kino.crypto que
+  uses (dependen de la versión de Kino).
 - apiVersion: el más bajo que funcione (3 para canales, 4 solo para secrets, "streamHosts": "any" o un
   ajuste de tipo "list", 5 solo para un plugin firmado, 6 solo si usas algo de apiVersion 6: estados y
   botones en los ajustes, una sección propia, colores, telemetry, migrate, firma por petición,

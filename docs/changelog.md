@@ -41,7 +41,12 @@ Node ya lo conoce todo.
   [Imágenes del plugin](images.md).
 - **Operaciones de bytes en `kino.crypto`**: AES-256-IGE, un descifrado revisado con su MAC SHA-256 en una sola llamada,
   `modPow` de números grandes, `gunzip` y un `convert` nativo entre `utf8`, `hex` y `base64`.
+  Dependen de la versión de Kino, no de tu manifiesto
+  (`convert` y `aesIgeVerify` llegaron después de las primeras versiones con apiVersion 13): revisa cada una.
   [Operaciones de bytes](bytes.md#crypto).
+- **El kit**: `run.mjs . resolve` acepta streams de bytes, `run.mjs --size <bytes> . read …` y `run.mjs --out <archivo> .
+  image …` llaman tus exports como Kino (`askRead`, `askImage` desde las pruebas), e `init.mjs --with
+  byteSource,images,catalog,socket` arma un plugin de apiVersion 13. [Probar en local](test-locally.md#api13).
 - **Memoria del motor** (la próxima versión de Kino, cualquier `apiVersion`): la respuesta de una llamada `kino.*` con
   `await` ya no se queda en tus 64 MB hasta que se cierra el sandbox, y Kino recoge la basura después de una llamada que
   deja el motor por encima de la mitad de su límite. [Cómo vive tu código](engine-limits.md#lifecycle).

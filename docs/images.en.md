@@ -146,4 +146,7 @@ instead: `const bytes = kino.storage.get(handle); if (!bytes) throw kino.error("
 and drops it otherwise, as Kino does. `askImage(plugin, manifest, ref)` from `sdk/kino-shim.mjs` asks your `image` the way
 Kino does: the capability and the export, a valid reference, one call at a time, 10 s, and the answer's checks. It
 resolves with `{ bytes, mime }` (a Buffer) or rejects saying why Kino would show the placeholder. It does not mirror
-the wait behind playback, the 5-minute memory of a failed handle or the disk cache.
+the wait behind playback, the 5-minute memory of a failed handle or the disk cache. From the terminal,
+`node sdk/run.mjs --out poster.jpg . image <handle>` writes what your `image` answers (by default `image.<jpg|png|webp>` in
+the plugin folder), and `node sdk/init.mjs my-plugin --host example.com --with images` scaffolds an apiVersion 13 plugin
+with a working `image` example.

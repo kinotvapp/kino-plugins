@@ -284,12 +284,13 @@ kino.crypto.uuid()
 | `sign`, `verify` (apiVersion 6) | ECDSA con `SHA-256`, `SHA-384` como `der` o `ieee-p1363`; Ed25519; una firma de máximo 512 bytes |
 | `importKey`, `deriveSharedSecret` (apiVersion 6) | llaves públicas como `jwk`, `spki`, `raw`; ECDH (misma curva) y X25519 |
 
-### Operaciones de bytes (apiVersion 13, en desarrollo) { #crypto-bytes }
+### Operaciones de bytes (la próxima versión de Kino, en desarrollo: revisa si están) { #crypto-bytes }
 
-Para protocolos binarios (MTProto y parecidos), un Kino cuyo `kino.apiVersion` es 13 o más (la próxima versión, en
-desarrollo) tiene cinco operaciones más sobre textos en cualquiera de las tres codificaciones, para todo plugin sin
-importar el `apiVersion` que declare su manifiesto, y sin capacidad; un Kino más viejo no las tiene, así que revisa con
-`typeof kino.crypto.convert === "function"`.
+Para protocolos binarios (MTProto y parecidos), la próxima versión de Kino (en desarrollo) tiene cinco operaciones más
+sobre textos en cualquiera de las tres codificaciones. Dependen del Kino en el que corres, no de tu manifiesto: cada plugin
+recibe el `kino.crypto` de la versión de ese Kino, declare el `apiVersion` que declare, y un Kino anterior a una de ellas no
+la tiene (`convert` y `aesIgeVerify` llegaron después de las primeras versiones con apiVersion 13). Revisa cada una y ten
+un plan B: `typeof kino.crypto.convert === "function"`. No necesitan capacidad.
 
 ```js
 kino.crypto.aesIge("decrypt", keyHex, ivHex, dataHex, { keyEncoding: "hex", ivEncoding: "hex", inputEncoding: "hex", outputEncoding: "hex" })

@@ -542,6 +542,10 @@
   },
   "byteSource": {
     "apiVersion": 13,
+    "source": "plugin",
+    "export": "read",
+    "readTimeoutMs": 20000,
+    "mimePattern": "^[a-z]+/[A-Za-z0-9.+-]{1,100}$",
     "maxSessions": 2,
     "maxLanSessions": 2,
     "chunkBytes": 1048576,

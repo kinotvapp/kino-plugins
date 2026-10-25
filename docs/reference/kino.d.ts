@@ -1803,14 +1803,16 @@ declare namespace kino {
     /** apiVersion 13: inflates a gzip stream (input base64 by default, output utf8 by default); the output is at most 5 MB. */
     function gunzip(data: string, options?: { inputEncoding?: KinoEncoding; outputEncoding?: KinoEncoding }): string;
     /**
-     * apiVersion 13: `data` read in `from` and written in `to` (`"hex"` to `"base64"` and back, `"utf8"` to bytes...), in native
+     * apiVersion 13 (Kino's own version, not the manifest's: feature-detect with `typeof kino.crypto.convert === "function"`):
+     * `data` read in `from` and written in `to` (`"hex"` to `"base64"` and back, `"utf8"` to bytes...), in native
      * code: no JavaScript loop over the bytes. Hex comes out lower case, base64 padded with the standard alphabet; base64 in may
      * be URL-safe or unpadded. At most 5 MB of bytes. A bad input fails with `"data" is not valid hex` / `base64`, an unknown
      * encoding with `unknown encoding: <name>`. A sealed value is refused.
      */
     function convert(data: string, from: KinoEncoding, to: KinoEncoding): string;
     /**
-     * apiVersion 13: AES-256-IGE decryption (as `aesIge("decrypt", ...)`) checked by a MAC in the same call: the SHA-256 digest of
+     * apiVersion 13 (Kino's own version, not the manifest's: feature-detect with `typeof kino.crypto.aesIgeVerify === "function"`):
+     * AES-256-IGE decryption (as `aesIge("decrypt", ...)`) checked by a MAC in the same call: the SHA-256 digest of
      * `macPrefix` followed by the plaintext, bytes `macOffset` to `macOffset + mac.length` (1 to 32 bytes inside the 32-byte digest),
      * must equal `mac`, compared in constant time. On a match it answers the plaintext (base64 by default); on a mismatch it fails
      * with the fixed text "the mac doesn't match" and answers nothing. `mac` and `macPrefix` are read with `macEncoding` (default

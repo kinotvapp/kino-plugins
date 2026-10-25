@@ -250,9 +250,10 @@ revisa las seis capacidades nuevas (cada una rechazada por debajo de 13, `read` 
   el puerto 443, sin IP literal ni nombre local, 4 sockets, el tope de tamaño de frame, frames `hex`/`base64` aceptados y
   rechazados con las mismas palabras de la app. Cambia `globalThis.WebSocket` por una imitación para probar sin red
   ([un ejemplo](bytes.md#testing)).
-- **`byteSource`**: el kit no tiene un comando `read`, y `run.mjs . resolve` lee una respuesta `{ source: "plugin" }` con
-  las reglas de un stream con URL (dice "the video has an invalid address"): llama `resolve` y `read` desde tus propias
-  pruebas.
+- **`byteSource`**: `run.mjs . resolve` acepta una respuesta `{ source: "plugin", handle, size, mime }` con las reglas de
+  la app; `node sdk/run.mjs --size <bytes en total> . read <handle> <offset> <length>` llama tu `read` como lo hace el
+  proxy de Kino e imprime la cantidad de bytes, el sha256 y los primeros bytes; `askRead(plugin, manifest, stream, offset,
+  length)` hace lo mismo desde una prueba ([Sockets y bytes del plugin](bytes.md#testing)).
 - **`kino.catalog`** es el catálogo de la app en memoria, para una corrida: las mismas respuestas y los mismos errores
   (los dos corren los mismos vectores de prueba compartidos), con el tamaño del archivo estimado en lugar de medido.
 - **`storageLarge`** le da a `kino.storage` los límites de la app: 16 MB, 2 MB por valor y 1.000 llaves.
@@ -260,9 +261,13 @@ revisa las seis capacidades nuevas (cada una rechazada por debajo de 13, `read` 
   o con `--device tv`, falla con `unavailable`. Revisa de dónde viene la llamada como la app ([Códigos QR](qr.md#kit)).
 - **`imageSource`**: `checkOutput` conserva o descarta una referencia como la app, y `askImage(plugin, manifest, ref)` de
   `sdk/kino-shim.mjs` le pide la imagen a tu `image` como lo hace Kino ([Imágenes del plugin](images.md#kit));
-  `run.mjs` no tiene un comando `image`.
+  `node sdk/run.mjs --out poster.jpg . image <handle>` escribe lo que responde.
 - Las operaciones de bytes de **`kino.crypto`** (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) dan las
-  respuestas de la app.
+  respuestas de la app. Dependen de la versión de Kino, no de tu manifiesto, así que el kit ofrece lo que tiene su propio
+  contrato: en tu plugin revisa cada una (`typeof kino.crypto.convert === "function"`).
+- **`init.mjs --with byteSource,images,catalog,socket`** (cualquiera de ellas) arma un plugin de apiVersion 13 que declara
+  esas capacidades, con un ejemplo de cada una que funciona y viene comentado (`read`, `image`, `kino.catalog`,
+  `kino.ws`).
 
 ## Lo que el kit de Node no reproduce { #differences }
 

@@ -109,8 +109,9 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   ignores them). `13` only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a
   `qr` setting: **in development, no released Kino accepts it** (today's Kino refuses an apiVersion 13 plugin), so
   use it only when the person agrees to wait for the next Kino version, and say so plainly. `kino.crypto`'s byte
-  operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) come with that same Kino at any
-  `apiVersion`: feature-detect them with `typeof kino.crypto.convert === "function"`.
+  operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
+  manifest (`convert` and `aesIgeVerify` arrived after the first apiVersion 13 builds): feature-detect each one with
+  `typeof kino.crypto.convert === "function"` and keep a fallback.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -472,9 +473,11 @@ before using it:
 - `byteSource` → `resolve()` answers `{ source: "plugin", handle, size, mime }` (no `url`); export
   `read({ handle, offset, length })` answering `{ bytes: <base64> }` of exactly that range (fewer only at the end), in
   under 20 s. Build the base64 with `kino.crypto.convert(hex, "hex", "base64")` or a `kino.crypto` step's
-  `outputEncoding: "base64"`, never in a JavaScript loop. Never declare `download` for such streams. The kit's
-  `run.mjs` cannot check a byte stream or call `read`: write a Node test with a fake `globalThis.WebSocket`, as the
-  page's example does.
+  `outputEncoding: "base64"`, never in a JavaScript loop. Never declare `download` for such streams. Check it with
+  `node sdk/run.mjs . resolve <ref>` (it accepts the byte-stream shape with the app's rules) and
+  `node sdk/run.mjs --size <total bytes> . read <handle> <offset> <length>`, and write a Node test with `askRead` or a
+  fake `globalThis.WebSocket`, as the page's example does. `node sdk/init.mjs … --with byteSource,images,catalog,socket`
+  scaffolds an apiVersion 13 plugin with an example of each.
 - `catalog` → `kino.catalog.upsert/search/get/remove/clear/count` for thousands of records: index from `home()` a few
   pages per call, answer `search()` from the catalog only, keep `data` small, rebuild when `count()` is 0 (it is never
   synced or backed up). <https://kinotvapp.github.io/kino-plugins/en/catalog/>
@@ -484,8 +487,9 @@ before using it:
   `timeout`, `permission_denied`, `busy`. A `qr` setting (no capability) shows a code from `settingsStatus()`, refreshed
   every `refreshMs`. <https://kinotvapp.github.io/kino-plugins/en/qr/>
 - `imageSource` → `poster`/`backdrop`/`still`/hero `image` may be `{ source: "plugin", handle }` only when no public URL
-  exists; export `image({ handle })` answering `{ bytes: <base64>, mime }` (JPEG, PNG or WebP, ≤ 256 KB). Never put a
-  secret in a handle: it is saved and synced like a poster URL. <https://kinotvapp.github.io/kino-plugins/en/images/>
+  exists; export `image({ handle })` answering `{ bytes: <base64>, mime }` (JPEG, PNG or WebP, ≤ 256 KB); try it with
+  `node sdk/run.mjs --out poster.jpg . image <handle>`. Never put a secret in a handle: it is saved and synced like a
+  poster URL. <https://kinotvapp.github.io/kino-plugins/en/images/>
 
 **Configuration aids and action answers (Kino 0.9.74)**: a `"type": "link"` setting (`label`, `url`
 `https://` only, no user info, ≤ 2,048; a button that opens it through the system only on the person's tap;
@@ -809,8 +813,9 @@ people. See
 - [ ] apiVersion 13 (in development): `byteSource` exports `read` and answers exactly the range asked as base64,
       with no JavaScript loop over the bytes; `imageSource` exports `image` and puts no secret in a handle;
       `kino.ws` only to declared hosts, every socket closed; `kino.qr.scan` only from an `action`/`panelAction`;
-      `storageLarge` and `kino.catalog` hold nothing that must survive a restore; a Node test covers `read`
-      (the kit's `run.mjs` cannot).
+      `storageLarge` and `kino.catalog` hold nothing that must survive a restore; `run.mjs . read` and a Node test
+      (`askRead`) cover `read`, `run.mjs . image` covers `image`; every `kino.crypto` byte operation you use is
+      feature-detected (they depend on the Kino version, not on the manifest).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks

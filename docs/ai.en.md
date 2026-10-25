@@ -204,7 +204,8 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   ("storageLarge"), a QR on the settings form ("qr" setting) or the phone's scanner from an action
   ("qrScan", kino.qr.scan), pictures only the plugin can fetch ("imageSource" and an image export). Read
   https://kinotvapp.github.io/kino-plugins/en/bytes/, /en/catalog/, /en/images/ and /en/qr/ first; test read
-  with a Node test and a fake WebSocket (the kit's run.mjs cannot).
+  with node sdk/run.mjs --size <bytes> . read <handle> <offset> <length> and a Node test (askRead or a fake
+  WebSocket); feature-detect every kino.crypto byte operation you use (they depend on the Kino version).
 - Feature-detect what older Kino lacks: kino.meta and kino.tmdb (Kino 0.9.53) only behind
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, and the hidden browser's
   captureAll options (Kino 0.9.54) only when `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)

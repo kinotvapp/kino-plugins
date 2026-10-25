@@ -91,7 +91,10 @@ return { source: "plugin", handle: "msg:12345", size: 734003200, mime: "video/mp
 ```
 
 `handle` is yours (opaque to Kino, 1 to 512 characters), `size` is the total length in bytes and `mime` the media type.
-The player then asks your `read` export for the bytes, one range at a time:
+`handle` has no control character, `size` is a positive whole number and `mime` a media type (`video/mp4`,
+`video/x-matroska`...; no parameters); anything else is refused ("El video que entregó el plugin no es válido"). It is read
+only from a movie's, an episode's or a track's own `resolve`, never from a live channel or a lazy alternative. The player
+then asks your `read` export for the bytes, one range at a time:
 
 ```js
 export async function read({ handle, offset, length }) {
@@ -146,7 +149,7 @@ one in flight), outside your 64 MB sandbox; at most 2 streams are open at once o
 TVs. What your `read` builds (a hex string is 2 bytes per byte, then the base64) counts in your 64 MB: keep few chunks
 of your own, and drop what you no longer need. Not measured yet on 1 GB TV boxes.
 
-## Byte operations in `kino.crypto` (apiVersion 13) { #crypto }
+## Byte operations in `kino.crypto` (the next Kino version: feature-detect) { #crypto }
 
 For binary protocols (MTProto and the like), on strings in any of the three encodings (`utf8`, `hex`, `base64`):
 
@@ -171,9 +174,11 @@ kino.crypto.aesIgeVerify(keyHex, ivHex, dataHex, {   // AES-IGE decrypt + SHA-25
   doesn't match". MTProto 2.0's msg_key check is exactly that, with 32 bytes of the auth key as `macPrefix` and
   `macOffset: 8`: one call instead of a decryption, a join of the key slice with the plaintext and a hash.
 - A sealed value is refused in every field of these five. Anything malformed fails with "invalid crypto operation".
-- They come with the next Kino version (`kino.apiVersion` 13) for every plugin, whatever `apiVersion` its manifest
-  declares, and need no capability; an older Kino lacks them: feature-detect with `typeof kino.crypto.convert ===
-  "function"`. Every `kino.crypto` call takes at most 5 MB of data.
+- They are gated on the Kino you run on, not on your manifest: Kino gives every plugin the `kino.crypto` of its own
+  version, so a Kino that predates one of them lacks it whatever `apiVersion` you declare (`convert` and `aesIgeVerify`
+  arrived after the first apiVersion 13 builds). Feature-detect each one and keep a fallback:
+  `typeof kino.crypto.convert === "function"`. The kit does the same: it offers what its own contract has. No capability
+  is needed. Every `kino.crypto` call takes at most 5 MB of data.
 
 The engine's own `atob` and `btoa` are also faster in the next Kino version (table-driven, same answers and errors), but a
 1 MiB string through them is still a JavaScript-speed pass: for bulk bytes use `kino.crypto.convert`.
@@ -342,12 +347,22 @@ test("lists, resolves to a byte stream and serves every range", async () => {
 });
 ```
 
-!!! warning "What the kit does not do yet for `byteSource`"
-    `node sdk/run.mjs . resolve <ref>` checks a resolve answer with the rules of a URL stream, so a
-    `{ source: "plugin", … }` answer is reported as "the video has an invalid address", and `run.mjs` has no `read`
-    command: test `resolve` and `read` with your own tests, as above. The kit does not reproduce Kino's player side
-    either (the 1 MiB chunks, the read-ahead, the early first and last chunk, the 20 s per read, the 3-timeouts stop, the
-    cast sessions). Install the plugin on a device to see it play.
+**The kit's own tools.** `checkOutput("resolve", ...)` (and so `node sdk/run.mjs . resolve <ref>`) accepts the
+`{ source: "plugin", handle, size, mime }` shape of a plugin that declares `byteSource`, with the rules above.
+`askRead(plugin, manifest, stream, offset, length)` from `sdk/kino-shim.mjs` calls your `read` the way Kino's proxy does
+(the capability and the export, an offset that is a multiple of 4,096 inside the stream, 1 to 1,048,576 bytes, one call
+at a time, 20 s, exactly `min(length, size - offset)` bytes back) and resolves with a Buffer. From the terminal:
+
+```
+node sdk/run.mjs --size 2500000 . read a1 0 1048576   # the byte count, the sha256 and the first bytes
+```
+
+`node sdk/init.mjs my-plugin --host example.com --with byteSource,socket` scaffolds an apiVersion 13 plugin with a
+working, commented `read` and `kino.ws` example.
+
+!!! warning "What the kit does not reproduce"
+    Kino's player side: the 1 MiB chunks, the read-ahead, the early first and last chunk, the 3-timeouts stop and the
+    cast sessions. Install the plugin on a device to see it play.
 
 See also: [the `kino` API](kino-api.md#ws), [the limits](engine-limits.md#limits), [the contract's
 `Stream` rules](contract.md#stream), and [images from the plugin](images.md), which wait while a byte stream plays.

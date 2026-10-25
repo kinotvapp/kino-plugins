@@ -37,7 +37,12 @@ you use one of its features, and publish such a plugin once that version is out.
   `{ source: "plugin", handle }`; Kino asks your `image` export for the bytes (at most 256 KB, JPEG, PNG or WebP) when
   the card comes on screen, one at a time, never while one of your byte streams plays. [Images from the plugin](images.md).
 - **Byte operations in `kino.crypto`**: AES-256-IGE, a decryption checked by its SHA-256 MAC in one call, big-number
-  `modPow`, `gunzip` and a native `convert` between `utf8`, `hex` and `base64`. [Byte operations](bytes.md#crypto).
+  `modPow`, `gunzip` and a native `convert` between `utf8`, `hex` and `base64`. They are gated on the Kino version, not on
+  your manifest (`convert` and `aesIgeVerify` arrived after the first apiVersion 13 builds): feature-detect each one.
+  [Byte operations](bytes.md#crypto).
+- **The kit**: `run.mjs . resolve` accepts byte streams, `run.mjs --size <bytes> . read …` and `run.mjs --out <file> . image …`
+  call your exports as Kino does (`askRead`, `askImage` from tests), and `init.mjs --with byteSource,images,catalog,socket`
+  scaffolds an apiVersion 13 plugin. [Test it locally](test-locally.md#api13).
 - **Engine memory** (the next Kino version, every `apiVersion`): the answer of an awaited `kino.*` call no longer stays in
   your 64 MB until the sandbox closes, and Kino collects garbage after a call that leaves the engine over half its limit.
   [How your code lives](engine-limits.md#lifecycle).

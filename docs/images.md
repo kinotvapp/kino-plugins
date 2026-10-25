@@ -149,4 +149,7 @@ Un plugin que guarda él mismo las imágenes (una miniatura que llegó con un me
 descarta si no, como Kino. `askImage(plugin, manifest, ref)` de `sdk/kino-shim.mjs` le pide la imagen a tu `image` como
 lo hace Kino: la capacidad y el export, una referencia válida, una llamada a la vez, 10 s, y las revisiones de la
 respuesta. Resuelve con `{ bytes, mime }` (un Buffer) o rechaza diciendo por qué Kino mostraría la imagen de relleno. No
-imita la espera detrás del video, la memoria de 5 minutos de un handle que falló ni el caché en disco.
+imita la espera detrás del video, la memoria de 5 minutos de un handle que falló ni el caché en disco. Desde la
+terminal, `node sdk/run.mjs --out poster.jpg . image <handle>` escribe lo que responde tu `image` (por defecto
+`image.<jpg|png|webp>` en la carpeta del plugin), y `node sdk/init.mjs mi-plugin --host example.com --with images` arma
+un plugin de apiVersion 13 con un ejemplo de `image` que funciona.

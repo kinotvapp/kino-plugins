@@ -52,7 +52,9 @@ node sdk/run.mjs ./plugin.js resolve TheGiantOfMetropolis1961
 ```
 
 Or let the kit write the skeleton for you: `node sdk/init.mjs my-plugin --host example.com` creates
-`my-plugin/` with a manifest, a `plugin.js` with every function, a README and a replay-based test.
+`my-plugin/` with a manifest, a `plugin.js` with every function, a README and a replay-based test. Add
+`--with byteSource,images,catalog,socket` (any of them) for an apiVersion 13 skeleton (in development: no released Kino
+accepts it yet) that declares those capabilities and carries a working, commented example of each.
 
 This one is deliberately naive (a query with a `/` or a lone `AND` makes archive.org answer with
 an error, and nothing checks the shape of the reply). The reference plugin,
