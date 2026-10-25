@@ -51,10 +51,52 @@ Node ya lo conoce todo.
   byteSource,images,catalog,socket` arma un plugin de apiVersion 13. [Probar en local](test-locally.md#api13).
 - **Una contraseña que se queda en un aparato**: un ajuste `password` puede decir `"sync": false` (una contraseña de
   verificación en dos pasos que se manda una vez y se borra): nunca se envía a un aparato emparejado, no va en copias de
-  seguridad, kits ni `sync.provision`. [Formulario de ajustes](settings-form.md#sync-false).
+  seguridad ni en kits. [Formulario de ajustes](settings-form.md#sync-false).
 - **Memoria del motor** (Kino 0.9.74, cualquier `apiVersion`): la respuesta de una llamada `kino.*` con
   `await` ya no se queda en tus 64 MB hasta que se cierra el sandbox, y Kino recoge la basura después de una llamada que
   deja el motor por encima de la mitad de su límite. [Cómo vive tu código](engine-limits.md#lifecycle).
+
+### Agregado a apiVersion 13 el 2026-10-25: proveedores de sincronización y el formulario de ajustes { #v13-2026-10-25 }
+
+Sigue siendo `apiVersion` 13 y Kino 0.9.74 (todavía sin publicar), agregado para el proveedor de sincronización con
+cuenta [Sync-Gram Cuenta](sync-providers.md#examples). Un Kino más viejo rechaza `apiVersion` 13, así que no hay nada
+que revisar.
+
+| Función | Desde |
+| --- | --- |
+| `syncProvider` (o `subtitles`, `tracking`, `segments`) junto a `socket`, `storageLarge`, `catalog` y `qrScan` no necesita `resolve`, `search` ni `home` | `apiVersion` 13 |
+| El `setSettings` de una acción puede llenar uno de tus propios ajustes `password` | `apiVersion` 13 |
+| `sync.provision` puede nombrar una contraseña con `"sync": false`, un secreto de un solo uso para el aparato nuevo | `apiVersion` 13 |
+| `sync.generateKey: true`: Kino crea él mismo el valor de `keySecret` | `apiVersion` 13 |
+| Una respuesta de `settingsStatus` puede llevar `hide: [claves de ajustes]`; un ajuste `qr` sin texto no dibuja nada | `apiVersion` 13 |
+| Un ajuste `text` puede decir `"sync": false` | `apiVersion` 13 |
+
+- **Independiente con espacio de ejecución**: un proveedor de sincronización que habla por un WebSocket declara
+  `["syncProvider", "socket"]` (y `storageLarge`, `catalog` o `qrScan` si los necesita) y sigue sin exportar `resolve`,
+  `search` ni `home`. [El manifiesto](manifest.md).
+- **`setSettings` llena una contraseña**: se guarda sellada como una escrita, nunca se registra y se borra del
+  `message` y del `link` de la respuesta; el kit la muestra con asteriscos. [Llenar una contraseña](settings-form.md#set-password).
+- **Un secreto de un solo uso en `provision`**: una contraseña con `"sync": false` (una contraseña de dos pasos que el
+  TV no debería escribir) va con "Enviar configuración" solo mientras tiene valor, la pantalla que envía la nombra en
+  una línea y el aparato que recibe la guarda sellada y solo ahí; nunca como `keySecret`.
+  [Proveedores de sincronización](sync-providers.md#one-shot).
+- **`sync.generateKey`**: para un proveedor cuyo servicio no tiene secreto compartido (la propia cuenta de la persona),
+  Kino escribe 32 bytes aleatorios en hexadecimal en el ajuste `keySecret` vacío cuando se enciende el proveedor y cuando
+  se toca "Enviar configuración"; sin paso "Crear clave". [Una llave que crea Kino](sync-providers.md#generate-key).
+- **`hide` en `settingsStatus`**: hasta 32 claves de tus ajustes que el formulario no dibuja mientras esa respuesta sea
+  la vigente (los valores se quedan); un `qr` sin texto no dibuja nada. [Esconder lo que no hace falta](settings-form.md#status-hide).
+- **Un `text` que se queda en el aparato**: `"sync": false` en un `text` (un número de teléfono que se ve tal cual):
+  nunca se sincroniza, no va en copias de seguridad ni en `sync.provision`.
+  [Un valor que se queda en este aparato](settings-form.md#sync-false).
+- **Lo que ve la persona** (sin cambio de contrato): los botones para pasar los ajustes ahora son **"Enviar
+  configuración"** y **"Recibir configuración"**, el botón de ajustes en la tarjeta de un proveedor es **"Configurar"**
+  en celular y TV, las tarjetas siguen el estado del proveedor (en un aparato al que le faltan los ajustes, "Recibir
+  configuración" va primero), la línea roja de consentimiento se queda en la hoja de instalación y en la confirmación al
+  encenderlo, una cámara rechazada dice cómo activarla, y desinstalar el proveedor activo avisa que la sincronización se
+  apaga.
+- **Un tercer proveedor de ejemplo**: [Sync-Gram Cuenta](https://github.com/kinotvapp/kino-plugin-sync-gram-account)
+  sincroniza por la propia cuenta de Telegram de la persona (MTProto sobre `kino.ws`), firmado, en ningún catálogo: se
+  instala pegando `kinotvapp/kino-plugin-sync-gram-account`. [Los tres proveedores de ejemplo](sync-providers.md#examples).
 
 ## Kino 0.9.74: `apiVersion` 12, proveedores de sincronización, `link` y `help`, `setSettings` y "¿Eres tú?" { #v0974 }
 
@@ -79,7 +121,7 @@ usas algo de esta versión.
   traiga, combine y vuelva a enviar. El bloque `sync` del manifiesto fija cada cuánto (`poll` o
   `realtime`), el tamaño del blob, el `keySecret` obligatorio (Kino deriva la llave de sincronización de
   uno de tus ajustes `password` en cada aparato, así que ninguna llave viaja y el plugin y su servicio
-  pueden leer los datos) y el `provision` obligatorio (los ajustes que "Enviar a otro aparato" le pasa a
+  pueden leer los datos) y el `provision` obligatorio (los ajustes que "Enviar configuración" le pasa a
   un segundo aparato, por la red local o por un túnel rápido de Cloudflare). La capacidad puede ser la única de un plugin.
   [Proveedores de sincronización](sync-providers.md).
 - **Consentimiento**: una línea en rojo, "Sincronizará tus datos a través de su servicio: el plugin y su
@@ -98,7 +140,7 @@ usas algo de esta versión.
   Proveedor"; cada proveedor es su propia tarjeta en esa lista, con "Sincronizar cada" (1 a 60 minutos,
   por aparato; `pullEveryMs` es solo el valor de partida). [Proveedores de sincronización](sync-providers.md).
 - **`setSettings`** (Kino 0.9.74, aditivo): una acción puede llenar hasta 8 de tus ajustes `text` o
-  `select`, guardados como si la persona los hubiera escrito; nunca un `url` ni un `password`.
+  `select`, guardados como si la persona los hubiera escrito; nunca un `url`, y un `password` solo desde apiVersion 13.
   [Llenar ajustes propios](settings-form.md#set-settings).
 - **"¿Eres tú?"** (`action.link`, Kino 0.9.74, aditivo): una acción responde
   `link: { candidate, confirm }` y Kino le pregunta a la persona con sus propias palabras antes de correr

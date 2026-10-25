@@ -112,10 +112,11 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   guarda datos de otro aparato, se combinan con los de este. Nunca se borra nada de ningún lado.") with
   "Combinar con este aparato".
 - **The provider's row** shows "Sincronizado hace 3 min", "Esperando la primera sincronización", "Falló la
-  última sincronización: &lt;reason&gt;", "Falta el token: configúralo en Conectar" or "El token no
+  última sincronización: &lt;reason&gt;", "Falta el token: escríbelo en Configurar" or "El token no
   coincide o los datos guardados no son de Kino", the plugin's own `syncStatus` line, and the buttons
-  Conectar, Sincronizar ahora, Restablecer sincronización, Enviar a otro aparato and Recibir desde otro
-  aparato.
+  Configurar ("Set up"), Sincronizar ahora, Restablecer sincronización, Enviar configuración ("Send settings")
+  and Recibir configuración ("Receive settings"); on a device that still lacks the settings, "Recibir
+  configuración" leads and "Configurar" turns quiet.
 - **Receiving on a second device**: a QR, an address and a 6-digit code for 3 minutes (and, when the
   Cloudflare quick tunnel opens, the words for "Otra red"), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
   never their values, and "Aplicar".

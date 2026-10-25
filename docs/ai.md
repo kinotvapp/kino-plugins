@@ -100,10 +100,12 @@ Antes de escribir nada:
 6. Si mi plugin es un proveedor de sincronización (lleva la sincronización propia de Kino entre mis aparatos
    por un servicio: un bot, una API de almacenamiento, un servidor mío), lee primero
    https://kinotvapp.github.io/kino-plugins/sync-providers/ (apiVersion 12, Kino 0.9.74). Sus referencias son
-   dos repositorios públicos: Sync-Gram (https://github.com/kinotvapp/kino-plugin-sync-gram, un bot de Telegram
-   de la propia persona) para un servicio de terceros, y Sync Servidor
+   tres repositorios públicos: Sync-Gram (https://github.com/kinotvapp/kino-plugin-sync-gram, un bot de Telegram
+   de la propia persona) para un servicio de terceros, Sync Servidor
    (https://github.com/kinotvapp/kino-plugin-sync-server, un servidor de Node de un solo archivo) para un
-   servidor mío.
+   servidor mío, y Sync-Gram Cuenta (https://github.com/kinotvapp/kino-plugin-sync-gram-account, la propia
+   cuenta de Telegram de la persona por un WebSocket, apiVersion 13: sync.generateKey, una contraseña 2FA de un
+   solo uso en provision, hide en settingsStatus) para una cuenta mía.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -197,9 +199,9 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   consigue) y un ajuste "link" (un botón https, p. ej. https://t.me/BotFather). Desde Kino 0.9.74 una
   acción puede responder link: { candidate, confirm } (Kino pregunta "¿Eres tú, <candidate>?" antes de
   correr la acción confirm) y setSettings: { clave: valor } para llenar ajustes "text" o "select" del
-  propio plugin (nunca un "url" ni un "password"). La acción confirm lleva "linkOnly": true, así la
+  propio plugin (nunca un "url"; un "password" solo desde apiVersion 13). La acción confirm lleva "linkOnly": true, así la
   persona ve un solo botón. La preparación que un TV no puede hacer (un token que se pega en el celular)
-  lleva "devices": ["phone"]: el TV la recibe con "Recibir desde otro aparato".
+  lleva "devices": ["phone"]: el TV la recibe con "Recibir configuración", enviada desde el celular con "Enviar configuración".
 - Detecta lo que a un Kino viejo le falta: kino.meta y kino.tmdb (Kino 0.9.53) solo detrás de
   `typeof kino.meta === "function"` / `typeof kino.tmdb === "function"`, y las opciones captureAll del
   navegador oculto (Kino 0.9.54) solo cuando `kino.browser.captureAll === true`. kino.device (Kino 0.9.55)
@@ -233,7 +235,10 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   JavaScript sobre los bytes), miles de registros para buscar ("catalog", kino.catalog), un almacenamiento
   más grande solo en el aparato ("storageLarge"), un QR en el formulario de ajustes (ajuste "qr") o el lector
   del teléfono desde una acción ("qrScan", kino.qr.scan), una contraseña que debe quedarse en un aparato como una de
-  verificación en dos pasos que se manda una vez ("sync": false en ese ajuste password, nunca en sync.provision), imágenes que solo el plugin puede traer
+  verificación en dos pasos que se manda una vez ("sync": false en ese ajuste password; sync.provision puede llevarla una vez a un aparato nuevo, nunca como
+  keySecret), un proveedor de sincronización junto a "socket"/"storageLarge"/"catalog"/"qrScan" sin resolve ni
+  search, una llave que crea Kino (sync.generateKey), un formulario que esconde lo que un paso no necesita
+  (settingsStatus respondiendo hide: [claves]), imágenes que solo el plugin puede traer
   ("imageSource" y un export image). Lee primero https://kinotvapp.github.io/kino-plugins/bytes/,
   /catalog/, /images/ y /qr/; prueba read con node sdk/run.mjs --size <bytes> . read <handle> <offset> <length> y
   una prueba de Node (askRead o un WebSocket de mentira); revisa con typeof cada operación de bytes de kino.crypto que

@@ -63,13 +63,16 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
     de cada capítulo como [copias perezosas con etiqueta](contract.md#lazy-copies). Es un ejemplo solo
     de esas dos funciones (Kino solo lista los plugins de la comunidad: cada autor responde por el suyo); "Tu servidor" sigue siendo el plugin de referencia completo.
 
-!!! note "Proveedores de sincronización: Sync-Gram y Sync Servidor"
+!!! note "Proveedores de sincronización: Sync-Gram, Sync Servidor y Sync-Gram Cuenta"
     Las referencias para un [proveedor de sincronización](sync-providers.md) (apiVersion 12, Kino 0.9.74) son
-    dos repositorios públicos: **Sync-Gram** ([kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram), un bot de Telegram de la propia persona; no
+    tres repositorios públicos: **Sync-Gram** ([kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram), un bot de Telegram de la propia persona; no
     oficial, sin relación con Telegram; recomendado en Kino) y **Sync Servidor** ([kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server), un servidor
     de Node de un solo archivo que corre la persona; Kino no lo lista, se instala pegando la dirección de su
-    repositorio). Cada
-    uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los dos proveedores de
+    repositorio) y **Sync-Gram Cuenta**
+    ([kinotvapp/kino-plugin-sync-gram-account](https://github.com/kinotvapp/kino-plugin-sync-gram-account), la propia
+    cuenta de Telegram de la persona por un WebSocket, apiVersion 13; no oficial; Kino no lo lista, se instala pegando
+    `kinotvapp/kino-plugin-sync-gram-account`). Cada
+    uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los tres proveedores de
     ejemplo](sync-providers.md#examples).
 
 !!! note "apiVersion 13 (en desarrollo): un ejemplo de stream de bytes"

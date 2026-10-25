@@ -17,6 +17,8 @@ persona:
   aleatorio por persona.
 - **Un bot de chat de la propia persona**, como [Sync-Gram](#examples): la copia es un archivo fijado en
   su chat privado con el bot.
+- **La propia cuenta de chat de la persona**, como [Sync-Gram Cuenta](#examples): la copia es un archivo
+  fijado en sus Mensajes guardados de Telegram, por un WebSocket (`socket`, apiVersion 13).
 - **Un repositorio privado de Git**, con la copia como un solo archivo escrito por la API del servicio.
 - **Una Raspberry Pi en casa** con un servidor pequeño como [Sync Servidor](#examples), detrás de un túnel
   `https`.
@@ -54,8 +56,8 @@ Lo que Kino hace por ti, sin código tuyo:
 - **Combinar y resolver conflictos**: se combinan las filas de los dos lados (gana la más nueva, los
   borrados se conservan); un `conflict` que avisas se reintenta hasta 3 veces.
 - **Perfiles**: cada perfil que sincroniza el aparato viaja en la misma copia.
-- **Otro aparato**: "Enviar a otro aparato" le pasa tus ajustes a un segundo aparato con un QR o un código
-  escrito, por la red local o por un túnel temporal de Cloudflare ([pasar los ajustes](#provisioning)).
+- **Otro aparato**: **"Enviar configuración"** le pasa tus ajustes a un segundo aparato, que muestra
+  **"Recibir configuración"**, con un QR o un código escrito, por la red local o por un túnel temporal de Cloudflare ([pasar los ajustes](#provisioning)).
 - **Ajustes y pantallas**: tu formulario de ajustes, la lista de proveedores con tu tarjeta, su línea de
   estado (de tu `syncStatus` opcional) y un botón "Sincronización ▸ Proveedor" en la página de tu plugin.
 
@@ -86,8 +88,8 @@ El ejemplo habla con un servidor tuyo en `https://sync.example.com` con dos llam
 }
 ```
 
-`keySecret` nombra el ajuste del que sale la llave de sincronización; `provision` lista lo que "Enviar a
-otro aparato" le pasa a un segundo aparato (tiene que incluir `keySecret`); `"devices": ["phone"]` dibuja
+`keySecret` nombra el ajuste del que sale la llave de sincronización; `provision` lista lo que "Enviar
+configuración" le pasa a un segundo aparato (tiene que incluir `keySecret`); `"devices": ["phone"]` dibuja
 el campo del token solo en el celular, porque un TV lo recibe.
 
 **2. El código** (`plugin.js`):
@@ -129,11 +131,12 @@ funciones contra una imitación local de tu servicio con `node --test` ([probar 
 se sepa que cada actualización es tuya, y pide [aparecer en la lista](listed.md) si lo quieres entre los
 plugins recomendados de Kino.
 
-El resto de esta página es la referencia. Dos proveedores completos, con guías que cualquiera puede
+El resto de esta página es la referencia. Tres proveedores completos, con guías que cualquiera puede
 seguir, son repositorios públicos:
-[kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram) y
-[kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server)
-([los dos ejemplos](#examples)); el kit es
+[kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram),
+[kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server) y
+[kinotvapp/kino-plugin-sync-gram-account](https://github.com/kinotvapp/kino-plugin-sync-gram-account)
+([los tres ejemplos](#examples)); el kit es
 [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk).
 
 ## ¿Es la herramienta correcta? { #when }
@@ -149,7 +152,10 @@ seguir, son repositorios públicos:
   "Combinar con este aparato"); apagar el activo deja la sincronización apagada. La elección es por
   aparato y nunca se sincroniza: cada aparato enciende su proveedor él mismo, con los ajustes que
   escribió o que [recibió](#provisioning). Ahí cada proveedor se dibuja como su propia tarjeta, con su
-  estado, su línea de consentimiento, sus botones y su "Sincronizar cada".
+  estado, sus botones y su "Sincronizar cada" (la línea roja de consentimiento está en la hoja de
+  instalación y en la confirmación al encenderlo, no en la tarjeta). Los botones siguen el estado del
+  proveedor: **"Configurar"** abre tu formulario de ajustes, y en un aparato que todavía no tiene los valores
+  de tu `provision` la tarjeta empieza por "Recibir configuración" ([detalles](#provisioning)).
 - La página propia de tu plugin en Ajustes (celular y TV) empieza con el botón **"Sincronización ▸
   Proveedor"** de Kino, que abre esa lista (en el TV con la tarjeta de tu proveedor enfocada); no declaras
   nada para eso. Marca con [`devices`](settings-form.md#devices) la preparación que el TV no puede hacer,
@@ -164,7 +170,8 @@ los propios ajustes de tu plugin:
 - **Todo proveedor declara [`sync.keySecret`](#sync-block)**, la `key` de uno de sus ajustes
   `password`. Un manifiesto con `syncProvider` y sin `keySecret` se rechaza (`The "syncProvider"
   capability needs a "sync" field whose "keySecret" is the key of one of the plugin's own "password"
-  settings`), en la app y en el kit. No hay modo de llave aleatoria.
+  settings`), en la app y en el kit. Aunque Kino cree él mismo ese valor ([`generateKey`](#generate-key)), la
+  llave sale de ese ajuste.
 - **Kino deriva la llave de sincronización** en cada aparato del valor de ese ajuste (HKDF-SHA256, del
   lado de Kino). Un segundo aparato con el mismo valor deriva la misma llave, así que abre la misma copia
   y **ninguna llave viaja** entre aparatos.
@@ -185,7 +192,10 @@ el manifiesto de un plugin nunca viajan, como siempre.
 ## El contrato { #contract }
 
 Declara la capacidad (puede ser la única) y `"apiVersion": 12`, y exporta dos funciones, más una
-tercera opcional:
+tercera opcional. Desde `apiVersion` 13 un proveedor también puede declarar `socket`, `storageLarge`,
+`catalog` y `qrScan` junto a `syncProvider` y seguir sin necesitar `resolve`, `search` ni `home`
+(`["syncProvider", "socket"]` para un proveedor que habla por [`kino.ws`](bytes.md)); cualquier otra
+capacidad junto a ellas los vuelve a exigir.
 
 ```json
 "apiVersion": 12,
@@ -212,7 +222,7 @@ export async function syncPush({ maxBlobBytes, blob, expectedVersion }) {
 }
 
 export async function syncStatus(_null) {                  // opcional
-  if (!kino.config.get("token")) return { ready: false, message: "Falta el token: escríbelo en Conectar" };
+  if (!kino.config.get("token")) return { ready: false, message: "Falta el token: escríbelo en Configurar" };
   return { ready: true };
 }
 ```
@@ -230,7 +240,7 @@ export async function syncStatus(_null) {                  // opcional
   la ronda siguiente arregla la carrera.
 - **Falta configuración.** Lanza `auth_required` desde `syncPull`/`syncPush` cuando al plugin le faltan
   sus ajustes o el servicio rechaza las credenciales: la persona lee "al proveedor le falta
-  configuración, revísala en Conectar" en vez de una falla genérica.
+  configuración, revísala en Configurar" en vez de una falla genérica.
 - **`syncStatus`** responde `{ ready, message? }` para la fila del proveedor. Antes de cada ronda Kino se
   lo pregunta: `ready: false` se salta la ronda (sin falla, sin espera creciente, los cambios
   pendientes se conservan) y Kino vuelve a preguntar un periodo de lectura después, cuando la persona
@@ -262,7 +272,8 @@ plugin's own "password" settings`). `keySecret` y `provision` son obligatorios; 
 | `pushDebounceMs` | 300000 (5 min) | un número entero positivo; Kino lo sube a 5 s como mínimo |
 | `maxBlobBytes` | 4194304 | el blob más grande que acepta tu servicio, como mucho 4194304 (4 MiB) |
 | `keySecret` | **obligatorio** | la `key` de uno de tus ajustes `password`, que no puede tener `default` |
-| `provision` | **obligatorio** | hasta 8 claves distintas de tus ajustes que guardan valor (secretos o no); tiene que incluir `keySecret` |
+| `provision` | **obligatorio** | hasta 8 claves distintas de tus ajustes que guardan valor (secretos o no); tiene que incluir `keySecret`; desde apiVersion 13 puede nombrar una contraseña con `"sync": false` ([de un solo uso](#one-shot)), nunca un texto con `"sync": false` |
+| `generateKey` | `false` | apiVersion 13: con `true` Kino crea él mismo el valor de `keySecret` ([abajo](#generate-key)) |
 
 Los mensajes que da Kino con un bloque mal formado (todos en inglés, al instalar):
 
@@ -271,18 +282,39 @@ Los mensajes que da Kino con un bloque mal formado (todos en inglés, al instala
 - `The setting the "keySecret" of the "sync" field names must not have a "default"`
 - `The "provision" of the "sync" field must be a list of at most 8 different keys of the plugin's own settings that hold a value`
 - `The "provision" of the "sync" field must include its "keySecret"`
+- `The "keySecret" of the "sync" field can't name a setting with "sync": false` (apiVersion 13)
+- `The "provision" of the "sync" field can't name a text setting with "sync": false` (apiVersion 13)
+- `The "generateKey" of the "sync" field must be true or false` (apiVersion 13)
 
 **`keySecret`** tiene que ser un **token largo y aleatorio** (el token de un bot, una API key, un token
 que imprime tu servidor), nunca una contraseña que escoge una persona: quien consiga un blob guardado
 puede probar adivinanzas sin conexión. Mientras la persona no lo escriba, Kino no corre ninguna ronda
-(la fila dice "Falta el token: configúralo en Conectar"). Cambiar su valor cambia la llave: la copia
+(la tarjeta nombra el ajuste por su etiqueta, "Falta «Clave de sincronización»: ve a Configurar"; una
+etiqueta con "token" dice "Falta el token"). Cambiar su valor cambia la llave: la copia
 remota ya no abre ("El token no coincide o los datos guardados no son de Kino", con "Corregir el token" y
 "Restablecer sincronización") hasta que la persona corrige el token o restablece la sincronización en un
-aparato. Todos los demás aparatos también necesitan el valor nuevo ("Enviar a otro aparato", o escrito).
+aparato. Todos los demás aparatos también necesitan el valor nuevo ("Enviar configuración", o escrito).
 
-**`provision`** nombra lo que "Enviar a otro aparato" le pasa a un segundo aparato ([abajo](#provisioning)).
+**`provision`** nombra lo que "Enviar configuración" le pasa a un segundo aparato ([abajo](#provisioning)).
 Nombra todo lo que el segundo aparato necesita para correr el mismo proveedor (en Telegram, el token del
 bot **y** el id del chat), y nada que no necesite.
+
+### Una llave que crea Kino (`generateKey`, apiVersion 13) { #generate-key }
+
+Un proveedor cuyo servicio no da un secreto compartido propio (la propia cuenta de la persona, no el token
+de un bot) declara `"generateKey": true`. Kino crea entonces él mismo el valor de `keySecret`: 32 bytes
+aleatorios de un `SecureRandom`, como 64 caracteres hexadecimales en minúscula, solo mientras ese ajuste
+está vacío y en dos momentos: cuando la persona enciende el proveedor y cuando toca "Enviar configuración"
+(la llave se crea antes de leer los valores, así que una llave vacía nunca esconde ese botón: aparece en
+cuanto tus otros ajustes de `provision` tienen valor). Se guarda igual que una contraseña escrita (sellada,
+sincronizada de punta a punta, por perfil), nunca se registra y nunca se dibuja en tu formulario en ningún
+aparato. Un valor que ya existe, escrito o recibido, nunca se reemplaza; un valor recibido de otro aparato
+siempre reemplaza a uno creado. Tu plugin no necesita una acción "Crear clave". Por debajo de apiVersion 13
+la clave se ignora.
+
+```json
+"sync": { "keySecret": "syncKey", "generateKey": true, "provision": ["syncKey", "api_id", "api_hash"] }
+```
 
 Las versiones anteriores de Kino rechazan `apiVersion` 12 ("Este plugin necesita una versión más nueva
 de Kino").
@@ -337,13 +369,13 @@ La persona configura el proveedor en un aparato (el primero nunca necesita un QR
 lleva los ajustes que tu manifiesto nombra en `sync.provision`, cifrados de punta a punta de un Kino al
 otro (con una llave que el aparato que recibe hace solo para esa sesión):
 
-1. En el **segundo** aparato (por ejemplo, la TV): la fila del proveedor ▸ **"Recibir desde otro
-   aparato"**. Durante 3 minutos muestra un QR, una dirección en la red local y un código de 6 dígitos.
+1. En el **segundo** aparato (por ejemplo, la TV): la tarjeta del proveedor ▸ **"Recibir
+   configuración"**. Durante 3 minutos muestra un QR, una dirección en la red local y un código de 6 dígitos.
    Al mismo tiempo intenta abrir una **segunda ruta por internet** ("Desde otra red (por internet)", un
    túnel rápido de Cloudflare); cuando abre, la pantalla también muestra unas **palabras** unidas por
    guiones (el nombre del túnel). El QR espera al túnel como mucho unos segundos y, si no, muestra solo la
    red local.
-2. En el **primer** aparato: la misma fila ▸ **"Enviar a otro aparato"**. Lee el QR, que lista primero las
+2. En el **primer** aparato: la misma tarjeta ▸ **"Enviar configuración"**. Lee el QR, que lista primero las
    direcciones de la red local y después `https://<palabras>.trycloudflare.com/t/<token>`; el celular prueba
    primero las direcciones locales y después el túnel. Sin cámara, o con la cámara rechazada, pasa a
    **"Escribir dirección"**: **"Misma red"** (la persona escribe solo el último número de la dirección) u
@@ -379,21 +411,46 @@ Lo que eso significa para tu plugin:
   rechaza. La llave de sincronización nunca viaja: cada aparato la deriva del mismo token. Los valores
   recibidos se guardan como los escritos, pero, como con el `setSettings` de una acción, Kino **no** corre
   tu `validateSettings` con ellos.
-- "Enviar a otro aparato" solo se ofrece cuando este aparato tiene un valor para cada ajuste de
-  `provision`. Llena tú mismo los que encuentras (el id de un chat) con
-  [`setSettings`](settings-form.md#set-settings), para que la persona nunca los escriba.
+- "Enviar configuración" solo se ofrece cuando este aparato tiene un valor para cada ajuste de
+  `provision`, salvo una llave que crea Kino ([`generateKey`](#generate-key): se crea en ese momento) y una
+  contraseña [de un solo uso](#one-shot) que se queda en el aparato (se deja afuera mientras está vacía).
+  Llena tú mismo los que encuentras (el id de un chat) con [`setSettings`](settings-form.md#set-settings),
+  para que la persona nunca los escriba; desde apiVersion 13 `setSettings` también puede llenar una
+  contraseña.
+- **La tarjeta sigue el estado del proveedor.** En un aparato que todavía no tiene los valores de
+  `provision` que necesita, tu tarjeta empieza por "Recibir configuración" (con una línea que dice cómo) y
+  "Configurar" queda discreto. En el TV: sin nada recibido, solo "Recibir configuración"; recibido pero sin
+  terminar de configurar (falta la llave, tu `syncStatus` dice que no está listo o la última ronda pidió
+  configuración), "Configurar" y un "Recibir" discreto; listo, "Sincronizar cada" y un "Recibir" discreto.
+  El TV nunca nombra un ajuste cuando falta la llave: dice que se reciba la configuración desde otro
+  aparato, así que escribe tus propias líneas del TV de la misma forma.
 - El plugin tiene que estar instalado en el aparato que recibe ("Instala primero &lt;plugin&gt;").
 - Sin ninguna ruta, la persona escribe los mismos ajustes en el formulario del segundo aparato, salvo que
   tu plugin los dibuje solo en el celular ([`devices`](settings-form.md#devices)): entonces el TV los
   recibe.
 
+### Un secreto de un solo uso para el aparato nuevo (apiVersion 13) { #one-shot }
+
+`provision` también puede nombrar una contraseña con [`"sync": false`](settings-form.md#sync-false), para un
+secreto que el aparato nuevo necesita **una vez** (una contraseña de verificación en dos pasos, para que el
+TV nunca la escriba). Solo va mientras tiene valor en el aparato que envía: vacía (ya usada y borrada), se
+deja afuera y nunca frena el resto. La pantalla que envía agrega una línea sencilla que la nombra por su
+etiqueta ("También se envía: Contraseña 2FA. En el otro aparato queda solo ahí: no se sincroniza ni entra
+en las copias de seguridad."); el aparato que recibe lista solo su etiqueta, nunca el valor, y la guarda
+sellada y solo en ese aparato, igual que si se hubiera escrito ahí: nunca se sincroniza, nunca va en una
+copia de seguridad. Tu plugin la borra él mismo una vez usada (el `clearSettings` de una acción). Nunca la
+uses para un secreto duradero, ni como `keySecret` (se rechaza). Un **texto** con `"sync": false` (un número
+de teléfono que se queda en el aparato) nunca puede ir en `provision`.
+
 ## Ajustes, perfiles y lo que lee la persona { #settings }
 
-- **Conectar**, en la fila del proveedor, abre el formulario de ajustes de tu plugin. Usa las
+- **Configurar**, en la tarjeta del proveedor, abre el formulario de ajustes de tu plugin. Usa las
   [ayudas para configurar](settings-form.md#aids): un `help` corto (qué necesita la persona y dónde lo
   consigue) y un `link` al lugar donde lo consigue (`https://t.me/BotFather`, tu guía). Usa
   [`action.link`](settings-form.md#link) cuando una acción encuentra **a quién** vincular ("¿Eres tú,
-  @ana?") y [`setSettings`](settings-form.md#set-settings) para guardar lo que encontró.
+  @ana?") y [`setSettings`](settings-form.md#set-settings) para guardar lo que encontró. Un inicio de sesión
+  por pasos puede esconder lo que el paso actual no necesita con el [`hide` de
+  `settingsStatus`](settings-form.md#status-hide) (apiVersion 13).
 - El proveedor es por aparato, pero sus llamadas corren con los ajustes del **perfil en uso**, los
   mismos de los que sale la llave derivada. Un perfil sin el token muestra "Este perfil no tiene el
   token"; dos perfiles con tokens distintos leen la copia del otro como llave equivocada. Dile a la
@@ -414,12 +471,12 @@ Lo que eso significa para tu plugin:
 - **Revocar el token.** Si un token se filtra o se pierde un aparato, la persona lo revoca en el
   servicio (en Telegram, `/revoke` en @BotFather), escribe el nuevo en un aparato y toca **"Restablecer
   sincronización"**: después de una confirmación, la copia de ese aparato reemplaza a la que ya no se
-  puede leer, cifrada con la llave nueva. Después les pasa el token nuevo a los otros aparatos ("Enviar a
-  otro aparato", o escrito en cada uno). Documenta esos pasos en tu guía.
+  puede leer, cifrada con la llave nueva. Después les pasa el token nuevo a los otros aparatos ("Enviar
+  configuración", o escrito en cada uno). Documenta esos pasos en tu guía.
 - **Restablecer la sincronización** reemplaza la copia remota por la de este aparato, con el token que
   tiene ahora; nunca borra datos del aparato. La confirmación de Kino lo dice: "Se reemplaza la copia
   guardada en &lt;nombre&gt; por la de este aparato, con el token que tienes ahora. Tus otros aparatos siguen
-  sincronizando si usan el mismo token; si lo cambiaste, pásales el nuevo con «Enviar a otro aparato» o
+  sincronizando si usan el mismo token; si lo cambiaste, pásales el nuevo con «Enviar configuración» o
   escríbelo en cada uno."
 - **El servicio puede retener o borrar la copia**, y quien tenga el token puede leerla o escribir una
   nueva. Un blob que no se descifra con la llave del aparato se rechaza, nunca se aplica.
@@ -439,12 +496,12 @@ Lo que eso significa para tu plugin:
   los ejemplos: carga el plugin con `loadPlugin` (`sdk/sandbox.mjs`) y `createKino` (`sdk/kino-shim.mjs`),
   córrelo contra una imitación local de tu servicio y revisa cada respuesta con `checkSyncAnswer`
   (`sdk/contract.mjs`). Incluye un blob de 4 MiB en las dos direcciones y un conflicto.
-- En un aparato: enciende el proveedor, Conectar, una primera ronda, un cambio en cada aparato, un token
-  equivocado, "Restablecer sincronización" y "Enviar a otro aparato" a un segundo aparato.
+- En un aparato: enciende el proveedor, Configurar, una primera ronda, un cambio en cada aparato, un token
+  equivocado, "Restablecer sincronización" y "Enviar configuración" a un segundo aparato.
 
-## Los dos proveedores de ejemplo { #examples }
+## Los tres proveedores de ejemplo { #examples }
 
-Los dos son repositorios públicos que puedes leer, copiar o usar como plantilla, cada uno con una guía en
+Los tres son repositorios públicos que puedes leer, copiar o usar como plantilla, cada uno con una guía en
 español y en inglés que una persona puede seguir de principio a fin, y pruebas que no necesitan red.
 
 - **Sync-Gram**, [kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram)
@@ -467,3 +524,16 @@ español y en inglés que una persona puede seguir de principio a fin, y pruebas
   servidor propio de la persona. Kino **no lo lista**: se instala pegando la dirección de su repositorio,
   `kinotvapp/kino-plugin-sync-server/plugin` (firmado), o la de su propio servidor,
   `https://<dirección>/plugin/kino-plugin.json`.
+- **Sync-Gram Cuenta**, [kinotvapp/kino-plugin-sync-gram-account](https://github.com/kinotvapp/kino-plugin-sync-gram-account)
+  (id `sync-gram-account`, apiVersion 13, Kino 0.9.74 o más nuevo; no oficial, sin relación con Telegram):
+  la **propia cuenta de Telegram** de la persona, sin bot. La copia es un archivo, `kino-sync.bin`, fijado y
+  enviado en silencio en sus Mensajes guardados, por la API MTProto de Telegram sobre `kino.ws`
+  (`"capabilities": ["syncProvider", "socket", "storageLarge"]`, solo los cinco hosts `*.web.telegram.org`).
+  La persona pone su propio `api_id` y `api_hash` de my.telegram.org. Es la referencia de lo que agrega
+  apiVersion 13: [`generateKey`](#generate-key) (sin paso "Crear clave"), una contraseña de dos pasos [de un
+  solo uso](#one-shot) que va una vez al TV, el número de teléfono como [texto con
+  `"sync": false`](settings-form.md#sync-false), el [`hide` de `settingsStatus`](settings-form.md#status-hide)
+  según la etapa del inicio de sesión y un inicio de sesión con [`qr`](qr.md) dibujado solo en el TV. El
+  celular inicia sesión con su número y un código; el TV recibe los ajustes con "Recibir configuración" y
+  después muestra un QR para escanear con Telegram en el celular. Está firmado y Kino **no lo lista**: se
+  instala pegando la dirección de su repositorio, `kinotvapp/kino-plugin-sync-gram-account`.

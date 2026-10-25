@@ -731,8 +731,8 @@ type KinoHelpSetting = { key: string; type: "help"; label?: string; labelEn?: st
  * apiVersion 12 (additive): `devices` on any settings item, the devices whose Kino draws it: `["phone"]`, `["tv"]` or both
  * (absent = every device; an unknown device, an empty list or a repeat refuses the manifest). Host side only: on a device it
  * leaves out the item is neither drawn nor checked, but its value is still stored, saved back unchanged, synced, provisioned
- * and read through `kino.config`. Use it for setup a TV cannot do (a token pasted on the phone, sent with "Enviar a otro
- * aparato"). Ignored below apiVersion 12.
+ * and read through `kino.config`. Use it for setup a TV cannot do (a token pasted on the phone, sent with "Enviar
+ * configuración"). Ignored below apiVersion 12.
  */
 type KinoSettingDevice = "phone" | "tv";
 
@@ -752,8 +752,10 @@ type KinoManifestSetting =
        */
       linkOnly?: boolean;
       /**
-       * apiVersion 13, on a `password` only: `false` keeps the value on the device where it was typed (never sent to a paired
-       * device, never set or cleared by one, in no backup, kit or sync provision). Default `true`.
+       * apiVersion 13, on a `password` or a `text` only: `false` keeps the value on the device where it was typed (never sent to a
+       * paired device, never set or cleared by one, in no backup or kit). A password one may still be named in a sync `provision`
+       * for a one-shot secret (stored device-only on the receiver too), never as the `keySecret`; a text one never in a provision.
+       * A text one is still drawn as a plain text field (nothing masked). Default `true`.
        */
       sync?: boolean;
     }
@@ -858,9 +860,11 @@ interface KinoPlugin {
    * key holds the text its QR encodes: 1 to 512 characters, no control character, an http(s) address only https on a public
    * host; anything else (or a text holding a sealed secret) draws no QR. Asked when the form opens, after every action and,
    * with a `qr` setting's `refreshMs`, every that many ms while the form is on screen (never while the previous call runs).
+   * apiVersion 13 `hide`: keys of your own settings the form does not draw while this answer is current (values kept, at most
+   * 32 read, unknown keys ignored). A `qr` setting with no text draws nothing.
    */
-  settingsStatus?(): Promise<Record<string, string>>;
-  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. `link` (Kino 0.9.74, additive `action.link`): Kino asks the person with its OWN question ("¿Eres tú, <candidate>?" / "Is this you, <candidate>?", naming your plugin by its manifest `name`) and runs the `confirm` action exactly once only if they confirm; Cancel runs nothing and your plugin hears nothing. `candidate`: 1 to 64 characters after trimming, runs of spaces collapsed; no control or invisible formatting characters, no space but the ASCII one, no blank fillers (U+115F, U+1160, U+3164, U+FFA0, U+2800); scrubbed of your secrets and shown as plain text. `confirm`: the key of ANOTHER `action` setting of this plugin that declares no `confirm`/`confirmEn` question of its own. Anything else refuses the link: your `message` still shows, with Kino's generic error. A `link` in the confirm action's own answer is ignored. `setSettings` (Kino 0.9.74, additive `action.setSettings`): up to 8 of your own `text` or `select` settings (never a `url`: only the person types a server; never a password, toggle or list) with string values, checked like typed values (a required one is never emptied; your `validateSettings` is not run); Kino saves them through the form's own save, so they reach the person's other devices like typed values. An unknown or secret key, a non-string, a bad value, a key also in `clearSettings`, a value holding one of your secrets or more than 8 keys refuse the whole field: nothing is applied and the form shows Kino's generic error under your message. */
+  settingsStatus?(): Promise<{ [key: string]: string | string[] | undefined; hide?: string[] }>;
+  /** apiVersion 6: required when a setting has `type: "action"`. Runs when the person presses that button (30 s); the `message` (at most 300 characters, default "Listo") is shown; settingsStatus() is asked again after every action (and when the form opens); `refresh: true` is still accepted and changes nothing. `clearSettings` (up to 12 keys of your own optional, valued settings: not a `required` one, not a section/status/action) is emptied by Kino right after a successful action, as if the person had emptied the field and saved (a password leaves the Keystore; your sandbox closes as for any saved change; `kino.storage` survives); anything else in it is dropped. A throwing action clears nothing. `link` (Kino 0.9.74, additive `action.link`): Kino asks the person with its OWN question ("¿Eres tú, <candidate>?" / "Is this you, <candidate>?", naming your plugin by its manifest `name`) and runs the `confirm` action exactly once only if they confirm; Cancel runs nothing and your plugin hears nothing. `candidate`: 1 to 64 characters after trimming, runs of spaces collapsed; no control or invisible formatting characters, no space but the ASCII one, no blank fillers (U+115F, U+1160, U+3164, U+FFA0, U+2800); scrubbed of your secrets and shown as plain text. `confirm`: the key of ANOTHER `action` setting of this plugin that declares no `confirm`/`confirmEn` question of its own. Anything else refuses the link: your `message` still shows, with Kino's generic error. A `link` in the confirm action's own answer is ignored. `setSettings` (Kino 0.9.74, additive `action.setSettings`): up to 8 of your own `text` or `select` settings and, from apiVersion 13, `password` settings (never a `url`: only the person types a server; never a toggle or list) with string values, checked like typed values (a required one is never emptied; your `validateSettings` is not run); Kino saves them through the form's own save, so they reach the person's other devices like typed values. An unknown or secret key, a non-string, a bad value, a key also in `clearSettings`, a value holding one of your secrets or more than 8 keys refuse the whole field: nothing is applied and the form shows Kino's generic error under your message. A password filled this way (apiVersion 13, a "Create key" action) is stored sealed exactly like a typed one, never logged, and scrubbed from this answer's `message` and `link`, so it is never shown back. */
   action?(key: string): Promise<{ message?: string; refresh?: boolean; clearSettings?: string[]; setSettings?: Record<string, string>; link?: { candidate: string; confirm: string } } | null | void>;
   /**
    * apiVersion 6, optional: checks the values BEFORE Kino saves them (20 s). `null` accepts; `{ key: "mensaje" }`
@@ -2037,7 +2041,15 @@ type KinoSyncStatusFn = (arg: null) => Promise<{ ready: boolean; message?: strin
  * stored remotely then no longer opens until the person resets sync on one device and gives the new value to the others.
  *
  * `provision` (required) lists the `key`s of your own settings (secret or not, at most 8, no repeats) that pairing hands to another
- * device so it can run the same provider, for example `["botToken", "chatId"]`. It must include `keySecret`.
+ * device so it can run the same provider, for example `["botToken", "chatId"]`. It must include `keySecret`. From apiVersion 13 it
+ * may name a `"sync": false` password (a one-shot secret such as a 2FA password): sent only while it holds a value, named by its
+ * label on both screens, stored sealed and device-only on the receiver (never synced nor backed up); your plugin clears it once
+ * used. `keySecret` itself can never be a `"sync": false` password.
+ *
+ * `generateKey` (apiVersion 13, default false): Kino makes the `keySecret` value itself, 32 random bytes as 64 lower-case hex
+ * characters, while that setting is empty: when the person switches the provider on, and when they press "Enviar configuración"
+ * (before the values are read, so an empty key never hides that button). It is saved sealed like a typed password, never
+ * logged and never drawn in your form; a value that exists is never replaced, and one received from another device replaces it.
  */
 interface KinoManifestSync {
   mode?: "poll" | "realtime";
@@ -2046,4 +2058,5 @@ interface KinoManifestSync {
   maxBlobBytes?: number;
   keySecret: string;
   provision: string[];
+  generateKey?: boolean;
 }

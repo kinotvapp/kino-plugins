@@ -97,10 +97,13 @@ Before writing anything:
    apiVersion 11, Kino 0.9.71) and copy the shape of its complete example.
 6. If my plugin is a sync provider (it carries Kino's own sync between my devices through a service: a bot,
    a storage API, a server of mine), read https://kinotvapp.github.io/kino-plugins/en/sync-providers/ first
-   (apiVersion 12, Kino 0.9.74). Its references are two public repositories: Sync-Gram
+   (apiVersion 12, Kino 0.9.74). Its references are three public repositories: Sync-Gram
    (https://github.com/kinotvapp/kino-plugin-sync-gram, a Telegram bot of the person's own) for a third-party
-   service, and Sync Servidor (https://github.com/kinotvapp/kino-plugin-sync-server, a single-file Node
-   server) for a server of my own.
+   service, Sync Servidor (https://github.com/kinotvapp/kino-plugin-sync-server, a single-file Node
+   server) for a server of my own, and Sync-Gram Cuenta
+   (https://github.com/kinotvapp/kino-plugin-sync-gram-account, the person's own Telegram account over a
+   WebSocket, apiVersion 13: sync.generateKey, a one-shot 2FA password in provision, settingsStatus hide) for
+   an account of my own.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -192,9 +195,9 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   and a "link" setting (an https button, e.g. https://t.me/BotFather). From Kino 0.9.74 an action may
   answer link: { candidate, confirm } (Kino asks "Is this you, <candidate>?" before running the confirm
   action) and setSettings: { key: value } to fill the plugin's own "text" or "select" settings (never a
-  "url" or a "password"). The confirm action carries "linkOnly": true, so the person sees one button.
+  "url"; a "password" only from apiVersion 13). The confirm action carries "linkOnly": true, so the person sees one button.
   Setup a TV cannot do (a token pasted on the phone) carries "devices": ["phone"]: the TV receives it with
-  "Recibir desde otro aparato".
+  "Recibir configuración" ("Receive settings"), sent from the phone with "Enviar configuración".
 - apiVersion 13 (in development for the next Kino version: NO released Kino installs it yet; tell me before
   using it), only if my source needs it: a service that speaks over a WebSocket ("socket", kino.ws, wss:// to
   my declared hosts, frames as hex/base64 strings), video the plugin serves itself ("byteSource":
@@ -203,7 +206,9 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   the bytes), thousands of records to search ("catalog", kino.catalog), a bigger device-only storage
   ("storageLarge"), a QR on the settings form ("qr" setting) or the phone's scanner from an action
   ("qrScan", kino.qr.scan), a password that must stay on one device such as a 2FA password sent once ("sync": false
-  on that password setting, never in sync.provision), pictures only the plugin can fetch ("imageSource" and an image export). Read
+  on that password setting; sync.provision may carry it once to a new device, never as keySecret), a sync
+  provider next to "socket"/"storageLarge"/"catalog"/"qrScan" with no resolve or search, a key Kino makes
+  (sync.generateKey), a form that hides what a step does not need (settingsStatus answering hide: [keys]), pictures only the plugin can fetch ("imageSource" and an image export). Read
   https://kinotvapp.github.io/kino-plugins/en/bytes/, /en/catalog/, /en/images/ and /en/qr/ first; test read
   with node sdk/run.mjs --size <bytes> . read <handle> <offset> <length> and a Node test (askRead or a fake
   WebSocket); feature-detect every kino.crypto byte operation you use (they depend on the Kino version).

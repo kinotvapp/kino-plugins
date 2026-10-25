@@ -535,7 +535,7 @@ version mismatch, a bearer token) and the plugin that talks to it (`"capabilitie
 alone, `"fetchHosts": "any"`, `sync.keySecret` and `sync.provision`, a 409 thrown as `conflict`). The
 person reaches the server through a Cloudflare tunnel, because a plugin only reaches public https hosts.
 Its README (English and Spanish) walks a person through it end to end: starting the server, the tunnel,
-installing the plugin from the server itself, Conectar, turning the provider on, sending the settings to
+installing the plugin from the server itself, Configurar, turning the provider on, sending the settings to
 a second device, and what to do when the token changes. It declares `maxBlobBytes` 4194304 (4 MiB):
 inside `syncPull`/`syncPush`, `kino.fetch` takes a blob of that size in one request. Its form carries a
 short [`help`](settings-form.md#aids) (what the person needs: the server's https address and its token)
@@ -556,6 +556,22 @@ framing spliced around the blob's base64), how to link the person's chat with `g
 to @BotFather, and how to keep the token out of every error text. `sync.keySecret` is the bot token and
 `sync.provision` is `["botToken", "chatId"]`. Its tests run against a local imitation of the Bot API;
 its README (English and Spanish) walks a person through it.
+
+## A sync provider on the person's own Telegram account (example: Sync-Gram Cuenta) { #sync-gram-account }
+
+[kinotvapp/kino-plugin-sync-gram-account](https://github.com/kinotvapp/kino-plugin-sync-gram-account) (the plugin
+**Sync-Gram Cuenta**, id `sync-gram-account`, apiVersion 13, Kino 0.9.74 or newer; unofficial, not affiliated with
+Telegram) syncs through the person's **own Telegram account**, with no bot: the copy is one file pinned and sent
+silently in their Saved Messages, through Telegram's MTProto API over [`kino.ws`](bytes.md#ws)
+(`"capabilities": ["syncProvider", "socket", "storageLarge"]`, the five `*.web.telegram.org` hosts only). The person
+brings their own `api_id` and `api_hash` from my.telegram.org. It shows the apiVersion 13 additions working together:
+[`sync.generateKey`](sync-providers.md#generate-key) (Kino makes the sync key, no "Create key" step), a two-step
+password that travels once to the TV as a [one-shot secret](sync-providers.md#one-shot), the phone number as a
+[`"sync": false` text](settings-form.md#sync-false), [`settingsStatus` `hide`](settings-form.md#status-hide) by sign-in
+stage, and a [`qr`](qr.md) login drawn on the TV only. The phone signs in with its number and a code and then offers
+"Enviar configuración"; the TV taps "Recibir configuración" and shows a QR to scan with Telegram on the phone. Its tests
+run against a local imitation of Telegram's servers; its README (English and Spanish) walks a person through it. It is
+signed and not listed in Kino: people install it by pasting `kinotvapp/kino-plugin-sync-gram-account`.
 
 ## A TMDB catalog with no key in the plugin (Kino 0.9.53) { #tmdb-catalog }
 

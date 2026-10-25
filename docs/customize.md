@@ -14,7 +14,7 @@ declara 6 solo si usas algo de eso, porque Kino 0.9.49 y anteriores rechazan un 
 | Chips de la tienda | los chips de categoría de Recomendados, "De la comunidad", "Elige tus plugins" | `categories` en el manifiesto | cualquiera | [Manifiesto](manifest.md) |
 | Un formulario de ajustes y su propia pestaña en Ajustes | Ajustes ▸ &lt;tu plugin&gt; | `settings` (`list` desde 4) | 1 | [Formulario de ajustes](settings-form.md#types) |
 | Títulos, líneas de estado, botones, revisión antes de guardar | esa misma pestaña | ajustes `section`, `status`, `action`; `settingsStatus`, `action`, `validateSettings` | 6 | [Formulario de ajustes](settings-form.md) |
-| Un botón de ayuda y un botón que abre una dirección | esa misma pestaña (y el formulario Conectar de un proveedor de sincronización) | ajustes `help` y `link` | 12 | [Ayudas para configurar](settings-form.md#aids) |
+| Un botón de ayuda y un botón que abre una dirección | esa misma pestaña (y el formulario Configurar de un proveedor de sincronización) | ajustes `help` y `link` | 12 | [Ayudas para configurar](settings-form.md#aids) |
 | "¿Eres tú?" y llenar tus propios ajustes | esa misma pestaña | un `action` que responde `link` o `setSettings` | cualquiera (Kino 0.9.74) | [Formulario de ajustes](settings-form.md#link) |
 | Tu línea de estado como proveedor de sincronización | Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor | `syncStatus` | 12 | [Proveedores de sincronización](sync-providers.md#settings) |
 | Colores | tu sección, tu pestaña de Ajustes, el título de tu grupo en Categorías, el acento del reproductor mientras suena lo tuyo | `theme` | 6 | [Tus colores](section-theme.md#theme) |

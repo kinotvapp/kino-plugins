@@ -63,12 +63,15 @@ same files. A fork would work as a plugin too, but Kino's community search leave
     and languages as [labelled lazy copies](contract.md#lazy-copies). It is an example of those two
     features only (Kino just lists community plugins: each author is responsible for theirs); "Tu servidor" stays the complete reference plugin.
 
-!!! note "Sync providers: Sync-Gram and Sync Servidor"
-    The references for a [sync provider](sync-providers.md) (apiVersion 12, Kino 0.9.74) are two public
+!!! note "Sync providers: Sync-Gram, Sync Servidor and Sync-Gram Cuenta"
+    The references for a [sync provider](sync-providers.md) (apiVersion 12, Kino 0.9.74) are three public
     repositories: **Sync-Gram** ([kinotvapp/kino-plugin-sync-gram](https://github.com/kinotvapp/kino-plugin-sync-gram), a Telegram bot of the person's own; unofficial, not
     affiliated with Telegram; recommended in Kino) and **Sync Servidor** ([kinotvapp/kino-plugin-sync-server](https://github.com/kinotvapp/kino-plugin-sync-server), a single-file
-    Node server the person runs; not listed in Kino, installed by pasting its repository address). Each has a guide in English and Spanish
-    and offline tests. See [The two example providers](sync-providers.md#examples).
+    Node server the person runs; not listed in Kino, installed by pasting its repository address) and **Sync-Gram Cuenta**
+    ([kinotvapp/kino-plugin-sync-gram-account](https://github.com/kinotvapp/kino-plugin-sync-gram-account), the person's own
+    Telegram account over a WebSocket, apiVersion 13; unofficial; not listed in Kino, installed by pasting
+    `kinotvapp/kino-plugin-sync-gram-account`). Each has a guide in English and Spanish
+    and offline tests. See [The three example providers](sync-providers.md#examples).
 
 !!! note "apiVersion 13 (in development): a byte-stream example"
     No published example plugin uses apiVersion 13 yet (no released Kino accepts it). The guide has a complete

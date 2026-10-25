@@ -45,11 +45,49 @@ Kino"), so declare 13 only if you use one of its features, and publish such a pl
   call your exports as Kino does (`askRead`, `askImage` from tests), and `init.mjs --with byteSource,images,catalog,socket`
   scaffolds an apiVersion 13 plugin. [Test it locally](test-locally.md#api13).
 - **A password that stays on one device**: a `password` setting may say `"sync": false` (a two-step verification
-  password sent once and cleared): never sent to a paired device, in no backup, kit or `sync.provision`.
+  password sent once and cleared): never sent to a paired device, in no backup or kit.
   [The settings form](settings-form.md#sync-false).
 - **Engine memory** (Kino 0.9.74, every `apiVersion`): the answer of an awaited `kino.*` call no longer stays in
   your 64 MB until the sandbox closes, and Kino collects garbage after a call that leaves the engine over half its limit.
   [How your code lives](engine-limits.md#lifecycle).
+
+### Added to apiVersion 13 on 2026-10-25: sync providers and the settings form { #v13-2026-10-25 }
+
+Still `apiVersion` 13 and Kino 0.9.74 (not released yet), added for the account-based sync provider
+[Sync-Gram Cuenta](sync-providers.md#examples). An older Kino refuses `apiVersion` 13, so there is nothing to check.
+
+| Feature | From |
+| --- | --- |
+| `syncProvider` (or `subtitles`, `tracking`, `segments`) next to `socket`, `storageLarge`, `catalog` and `qrScan` needs no `resolve`, `search` or `home` | `apiVersion` 13 |
+| An action's `setSettings` may fill one of your own `password` settings | `apiVersion` 13 |
+| `sync.provision` may name a `"sync": false` password, a one-shot secret for the new device | `apiVersion` 13 |
+| `sync.generateKey: true`: Kino makes the `keySecret` value itself | `apiVersion` 13 |
+| A `settingsStatus` answer may carry `hide: [setting keys]`; a `qr` setting with no text draws nothing | `apiVersion` 13 |
+| A `text` setting may say `"sync": false` | `apiVersion` 13 |
+
+- **Standalone with runtime room**: a sync provider that talks over a WebSocket declares
+  `["syncProvider", "socket"]` (and `storageLarge`, `catalog` or `qrScan` if it needs them) and still exports no
+  `resolve`, `search` or `home`. [The manifest](manifest.md).
+- **`setSettings` fills a password**: stored sealed like a typed one, never logged, scrubbed from the answer's
+  `message` and `link`; the kit prints it masked. [Filling a password](settings-form.md#set-password).
+- **A one-shot secret in `provision`**: a `"sync": false` password (a two-step password the TV should not type) goes
+  with "Enviar configuración" only while it holds a value, the sending screen names it in one line, and the receiving
+  device keeps it sealed and device-only; never as `keySecret`. [Sync providers](sync-providers.md#one-shot).
+- **`sync.generateKey`**: for a provider whose service has no shared secret (the person's own account), Kino writes 32
+  random bytes as hex into the empty `keySecret` setting when the provider is switched on and when "Enviar
+  configuración" is pressed; no "Create key" step. [A key Kino makes](sync-providers.md#generate-key).
+- **`settingsStatus` `hide`**: at most 32 of your own setting keys the form does not draw while that answer is current
+  (values kept); a `qr` with no text draws nothing at all. [Hiding items](settings-form.md#status-hide).
+- **A device-only `text`**: `"sync": false` on a `text` (a phone number shown as typed): never synced, backed up or in
+  `sync.provision`. [A value that stays on this device](settings-form.md#sync-false).
+- **What the person sees** (no contract change): the provisioning buttons are now **"Enviar configuración"** and
+  **"Recibir configuración"** ("Send settings" / "Receive settings"), the settings button on a provider's card is
+  **"Configurar"** ("Set up") on phone and TV, the cards follow the provider's state (on a device that lacks the
+  settings, "Recibir configuración" leads), the red consent line stays on the install sheet and the switch-on
+  confirmation, a refused camera says how to turn it on, and uninstalling the active provider warns that sync goes off.
+- **A third example provider**: [Sync-Gram Cuenta](https://github.com/kinotvapp/kino-plugin-sync-gram-account)
+  syncs through the person's own Telegram account (MTProto over `kino.ws`), signed, not in any catalog: installed by
+  pasting `kinotvapp/kino-plugin-sync-gram-account`. [The three example providers](sync-providers.md#examples).
 
 ## Kino 0.9.74: `apiVersion` 12, sync providers, `link` and `help`, `setSettings` and "Is this you?" { #v0974 }
 
@@ -73,7 +111,7 @@ one of its features.
   yours; `kino.error("conflict", …)` makes Kino pull, merge and push again. The manifest's `sync` block
   sets the cadence (`poll` or `realtime`), the blob size, the required `keySecret` (Kino derives the
   sync key from one of your `password` settings on each device, so no key travels and the plugin and its
-  service can read the data) and the required `provision` (the settings "Enviar a otro aparato" hands to a
+  service can read the data) and the required `provision` (the settings "Enviar configuración" hands to a
   second device, over the local network or a Cloudflare quick tunnel). The capability may be a plugin's only one.
   [Sync providers](sync-providers.md).
 - **Consent**: one red line, "Sincronizará tus datos a través de su servicio: el plugin y su servicio
@@ -91,7 +129,7 @@ one of its features.
   button; each provider is its own card in that list, with "Sincronizar cada" (1 to 60 minutes, per
   device; `pullEveryMs` is only the default). [Sync providers](sync-providers.md).
 - **`setSettings`** (Kino 0.9.74, additive): an action may fill up to 8 of your own `text` or `select`
-  settings, saved as if the person typed them; never a `url` or a `password`.
+  settings, saved as if the person typed them; never a `url`, and a `password` only from apiVersion 13.
   [Filling your own settings](settings-form.md#set-settings).
 - **"Is this you?"** (`action.link`, Kino 0.9.74, additive): an action answers
   `link: { candidate, confirm }` and Kino asks the person with its own words before running the `confirm`

@@ -131,10 +131,11 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   &lt;nombre&gt;"; "Si &lt;nombre&gt; ya guarda datos de otro aparato, se combinan con los de este. Nunca se
   borra nada de ningún lado.") con "Combinar con este aparato".
 - **La fila del proveedor** muestra "Sincronizado hace 3 min", "Esperando la primera sincronización",
-  "Falló la última sincronización: &lt;razón&gt;", "Falta el token: configúralo en Conectar" o "El token
+  "Falló la última sincronización: &lt;razón&gt;", "Falta el token: escríbelo en Configurar" o "El token
   no coincide o los datos guardados no son de Kino", la línea de `syncStatus` del propio plugin, y los
-  botones Conectar, Sincronizar ahora, Restablecer sincronización, Enviar a otro aparato y Recibir desde
-  otro aparato.
+  botones Configurar, Sincronizar ahora, Restablecer sincronización, Enviar configuración y Recibir
+  configuración (en un aparato al que todavía le faltan los ajustes, "Recibir configuración" va primero y
+  "Configurar" queda discreto).
 - **Recibir en un segundo aparato**: un QR, una dirección y un código de 6 dígitos durante 3 minutos (y,
   cuando abre el túnel rápido de Cloudflare, las palabras para "Otra red"), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
   etiquetas de los ajustes que llegaron, nunca sus valores, y "Aplicar".

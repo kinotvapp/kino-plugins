@@ -53,7 +53,7 @@ What each entry may carry:
 | `labelEn`, `hintEn`, `confirmEn` | those of `label`, `hint`, `confirm` | optional, apiVersion 9 (Kino 0.9.55): the same text in English, with the same limits ([English texts](#english)) |
 | `devices` | all | optional, apiVersion 12: `["phone"]`, `["tv"]` or both, the devices that draw it ([one kind of device](#devices)) |
 | `linkOnly` | `action` | optional `true`/`false`, apiVersion 12: never drawn, run only as a link's `confirm` ([linkOnly](#link-only)) |
-| `sync` | `password` | optional `true`/`false`, apiVersion 13 (in development): `false` keeps the value on this device ([sync: false](#sync-false)) |
+| `sync` | `password`, `text` | optional `true`/`false`, apiVersion 13 (Kino 0.9.74): `false` keeps the value on this device ([sync: false](#sync-false)) |
 
 Any other key in an entry is ignored. A manifest that breaks a rule is refused at install with a
 message that names the setting (`El ajuste "quality" necesita opciones`); a `list` below apiVersion 4
@@ -144,13 +144,35 @@ network to draw it). It is how a TV shows a login code for a phone to scan.
 - **Its text** is what your `settingsStatus()` returns under that key, like a `status` line, but kept whole: 1 to 512
   characters with no control character; an `http`/`https` address only https on a public host (never the home network);
   any other text (an app link such as `exampleapp://login?token=…`, a pairing code) is drawn as it is. A longer text, a
-  non-text or one that holds one of your sealed secrets draws no QR (the line reads "Sin información").
+  non-text or one that holds one of your sealed secrets draws no QR, and a `qr` with no text draws nothing at all (no
+  label, no placeholder line, no empty row), so a QR that only one step of a sign-in needs simply is not there in the
+  others.
 - **`refreshMs`** (2000 to 60000; only a `qr` setting has it): Kino asks `settingsStatus()` when the form opens, after
   every action and every that many ms while the form is on screen and the app in front. A refresh never starts while the
   previous call is still running, and the QR on screen stays up until the new text replaces it. That is how a code that
   expires every 30 s stays scannable, and how a status line next to it turns into "Listo" once the code was used.
 - **Required export:** `settingsStatus`. Showing a QR needs no capability; scanning one (`kino.qr.scan`) needs `qrScan`.
   The whole two-device recipe: [QR codes](qr.md#recipe).
+
+## Hiding items while they are not needed (`hide`, apiVersion 13, Kino 0.9.74) { #status-hide }
+
+Your `settingsStatus()` answer may carry `hide`: a list of keys of your own settings that the form (phone and TV) does
+not draw while that answer is current. Use it for a form that changes with a step: the sign-in button, its QR and the
+password step once the person is signed in, or "Cerrar sesión" while signed out.
+
+```js
+export async function settingsStatus() {
+  if (signedIn()) return { status: "Conectado", hide: ["qr_login", "login_qr", "tg_password", "check_password"] };
+  return { status: "Falta iniciar sesión", hide: ["logout"] };
+}
+```
+
+- Their stored values stay and nothing is deleted; they still count for the form's own rules (a `required` one you
+  hide still blocks Guardar).
+- Unknown keys and non-strings are ignored, at most 32 entries are read, and a failed answer hides nothing.
+- Kino asks `settingsStatus()` again after every action, so the form follows the step the action just reached.
+- Below apiVersion 13 the key is ignored. `sdk/contract.mjs` exports `statusHide(answer, manifest)`, which gives the
+  keys the app would hide.
 
 ## Configuration aids: `link` and `help` (apiVersion 12, Kino 0.9.74) { #aids }
 
@@ -204,8 +226,8 @@ It is only about drawing. On a device it leaves out, the form neither draws nor 
 hidden `required` field never blocks Guardar there), but its value is still stored, saved back
 unchanged, synced to the person's other devices, handed over by `sync.provision` and read by your code
 through `kino.config`. Use it for setup a TV cannot do well, like a token pasted on the phone: Sync-Gram
-and Sync Servidor draw their setup only on the phone, and the TV receives the values with "Recibir desde
-otro aparato". An unknown device, an empty list or a repeated one refuses the manifest (`"devices" of the
+and Sync Servidor draw their setup only on the phone, and the TV receives the values with "Recibir
+configuración" ("Receive settings"). An unknown device, an empty list or a repeated one refuses the manifest (`"devices" of the
 setting "<key>" must be a list of different devices: "phone", "tv"`); below apiVersion 12 the key is
 ignored. The Node kit renders no form: `validate.mjs` only checks the field.
 
@@ -260,14 +282,30 @@ return { message: "Vinculado", setSettings: { chatId: String(chat.id) } };
 ```
 
 - **Never** a `url` (its value becomes a server your plugin may reach, so only the person types one),
-  **never** a `password` (a secret stays the person's to type), a `toggle`, a `list` or a setting
-  without a value; a `required` setting is never emptied this way.
+  a `toggle`, a `list` or a setting without a value; a `required` setting is never emptied this way.
+  A `password` only from `apiVersion` 13 ([below](#set-password)); below it the whole field is refused.
 - Kino does **not** run your `validateSettings` on these values (you chose them), and it refuses a value
   that contains one of your stored secrets instead of copying it into a plain, synced setting.
 - An unknown or secret key, a value that is not a string or fails its check, a key that is also in
   `clearSettings`, a value that holds one of your stored secrets, or more than 8 keys refuse the
   **whole** field: nothing is applied, your `message` still shows and Kino adds its generic error under it.
 - It works from your settings form (any action, including the `confirm` action of a [link](#link)).
+
+### Filling a password (`apiVersion` 13, Kino 0.9.74) { #set-password }
+
+An action may fill one of your own `password` settings, for a value your plugin makes up instead of asking the person to type one:
+
+```js
+return { message: "Clave creada", setSettings: { syncKey: kino.crypto.randomBytes(32) } };   // 64 hex characters
+```
+
+Kino stores it exactly like a typed password: sealed in the Keystore, synced sealed end to end to the person's other
+devices (or kept on this device only when the setting says [`"sync": false`](#sync-false)), and masked in the form. It
+is never logged, and every password value your answer names is scrubbed from that same answer's `message` and `link`,
+so it is never shown back on the page. The usual rules apply (at most 500 characters, a `required` one never emptied, a
+value holding another of your secrets refused). Only an action the person ran fills a setting: a `settingsStatus` answer
+is never read for `setSettings`. `node sdk/run.mjs . action <key>` prints such a value masked. A sync provider that only
+needs a random key does not need this: [`sync.generateKey`](sync-providers.md#generate-key) makes Kino create it.
 
 ## Linking: "Is this you?" (`action.link`, Kino 0.9.74) { #link }
 
@@ -457,9 +495,9 @@ el catálogo gratis" until they type an account; Guardar checks the account befo
 "Cerrar sesión" asks first, then empties the correo and the contraseña on every device of theirs; each
 mirror shows up as one more copy in the player's Servidor menu.
 
-## A password that stays on this device (`"sync": false`, apiVersion 13, in development) { #sync-false }
+## A value that stays on this device (`"sync": false`, apiVersion 13, Kino 0.9.74) { #sync-false }
 
-Not in a released Kino yet. A `password` may say `"sync": false` to stay on the device where the person typed it: use it
+A `password` may say `"sync": false` to stay on the device where the person typed it: use it
 for a value that only makes sense once, on one device, such as a two-step verification password your plugin sends right
 away and then clears (`clearSettings`). Without it a password reaches the person's paired devices, sealed end to end,
 like every other password ([below](#other-devices)).
@@ -469,11 +507,17 @@ like every other password ([below](#other-devices)).
 ```
 
 - The value is never sent to a paired device, and a value another device sends never sets or clears it.
-- It is in no backup, no kit and no sync provider's `provision`: a manifest whose `sync.provision` names it is refused
-  ("The \"provision\" of the \"sync\" field can't name a setting with \"sync\": false").
+- It is in no backup and no kit.
+- A sync provider's `sync.provision` may still name it, for a **one-shot secret** handed once to a new device (a TV
+  that should not type a two-step password): see [Sync providers](sync-providers.md#one-shot). It can never be the
+  `sync.keySecret` ("The \"keySecret\" of the \"sync\" field can't name a setting with \"sync\": false").
 - Your plugin reads it with `kino.config.get` and clears it as any password.
-- `sync` on anything but a password refuses the manifest ("Only a setting of type password has \"sync\" (\"key\")"), and
-  so does a value that is not `true` or `false`. Below apiVersion 13, and in a Kino build without it, the key is ignored
+- **A `text` may say `"sync": false` too**, for a value that must stay on the device but is no secret to hide, such as
+  a phone number the person types to sign in on that device: it is drawn as a plain text field (nothing masked) and
+  kept exactly like a device-only password (never synced, never in a backup or a kit). It may not appear in
+  `sync.provision` ("The \"provision\" of the \"sync\" field can't name a text setting with \"sync\": false").
+- `sync` on any other type refuses the manifest ("Only a setting of type password or text has \"sync\" (\"key\")"),
+  and so does a value that is not `true` or `false`. Below apiVersion 13, and in a Kino build without it, the key is ignored
   and the password syncs as usual. `node sdk/validate.mjs` checks all of this like the app.
 
 ## On the person's other devices { #other-devices }
@@ -487,13 +531,13 @@ crosses, and what does not:
   more (a new host, permission or capability), it waits in "Plugins de tus otros aparatos" for the
   normal consent sheet.
 - **Crosses:** the values of `text`, `select`, `toggle`, `url` and `list` settings (a `list` that has a
-  `password` field does not travel), and `password` settings (except one with `"sync": false`, apiVersion 13), sealed end to end with the key the devices
+  `password` field does not travel), and `password` settings (except a `password` or `text` with `"sync": false`, apiVersion 13), sealed end to end with the key the devices
   agreed when they paired, never readable on the way.
 - **Crosses:** clears. A field the person empties, or an action's `clearSettings`, empties it on their
   other devices too (passwords included). A `required` setting is never cleared remotely. A device
   running an older Kino build ignores clears and keeps its value.
 - **Never crosses:** `kino.storage`, cookies, the cached Home rows.
-- **A sync provider** can also hand its settings to another device with "Enviar a otro aparato" (the
+- **A sync provider** can also hand its settings to another device with "Enviar configuración" (the
   ones its `sync.provision` names): see [Sync providers](sync-providers.md#provisioning).
 
 A value that arrives this way is applied **without** your `validateSettings`, and, like any saved

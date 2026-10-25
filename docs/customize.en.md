@@ -14,7 +14,7 @@ you use one of those, because Kino 0.9.49 and older refuse an apiVersion 6 plugi
 | Marketplace chips | the category chips of Recomendados, "De la comunidad", "Elige tus plugins" | `categories` in the manifest | any | [The manifest](manifest.md) |
 | A settings form and its own Ajustes tab | Ajustes ▸ &lt;your plugin&gt; | `settings` (`list` from 4) | 1 | [The settings form](settings-form.md#types) |
 | Headings, status lines, buttons, checks before saving | the same tab | `section`, `status`, `action` settings; `settingsStatus`, `action`, `validateSettings` | 6 | [The settings form](settings-form.md) |
-| A help button and a button that opens an address | the same tab (and the Conectar form of a sync provider) | `help` and `link` settings | 12 | [Configuration aids](settings-form.md#aids) |
+| A help button and a button that opens an address | the same tab (and the Configurar form of a sync provider) | `help` and `link` settings | 12 | [Configuration aids](settings-form.md#aids) |
 | "Is this you?" and filling your own settings | the same tab | an `action` that answers `link` or `setSettings` | any (Kino 0.9.74) | [The settings form](settings-form.md#link) |
 | Your status line as a sync provider | Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor | `syncStatus` | 12 | [Sync providers](sync-providers.md#settings) |
 | Colors | your section, your Ajustes tab, your group title in Categorías, the player's accent while you play | `theme` | 6 | [Your colors](section-theme.md#theme) |

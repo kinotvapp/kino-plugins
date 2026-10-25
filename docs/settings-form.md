@@ -53,7 +53,7 @@ Lo que puede llevar cada entrada:
 | `labelEn`, `hintEn`, `confirmEn` | los de `label`, `hint`, `confirm` | opcionales, apiVersion 9 (Kino 0.9.55): el mismo texto en inglés, con los mismos límites ([Textos en inglés](#english)) |
 | `devices` | todos | opcional, apiVersion 12: `["phone"]`, `["tv"]` o los dos, los aparatos que lo dibujan ([un tipo de aparato](#devices)) |
 | `linkOnly` | `action` | opcional `true`/`false`, apiVersion 12: nunca se dibuja, solo corre como `confirm` de un `link` ([linkOnly](#link-only)) |
-| `sync` | `password` | opcional `true`/`false`, apiVersion 13 (en desarrollo): `false` deja el valor en este aparato ([sync: false](#sync-false)) |
+| `sync` | `password`, `text` | opcional `true`/`false`, apiVersion 13 (Kino 0.9.74): `false` deja el valor en este aparato ([sync: false](#sync-false)) |
 
 Cualquier otra clave de una entrada se ignora. Un manifiesto que incumple una regla se rechaza al
 instalar con un mensaje que nombra el ajuste (`El ajuste "quality" necesita opciones`); una `list` por
@@ -149,8 +149,9 @@ red para dibujarlo). Es la forma de que una TV muestre un código de inicio de s
 - **Su texto** es lo que tu `settingsStatus()` devuelve bajo esa llave, como una línea `status`, pero entero: de 1 a 512
   caracteres sin caracteres de control; una dirección `http`/`https` solo si es https en un host público (nunca la red de
   la casa); cualquier otro texto (un enlace de app como `exampleapp://login?token=…`, un código para vincular) se dibuja
-  tal cual. Un texto más largo, algo que no es texto, o uno que lleva uno de tus secretos sellados no dibuja QR (la línea
-  dice "Sin información").
+  tal cual. Un texto más largo, algo que no es texto, o uno que lleva uno de tus secretos sellados no dibuja QR, y un `qr` sin
+  texto no dibuja nada (ni etiqueta, ni línea de relleno, ni fila vacía), así que un QR que solo necesita un paso de un
+  inicio de sesión simplemente no está en los demás.
 - **`refreshMs`** (de 2000 a 60000; solo un ajuste `qr` lo tiene): Kino pregunta `settingsStatus()` cuando se abre el
   formulario, después de cada acción y cada esa cantidad de ms mientras el formulario está en pantalla y la app al frente.
   Un refresco nunca empieza mientras la llamada anterior siga corriendo, y el QR en pantalla se queda hasta que el texto
@@ -158,6 +159,29 @@ red para dibujarlo). Es la forma de que una TV muestre un código de inicio de s
   cuando ya se usó el código.
 - **Export obligatorio:** `settingsStatus`. Mostrar un QR no necesita capacidad; escanear uno (`kino.qr.scan`) necesita
   `qrScan`. La receta completa entre dos aparatos: [Códigos QR](qr.md#recipe).
+
+## Esconder lo que no hace falta (`hide`, apiVersion 13, Kino 0.9.74) { #status-hide }
+
+La respuesta de tu `settingsStatus()` puede llevar `hide`: una lista de claves de tus propios ajustes que el formulario
+(celular y TV) no dibuja mientras esa respuesta sea la vigente. Úsalo para un formulario que cambia según el paso: el
+botón de iniciar sesión, su QR y el paso de la contraseña cuando la persona ya inició sesión, o "Cerrar sesión" mientras
+no la ha iniciado.
+
+```js
+export async function settingsStatus() {
+  if (signedIn()) return { status: "Conectado", hide: ["qr_login", "login_qr", "tg_password", "check_password"] };
+  return { status: "Falta iniciar sesión", hide: ["logout"] };
+}
+```
+
+- Sus valores guardados se quedan y no se borra nada; siguen contando para las reglas del formulario (uno `required`
+  que escondes sigue bloqueando Guardar).
+- Las claves desconocidas y lo que no es texto se ignoran, se leen como mucho 32 entradas, y una respuesta que falla no
+  esconde nada.
+- Kino vuelve a preguntar `settingsStatus()` después de cada acción, así que el formulario sigue el paso al que llegó la
+  acción.
+- Por debajo de apiVersion 13 la clave se ignora. `sdk/contract.mjs` exporta `statusHide(answer, manifest)`, que da las
+  claves que la app escondería.
 
 ## Ayudas para configurar: `link` y `help` (apiVersion 12, Kino 0.9.74) { #aids }
 
@@ -213,7 +237,7 @@ elemento (un campo `required` oculto nunca bloquea Guardar ahí), pero su valor 
 igual al guardar, se sincroniza con los otros aparatos de la persona, viaja con `sync.provision` y tu
 código lo lee con `kino.config`. Úsalo para la preparación que un TV no hace bien, como un token que se
 pega en el celular: Sync-Gram y Sync Servidor dibujan su preparación solo en el celular, y el TV recibe los
-valores con "Recibir desde otro aparato". Un aparato desconocido, una lista vacía o uno repetido rechazan
+valores con "Recibir configuración". Un aparato desconocido, una lista vacía o uno repetido rechazan
 el manifiesto (`"devices" of the setting "<key>" must be a list of different devices: "phone", "tv"`);
 por debajo de apiVersion 12 la clave se ignora. El kit de Node no dibuja un formulario: `validate.mjs`
 solo revisa el campo.
@@ -272,8 +296,9 @@ return { message: "Vinculado", setSettings: { chatId: String(chat.id) } };
 ```
 
 - **Nunca** un `url` (su valor se vuelve un servidor al que tu plugin puede llegar, así que solo la
-  persona lo escribe), **nunca** un `password` (un secreto lo escribe la persona), un `toggle`, una
-  `list` ni un ajuste sin valor; un ajuste `required` nunca se vacía así.
+  persona lo escribe), un `toggle`, una `list` ni un ajuste sin valor; un ajuste `required` nunca se
+  vacía así. Un `password` solo desde `apiVersion` 13 ([abajo](#set-password)); por debajo, todo el
+  campo se rechaza.
 - Kino **no** corre tu `validateSettings` con estos valores (tú los escogiste), y rechaza un valor que
   contiene uno de tus secretos guardados en vez de copiarlo a un ajuste simple que se sincroniza.
 - Una clave desconocida o secreta, un valor que no es texto o que no pasa su revisión, una clave que
@@ -282,6 +307,24 @@ return { message: "Vinculado", setSettings: { chatId: String(chat.id) } };
   genérico.
 - Funciona desde tu formulario de ajustes (cualquier acción, también la acción `confirm` de un
   [vínculo](#link)).
+
+### Llenar una contraseña (`apiVersion` 13, Kino 0.9.74) { #set-password }
+
+Una acción puede llenar uno de tus propios ajustes `password`, para un valor que tu plugin inventa en vez de pedirle a la
+persona que lo escriba:
+
+```js
+return { message: "Clave creada", setSettings: { syncKey: kino.crypto.randomBytes(32) } };   // 64 caracteres hexadecimales
+```
+
+Kino lo guarda igual que una contraseña escrita: sellada en el Keystore, sincronizada sellada de punta a punta con los
+otros aparatos de la persona (o solo en este aparato cuando el ajuste dice [`"sync": false`](#sync-false)) y con
+asteriscos en el formulario. Nunca se registra, y cada contraseña que nombra tu respuesta se borra del `message` y del
+`link` de esa misma respuesta, así que nunca se vuelve a mostrar en la página. Valen las reglas de siempre (como mucho
+500 caracteres, uno `required` nunca se vacía, un valor que contiene otro de tus secretos se rechaza). Solo una acción
+que corrió la persona llena un ajuste: la respuesta de `settingsStatus` nunca se lee para `setSettings`.
+`node sdk/run.mjs . action <clave>` muestra ese valor con asteriscos. Un proveedor de sincronización que solo necesita
+una llave aleatoria no necesita esto: con [`sync.generateKey`](sync-providers.md#generate-key) Kino la crea.
 
 ## Vincular: "¿Eres tú?" (`action.link`, Kino 0.9.74) { #link }
 
@@ -476,9 +519,9 @@ ves el catálogo gratis" hasta que escriba una cuenta; Guardar revisa la cuenta 
 "Cerrar sesión" pregunta primero y después vacía el correo y la contraseña en todos sus aparatos; cada
 espejo aparece como una copia más en el menú Servidor del reproductor.
 
-## Una contraseña que se queda en este aparato (`"sync": false`, apiVersion 13, en desarrollo) { #sync-false }
+## Un valor que se queda en este aparato (`"sync": false`, apiVersion 13, Kino 0.9.74) { #sync-false }
 
-Todavía no está en un Kino publicado. Un `password` puede decir `"sync": false` para quedarse en el aparato donde la
+Un `password` puede decir `"sync": false` para quedarse en el aparato donde la
 persona lo escribió: úsalo para un valor que solo tiene sentido una vez, en un aparato, como una contraseña de
 verificación en dos pasos que tu plugin manda enseguida y después borra (`clearSettings`). Sin eso una contraseña llega a
 los aparatos emparejados de la persona, sellada de punta a punta, como cualquier otra contraseña ([abajo](#other-devices)).
@@ -488,11 +531,18 @@ los aparatos emparejados de la persona, sellada de punta a punta, como cualquier
 ```
 
 - El valor nunca se envía a un aparato emparejado, y un valor que manda otro aparato nunca lo pone ni lo borra.
-- No va en ninguna copia de seguridad, ningún kit ni el `provision` de un proveedor de sincronización: un manifiesto cuyo
-  `sync.provision` lo nombra se rechaza ("The \"provision\" of the \"sync\" field can't name a setting with \"sync\":
-  false").
+- No va en ninguna copia de seguridad ni en ningún kit.
+- El `sync.provision` de un proveedor de sincronización sí puede nombrarlo, para un **secreto de un solo uso** que va una
+  vez a un aparato nuevo (un TV que no debería escribir una contraseña de dos pasos): mira
+  [Proveedores de sincronización](sync-providers.md#one-shot). Nunca puede ser el `sync.keySecret` ("The \"keySecret\"
+  of the \"sync\" field can't name a setting with \"sync\": false").
 - Tu plugin lo lee con `kino.config.get` y lo borra como cualquier contraseña.
-- `sync` en algo que no es un password rechaza el manifiesto ("Only a setting of type password has \"sync\"
+- **Un `text` también puede decir `"sync": false`**, para un valor que tiene que quedarse en el aparato pero no es un
+  secreto que esconder, como un número de teléfono que la persona escribe para iniciar sesión en ese aparato: se dibuja
+  como un campo de texto normal (sin asteriscos) y se guarda igual que una contraseña que se queda en el aparato (nunca
+  se sincroniza, nunca va en una copia de seguridad ni en un kit). No puede ir en `sync.provision` ("The \"provision\"
+  of the \"sync\" field can't name a text setting with \"sync\": false").
+- `sync` en cualquier otro tipo rechaza el manifiesto ("Only a setting of type password or text has \"sync\"
   (\"key\")"), y también un valor que no sea `true` o `false`. Por debajo de apiVersion 13, y en un Kino que no lo tiene,
   la clave se ignora y la contraseña se sincroniza como siempre. `node sdk/validate.mjs` revisa todo esto como la app.
 
@@ -507,14 +557,14 @@ ellos. Lo que pasa y lo que no:
   la persona aprobó en el primero; si ahora pides más (un host, permiso o capacidad nueva), espera en
   "Plugins de tus otros aparatos" con la hoja de consentimiento normal.
 - **Pasa:** los valores de los ajustes `text`, `select`, `toggle`, `url` y `list` (una `list` que tiene
-  un campo `password` no viaja), y los ajustes `password` (salvo uno con `"sync": false`, apiVersion 13), sellados de punta a punta con la llave que los
+  un campo `password` no viaja), y los ajustes `password` (salvo un `password` o un `text` con `"sync": false`, apiVersion 13), sellados de punta a punta con la llave que los
   aparatos acordaron al emparejarse, nunca legibles en el camino.
 - **Pasa:** los vaciados. Un campo que la persona vacía, o el `clearSettings` de una acción, también se
   vacía en sus otros aparatos (contraseñas incluidas). Un ajuste `required` nunca se vacía a distancia.
   Un aparato con una versión de Kino más vieja ignora los vaciados y conserva su valor.
 - **Nunca pasa:** `kino.storage`, las cookies, las filas de Inicio guardadas.
-- **Un proveedor de sincronización** además puede pasarle sus ajustes a otro aparato con "Enviar a otro
-  aparato" (los que nombra su `sync.provision`): mira
+- **Un proveedor de sincronización** además puede pasarle sus ajustes a otro aparato con "Enviar
+  configuración" (los que nombra su `sync.provision`): mira
   [Proveedores de sincronización](sync-providers.md#provisioning).
 
 Un valor que llega así se aplica **sin** tu `validateSettings` y, como cualquier cambio guardado, cierra

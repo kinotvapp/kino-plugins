@@ -13,9 +13,11 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   1.5.0, the complete API demo: your own media server and every feature up to apiVersion 7 end to end).
 - **Sync providers** (apiVersion 12, Kino 0.9.74): a plugin can carry the person's Kino sync between
   their devices through a service: [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/),
-  with two example providers in public repositories:
-  [Sync-Gram](https://github.com/kinotvapp/kino-plugin-sync-gram), on a Telegram bot of the person's own, and
-  [Sync Servidor](https://github.com/kinotvapp/kino-plugin-sync-server), on a server they run (not listed).
+  with three example providers in public repositories:
+  [Sync-Gram](https://github.com/kinotvapp/kino-plugin-sync-gram), on a Telegram bot of the person's own,
+  [Sync Servidor](https://github.com/kinotvapp/kino-plugin-sync-server), on a server they run (not listed), and
+  [Sync-Gram Cuenta](https://github.com/kinotvapp/kino-plugin-sync-gram-account), on the person's own Telegram
+  account (apiVersion 13, not listed).
 - **apiVersion 13** (in development for the next Kino version, not in any released Kino yet): sockets and
   streams the plugin serves itself ([Sockets and plugin-served bytes](https://kinotvapp.github.io/kino-plugins/en/bytes/)),
   a SQLite catalog and a larger storage ([Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/)),

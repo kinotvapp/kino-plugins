@@ -65,15 +65,19 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    contract (apiVersion 8, Kino 0.9.54) and `plugin.js` in
    [kinotvapp/kino-plugin-archive-audio](https://github.com/kinotvapp/kino-plugin-archive-audio), the
    reference audio plugin (`music` and `podcast` items, `episodes` for every audio ref). For a **sync
-   provider** (apiVersion 12, Kino 0.9.74), the references are two public repositories:
+   provider** (apiVersion 12, Kino 0.9.74), the references are three public repositories:
    **Sync-Gram** (`kinotvapp/kino-plugin-sync-gram`, id `sync-gram`, a Telegram bot of the
    person's own: `"hosts": ["api.telegram.org"]`, a multipart upload through `kino.fetch` without decoding
    the blob, `action.link` + `setSettings` to link the chat, `help` + `link` settings, `keySecret`) for a
    provider on a third-party service, and **Sync Servidor** (`kinotvapp/kino-plugin-sync-server`, not listed, installed as
    `kinotvapp/kino-plugin-sync-server/plugin`; id `sync-server`, a
    single-file Node server with `GET`/`PUT /blob`, `If-Match` and 409, `"fetchHosts": "any"`) for a
-   provider on a server the person runs. Both have tests that run offline against a local imitation of
-   the service.
+   provider on a server the person runs, and **Sync-Gram Cuenta** (`kinotvapp/kino-plugin-sync-gram-account`, not
+   listed, installed by pasting `kinotvapp/kino-plugin-sync-gram-account`; id `sync-gram-account`, apiVersion 13: the
+   person's own Telegram account over MTProto on `kino.ws`, `["syncProvider", "socket", "storageLarge"]`,
+   `sync.generateKey`, a one-shot `"sync": false` two-step password in `provision`, a `"sync": false` phone `text`,
+   `settingsStatus` `hide` by sign-in stage, a TV-only `qr` login) for a provider on the person's own account. All
+   three have tests that run offline against a local imitation of the service.
 
 Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): the contract is different.
 
@@ -107,7 +111,9 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `sync` block or a `link`/`help` setting (**Kino 0.9.74+**; Kino 0.9.73 and older refuse an apiVersion 12
   plugin). An action's `setSettings` and `link` answers need no new apiVersion (Kino 0.9.74; older Kino
   ignores them). `13` only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a
-  `qr` setting: **Kino 0.9.74, the next release, not published yet** (every Kino before 0.9.74 refuses an apiVersion
+  `qr` setting, `syncProvider` next to `socket`/`storageLarge`/`catalog`/`qrScan` without `resolve`/`search`/`home`,
+  `setSettings` on a `password`, `sync.generateKey`, a `"sync": false` password in `sync.provision`, `settingsStatus`
+  `hide` or `"sync": false` on a `password`/`text`: **Kino 0.9.74, the next release, not published yet** (every Kino before 0.9.74 refuses an apiVersion
   13 plugin, as it refuses 12), so use it only when the person agrees to wait for Kino 0.9.74, and say so plainly. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
   manifest (Kino 0.9.74 has all five, an older Kino none): feature-detect each one with
@@ -419,7 +425,7 @@ Kino keeps all the logic (what syncs, merging, scheduling), compresses and encry
 - **Conflict**: when the service can tell the remote changed since `expectedVersion`, throw
   `kino.error("conflict", "…")`; Kino pulls, merges and pushes again (it stops after a few retries). Without
   compare-and-set, ignore `expectedVersion` (last write wins). Throw `auth_required` when settings are
-  missing or refused: the person reads "al proveedor le falta configuración, revísala en Conectar".
+  missing or refused: the person reads "al proveedor le falta configuración, revísala en Configurar".
 - **`syncStatus`**: one cheap request, never the blob. Kino asks it before every round: `ready: false`
   skips the round quietly (asked again a pull period later, or when settings are saved); its `message`
   (scrubbed) is the provider row's line. During a failed round the person reads Kino's own reason, not your
@@ -435,12 +441,16 @@ Kino keeps all the logic (what syncs, merging, scheduling), compresses and encry
   (offline guessing). Kino derives the key from it on each device (HKDF-SHA256), so a second device needs
   only the same settings and **the key never travels**; but the plugin and its service CAN then read the
   data, and the consent line says so in red ("Sincronizará tus datos a través de su servicio: el plugin y
-  su servicio podrán leerlos"), the only consent line a provider has. There is no random-key mode.
+  su servicio podrán leerlos"), the only consent line a provider has (on the install sheet and the switch-on
+  confirmation, not on the provider's card). With `"generateKey": true` (apiVersion 13) Kino writes 32 random bytes
+  as hex into the empty `keySecret` setting itself (when the provider is switched on and when "Enviar configuración"
+  is pressed), for a service with no shared secret of its own; the key still comes from that setting.
   Changing the token changes the key ("El token no coincide o los datos guardados no son de Kino"): the
   person fixes the token or taps "Restablecer sincronización" (this device's copy replaces the stored one;
   other devices keep syncing if they use the same token, else they must receive the new one with "Enviar
-  a otro aparato" or have it typed).
-- **`provision`** = at most 8 of the plugin's own valued settings that "Enviar a otro aparato" hands to a
+  configuración" or have it typed).
+- **`provision`** = at most 8 of the plugin's own valued settings that "Enviar configuración" ("Send settings";
+  the other device shows "Recibir configuración") hands to a
   second device (QR or typed address and a 6-digit code, over the local network or a Cloudflare quick
   tunnel whose words are public, so the code, 5 attempts, single use, 3 minutes and the person's
   "Recibido para <plugin>: ¿aplicar?" are the gate); it must include `keySecret`. Fill what you
@@ -484,8 +494,13 @@ before using it:
 - `storageLarge` → `kino.storage` at 16 MB but **device-only and out of backups, and it moves the existing keys there**:
   credentials go in sealed secrets or settings.
 - `"sync": false` on a `password` setting → its value stays on the device where it was typed (a two-step
-  verification password sent once and then cleared with `clearSettings`); never in `sync.provision`; only on a password,
-  only a boolean. <https://kinotvapp.github.io/kino-plugins/en/settings-form/#sync-false>
+  verification password sent once and then cleared with `clearSettings`); `sync.provision` may name it as a one-shot
+  secret (sent once, only while it holds a value), never as `keySecret`. On a `text` (a phone number shown as typed)
+  too, but never in `sync.provision`; on no other type; only a boolean.
+  <https://kinotvapp.github.io/kino-plugins/en/settings-form/#sync-false>
+- `settingsStatus` may answer `hide: [setting keys]` (≤ 32, the plugin's own) → the form does not draw them while that
+  answer is current (values kept, rules unchanged); a `qr` with no text draws nothing.
+  <https://kinotvapp.github.io/kino-plugins/en/settings-form/#status-hide>
 - `qrScan` → `kino.qr.scan({ title })` only from an `action` or `panelAction`; `unavailable` on a TV; handle `null`,
   `timeout`, `permission_denied`, `busy`. A `qr` setting (no capability) shows a code from `settingsStatus()`, refreshed
   every `refreshMs`. <https://kinotvapp.github.io/kino-plugins/en/qr/>
@@ -500,7 +515,8 @@ on a TV, the address and a QR; Kino makes no request to it) and a `"type": "help
 `label`, `title` ≤ 60, `body` ≤ 2,000 plain text, `titleEn`/`bodyEn`; a modal titled with the plugin's
 name), at most 4 of each, no value, apiVersion 12. Keep a help short: what the plugin needs and where to get
 it; link to a full guide. An `action` may answer `setSettings: { key: "value" }` (≤ 8 of the plugin's own
-`text`/`select` settings, never `url`, `password`, `toggle`, `list`; saved and synced like typed values,
+`text`/`select` settings, and from apiVersion 13 a `password` (sealed, never logged, scrubbed from the answer), never
+`url`, `toggle`, `list`; saved and synced like typed values,
 without `validateSettings`; any bad entry refuses the whole field) and `link: { candidate, confirm }` (Kino
 asks "¿Eres tú, <candidate>?" in its own words; `candidate` 1 to 64 plain characters; `confirm` is
 **another** `action` key without its own `confirm` question; only "Sí, soy yo" runs it, once). Both are
@@ -508,7 +524,7 @@ ignored by older Kino: also say in `message` what to do. Mark that confirm actio
 (apiVersion 12) so it is never drawn and the person sees one button. Any settings item may carry
 `"devices": ["phone"]` or `["tv"]` (apiVersion 12): it is drawn only there, but its value is still stored,
 synced, provisioned and read through `kino.config`; a sync provider draws its setup on the phone only,
-because the TV receives it with "Recibir desde otro aparato". Kino itself puts a "Sincronización ▸
+because the TV receives it with "Recibir configuración". Kino itself puts a "Sincronización ▸
 Proveedor" button at the top of every provider's page and a per-device "Sincronizar cada" on its card
 (`pullEveryMs` is only the default).
 [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/#aids).
@@ -817,7 +833,8 @@ people. See
       with no JavaScript loop over the bytes; `imageSource` exports `image` and puts no secret in a handle;
       `kino.ws` only to declared hosts, every socket closed; `kino.qr.scan` only from an `action`/`panelAction`;
       `storageLarge` and `kino.catalog` hold nothing that must survive a restore; a `"sync": false` password is a
-      one-device value only and is not in `sync.provision`; `run.mjs . read` and a Node test
+      one-device value (in `sync.provision` only as a one-shot secret the plugin clears once used, never as
+      `keySecret`) and a `"sync": false` text is not in `sync.provision`; `run.mjs . read` and a Node test
       (`askRead`) cover `read`, `run.mjs . image` covers `image`; every `kino.crypto` byte operation you use is
       feature-detected (they depend on the Kino version, not on the manifest).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
@@ -925,5 +942,5 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - A sync provider that decodes, re-encodes or trims the blob, keeps extra copies of it (memory), puts the
   token in an error or status text, uses a password a person picks as `keySecret`, or promises the plugin
   "cannot read" the data (with `keySecret`, always required, it can).
-- `setSettings` on a `url` or `password` setting, or a `link` whose `confirm` is the answering action or an
+- `setSettings` on a `url` setting (or a `password` below apiVersion 13), or a `link` whose `confirm` is the answering action or an
   action with its own `confirm` question: refused whole.
