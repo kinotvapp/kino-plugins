@@ -7,11 +7,29 @@ episodes and playable streams: video, live TV channels, and (from apiVersion 8, 
 podcasts; or, with `"catalogOnly": true`, a catalog that plays nothing (lists, ratings); or, with the
 `syncProvider` capability (apiVersion 12, Kino 0.9.74), the transport of the person's own Kino sync
 between their devices. apiVersion 13 (in development for the next Kino version, **not in any released Kino**) adds
-sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes.
+sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes. apiVersion 14
+(with Kino 0.9.74 as well, the next version, **not published yet**) adds **screens**: a full-screen canvas the plugin
+describes as a JSON tree that Kino draws on the phone and the TV, plus player-panel tabs on any title, rooms over the
+Internet, background jobs, small results shared between the person's devices and Kino's text AI.
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
 before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
 suggestion. When this file and your prior knowledge disagree, this file and the guide win.
+
+## 0. The plugin's UI: screens first
+
+For any plugin that needs its own screen, configuration, onboarding, dashboard or panel, build it with **Kino's screens
+UI**: apiVersion 14, the `screen` capability with the `screen()` and `screenEvent()` exports, Flutter-style components
+(`Scaffold`, `AppBar`, `TabBar`, `ListTile`, `Card`, `Form`, `TextField`, the `settings` node...), per-size values,
+the phone and the TV drawn from the same tree. Keep the old settings form and the legacy panel format only for
+compatibility. apiVersion 14 arrives with Kino 0.9.74 (not published yet): to stay installable on older Kinos, keep your
+`apiVersion` and offer the screen through [`enhancements`](https://kinotvapp.github.io/kino-plugins/en/enhancements/). Put the code in `src/` and bundle it to
+`plugin.js` with esbuild (generated, committed, checked with `check:built`:
+[Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/)). Validate with `node sdk/validate.mjs .` and `node sdk/run.mjs . screen`
+(also `--device tv`). Follow the component catalogue ([layout, content and actions](https://kinotvapp.github.io/kino-plugins/en/screen-components/),
+[forms, overlays and navigation](https://kinotvapp.github.io/kino-plugins/en/screen-forms/), [state, style and recipes](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)) and the
+[TV focus rules](https://kinotvapp.github.io/kino-plugins/en/screens/#tv-focus): Kino draws its focus ring only on nodes the person can press; a node the remote
+must stop on just to read it gets `"canRequestFocus": true`.
 
 ## 1. Read first, in this order
 
@@ -37,7 +55,12 @@ suggestion. When this file and your prior knowledge disagree, this file and the 
    [Sockets and plugin-served bytes](https://kinotvapp.github.io/kino-plugins/en/bytes/),
    [Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/),
    [Images from the plugin](https://kinotvapp.github.io/kino-plugins/en/images/) and
-   [QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/). For apiVersion 6
+   [QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/), and, for a plugin with its own screen, a player-panel tab,
+   rooms, background jobs or the text AI (apiVersion 14, Kino 0.9.74, not published yet):
+   [Screens](https://kinotvapp.github.io/kino-plugins/en/screens/), the component catalogue ([1](https://kinotvapp.github.io/kino-plugins/en/screen-components/), [2](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
+   [3](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)), [Rooms, the library and player control](https://kinotvapp.github.io/kino-plugins/en/rooms/),
+   [Background jobs, shared results and AI](https://kinotvapp.github.io/kino-plugins/en/jobs-and-shared/), [The player panel](https://kinotvapp.github.io/kino-plugins/en/player-panel/#screen-kit),
+   [Screens without raising your apiVersion](https://kinotvapp.github.io/kino-plugins/en/enhancements/) and [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
    shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
@@ -472,6 +495,29 @@ Kino keeps all the logic (what syncs, merging, scheduling), compresses and encry
   `createKino` from `sdk/kino-shim.mjs`, `checkSyncAnswer` from `sdk/contract.mjs`) against a local imitation
   of the service, with a 4 MiB blob both ways and a conflict.
 
+**apiVersion 14 (Kino 0.9.74, not published yet; every older Kino refuses it, so offer these through `enhancements`
+when the plugin must keep installing there)**. Each has its own page, read it whole before using it:
+
+- `screen` → exports `screen(ctx)` (answers a tree of nodes) and `screenEvent(ev)` (answers `{ state, toast, go, ui,
+  config, ... }` or `null`), and the manifest's `screen` block (`label` 1..20, `icon`/`iconFile`, `menuOpens`,
+  `opensFrom`, `settingsIn`...). May be the plugin's only capability; no consent line. Kino keeps the state (your runtime
+  closes when idle): never keep it in a variable. Limits: depth 10, 600 nodes, 500 items per list, state 64 KB, a text
+  2,000 characters, 20 s per call. <https://kinotvapp.github.io/kino-plugins/en/screens/>
+- `playerPanelTab` → `"panel": { "contributes": true }` and the `panel` export: a tab in the player panel of any
+  plugin's title (`"kinds": ["live"]` for live channels), red consent line. <https://kinotvapp.github.io/kino-plugins/en/player-panel/#contributed-tab>
+- `library`, `playerControl`, `room` → read what the person watched and saved, pause/seek the video from a panel,
+  rooms over the Internet hosted on the person's device; each a red consent line the person can switch off; `room` and
+  `playerControl` never stand alone. Room messages are untrusted and low-sensitivity only. <https://kinotvapp.github.io/kino-plugins/en/rooms/>
+- `schedule` (manifest `jobs`, export `job(ctx)`), `shared` (`kino.shared`), `ai` (`kino.ai.ask`) → background runs
+  (20 s, 10 requests, 2 MB, 96 a day), up to 4 small JSON values synced between the person's devices (never a secret;
+  what `get` answers is untrusted), and one short ask to Kino's text AI (never throws; the reply is untrusted: validate
+  every field, never execute it). <https://kinotvapp.github.io/kino-plugins/en/jobs-and-shared/>
+- `kino.fetch` `maxBytes` / `stopAt` read only the head of a page (`r.truncated`). A toggle's or select's
+  `"unlockWith": "adultCode"` asks the 18+ code before moving it away from its default. <https://kinotvapp.github.io/kino-plugins/en/kino-api/#fetch>
+- Test with the kit: `node sdk/run.mjs . screen`, `--device tv`, `--state '{...}' . screenEvent <name>`,
+  `. panel <ref>`, `--foreign <id>:<Name> . panel <ref>`, `--device phone . job <id> manual`, `. shared`;
+  `KINO_AI_REPLY` / `KINO_AI_ERROR` / `KINO_AI_REVOKED=1`. <https://kinotvapp.github.io/kino-plugins/en/test-locally/#api14>
+
 **apiVersion 13 (in development, the next Kino version; no released Kino accepts it)**: use these only when the
 person needs them and accepts the wait; never present them as already in the app. Each has its own page, read it whole
 before using it:
@@ -837,6 +883,11 @@ people. See
       `keySecret`) and a `"sync": false` text is not in `sync.provision`; `run.mjs . read` and a Node test
       (`askRead`) cover `read`, `run.mjs . image` covers `image`; every `kino.crypto` byte operation you use is
       feature-detected (they depend on the Kino version, not on the manifest).
+- [ ] apiVersion 14 / screens: `node sdk/run.mjs . screen` and `node sdk/run.mjs --device tv . screen` print the tree
+      with nothing dropped; every event name the tree uses is handled in `screenEvent`; no state kept in module
+      variables; a node the TV must stop on to read has `canRequestFocus`; below apiVersion 14 the screen and its
+      capabilities come through `enhancements` and `validate.mjs` reports no dropped block; nothing secret in
+      `kino.shared`, a room message or an AI prompt; the AI reply and `kino.shared.get` values are validated.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks

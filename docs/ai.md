@@ -79,6 +79,19 @@ Puede que yo no sepa programar. Explícame cada paso en español sencillo, ejecu
 publicar, subir a GitHub) y, cuando algo lo tenga que hacer yo en GitHub o en Kino, dame los clics
 exactos.
 
+La interfaz del plugin (esta regla va primero): para cualquier plugin que necesite su propia pantalla,
+configuración, bienvenida, tablero o panel, constrúyela con las pantallas de Kino: apiVersion 14, la capacidad
+"screen" con los exports screen() y screenEvent(), componentes al estilo Flutter (Scaffold, AppBar, TabBar,
+ListTile, Card, Form, TextField, el nodo "settings"...), valores por tamaño, el celular y el TV dibujados desde el
+mismo árbol. Deja el formulario de ajustes viejo y el formato de panel anterior solo por compatibilidad. apiVersion
+14 llega con Kino 0.9.74 (la próxima versión, aún no publicada): para seguir instalándose en un Kino anterior,
+conserva tu apiVersion y ofrece la pantalla con "enhancements". Pon el código en src/ y empaquétalo en plugin.js
+con esbuild (generado, guardado en git, revisado con check:built). Valida con node sdk/validate.mjs . y
+node sdk/run.mjs . screen (también con --device tv). Sigue el catálogo de componentes (https://kinotvapp.github.io/kino-plugins/en/screen-components/,
+https://kinotvapp.github.io/kino-plugins/en/screen-forms/, https://kinotvapp.github.io/kino-plugins/en/screen-reference/) y las reglas de foco del TV (https://kinotvapp.github.io/kino-plugins/en/screens/#tv-focus): Kino dibuja su anillo
+de foco solo en los nodos que la persona puede presionar; un nodo donde el control remoto debe detenerse solo para
+leerlo lleva "canRequestFocus": true.
+
 Antes de escribir nada:
 1. Lee completo https://kinotvapp.github.io/kino-plugins/AGENTS.md y síguelo como tus instrucciones.
 2. Lee https://kinotvapp.github.io/kino-plugins/llms-full.txt (la guía completa, contract.json y
@@ -117,6 +130,7 @@ Lo que quiero:
 - Scrapers de Nuvio: <<< ninguno / el repositorio de Nuvio (owner/repo) de donde el plugin saca los enlaces >>>
 - Proveedor de sincronización (el plugin lleva la sincronización de Kino entre mis aparatos en vez de la red local): <<< no / sí: el servicio, si le da a cada persona un token largo y aleatorio, y si el servicio puede leer los datos sincronizados >>>
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
+- Su propia pantalla (un tablero, una configuración paso a paso, una pestaña del panel...): <<< no / sí: qué muestra y qué hace ahí la persona >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
@@ -286,7 +300,10 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   "conflict", con "sync.keySecret" y "sync.provision" declarados, y me dijiste con palabras sencillas que el
   plugin y su servicio pueden leer los datos;
 - si usa apiVersion 13: me dijiste que ningún Kino publicado lo instala todavía, read tiene una prueba de
-  Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra.
+  Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra;
+- si tiene una pantalla: node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
+  cada nombre de evento que usas tiene respuesta en screenEvent y, si su apiVersion es menor que 14, la pantalla
+  llega por "enhancements" y node sdk/validate.mjs . no reporta ningún bloque descartado.
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y

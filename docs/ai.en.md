@@ -76,6 +76,18 @@ I may not know how to program. Explain each step in plain words, run the command
 me first which one and why), ask me before anything that cannot be undone (deleting, publishing,
 pushing to GitHub) and, when I have to do something on GitHub or in Kino, give me the exact clicks.
 
+The plugin's UI (this rule comes first): for any plugin that needs its own screen, configuration,
+onboarding, dashboard or panel, build it with Kino's screens UI: apiVersion 14, the "screen" capability with the
+screen() and screenEvent() exports, Flutter-style components (Scaffold, AppBar, TabBar, ListTile, Card, Form,
+TextField, the "settings" node...), per-size values, the phone and the TV drawn from the same tree. Keep the old
+settings form and the legacy panel format only for compatibility. apiVersion 14 arrives with Kino 0.9.74 (the next
+version, not published yet): to stay installable on older Kinos keep your apiVersion and offer the screen through
+"enhancements". Put the code in src/ and bundle it to plugin.js with esbuild (generated, committed, checked with
+check:built). Validate with node sdk/validate.mjs . and node sdk/run.mjs . screen (also with --device tv). Follow
+the component catalogue (https://kinotvapp.github.io/kino-plugins/en/screen-components/, https://kinotvapp.github.io/kino-plugins/en/screen-forms/, https://kinotvapp.github.io/kino-plugins/en/screen-reference/) and the TV focus rules
+(https://kinotvapp.github.io/kino-plugins/en/screens/#tv-focus): Kino draws its focus ring only on nodes the person can press; a node the remote must stop on
+just to read it gets "canRequestFocus": true.
+
 Before writing anything:
 1. Read https://kinotvapp.github.io/kino-plugins/AGENTS.md completely and follow it as your
    instructions.
@@ -115,6 +127,7 @@ What I want:
 - Nuvio scrapers: <<< none / the Nuvio repository (owner/repo) the plugin gets its links from >>>
 - Sync provider (the plugin carries Kino's sync between my devices instead of the local network): <<< no / yes: the service, whether it gives each person a long random token, and whether the service may read the synced data >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
+- Its own screen (a dashboard, a setup flow, a panel tab...): <<< no / yes: what it shows and what the person does there >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 
@@ -278,7 +291,10 @@ you hand the plugin over run this self-check and tell me the result of each line
   "sync.keySecret" and "sync.provision" declared, and you told me in plain words that the plugin and its
   service can read the data;
 - if it uses apiVersion 13: you told me no released Kino installs it yet, read is covered by a Node test
-  that checks every range byte for byte, no handle holds a secret, and every socket is closed.
+  that checks every range byte for byte, no handle holds a secret, and every socket is closed;
+- if it has a screen: node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
+  event name you use answers in screenEvent, and, if its apiVersion is below 14, the screen comes through
+  "enhancements" and node sdk/validate.mjs . reports no dropped block.
 
 At the end, walk me through:
 1. Publishing it: a public repository (never a fork) with the files at the root; the topic
