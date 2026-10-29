@@ -35,6 +35,12 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   [kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery),
   [kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news) and
   [kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party).
+- **Identity, notices and plugin stores** (apiVersion 15, upcoming with the next Kino version, not published yet): a plugin can
+  know who the person is without a sign-up ([Identity](https://kinotvapp.github.io/kino-plugins/en/identity/)), leave notices in
+  the Home bell ([Notices in the bell](https://kinotvapp.github.io/kino-plugins/en/notifications/)) and be a **store**, a source
+  of plugins for Kino's store, local (a static list) or live (its own API):
+  [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/) and two copyable
+  [example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

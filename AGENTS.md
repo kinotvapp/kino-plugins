@@ -10,7 +10,10 @@ between their devices. apiVersion 13 (in development for the next Kino version, 
 sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes. apiVersion 14
 (with Kino 0.9.74 as well, the next version, **not published yet**) adds **screens**: a full-screen canvas the plugin
 describes as a JSON tree that Kino draws on the phone and the TV, plus player-panel tabs on any title, rooms over the
-Internet, background jobs, small results shared between the person's devices and Kino's text AI.
+Internet, background jobs, small results shared between the person's devices and Kino's text AI. apiVersion 15 (the
+next Kino version after that, **not published yet**) adds `identity` (who the person is, without a sign-up),
+`notifications` (notices in the Home bell) and `pluginStore`: a plugin that is a **store**, a source of plugins for
+Kino's own store.
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
 before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
@@ -60,7 +63,12 @@ must stop on just to read it gets `"canRequestFocus": true`.
    [Screens](https://kinotvapp.github.io/kino-plugins/en/screens/), the component catalogue ([1](https://kinotvapp.github.io/kino-plugins/en/screen-components/), [2](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
    [3](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)), [Rooms, the library and player control](https://kinotvapp.github.io/kino-plugins/en/rooms/),
    [Background jobs, shared results and AI](https://kinotvapp.github.io/kino-plugins/en/jobs-and-shared/), [The player panel](https://kinotvapp.github.io/kino-plugins/en/player-panel/#screen-kit),
-   [Screens without raising your apiVersion](https://kinotvapp.github.io/kino-plugins/en/enhancements/) and [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/). For apiVersion 6
+   [Screens without raising your apiVersion](https://kinotvapp.github.io/kino-plugins/en/enhancements/) and [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/).
+   For a plugin that is a store of plugins, or that uses the person's identity or the Home bell (apiVersion 15, not
+   published yet): [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/),
+   [Example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/),
+   [Identity](https://kinotvapp.github.io/kino-plugins/en/identity/) and
+   [Notices in the bell](https://kinotvapp.github.io/kino-plugins/en/notifications/). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
    shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
@@ -804,6 +812,56 @@ only when you use one of these.
    reference for everything else.) Full page:
    [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
 
+**apiVersion 15 (the next Kino version, not published yet; every older Kino refuses it and none of these is offered
+through `enhancements`)**. Each has its own page, read it whole before using it:
+
+- `pluginStore` → a **store**: the plugin is a source of plugins for Kino's store. Kino keeps one local index of every
+  store's entries, paints the store from it (cards, search, categories, sort, pagination, a "de <store>" badge and a store
+  filter), applies its own blocklist and the 18+ code, and installs through its own consent sheet: **a store only hands over
+  addresses and never installs anything**. Authors answer for the plugins they list; Kino only lists them. Manifest:
+  `"capabilities": ["pluginStore"]` (may stand alone: no `resolve`, no `search`) and an optional
+  `"pluginStore": { "mode": "local" | "live", "name": 1..60 chars }` (the block without the capability is refused).
+  - `storeSync({ reason: "schedule" | "reload", since?, state? })` → `{ full, entries, removed?, state? }`: `full: true`
+    is the whole list (Kino replaces the store's rows), `full: false` is upserts plus `removed` addresses (an empty change
+    means nothing changed); `state` (<= 16 KB of JSON) comes back on the next call. It runs only in the background (every
+    2 h by default, Wi-Fi only) and on reload: at most 60 s, 40 `kino.fetch` requests and 8 MB downloaded. At most 5,000
+    entries and 4 MB of JSON per answer.
+  - A **live** store (`"mode": "live"`) must export all three: `storeSync` (a base list), `storeList({ category?, sort:
+    "popular" | "recent", cursor? })` and `storeSearch({ q, category?, cursor? })`, each answering `{ entries, next? }`, at
+    most 5 s per call and 20 calls a minute per store, cached 30 minutes. Kino paints local entries first and appends live
+    ones at the end as they arrive (nothing on screen moves, repeats of an address are skipped); a live store picked in the
+    filter shows only its live answers. The person reads an extra red line (what they search reaches its servers).
+  - `StoreEntry`: `address` (`owner/repo`, `owner/repo/path`, `owner/repo@ref` or `url:https://.../kino-plugin.json`; required
+    unless `stremio`), `id` (`^[a-z0-9][a-z0-9-]{1,39}$`), `name` (1..60), `description` (<= 300), `longDescription`
+    (<= 4000), `categories` (`movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`), `tags`,
+    `icon` and `screenshots` (https), `version`, `author`, `popularity` (number), `updatedAt` (ms), `stremio`, `requires`,
+    `needsSetup`, and the hints `signed`/`authorKey` (Kino re-checks at install). `recommended` is honoured only from
+    Kino's own store (Kino Plugins). Invalid entries are dropped, long texts cut.
+  - Never use the id `kino-plugins`. Leaving a store never uninstalls anything. 18+ entries stay hidden while the person's
+    18+ code is locked.
+  - Kit: `node sdk/init.mjs my-store --host store.example.org --store local|live` scaffolds one;
+    `node sdk/run.mjs . storeSync [--since <ms>] [--state '<json>']`, `storeList [popular|recent] [category]` and
+    `storeSearch "<q>" [category]` print the answer as Kino's index keeps it and report what it drops. Copyable examples
+    with offline tests: <https://kinotvapp.github.io/kino-plugins/en/store-examples/> (a local store over a static JSON file, a live
+    store over its own API). <https://kinotvapp.github.io/kino-plugins/en/plugin-stores/>
+- `identity` → declarative, never alone: `await kino.identity.telegram({ challenge? })` answers `{ id, token }` (`id` a
+  per-plugin pseudonym of the person, `token` Kino's bot's signed token: a credential, **never log or show it**); with a
+  `challenge` (16..128 of `A-Z a-z 0-9 _ -`, a nonce from the plugin's server) also `deviceKey`, `signature`, `author` and
+  `codeHash`, so the server can bind a session to this device and require its own author fingerprint. **Only plugins
+  signed with Kino's own author key get an answer**; any other gets `permission_denied`, so a community plugin must not
+  depend on it. Only inside a call the person started (`screen`, `screenEvent`, `panelAction`), 10 a minute. Red consent line
+  ("Podrá saber tu usuario de Telegram y enviarlo a sus servicios"), switchable in Ajustes. Kit: `KINO_IDENTITY_TG`,
+  `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR`, `KINO_IDENTITY_REVOKED=1`. <https://kinotvapp.github.io/kino-plugins/en/identity/>
+- `notifications` → declarative, never alone: `await kino.notifications.post({ id, title, titleEn?, text?, textEn?, go? })`
+  and `clear(id?)` leave short notices in the Home bell. `id` is 1..64 of `A-Z a-z 0-9 . _ -` and replaces an earlier notice
+  with the same id (group news under one id); `title` 1..80, `text` <= 160, plain one-line text; `go` is `{ screen: {
+  route?, args? } }` (the plugin's own screen). From `screen`, `screenEvent` or the plugin's `job`; 20 posts an hour, 30
+  kept, 30 days. Not synced between devices. Plain consent line ("Podrá mostrarte avisos en la campanita"), switchable in
+  Ajustes. Kit: `node sdk/run.mjs . notifications` (it keeps `.kino-notices.json`), `KINO_NOTIFICATIONS_REVOKED=1`.
+  <https://kinotvapp.github.io/kino-plugins/en/notifications/>
+- `kino.library.watched()` also carries `season` and `episode` (the latest chapter played) on a watched series, never on a
+  movie.
+
 What Kino 0.9.50 does for every plugin, with no field: plays a plugin title on the paired TV through
 the TV's own copy of the plugin (keep `id` and refs identical across devices), checks followed series
 for new chapters through `episodes(ref)` (keep series refs stable), saves "Para ti" picks by `ref`,
@@ -888,6 +946,12 @@ people. See
       variables; a node the TV must stop on to read has `canRequestFocus`; below apiVersion 14 the screen and its
       capabilities come through `enhancements` and `validate.mjs` reports no dropped block; nothing secret in
       `kino.shared`, a room message or an AI prompt; the AI reply and `kino.shared.get` values are validated.
+- [ ] apiVersion 15 / a store: `node sdk/validate.mjs .` shows the consent lines and no problem; `node sdk/run.mjs . storeSync`
+      prints entries with nothing reported as `[dropped by Kino]` (every entry has a valid `address`, `id` and `name`);
+      a live store exports `storeSync`, `storeList` and `storeSearch`; the list is complete (`full: true`) or the change is
+      right (`removed`); `state` is small; no secret in an entry; the store never claims to install or approve anything.
+- [ ] apiVersion 15 / `identity`, `notifications`: the plugin works with them switched off or refused (`permission_denied`); no
+      token logged or shown; a notice's `id` groups events, its `go` points to the plugin's own screen.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
@@ -912,6 +976,11 @@ people. See
 - [ ] The person installed it in Kino and it searched, listed episodes or tracks and played.
 
 ## 6. Being discovered ("De la comunidad")
+
+**From the next Kino version (apiVersion 15, not published yet)** the app no longer searches GitHub by itself: the community
+list comes from the built-in store, Kino Plugins (a `pluginStore` plugin), which reads an index built every day from the
+repositories with the `kino-plugin` topic plus what changed since. The rules below are still what gets a plugin into that list.
+Anyone can also publish a store of their own (see apiVersion 15 above).
 
 Kino lists community plugins itself; nobody approves them. The step-by-step for the person, with
 exact clicks and how to check it, is [Get listed in Kino](https://kinotvapp.github.io/kino-plugins/en/listed/).
