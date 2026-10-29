@@ -178,7 +178,7 @@ node sdk/init.mjs mi-tienda --host plugins.ana.example --store local     # o --s
 
 **Kino Plugins** (`kinotvapp`, firmada con la llave de autor de Kino) es una tienda **local** corriente, con una sola
 capacidad, `pluginStore`, y los hosts `api.github.com`, `raw.githubusercontent.com`, `cdn.jsdelivr.net` y `archive.org`.
-Viene dentro de Kino y está firmada con la llave de autor de Kino (versión 1.0.1). Lo que responde su `storeSync`:
+Viene dentro de Kino y está firmada con la llave de autor de Kino (versión 1.0.2). Lo que responde su `storeSync`:
 
 1. **La primera vez**, sin red: la lista que trae el propio plugin (los plugins que Kino Plugins lista por defecto y los de la
    comunidad), así que la tienda está llena desde el primer arranque. Las del catálogo de Kino llevan `recommended`.

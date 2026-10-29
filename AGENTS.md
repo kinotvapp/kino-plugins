@@ -849,7 +849,7 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
     while the person's 18+ code is locked.
   - Consent lines: a store shows «Agrega plugins de sus servidores a tu tienda» and, if live, also in red «Lo que busques en la
     tienda llegará a sus servidores». The owner's blocklist is applied by Kino to every entry and refreshed with every store
-    sync; Kino Plugins' daily index already leaves blocked repositories out. Kino Plugins ships inside Kino (version 1.0.1),
+    sync; Kino Plugins' daily index already leaves blocked repositories out. Kino Plugins ships inside Kino (version 1.0.2),
     signed with Kino's author key.
   - Kit: `node sdk/init.mjs my-store --host store.example.org --store local|live` scaffolds one;
     `node sdk/run.mjs . storeSync [--since <ms>] [--state '<json>']`, `storeList [popular|recent] [category]` and
