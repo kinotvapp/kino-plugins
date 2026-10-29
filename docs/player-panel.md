@@ -10,7 +10,11 @@ rechazan un manifiesto con `"apiVersion": 9`), nada de esto existe. Tu plugin **
 reproducir**.
 
 Un ejemplo completo con todos los elementos, las dos pestañas y todas las acciones es
-`plugins/sdk/test/panel-demo` en el repositorio de Kino; abajo hay [uno pequeño](#example).
+[`sdk/test/panel-demo`](https://github.com/kinotvapp/kino-plugin-sdk/tree/main/sdk/test/panel-demo) en el repositorio del kit; abajo hay [uno pequeño](#example).
+
+Desde `"apiVersion": 14` (Kino 0.9.74) el panel también se arma con el kit de pantallas, una pestaña puede vivir en el
+panel de otro plugin o en un canal en vivo, y la persona puede fijarlo junto al video: mira
+[El panel con el kit de pantallas](#screen-kit).
 
 !!! note "Qué no está en esta versión"
     `ai` (la IA de Kino) y `chat` no vienen en Kino 0.9.55; llegarán en una versión posterior. Si tu panel
@@ -361,6 +365,232 @@ diseño solo **coloca** ajustes que ya existen, por su clave.
   siempre. Un `settingsLayout` que solo lista los ajustes en el orden del manifiesto, sin contenedores, se ve
   igual que la lista. Por debajo de apiVersion 9 se ignora.
 - El tipo de ajuste `section` sigue funcionando; una `card` con `title` es su versión más rica.
+
+## El panel con el kit de pantallas (apiVersion 14) { #screen-kit }
+
+!!! note "Disponible con Kino 0.9.74"
+    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Lo de esta sección necesita `"apiVersion": 14`;
+    una versión anterior de Kino rechaza estos plugins con «Este plugin necesita una versión más nueva de Kino»; para
+    seguir llegando a quien tiene una versión anterior usa `enhancements` (ver
+    [Pantallas sin subir tu apiVersion](enhancements.md)). Todo lo de arriba sigue valiendo igual para apiVersion 9 a 13.
+
+Desde apiVersion 14 el panel del reproductor se puede armar con los mismos nodos que una [pantalla](screens.md), una
+pestaña puede vivir en el panel de **otro** plugin o en un canal en vivo, y la persona puede fijar el panel junto al
+video. El ejemplo de referencia es **Party Chat** (<https://github.com/kinotvapp/kino-plugin-watch-party>): una pestaña
+que aporta al panel de cualquier título, con una sala y un chat.
+
+![El panel en modo pantalla, en el celular](assets/ui/panel-phone.png)
+![El panel en modo pantalla, en la TV](assets/ui/panel-tv.png)
+
+### Panel clásico y modo pantalla { #screen-mode }
+
+`panel(context)` puede devolver `{ format: "screen", root, title?, titleEn?, tabs?, tab?, refreshMs?, accent?, player?, layout? }`:
+la misma cajonera (su título, sus pestañas, `refreshMs` y el `accent` siguen las reglas de arriba; una entrada de `tabs`
+puede llevar además el [`badge`](screen-components.md#badge) compartido, `"dot"` o `{ text, textEn?, color? }`, dibujado
+junto a su nombre) con un cuerpo que es un árbol de pantalla. Un resultado sin `format` es el panel clásico, leído y
+dibujado exactamente como antes; el formato puede cambiar de una llamada a la siguiente, y por debajo de apiVersion 14 un
+resultado de pantalla se lee como un panel clásico (con una línea en el registro).
+
+```js
+export async function panel(context) {
+  if (!(context.features || []).includes("screen")) return { title: "Party Chat", elements: [{ type: "status", text: "Actualiza Kino" }] };
+  return { format: "screen", title: "Party Chat", root: { type: "Column", children: [{ type: "ElevatedButton", labelText: "Sincronizar", onPressed: "sync" }] } };
+}
+```
+
+| Qué | En un panel en modo pantalla |
+| --- | --- |
+| Resultado | `{ format: "screen", root, title, titleEn, accent, refreshMs, tabs, tab, player, layout }` |
+| Árbol | profundidad 6, 200 nodos; `AlertDialog`, `BottomSheet` y `PopupMenuButton` no se dibujan, salvo que tengan un `anchor` (un popover dentro de la cajonera, mira [anchor](screen-forms.md#anchor)); sin `every` |
+| El contexto agrega | `state`, `size`, y `features` incluye `"screen"` mientras las pantallas están encendidas |
+| Disparadores de `panelAction` | `press`, `change`, `submit` |
+| Campos de la respuesta que se aplican | `state`, `toast`, `toastEn`, `ui`, `config`, `go`, `close`, `focus`, `player`, `message`, `pause`, `panel` |
+| Campos de la respuesta que se descartan | `dialog`, `sheet`, `menu`, `route`; `patch`, `values` y `save` son solo del panel clásico |
+
+Diferencias con una pantalla completa:
+
+- **Límites**: profundidad 6 y 200 nodos. Un nodo `popup` se descarta (los pop-ups son de la pantalla, no de la cajonera)
+  salvo que tenga un `anchor`, y `every` se descarta: `refreshMs` (de 2000 a 60 000 ms, solo mientras el panel está
+  abierto) es LA llamada periódica.
+- **Llamadas**: dibujar llama `panel(context)`; los eventos de la persona llaman `panelAction({ event, context })` con
+  `event = { key?, trigger, name, arg?, value?, values }` (`trigger` es `press`, `change` o `submit`; `tab` y `open` siguen
+  reservados); no hay un evento reservado `open`. El `context` de un plugin de apiVersion 14 trae `state` (el de Kino,
+  guardado para la reproducción de este título) y `size` (las clases de la cajonera; una estimación de Kino hasta que se
+  midió) **en cada llamada, la primera incluida**, porque Kino no puede saber el formato antes de tu respuesta. Mira
+  [el estado](screen-reference.md#state) y [los valores por tamaño](screen-reference.md#per-size-values).
+- **Respuestas**: se aplican `state`, `toast`, `ui`, `config`, `focus`, `go` (todas sus formas; todas menos `screen` y
+  `close` cierran primero el panel), `close`, y los clásicos `player`, `message`, `pause` y `panel`; `dialog`, `sheet`,
+  `menu` y `route` no se atienden, y `patch`, `values` y `save` son solo del panel clásico (se descartan, con una línea en
+  el registro). El `panel` de una respuesta de `playerEvent` (en cualquier formato) se muestra en el panel abierto de ese
+  título, pero su `state` nunca se aplica: guárdalo en tus propias variables o en `kino.storage`. Mira
+  [las respuestas](screen-reference.md#answers).
+- **Detecta el formato**: responde un resultado de pantalla solo cuando `context.features` incluye `"screen"`. Kino lo pone
+  ahí solo mientras las pantallas de plugins están encendidas; cuando están apagadas un resultado de pantalla no muestra
+  ningún panel, así que entonces responde uno clásico.
+- **Errores**: un evento que falla muestra de una vez la línea de error de la cajonera; tres seguidos muestran el estado de
+  error del panel.
+- **TV**: la acción de un [aviso](screen-components.md#toast) corre con la tecla Menú o Reproducir/Pausa del control (la
+  cajonera no baja al aviso). El texto del panel es un paso más chico que en una pantalla completa (la cajonera y el panel
+  fijado miden de 360 a 480 dp): `h1` se dibuja del tamaño de `h3` de una pantalla, `h2` del de `h4`, `h3` del de `h5`,
+  `h4` y `h5` del tamaño grande del cuerpo, `p` a 15 sp; en el celular los tamaños no cambian.
+- **Foco en la TV**: en cualquier panel, clásico o en modo pantalla, solo toma foco y el anillo de Kino lo que hace algo:
+  botones, interruptores, selecciones, campos, la lista de episodios, las pestañas, fijar y cerrar. Un texto, una sección,
+  un estado, una imagen o un QR nunca son una parada de foco ni se enmarcan: Arriba y Abajo pasan por ellos. Cuando el árbol
+  nuevo de una respuesta ya no tiene el nodo con foco (una vista de QR que reemplaza al botón presionado), el foco va al
+  primer elemento enfocable en su lugar o después; si no hay ninguno, lo toma el cuerpo mismo (sin anillo) para que Arriba y
+  Abajo sigan desplazando. El `focus` de una respuesta gana.
+- La pestaña propia de Kino sobre el título muestra, de arriba abajo, el póster con el título y sus datos, la sinopsis,
+  los detalles, las imágenes y al final el reparto (tres tarjetas por fila, dos en un panel de menos de 360 dp), cada parte
+  solo cuando TMDB la tiene.
+- **Kit**: `node sdk/run.mjs --state '<json>' --screen <carpeta> panelAction <ref> <name> <press|change|submit>`.
+
+### Diseño `fill`: una pestaña de chat { #layout-fill }
+
+El cuerpo de un panel se desplaza por defecto (`layout: "scroll"`): el árbol no tiene límite de alto, así que un
+[`ListView`](screen-components.md#list-view) se dibuja plano y `flex` no hace nada, y una fila después de una lista queda
+justo debajo de su último elemento. Un chat quiere lo contrario: los mensajes ocupan el espacio y la fila para escribir se
+queda abajo del panel, como en cualquier app de chat. Responde `layout: "fill"` (se elige por resultado: junto a `root` en
+un resultado de `panel()`, en el objeto raíz de una respuesta de `screen()`): la raíz se dibuja al tamaño del cuerpo, sin
+desplazamiento del cuerpo, `flex` reparte el alto que queda, y un `ListView` con `flex` es perezoso y se desplaza solo.
+
+```js
+export async function panel(context) {
+  const messages = ((context.state || {}).messages || []).map((m, i) => ({ type: "Text", key: "m" + i, text: m }));
+  return { format: "screen", title: "Party Chat", layout: "fill", root: { type: "Column", gap: 8, children: [
+    { type: "Text", text: "Sala 1234", style: "h4" },
+    { type: "ListView", key: "chat", flex: 1, stickToBottom: true, items: messages,
+      empty: { type: "Text", text: "Sin mensajes", textEn: "No messages", color: "muted" } },
+    { type: "Row", gap: 8, children: [
+      { type: "TextField", key: "msg", flex: 1, hintText: "Escribe…", hintTextEn: "Type…" },
+      { type: "IconButton", icon: "send", labelText: "Enviar", labelTextEn: "Send", onPressed: "send" },
+    ] },
+  ] } };
+}
+```
+
+- **Dónde va la fila de abajo**: abajo del panel, fijado o en la cajonera, en vertical u horizontal, con los mensajes que
+  sean; cuando el panel se abre otra vez (al volver a Kino, al girar) también está ahí. El teclado del celular la levanta:
+  el panel fijado y la cajonera terminan encima del teclado, y la lista recibe el alto que queda.
+- **`stickToBottom`**: la lista abre en el último mensaje y sigue los nuevos mientras la persona lee el final; si sube para
+  leer los anteriores, se queda quieta hasta que vuelva a bajar.
+- **TV**: Arriba y Abajo pasan página por una lista sin nada enfocable (los mensajes), y salen de ella en sus extremos hacia
+  los controles.
+- **Demasiado alto**: cuando las partes sin `flex` ya son más altas que el panel (una ventana baja, un teclado grande), Kino
+  dibuja ese resultado con el diseño `scroll` y anota una vez `screen: layout fill does not fit, using scroll`; vuelve a
+  probar `fill` cuando cambia el tamaño o los hijos de la raíz. El `layout` propio de la raíz de un `panel` se ignora (con
+  una línea en el registro): ponlo junto a `root`.
+- **Las pantallas completas** ya dibujan la raíz al tamaño de la pantalla sin desplazamiento propio (lo que hace `fill`),
+  diga lo que diga `layout`. Cualquier otro valor se anota y se lee como `scroll`.
+
+### Una pestaña en el panel de otro plugin (`playerPanelTab`) { #contributed-tab }
+
+```json
+"apiVersion": 14,
+"capabilities": ["playerPanelTab"],
+"panel": { "contributes": true, "label": "Party Chat", "icon": "mood" }
+```
+
+`"panel": { "contributes": true, "label"?, "labelEn"?, "icon"? | "iconFile"? }` con la capacidad `playerPanelTab` (cada
+uno necesita al otro; exporta `panel` y puede ir sola) agrega **tu pestaña al panel del reproductor del título de
+cualquier plugin**. Si falta `label`, se usa el nombre de tu plugin (cortado a 24 caracteres).
+
+- La cajonera se vuelve un anfitrión de pestañas: primero la pestaña de información propia de Kino (fija), después el
+  panel del plugin que suena (con sus propias pestañas), y luego las pestañas aportadas en el orden de la persona (Ajustes,
+  «Paneles del reproductor»; por defecto, el orden de instalación), máximo 6. Cada pestaña muestra el nombre y el ícono de
+  su plugin, nunca el ícono de información de Kino; un nombre que se lee como «Kino» se muestra como «Plugin «nombre»». El
+  id `kino` está reservado. Sin pestañas aportadas, la cajonera es exactamente la de antes.
+- **Cuándo te llaman**: solo mientras tu pestaña es la elegida y la cajonera está abierta (`refreshMs` solo entonces), y
+  `playerEvent` solo mientras tu pestaña está abierta (sin la etiqueta en `copyChanged`). Nada corre en segundo plano:
+  cuando la persona cambia de pestaña o cierra la cajonera, te detienes ([fija el panel](#pinned) para seguir corriendo).
+- **Lo que ves** (una lista permitida): `kind`, `title`, `year`, `season`, `episode`, `episodeTitle`, `ids`,
+  `positionMs`, `durationMs`, `paused`, `seekStepMs`, `stats`, `device`, `lang`, tu `tab`, `values`, `features`, `state` y
+  `size`; de `player`, solo `seekStepMs`, `speed` y `resize`; además `foreign: true`, `source: { pluginId, name }` (el
+  plugin que da el video) y `ref`, un id **opaco**: `"foreign:"` y 32 caracteres hexadecimales, el mismo para el mismo
+  título en esta instalación para tu plugin, distinto para otro plugin u otra instalación. Es opaco, **no secreto**. Nunca
+  la copia que suena del plugin dueño (`playing`) ni su `autoNext`.
+- **Dónde no**: nunca en un título +18, en ningún título de un plugin +18 (una pestaña de un plugin +18 solo mientras el
+  código está desbloqueado), en tus propios títulos (ahí eres el dueño), en listas M3U, en canales propios ni en otro
+  contenido que no es de un plugin.
+- **Lo que puedes hacer**: tu `go.title` y tu `go.play` se descartan (no puedes abrir el contenido del plugin que suena);
+  `search`, `browse`, `section`, `categories`, `screen`, `titleByIds`, `url` y `close` funcionan (mira
+  [`go`](screens.md#go)). Tus acciones de `player` cuentan solo en la respuesta a un `panelAction` después de un **press**
+  en tu pestaña, y solo `seekToMs`; con [`playerControl`](rooms.md#player-control) también `pause` y `speed`, desde cualquier
+  origen. Tu lista de episodios no dibuja nada.
+- **Kit**: `node sdk/run.mjs --foreign <id del plugin fuente>[:<nombre>] <carpeta> panel <ref>` le da a tus llamadas el
+  contexto ajeno.
+
+Los textos con que se rechaza un manifiesto:
+
+| Problema | Texto |
+| --- | --- |
+| `contributes` no es booleano | `The "panel.contributes" field must be true or false` |
+| `contributes` sin la capacidad | `The "panel.contributes" field needs the "playerPanelTab" capability` |
+| la capacidad sin `contributes` | `The "playerPanelTab" capability needs "panel": { "contributes": true }` |
+
+#### El consentimiento { #contributed-tab-consent }
+
+`playerPanelTab` necesita la aprobación de la persona con una línea **en rojo**, al instalar y en la actualización que la
+agrega (Kino nunca la aprueba por su cuenta; al importar con el kit empieza sin marcar):
+
+> «Su pestaña en el reproductor verá lo que estás viendo (título, año, identificadores y posición, o el canal en vivo)
+> mientras la tengas abierta, y podrá enviarlo a sus servicios»
+
+La persona puede esconderla con «Mostrar en el reproductor» (en tu pestaña en Ajustes; vale para todo el aparato y se
+sincroniza con sus otros aparatos) o reordenarla (Ajustes, «Paneles del reproductor»). Mira
+[el modelo de consentimiento](screens.md#consent).
+
+### Tu pestaña en un canal en vivo (`"kinds": ["live"]`) { #live-kinds }
+
+Cada canal de En vivo tiene el mismo panel del reproductor (Derecha en el control de la TV; el botón del panel en la
+franja de en vivo en un celular), con la pestaña **General** propia de Kino primero (el favorito y el brillo del canal).
+Agrega `"kinds": ["title", "live"]` (o `["live"]`) a tu `"panel": { "contributes": true }` y tu pestaña se suma después de
+General (por defecto `["title"]`: solo títulos, como antes). El consentimiento es la misma capacidad (`playerPanelTab`).
+
+```json
+"panel": { "contributes": true, "label": "Party Chat", "kinds": ["title", "live"] }
+```
+
+- **Lo que ves**: `kind: "live"`, `live: true`, `channel: { provider, code, name }` (el plugin que lista el canal, su id
+  ahí, su nombre), `foreign: true`, `source`, `device`, `lang`, tu `tab`, `values` (`video` es un solo conjunto para todos
+  los canales en vivo: la sesión sigue abierta al cambiar de canal), `features`, `state` y `size`. Sin `ref`, título, ids,
+  posición, duración, pausa, estadísticas ni `player`: en vivo no hay salto ni una pausa que importe.
+- **Cuándo**: como en un título, solo mientras tu pestaña está elegida y el panel abierto. Al cambiar de canal Kino llama
+  otra vez `panel` con el canal nuevo (el panel sigue abierto); en vivo no hay `playerEvent`.
+- **Dónde no**: un canal que el listado de su propio proveedor no confirmó como no +18, un canal de un proveedor +18,
+  «Mis canales» (las listas M3U y canales propios de la persona) y los canales guardados antiguos: ahí tu pestaña no está.
+- **Lo que puedes hacer**: toda acción de `player` se descarta (`panel: player actions do nothing on a live channel,
+  dropped (live_channel)`). [`go.liveChannel`](screen-forms.md#go-live-channel) `{ provider, code }` sintoniza el
+  reproductor en un canal después del toque de la persona (en el panel en vivo cambia en el mismo lugar): así un invitado
+  de una sala ve el canal del anfitrión.
+- **Kit**: `node sdk/run.mjs --live-channel <proveedor>:<código>[:<nombre>] <carpeta> panel -`.
+
+| Problema | Texto |
+| --- | --- |
+| `kinds` vacío, desconocido o que no es lista | `The "panel.kinds" field must be a non-empty list of "title" and "live"` |
+| `kinds` sin `contributes` | `The "panel.kinds" field needs "panel": { "contributes": true }` |
+
+### El panel fijado { #pinned }
+
+Propio de Kino, para todo panel: «Fijar» en el encabezado del panel (un ícono de chincheta solo, en una TV) lo acomoda
+junto al video:
+
+- el tercio derecho en una TV o en una ventana horizontal de 600 dp o más; debajo del video en un celular en vertical, cuyo
+  video conserva entonces al menos 300 dp o el 38 % del alto para sus controles;
+- no se ofrece en imagen sobre imagen, mientras se envía a otra pantalla, ni en una ventana horizontal angosta.
+
+Fijado, el video sigue sonando y las sesiones del panel, `refreshMs` y `playerEvent` siguen corriendo mientras Kino está
+al frente. La fijación dura lo que dura la reproducción: sobrevive a un giro y a los siguientes episodios reproducidos en
+el reproductor, y una reproducción nueva empieza sin fijar (no se recuerda, no se guarda ni se sincroniza). El panel solo
+se abre cuando la persona lo abre.
+
+En una TV: Derecha desde el último control de la fila del reproductor (de cualquiera de las dos filas) entra al panel,
+primero en «Desfijar», y con los controles escondidos Derecha sobre el video también; Izquierda más allá de su borde vuelve
+a los controles; el primer Atrás esconde el panel (sigue fijado: al abrirlo otra vez, se vuelve a acomodar) y el siguiente
+Atrás es del reproductor. Un pop-up o un diálogo encima del panel se lleva ese primer Atrás. Mientras el panel está fijado
+en una TV o en un celular en horizontal, los dos grupos de botones del reproductor se ponen uno debajo del otro.
+
+Nada del contrato del plugin cambia; un plugin que tiene que seguir corriendo (Party Chat) le dice a su gente que lo fije
+durante la reproducción.
 
 ## Robustez { #robustness }
 

@@ -3,6 +3,54 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Upcoming with Kino 0.9.74: `apiVersion` 14, plugin screens { #v14 }
+
+!!! note "Available with Kino 0.9.74"
+    Available with Kino 0.9.74 (the next version, not published yet). An older Kino refuses these plugins with
+    «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an older version use
+    `enhancements` (see [Screens without raising your apiVersion](enhancements.md)).
+
+Documented on 2026-10-28. **`apiVersion` 12, 13 and 14 arrive together with Kino 0.9.74**, the next release (not
+published yet): `contract.json` says `maxApiVersion` 14 and `apiVersionFromApp` gives 0.9.74 for all three. The Node kit
+already knows all of it ([Test it locally](test-locally.md#api14)).
+
+| Feature | Since | How to tell |
+| --- | --- | --- |
+| The `screen` capability, the `screen` and `screenEvent` exports and the manifest's `screen` block | `apiVersion` 14 | `kino.screen` is `undefined` on an older Kino |
+| `playerPanelTab` (a tab in the player panel of any title, live channels too with `"kinds": ["live"]`), the panel in screen mode and the pinned panel | `apiVersion` 14 | an older Kino refuses `apiVersion` 14 |
+| `library`, `playerControl` and `room` (`kino.library`, `kino.room`) | `apiVersion` 14 | the same |
+| `schedule` (the `jobs` block and the `job` export), `shared` (`kino.shared`) and `ai` (`kino.ai`) | `apiVersion` 14 | the same |
+| `unlockWith` on a `toggle` or a `select` | `apiVersion` 14 | below it the key is ignored |
+| `maxBytes` and `stopAt` in `kino.fetch`, `r.truncated` | `apiVersion` 14 | below it the options are ignored |
+| The manifest's `enhancements` block | Kino 0.9.74, at any `apiVersion` | an older Kino ignores it |
+| `kino.qr.scan` from a `screenEvent` that follows the person's tap | `apiVersion` 14 | — |
+| Exporting and importing a plugin as a `.kinoplugin` file | Kino 0.9.74, any `apiVersion` | nothing to check |
+
+- **Screens**: your plugin draws a full screen inside Kino from a JSON tree of Flutter-style components (`Scaffold`,
+  `AppBar`, `TabBar`, `ListTile`, `Card`, forms, the `settings` node, tables, accordions, anchored pop-ups, toasts,
+  banners, Kino's own poster cards and rows), with per-size values, on the phone and the TV from the same tree. Kino keeps
+  the state, validates the tree and drops what is wrong without crashing. [Screens](screens.md), and the catalogue:
+  [layout, content and actions](screen-components.md), [forms, overlays and navigation](screen-forms.md),
+  [state, style and recipes](screen-reference.md).
+- **The player panel**: the panel may use the screen kit, a tab may go in the panel of another plugin's title or of a
+  live channel, and the panel can be pinned beside the video. [The player panel](player-panel.md#screen-kit).
+- **Rooms, the library and player control**: `kino.room` opens rooms over the Internet hosted on the person's device,
+  `kino.library` reads what they watched and saved, `playerControl` lets the panel pause and move the video.
+  [Rooms, the library and player control](rooms.md).
+- **Background jobs, shared results and AI**: `job(ctx)` runs every so often, `kino.shared` syncs a few results between
+  the person's devices, `kino.ai.ask` asks Kino's text AI one short question. [Background jobs, shared results and
+  AI](jobs-and-shared.md).
+- **Without raising your apiVersion**: `enhancements` offers all this to people on Kino 0.9.74 and leaves your plugin
+  as it was for everyone else. [Screens without raising your apiVersion](enhancements.md).
+- **A setting the 18+ code guards**: `"unlockWith": "adultCode"`. [The settings form](settings-form.md#unlock-with).
+- **Reading only the head of a page**: `kino.fetch` with `maxBytes` and `stopAt`. [The kino API](kino-api.md#fetch).
+- **A plugin as a file**: Kino exports an installed plugin as `.kinoplugin` and imports it as a local plugin.
+  [Exporting and importing a plugin file](plugin-files.md).
+- **Bigger plugins**: `src/` bundled with esbuild, with `check:built`. [Structure a bigger plugin](structure.md).
+- **Examples**: [kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery),
+  [kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news) (Solo noticias) and
+  [kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party) (Party Chat).
+
 ## Kino 0.9.74 (not released yet): `apiVersion` 13, sockets, plugin-served bytes and images, a catalog, QR codes { #v13 }
 
 (Not released yet.) **`apiVersion` 13 = Kino 0.9.74, the next release, together with `apiVersion` 12** ([below](#v0974));

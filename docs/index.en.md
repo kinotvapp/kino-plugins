@@ -116,6 +116,12 @@ travels as is to the person's other devices with plugin sync.
 can paste the address of a Stremio addon's `manifest.json` (or a `stremio://` link) and Kino generates
 a plugin for it. Nothing in this guide changes for your plugin.
 
+!!! tip "New: your plugin's own screens (apiVersion 14, with Kino 0.9.74, not published yet)"
+    A plugin can draw its own full screen inside Kino: columns, cards, lists, tabs, forms, pop-ups and Kino's own poster
+    rows, with Kino's look, on the phone and on the TV from the same JSON tree. Start with [Screens](screens.md) and the
+    [component catalogue](screen-components.md); rooms over the Internet, background jobs, results shared between
+    devices and Kino's text AI arrive too. What changed: [What's new](changelog.md#v14).
+
 ## The guide, page by page { #pages }
 
 | Page | What is in it |
@@ -132,6 +138,15 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Catalog and large storage](catalog.md) | apiVersion 13, in development: `kino.catalog`, a SQLite catalog of up to 100,000 items searched by Kino, and `storageLarge` |
 | [Images from the plugin](images.md) | apiVersion 13, in development: posters and stills your plugin serves through `image` |
 | [QR codes](qr.md) | apiVersion 13, in development: the settings form's `qr` type and `kino.qr.scan`, with a two-device login recipe |
+| [Screens](screens.md) | apiVersion 14, Kino 0.9.74: your plugin's full screen, the `screen` block, `screen()` and `screenEvent()`, state, answers, `go`, timers, TV focus, limits, testing with the kit |
+| [Components: layout, content and actions](screen-components.md) | Every screen component with its properties: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, text, images, tables, buttons, toasts |
+| [Components: forms, overlays and navigation](screen-forms.md) | Fields, validation, the `settings` node, dialogs, sheets, menus, anchored pop-ups, every `go` shape |
+| [Components: state, style and recipes](screen-reference.md) | State, events, per-size values, Flutter-style names, common properties, tokens, limits and recipes |
+| [Rooms, the library and player control](rooms.md) | apiVersion 14: `kino.room`, `kino.library` and `playerControl` |
+| [Background jobs, shared results and AI](jobs-and-shared.md) | apiVersion 14: `schedule` with `jobs` and `job(ctx)`, `kino.shared` and `kino.ai` |
+| [Screens without raising your apiVersion](enhancements.md) | `enhancements`: offer a screen and the apiVersion 14 features and still install on an older Kino |
+| [Structure a bigger plugin](structure.md) | `src/` by responsibility, a `plugin.js` generated with esbuild and checked with `check:built` |
+| [Exporting and importing a plugin](plugin-files.md) | The `.kinoplugin` file: what it holds, the signature, sealed secrets |
 | [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
 | [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `setSettings` and "Is this you?", the `link` and `help` aids, `validateSettings`, a complete example, the own tab and syncing |
@@ -139,7 +154,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Hidden browser](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` and `kino.browser.page`: when to use them, the safety model, never a captcha, timeouts and failures (apiVersion 6) |
 | [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |
 | [Section, categories and colors](section-theme.md) | `section`, `categories` and `theme` (apiVersion 6) |
-| [The player panel](player-panel.md) | `panel`, `panelAction` and `playerEvent`, player actions and `settingsLayout` (apiVersion 9) |
+| [The player panel](player-panel.md) | `panel`, `panelAction` and `playerEvent`, player actions and `settingsLayout` (apiVersion 9); the panel in screen mode, tabs in another plugin's panel and on a live channel, the pinned panel (apiVersion 14) |
 | [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |

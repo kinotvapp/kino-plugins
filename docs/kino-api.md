@@ -91,6 +91,8 @@ const r = await kino.fetch("https://archive.org/metadata/" + encodeURIComponent(
   redirect: "follow",         // or "manual": get the 3xx itself, with its Location header
   cookies: true,              // false: neither send nor store cookies for this request
   timeoutMs: 20000,           // default 15000, at most 30000
+  maxBytes: 65536,            // apiVersion 14: read at most this many bytes of the body (1 to 2000000)
+  stopAt: "</head>",          // apiVersion 14: end the read at this marker (1 to 32 ASCII characters), kept
 });
 r.ok        // true for 200 to 299
 r.status    // the HTTP status
@@ -99,6 +101,7 @@ r.headers   // { "content-type": "...", ... }: names in lowercase, repeated head
 r.text()    // the body as a string (already downloaded)
 r.json()    // JSON.parse of the body
 r.base64()  // the body bytes as base64: for anything that is not text
+r.truncated // apiVersion 14: true when the body was cut at maxBytes or stopAt
 ```
 
 Las opciones: `method` es `GET` (por defecto), `POST`, `PUT`, `PATCH`, `DELETE` o `HEAD`; `body` solo
@@ -112,6 +115,20 @@ Kino le entrega a tu código el texto o los bytes de un cuerpo, según su `Conte
 se convierte dentro del motor cuando la pides, y para un cuerpo de varios MB eso toma segundos del
 tiempo de tu llamada. Pide la forma que tiene el contenido.
 
+- **`maxBytes` (apiVersion 14, Kino 0.9.74).** Kino lee el cuerpo hasta esa cantidad de bytes y se detiene: el
+  resto nunca se descarga, y `r.truncated` es `true` (es `false` cuando el cuerpo entero cupo). Úsalo cuando te basta
+  con la cabecera de una página (sus etiquetas `<meta>`): un servidor que ignora `Range` te cuesta igual solo lo que
+  pediste, y un cuerpo que pasaría el límite de 5 MB se corta en vez de rechazarse. Se cuentan los bytes del cuerpo
+  después de la descompresión del transporte, y un texto cortado puede terminar en medio de un carácter. Un plugin que
+  declara `secrets` sellados recibe la misma respuesta, pero Kino entonces lee el cuerpo entero (hasta 5 MB) y lo
+  censura antes de cortarlo, así que para él la lectura no se detiene antes. Fuera de 1 a 2.000.000, o si no es un
+  número entero, la petición falla con `invalid_request`; por debajo de apiVersion 14 la opción se ignora.
+- **`stopAt` (apiVersion 14, Kino 0.9.74).** Kino deja de leer en cuanto el texto contiene el marcador (de 1 a 32
+  caracteres ASCII imprimibles, comparados sin distinguir mayúsculas ASCII) y conserva todo hasta él, incluido;
+  `r.truncated` es `true` cuando seguía algo más. Solo para respuestas de texto (una respuesta en bytes falla con
+  `invalid_request`). Con `maxBytes` gana el primer límite alcanzado; un marcador que nunca llega deja a cargo a
+  `maxBytes` (o al límite de 5 MB). `{ stopAt: "</head>", maxBytes: 65536 }` lee los metadatos de una página y nada
+  más. Por debajo de apiVersion 14 la opción se ignora.
 - **Cuerpos.** Un texto se envía tal cual (`text/plain` salvo que pongas `Content-Type`).
   `{ json: value }` envía `JSON.stringify(value)` como `application/json`; `{ form: { a: 1 } }` envía
   `application/x-www-form-urlencoded`; `{ base64: "…" }` envía esos bytes.
@@ -630,10 +647,24 @@ error: [Catálogo y almacenamiento grande](catalog.md).
 
 Con la capacidad `qrScan`: abre el lector de cámara de Kino en pantalla completa en el teléfono y resuelve con el texto
 leído (de 1 a 4.096 caracteres) o con `null` cuando la persona lo cierra. `{ title?, titleEn? }`, de máximo 80
-caracteres cada uno. Solo desde un ajuste `action` o un `panelAction` (`not_allowed` desde cualquier otra cosa);
+caracteres cada uno. Solo desde un ajuste `action`, un `panelAction` o un `screenEvent` que sigue a un toque o un envío de la persona (apiVersion 14; `not_allowed` desde cualquier otra cosa);
 `unavailable` en una TV o sin cámara; `busy`, `timeout` (120 s), `permission_denied`, `invalid_request`. Mostrar un QR no
 necesita capacidad: el tipo `qr` del formulario de ajustes. Mira [Códigos QR](qr.md) para las reglas, los errores y una
 receta de inicio de sesión entre dos aparatos.
+
+## `kino.screen` (apiVersion 14, Kino 0.9.74) { #screen }
+
+Lo que dibuja la pantalla de este Kino, para detectar funciones: `kino.screen.names` (los tipos de nodo como los escribe
+esta guía, `Column`, `TextField`, `titleRail`...), `kino.screen.widgets` (los mismos con sus nombres anteriores) y
+`kino.screen.version` (el número propio del contrato de pantallas, 1 por ahora). `undefined` en un Kino anterior. Mira
+[Pantallas](screens.md).
+
+## `kino.library`, `kino.room`, `kino.ai` y `kino.shared` (apiVersion 14, Kino 0.9.74) { #api14 }
+
+Cada uno necesita su capacidad: lo que la persona vio y guardó ([`library`](rooms.md#library)), una sala por internet
+alojada en el aparato ([`room`](rooms.md#room)), una pregunta a la IA de texto de Kino ([`ai`](jobs-and-shared.md#ai)) y
+unos pocos resultados pequeños sincronizados entre los aparatos de la persona ([`shared`](jobs-and-shared.md#shared)). Un
+`job(ctx)` en segundo plano (`schedule`) está en [Trabajos en segundo plano](jobs-and-shared.md#jobs).
 
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 

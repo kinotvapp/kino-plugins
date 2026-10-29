@@ -122,6 +122,13 @@ la sincronización de plugins.
 campo una persona puede pegar la dirección del `manifest.json` de un addon de Stremio (o un enlace
 `stremio://`) y Kino genera un plugin para él. Nada de esta guía cambia para tu plugin.
 
+!!! tip "Nuevo: pantallas propias para tu plugin (apiVersion 14, con Kino 0.9.74, aún no publicada)"
+    Un plugin puede dibujar su propia pantalla completa dentro de Kino: columnas, tarjetas, listas, pestañas,
+    formularios, ventanas emergentes y las filas de pósteres de Kino, con el aspecto de Kino, en el celular y en el TV
+    desde el mismo árbol JSON. Empieza por [Pantallas](screens.md) y el catálogo de
+    [componentes](screen-components.md); también llegan salas por internet, trabajos en segundo plano, resultados
+    compartidos entre aparatos y la IA de texto de Kino. Lo que cambió: [Novedades](changelog.md#v14).
+
 ## La guía, página por página { #pages }
 
 | Página | Qué tiene |
@@ -138,6 +145,15 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Catálogo y almacenamiento grande](catalog.md) | apiVersion 13, en desarrollo: `kino.catalog`, un catálogo SQLite de hasta 100.000 ítems en el que busca Kino, y `storageLarge` |
 | [Imágenes del plugin](images.md) | apiVersion 13, en desarrollo: pósteres e imágenes de episodio que sirve tu plugin con `image` |
 | [Códigos QR](qr.md) | apiVersion 13, en desarrollo: el tipo de ajuste `qr` y `kino.qr.scan`, con una receta de inicio de sesión entre dos aparatos |
+| [Pantallas](screens.md) | apiVersion 14, Kino 0.9.74: la pantalla completa de tu plugin, el bloque `screen`, `screen()` y `screenEvent()`, el estado, las respuestas, `go`, temporizadores, el foco en el TV, límites, probar con el kit |
+| [Componentes: diseño, contenido y acciones](screen-components.md) | Cada componente de una pantalla con sus propiedades: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, texto, imágenes, tablas, botones, toasts |
+| [Componentes: formularios, ventanas y navegación](screen-forms.md) | Campos, validación, el nodo `settings`, diálogos, hojas, menús, ventanas ancladas, cada forma de `go` |
+| [Componentes: estado, estilo y recetas](screen-reference.md) | Estado, eventos, valores por tamaño, nombres al estilo Flutter, propiedades comunes, tokens, límites y recetas |
+| [Salas, biblioteca y control del reproductor](rooms.md) | apiVersion 14: `kino.room`, `kino.library` y `playerControl` |
+| [Trabajos, resultados compartidos e IA](jobs-and-shared.md) | apiVersion 14: `schedule` con `jobs` y `job(ctx)`, `kino.shared` y `kino.ai` |
+| [Pantallas sin subir tu apiVersion](enhancements.md) | `enhancements`: ofrecer una pantalla y las funciones de apiVersion 14 sin dejar de instalarse en un Kino anterior |
+| [Estructurar un plugin grande](structure.md) | `src/` por responsabilidades, un `plugin.js` generado con esbuild y revisado con `check:built` |
+| [Exportar e importar un plugin](plugin-files.md) | El archivo `.kinoplugin`: qué lleva, la firma, los secretos sellados |
 | [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
 | [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
 | [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `setSettings` y "¿Eres tú?", las ayudas `link` y `help`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
@@ -145,7 +161,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
-| [Panel del reproductor](player-panel.md) | `panel`, `panelAction` y `playerEvent`, acciones sobre el reproductor y `settingsLayout` (apiVersion 9) |
+| [Panel del reproductor](player-panel.md) | `panel`, `panelAction` y `playerEvent`, acciones sobre el reproductor y `settingsLayout` (apiVersion 9); el panel en modo pantalla, las pestañas en el panel de otro plugin y en un canal en vivo, el panel fijo (apiVersion 14) |
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |
@@ -157,6 +173,6 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Plugins con scrapers de Nuvio](nuvio-plugins.md) | `kino.nuvio` (apiVersion 11): tu plugin nombra un repositorio de Nuvio y Kino instala y usa sus scrapers para buscar enlaces |
 | [Addons de Stremio](stremio.md) | Cómo instala la gente un addon de Stremio, cómo se traduce cada recurso, qué se rechaza y sus límites |
 | [Plugins de CloudStream](cloudstream.md) | Kino 0.9.54: cómo instala la gente los plugins de un repositorio de CloudStream, el complemento, cómo se traduce cada parte y sus límites |
-| [Plugins de ejemplo](examples.md) | Los dos ejemplos publicados, y cómo está hecho el plugin de referencia |
+| [Plugins de ejemplo](examples.md) | Los ejemplos publicados (también los de pantallas: la galería de componentes, Solo noticias y Party Chat), y cómo está hecho el plugin de referencia |
 | [Reclamos y retiro de plugins](claims.md) | Cómo pedir que un plugin de la comunidad salga del índice, qué hace Kino y cómo apelar |
 | [Referencia](reference/index.md) | `contract.json` y `kino.d.ts`, para leer o descargar |

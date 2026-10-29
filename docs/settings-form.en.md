@@ -6,6 +6,11 @@ gets its own tab in Ajustes. This page has [every field type](#types), the three
 a value, the [two configuration aids](#aids) of apiVersion 12, the exports that fill and check them, and
 [a complete example](#example).
 
+!!! tip "For a new UI, use screens"
+    From apiVersion 14 (Kino 0.9.74, not published yet) the preferred way to build your plugin's configuration, onboarding
+    or a dashboard is [screens](screens.md), which can also show this very form with the
+    [`settings` node](screen-forms.md#settings-node). This form keeps working for compatibility.
+
 ## Its own tab in Ajustes { #own-tab }
 
 Every installed plugin that is enabled gets **its own tab in Ajustes** (phone and TV), named after the
@@ -230,6 +235,35 @@ and Sync Servidor draw their setup only on the phone, and the TV receives the va
 configuración" ("Receive settings"). An unknown device, an empty list or a repeated one refuses the manifest (`"devices" of the
 setting "<key>" must be a list of different devices: "phone", "tv"`); below apiVersion 12 the key is
 ignored. The Node kit renders no form: `validate.mjs` only checks the field.
+
+## A setting the 18+ code guards (`unlockWith`, apiVersion 14, Kino 0.9.74) { #unlock-with }
+
+!!! note "Available with Kino 0.9.74"
+    Available with Kino 0.9.74 (the next version, not published yet). Below apiVersion 14 the key is ignored.
+
+A `toggle` or a `select` may say `"unlockWith": "adultCode"`: before the person moves it **away from its
+`default`** (a toggle off its default, a select to any other option), Kino asks the device's 18+ code with its own
+prompt (the «Código» field of Ajustes on the phone, the padlock's keyboard dialog on a TV; while the default code still
+rules, the prompt says so, as every 18+ prompt does). The change applies only once the code is right; a wrong code says
+«Código incorrecto» and keeps the old value, and Cancelar or Back leave the control as it was. Moving it back **toward**
+the default never asks. Your plugin never sees the code, and giving it unlocks nothing else (no 18+ entry shows because
+of it). Use it for a filter the person should not switch off on a whim, like the news example's «No mostrar noticias
++18» (default on).
+
+```json
+{ "key": "hideAdult", "label": "No mostrar noticias +18", "labelEn": "Hide 18+ news", "type": "toggle", "default": true, "unlockWith": "adultCode" }
+```
+
+It works in Kino's settings form wherever it is drawn: your tab in Ajustes, and a screen's or a panel's
+[`settings` node](screen-forms.md#settings-node). Your own code may only move the setting toward its default: an
+answer's `config` that moves it away is dropped (`is locked (unlockWith adultCode): only the person moves it away from
+its default, in Kino's settings form`), an action's `setSettings` that does is refused whole, and a field may not
+`bind` it (`bind "<key>" is locked (unlockWith adultCode): show it in a settings node`): show it with
+`{ "type": "settings", "keys": ["<key>"] }`. The value syncs to the person's other devices like any setting (and
+travels with «Enviar a otro aparato»); the code is asked on each device at the moment of the change. `unlockWith` on any
+other type, or a value other than `"adultCode"`, refuses the manifest (`Only a setting of type toggle or select has
+"unlockWith" ("<key>")`, `"unlockWith" of the setting "<key>" must be one of: adultCode`). The Node kit renders no
+form: `validate.mjs` checks the field and `run.mjs` applies the same `config`, `bind` and `setSettings` rules.
 
 ## Actions only a link runs (`linkOnly`, apiVersion 12, Kino 0.9.74) { #link-only }
 

@@ -48,11 +48,11 @@ explica por qué necesita la cámara, con Reintentar y Cancelar.
 ## Dónde funciona { #where }
 
 Solo en un teléfono o una tableta con cámara, en la interfaz de teléfono de Kino: en una TV (y en cualquier aparato sin
-cámara) el lector nunca se abre y la llamada falla con `unavailable`. Un escaneo solo corre desde un ajuste `action` o
-desde un `panelAction`, es decir, cuando la persona presionó uno de tus botones: cualquier otra llamada falla con
-`not_allowed` ("kino.qr.scan only runs from a settings action or panelAction"), aunque la haya empezado la persona
+cámara) el lector nunca se abre y la llamada falla con `unavailable`. Un escaneo solo corre desde un ajuste `action`,
+desde un `panelAction` o desde un `screenEvent` que sigue a la presión de la persona, es decir, cuando la persona presionó uno de tus botones: cualquier otra llamada falla con
+`not_allowed` ("kino.qr.scan only runs from a settings action, panelAction or screenEvent the person pressed"), aunque la haya empezado la persona
 (Inicio, una búsqueda, una reproducción, una lista, la página de un título, tu sección, `settingsStatus`), así que la
-cámara nunca se abre sola mientras alguien navega. Mientras el lector está abierto, el límite de tiempo de esa llamada se
+cámara nunca se abre sola mientras alguien navega. En una [pantalla del plugin](screens.md) (apiVersion 14, Kino 0.9.74: una pantalla raíz, un panel en modo pantalla, una pestaña que aportas en modo pantalla) solo cuenta el evento del toque o del envío de la propia persona; el evento de apertura, un tic de temporizador (`every`), un «cargar más», un cambio, el `refreshMs` de un panel y un `playerEvent` nunca abren el lector. El nodo `settings` dentro de una pantalla corre su `action` exactamente como Ajustes. Mientras el lector está abierto, el límite de tiempo de esa llamada se
 detiene (los 30 s de un `action` no se acaban mientras la persona busca el otro aparato); el lector mismo se cierra a
 los 120 s con `timeout`. Un lector en pantalla a la vez, para toda la app: un segundo escaneo mientras hay uno abierto,
 tuyo o de otro plugin, falla de inmediato con `busy`. Kino revisa, en este orden: la petición (`invalid_request`), el
@@ -63,7 +63,7 @@ aparato (`unavailable`), de dónde viene la llamada (`not_allowed`) y el escaneo
 | `busy` | Ya hay un escaneo abierto (tuyo o de otro plugin). | Espéralo; no lo repitas en un ciclo. |
 | `timeout` | No se leyó nada en 120 s. | Dilo, y deja que la persona lo intente otra vez. |
 | `unavailable` | Este aparato no puede escanear: sin cámara, o la interfaz de TV de Kino. | Muestra el código de otra forma: un ajuste `qr`, o un código para escribir. |
-| `not_allowed` | La llamada no es un ajuste `action` ni un `panelAction` (Inicio, búsqueda, una reproducción, `settingsStatus`…). | Escanea desde un botón: un ajuste `action` o un botón del panel. |
+| `not_allowed` | La llamada no es un ajuste `action`, un `panelAction` ni un `screenEvent` tras un toque o un envío de la persona (Inicio, búsqueda, una reproducción, `settingsStatus`, el evento de apertura de una pantalla, un tic de temporizador o un «cargar más»…). | Escanea desde un botón: un ajuste `action`, un botón del panel o un botón de la pantalla. |
 | `permission_denied` | La persona no le dio la cámara a Kino. | Dile que puede permitirla en los ajustes del teléfono. |
 | `invalid_request` | `title` o `titleEn` no es un texto, pasa de 80 caracteres o lleva un carácter de control o de formato, o el argumento no es un objeto. | Corrige la llamada. |
 
@@ -157,7 +157,7 @@ después de una acción lo espera y pregunta una vez más. El QR en pantalla se 
 Node no tiene cámara: `createKino(manifest, { qrScan })` recibe una imitación, `async ({ title, titleEn, invalid }) =>`
 el texto "leído", o `null` para una cancelación; puede lanzar `kino.error("permission_denied")` y parecidos. Sin ella, y
 con `device: "tv"`, `kino.qr.scan` falla con `unavailable`, como en una TV. El kit aplica las mismas revisiones, en el
-mismo orden y con los mismos errores de la app: `not_allowed` salvo que la llamada sea el `action` o el `panelAction` de
+mismo orden y con los mismos errores de la app: `not_allowed` salvo que la llamada sea el `action`, el `panelAction` o el `screenEvent` de
 tu plugin (el kit sabe qué export está corriendo cuando se llama por `run.mjs` o `loadPlugin`), `busy` para un segundo
 escaneo mientras hay uno abierto, `invalid_request` para un título malo. Un código de más de 4.096 caracteres se ignora
 como en el teléfono: el kit le pregunta otra vez a tu imitación con `invalid: true` (el lector sigue buscando), y responde

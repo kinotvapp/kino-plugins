@@ -5,7 +5,7 @@ also on its own in [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino
 `run.mjs` (run one function), `validate.mjs` (check a plugin the way Kino does), `init.mjs` (scaffold
 a new one), `kino-shim.mjs` (the `kino` API in Node), `contract.mjs` (the rules, read from
 `contract.json`), `seal.mjs` (seals a [secret](manifest.md#secrets) for your manifest, and `--keygen`/`--sign` for a [signed plugin](signed.md)) and
-`guide-tables.mjs` (regenerates the guide's tables). There is nothing to
+`guide-tables.mjs` (regenerates the guide's tables) and `ui-tables.mjs` (regenerates the screen components' tables). There is nothing to
 install. It needs Node 18 or newer (checked on 18.20, 20.11 and 24.14); `node --test sdk/test/kit.test.mjs`
 runs its own tests.
 
@@ -260,6 +260,41 @@ with `imageSource`) and the settings form's `qr` type with its `refreshMs`. What
   one in your plugin (`typeof kino.crypto.convert === "function"`).
 - **`init.mjs --with byteSource,images,catalog,socket`** (any of them) scaffolds an apiVersion 13 plugin that declares
   those capabilities, with a working, commented example of each (`read`, `image`, `kino.catalog`, `kino.ws`).
+
+## apiVersion 14: screens, panels, jobs and shared results { #api14 }
+
+!!! note "Available with Kino 0.9.74"
+    Available with Kino 0.9.74 (the next version, not published yet). The kit already knows all of it, so you can write
+    and test the plugin now.
+
+[Screens](screens.md), panels in screen mode, tabs you contribute to another plugin's panel,
+[background jobs](jobs-and-shared.md#jobs) and `kino.shared` have their own commands:
+
+```
+node sdk/validate.mjs <folder>                                    # the manifest, the exports, every consent line, enhancements
+node sdk/run.mjs <folder> screen                                  # the tree as Kino reads it (aliases resolved, drops logged)
+node sdk/run.mjs --device tv <folder> screen                      # as a TV
+node sdk/run.mjs --state '{"inputs":{"q":"dune"}}' <folder> screenEvent search
+node sdk/run.mjs --context '{"route":{"name":"categories","params":{},"args":{"from":"categories"}}}' <folder> screen
+node sdk/run.mjs <folder> panel <ref>                             # a panel (legacy or screen format)
+node sdk/run.mjs --state '{}' --screen <folder> panelAction <ref> <name> press
+node sdk/run.mjs --foreign latino:Latino <folder> panel <ref>     # a tab you contribute to another plugin's title
+node sdk/run.mjs --device phone <folder> job refresh manual       # one job run, with Kino's caps
+node sdk/run.mjs --device tv <folder> screen                      # ...then read what the job shared, as the TV
+node sdk/run.mjs <folder> shared                                  # what the simulated phone and TV hold
+```
+
+`run.mjs` prints the tree after Kino's rules (with the older names Kino reads internally, the per-size values resolved in
+`byClass`), every dropped node and field, and the answer's fields; `validate.mjs` checks the tree and `go` objects like
+the app, and reports every [`enhancements`](enhancements.md) block Kino would drop as a problem. The environment
+variables `KINO_LIBRARY_FIXTURE`, `KINO_LIBRARY_REVOKED`, `KINO_ROOM_REVOKED`, `KINO_PLAYER_CONTROL_REVOKED`,
+`KINO_AI_REPLY`, `KINO_AI_ERROR` and `KINO_AI_REVOKED` play the person's data and choices. In `node --test` files,
+import the kit's helpers (`createKino`, `createKitRoom`...) as the examples' tests do
+([kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news),
+[kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party)). The shared case files in `sdk/test/`
+(`screen-cases.json`, `room-cases.json`, `job-cases.json`, `ai-cases.json`, `shared-cases.json`,
+`player-control-cases.json`, `panel-foreign-cases.json`, `qr-origin-cases.json`) are the very cases the app's tests
+run. More in [Screens: testing with the kit](screens.md#testing).
 
 ## What the Node kit does not reproduce { #differences }
 

@@ -8,8 +8,12 @@ you can learn what happens during playback. All of it needs `"apiVersion": 9`; b
 older (which refuse a manifest with `"apiVersion": 9`), none of it exists. Your plugin **must not depend on it
 to play**.
 
-A complete example with every element, both tabs and every action is `plugins/sdk/test/panel-demo` in Kino's
-repository; there is [a small one](#example) below.
+A complete example with every element, both tabs and every action is [`sdk/test/panel-demo`](https://github.com/kinotvapp/kino-plugin-sdk/tree/main/sdk/test/panel-demo) in the
+kit's repository; there is [a small one](#example) below.
+
+From `"apiVersion": 14` (Kino 0.9.74) the panel can also be built with the screen kit, a tab can live in another plugin's
+panel or on a live channel, and the person can pin it next to the video: see
+[The panel built with the screen kit](#screen-kit).
 
 !!! note "What is not in this version"
     `ai` (Kino's AI) and `chat` do not ship in Kino 0.9.55; they come in a later version. If your panel includes
@@ -355,6 +359,219 @@ that already exist, by key.
   list. A `settingsLayout` that only lists the settings in manifest order, with no containers, looks the same as
   the list. Below apiVersion 9 it is ignored.
 - The `section` setting type keeps working; a `card` with a `title` is its richer version.
+
+## The panel built with the screen kit (apiVersion 14) { #screen-kit }
+
+!!! note "Available with Kino 0.9.74"
+    Available with Kino 0.9.74 (the next version, not published yet). This section needs `"apiVersion": 14`; an older
+    Kino refuses these plugins with «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an
+    older version use `enhancements` (see [Screens without raising your apiVersion](enhancements.md)). Everything above
+    stays valid as it is for apiVersion 9 to 13.
+
+From apiVersion 14 the player panel can be built from the same nodes as a [screen](screens.md), a tab can live in
+**another** plugin's panel or on a live channel, and the person can pin the panel next to the video. The reference example
+is **Party Chat** (<https://github.com/kinotvapp/kino-plugin-watch-party>): a tab it contributes to any title's panel, with
+a room and a chat.
+
+![The panel in screen mode, on a phone](assets/ui/panel-phone.png)
+![The panel in screen mode, on a TV](assets/ui/panel-tv.png)
+
+### Legacy panel and screen mode { #screen-mode }
+
+`panel(context)` may return `{ format: "screen", root, title?, titleEn?, tabs?, tab?, refreshMs?, accent?, player?, layout? }`:
+the same drawer (its title, tabs, `refreshMs` and accent follow the rules above; a `tabs` entry may also carry the shared
+[`badge`](screen-components.md#badge), `"dot"` or `{ text, textEn?, color? }`, drawn beside its label) with a body that is
+a screen tree. A result without `format` is the legacy panel, read and drawn exactly as before; the format may change from
+one call to the next, and below apiVersion 14 a screen result is read as a legacy panel (logged).
+
+```js
+export async function panel(context) {
+  if (!(context.features || []).includes("screen")) return { title: "Party Chat", elements: [{ type: "status", text: "Actualiza Kino" }] };
+  return { format: "screen", title: "Party Chat", root: { type: "Column", children: [{ type: "ElevatedButton", labelText: "Sincronizar", onPressed: "sync" }] } };
+}
+```
+
+| What | In a panel in screen mode |
+| --- | --- |
+| Result | `{ format: "screen", root, title, titleEn, accent, refreshMs, tabs, tab, player, layout }` |
+| Tree | depth 6, 200 nodes; `AlertDialog`, `BottomSheet` and `PopupMenuButton` not drawn, unless it has an `anchor` (a popover inside the drawer, see [anchor](screen-forms.md#anchor)); no `every` |
+| Context adds | `state`, `size`, and `features` holds `"screen"` while screens are on |
+| `panelAction` triggers | `press`, `change`, `submit` |
+| Answer fields kept | `state`, `toast`, `toastEn`, `ui`, `config`, `go`, `close`, `focus`, `player`, `message`, `pause`, `panel` |
+| Answer fields dropped | `dialog`, `sheet`, `menu`, `route`; legacy-only `patch`, `values`, `save` |
+
+Differences from a full screen:
+
+- **Limits**: depth 6 and 200 nodes. A `popup` node is dropped (pop-ups belong to the screen, not to the drawer) unless it
+  has an `anchor`, and `every` is dropped: `refreshMs` (2,000 to 60,000 ms, only while the panel is open) is THE periodic
+  call.
+- **Calls**: renders call `panel(context)`; the person's events call `panelAction({ event, context })` with
+  `event = { key?, trigger, name, arg?, value?, values }` (`trigger` is `press`, `change` or `submit`; `tab` and `open`
+  stay reserved); there is no reserved `open` event. An apiVersion 14 plugin's `context` carries `state` (Kino's, kept for
+  this title's playback) and `size` (the drawer's classes; Kino's estimate until it measured itself) **in every call, the
+  first one included**, because Kino cannot know the format before your answer. See [state](screen-reference.md#state) and
+  [per-size values](screen-reference.md#per-size-values).
+- **Answers**: `state`, `toast`, `ui`, `config`, `focus`, `go` (every shape; all but `screen` and `close` close the panel
+  first), `close`, and the legacy `player`, `message`, `pause` and `panel` are kept; `dialog`, `sheet`, `menu` and `route`
+  are not honoured, and `patch`, `values` and `save` are legacy-only (dropped, logged). A `playerEvent` answer's `panel`
+  (either format) shows in that title's open panel, but its `state` is never applied: keep that in your own variables or
+  `kino.storage`. See [answers](screen-reference.md#answers).
+- **Detect the format**: answer a screen result only when `context.features` includes `"screen"`. Kino puts it there only
+  while plugin screens are switched on; when they are off a screen result shows no panel, so answer a legacy one then.
+- **Errors**: a failed event shows the drawer's error line at once; three in a row show the panel's error state.
+- **TV**: a [toast](screen-components.md#toast)'s action runs from the remote's Menu or Play/Pause key (the drawer has no
+  Down-to-toast). The panel's text is a step smaller than a full screen's (the drawer and the dock are 360 to 480 dp wide):
+  `h1` draws at a screen's `h3` size, `h2` at `h4`'s, `h3` at `h5`'s, `h4` and `h5` at the large body size, `p` at 15 sp;
+  the phone's sizes do not change.
+- **TV focus**: in any panel, legacy or screen mode, only what does something takes focus and Kino's ring: buttons,
+  toggles, selects, fields, the episode list, the tabs, pin and close. A text, a section, a status, an image or a QR is
+  never a focus stop and never boxed: Up and Down page through them. When an answer's new tree no longer has the focused
+  node (a QR view replacing the pressed button), focus goes to the focusable now at or after its place; with none, the body
+  itself takes it (no ring) so Up and Down still scroll it. An answer's `focus` wins.
+- Kino's own tab about the title shows, top to bottom, the poster with the title and its facts, the synopsis, the details,
+  the images and last the cast (three cards a row, two on a panel under 360 dp), each part only when TMDB has it.
+- **Kit**: `node sdk/run.mjs --state '<json>' --screen <folder> panelAction <ref> <name> <press|change|submit>`.
+
+### Layout fill: a chat tab { #layout-fill }
+
+A panel's body scrolls by default (`layout: "scroll"`): the tree has no height limit, so a
+[`ListView`](screen-components.md#list-view) draws flat and `flex` does nothing, and a row after a list sits right under
+its last item. A chat wants the opposite: the messages take the room and the input row stays at the bottom of the panel,
+like any chat app. Answer `layout: "fill"` (chosen per result: beside `root` in a `panel()` result, on the root object of a
+`screen()` answer): the root is drawn at the body's size with no body scroll, `flex` shares the height left, and a
+`ListView` with `flex` is lazy and scrolls itself.
+
+```js
+export async function panel(context) {
+  const messages = ((context.state || {}).messages || []).map((m, i) => ({ type: "Text", key: "m" + i, text: m }));
+  return { format: "screen", title: "Party Chat", layout: "fill", root: { type: "Column", gap: 8, children: [
+    { type: "Text", text: "Sala 1234", style: "h4" },
+    { type: "ListView", key: "chat", flex: 1, stickToBottom: true, items: messages,
+      empty: { type: "Text", text: "Sin mensajes", textEn: "No messages", color: "muted" } },
+    { type: "Row", gap: 8, children: [
+      { type: "TextField", key: "msg", flex: 1, hintText: "Escribe…", hintTextEn: "Type…" },
+      { type: "IconButton", icon: "send", labelText: "Enviar", labelTextEn: "Send", onPressed: "send" },
+    ] },
+  ] } };
+}
+```
+
+- **Where the bottom row goes**: at the bottom of the panel, docked (pinned) or in the drawer, upright or sideways, however
+  many messages the list holds; when the panel opens again (a return to Kino, a rotation) it is there too. The phone's
+  keyboard lifts it: the dock and the drawer end above the keyboard, and the list gets the height left.
+- **`stickToBottom`**: the list opens at the last message and follows new ones while the person reads the end; scrolled up
+  to read older ones, it stays put until they come back down.
+- **TV**: Up and Down page through a list with nothing to focus (messages), and leave it at its ends toward the controls.
+- **Too tall**: when the parts without `flex` alone are taller than the panel (a short window, a big keyboard), Kino draws
+  that render in the scroll layout and logs `screen: layout fill does not fit, using scroll` once; it tries `fill` again
+  when the size or the root's children change. A `panel` root's own `layout` is ignored (logged): put it beside `root`.
+- **Full screens** already draw the root at the screen's size with no scroll of their own (what `fill` does), whatever
+  `layout` says. Any other value is logged and read as `scroll`.
+
+### A tab in another plugin's panel (`playerPanelTab`) { #contributed-tab }
+
+```json
+"apiVersion": 14,
+"capabilities": ["playerPanelTab"],
+"panel": { "contributes": true, "label": "Party Chat", "icon": "mood" }
+```
+
+`"panel": { "contributes": true, "label"?, "labelEn"?, "icon"? | "iconFile"? }` with the capability `playerPanelTab` (each
+needs the other; it exports `panel` and may stand alone) adds **your tab to the player panel of any plugin's title**. A
+missing `label` is your plugin's name (cut to 24 characters).
+
+- The drawer becomes a tab host: Kino's own information tab first (fixed), then the playing plugin's panel (with its own
+  tabs), then the contributed tabs in the person's order (Ajustes, «Paneles del reproductor»; install order by default), at
+  most 6. Each tab shows its plugin's name and icon, never Kino's info icon; a name that reads like "Kino" is shown as
+  «Plugin «name»». The id `kino` is reserved. Without a contribution the drawer is exactly as before.
+- **When you are called**: only while your tab is the selected one and the drawer is open (`refreshMs` only then), and
+  `playerEvent` only while your tab is open (`copyChanged` without its label). Nothing runs in the background: when the
+  person switches tabs or closes the drawer, you stop ([pin the panel](#pinned) to keep running).
+- **What you see** (an allow-list): `kind`, `title`, `year`, `season`, `episode`, `episodeTitle`, `ids`, `positionMs`,
+  `durationMs`, `paused`, `seekStepMs`, `stats`, `device`, `lang`, your `tab`, `values`, `features`, `state` and `size`;
+  of `player`, only `seekStepMs`, `speed` and `resize`; plus `foreign: true`, `source: { pluginId, name }` (the plugin that
+  provides the stream) and `ref`, an **opaque** id: `"foreign:"` and 32 hex characters, the same for the same title on this
+  install for your plugin, different for another plugin or install. It is opaque, **not secret**. Never the owner's
+  `playing` copy or its `autoNext`.
+- **Where not**: never on an 18+ title, any title of an 18+ plugin (an 18+ contributor only while the code is unlocked),
+  your own titles (there you are the owner), M3U lists, own channels or other non-plugin content.
+- **What you may do**: your `go.title` and `go.play` are dropped (you cannot open the playing plugin's content); `search`,
+  `browse`, `section`, `categories`, `screen`, `titleByIds`, `url` and `close` work (see [`go`](screens.md#go)). Your player
+  actions count only in the answer to a `panelAction` after a **press** in your tab, and only `seekToMs`; with
+  [`playerControl`](rooms.md#player-control) also `pause` and `speed`, from any origin. Your episode list draws nothing.
+- **Kit**: `node sdk/run.mjs --foreign <source plugin id>[:<name>] <folder> panel <ref>` gives your calls the foreign
+  context.
+
+The texts a manifest is refused with:
+
+| Problem | Text |
+| --- | --- |
+| `contributes` is not a boolean | `The "panel.contributes" field must be true or false` |
+| `contributes` without the capability | `The "panel.contributes" field needs the "playerPanelTab" capability` |
+| the capability without `contributes` | `The "playerPanelTab" capability needs "panel": { "contributes": true }` |
+
+#### Consent { #contributed-tab-consent }
+
+`playerPanelTab` needs the person's approval with a **red** line, at install and on the update that adds it (Kino never
+approves it on its own; a kit import starts it unticked):
+
+> «Su pestaña en el reproductor verá lo que estás viendo (título, año, identificadores y posición, o el canal en vivo)
+> mientras la tengas abierta, y podrá enviarlo a sus servicios» ("Its tab in the player will see what you are watching
+> (title, year, ids and position, or the live channel) while you have it open, and can send it to its services")
+
+The person can hide it with «Mostrar en el reproductor» ("Show in the player", in your tab in Ajustes; it covers the whole
+device and syncs to their other devices) or reorder it (Ajustes, «Paneles del reproductor»). See
+[the consent model](screens.md#consent).
+
+### Your tab on a live channel (`"kinds": ["live"]`) { #live-kinds }
+
+Every En vivo channel has the same player panel (Right on the TV remote; the panel button in the live band on a phone),
+with Kino's own **General** tab first (the favourite and the channel's brightness). Add `"kinds": ["title", "live"]` (or
+`["live"]`) to your `"panel": { "contributes": true }` and your tab joins it after General (default `["title"]`: titles
+only, as before). The consent is the same capability (`playerPanelTab`).
+
+```json
+"panel": { "contributes": true, "label": "Party Chat", "kinds": ["title", "live"] }
+```
+
+- **What you see**: `kind: "live"`, `live: true`, `channel: { provider, code, name }` (the plugin that lists the channel,
+  its id there, its name), `foreign: true`, `source`, `device`, `lang`, your `tab`, `values` (`video` is one set for every
+  live channel: the session stays open across zaps), `features`, `state` and `size`. No `ref`, title, ids, position,
+  duration, pause, stats or `player`: live has no seek and no pause that matters.
+- **When**: as on a title, only while your tab is selected and the panel open. On a zap Kino calls `panel` again with the
+  new channel (the panel stays open); there is no `playerEvent` on live.
+- **Where not**: a channel its provider's own listing has not confirmed as not 18+, a channel of an 18+ provider, «Mis
+  canales» (the person's own M3U lists and channels) and saved legacy channels: your tab is not there.
+- **What you may do**: every `player` action is dropped (`panel: player actions do nothing on a live channel, dropped
+  (live_channel)`). [`go.liveChannel`](screen-forms.md#go-live-channel) `{ provider, code }` tunes the player to a channel
+  after the person's press (in the panel on live it changes in place): how a room's guest watches the host's channel.
+- **Kit**: `node sdk/run.mjs --live-channel <provider>:<code>[:<name>] <folder> panel -`.
+
+| Problem | Text |
+| --- | --- |
+| `kinds` empty, unknown or not a list | `The "panel.kinds" field must be a non-empty list of "title" and "live"` |
+| `kinds` without `contributes` | `The "panel.kinds" field needs "panel": { "contributes": true }` |
+
+### The pinned panel { #pinned }
+
+Kino's own, for every panel: «Fijar» / «Pin» in the panel's header (a pin icon alone on a TV) docks it next to the video:
+
+- the right third on a TV or a landscape window of 600 dp or more; below the video on an upright phone, whose video then
+  gets at least 300 dp or 38 % of the height for its controls;
+- not offered in picture-in-picture, while casting, or in a narrow landscape window.
+
+Docked, the video keeps playing and the panel's sessions, `refreshMs` and `playerEvent` keep running while Kino is in
+front. The pin lasts for the playback: it survives a rotation and the next episodes played in the player, and a new
+playback starts unpinned (it is not remembered, stored nor synced). The panel only opens when the person opens it.
+
+On a TV: Right from the last control of the player's row (of either row) goes into the panel, on «Desfijar» first, and
+with the controls hidden Right on the video does too; Left past its edge goes back to the controls; the first Back hides
+the panel (it stays pinned: opened again, it docks again) and the next Back is the player's. A pop-up or dialog over the
+panel takes that first Back. While the panel is docked on a TV or a phone held sideways, the player's two groups of buttons
+sit one row under the other.
+
+Nothing in the plugin contract changes; a plugin that must keep running (Party Chat) tells its people to pin it for the
+playback.
 
 ## Robustness { #robustness }
 

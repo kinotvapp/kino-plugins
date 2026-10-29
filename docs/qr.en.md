@@ -47,9 +47,9 @@ the camera, with Retry and Cancel.
 
 Only on a phone or tablet with a camera, in Kino's phone interface: on a TV (and on any device
 without a camera) the scanner never opens and the call fails with `unavailable`. A scan runs
-only from a settings `action` or a `panelAction`, that is, when the person pressed one of your buttons: every other
-call fails with `not_allowed` ("kino.qr.scan only runs from a settings action or panelAction"), even one the person started (Home, a search, a play, a list, a title
-page, your section, `settingsStatus`), so the camera never opens by itself while someone browses. While the scanner is up, that call's own time limit stops (the 30 s of an `action` does not run out
+only from a settings `action`, a `panelAction` or a `screenEvent` that follows the person's press, that is, when the person pressed one of your buttons: every other
+call fails with `not_allowed` ("kino.qr.scan only runs from a settings action, panelAction or screenEvent the person pressed"), even one the person started (Home, a search, a play, a list, a title
+page, your section, `settingsStatus`), so the camera never opens by itself while someone browses. In a [plugin screen](screens.md) (apiVersion 14, Kino 0.9.74: a root screen, a panel in screen mode, a tab you contribute in screen mode) only the event of the person's own tap or submit counts; the open event, a timer tick (`every`), a load-more, a change, a panel's `refreshMs` and a `playerEvent` never open the scanner. The settings node inside a screen runs its `action` exactly as Ajustes does. While the scanner is up, that call's own time limit stops (the 30 s of an `action` does not run out
 while the person looks for the other device); the scanner itself closes after 120 s with `timeout`. One scanner on
 screen at a time, for the whole app: a second scan while one is open, yours or another plugin's, fails at once with
 `busy`. Kino checks, in this order: the request (`invalid_request`), the device (`unavailable`), where the call comes from
@@ -60,7 +60,7 @@ screen at a time, for the whole app: a second scan while one is open, yours or a
 | `busy` | A scan is already open (yours or another plugin's). | Wait for it; do not loop. |
 | `timeout` | Nothing was scanned in 120 s. | Say so, and let the person try again. |
 | `unavailable` | This device cannot scan: no camera, or Kino's TV interface. | Show the code another way: a settings `qr` setting, or a typed code. |
-| `not_allowed` | The call is not a settings `action` or a `panelAction` (Home, search, a play, `settingsStatus`…). | Scan from a button: an `action` setting or a panel button. |
+| `not_allowed` | The call is not a settings `action`, a `panelAction` or a `screenEvent` after the person's tap or submit (Home, search, a play, `settingsStatus`, a screen's open event, timer tick or load-more…). | Scan from a button: an `action` setting, a panel button or a screen button. |
 | `permission_denied` | The person did not give Kino the camera. | Tell them they can allow it in the phone's settings. |
 | `invalid_request` | `title` or `titleEn` is not a string, is over 80 characters or holds a control or formatting character, or the argument is not an object. | Fix the call. |
 
@@ -152,7 +152,7 @@ screen stays up until the new text replaces it.
 Node has no camera: `createKino(manifest, { qrScan })` takes a fake, `async ({ title, titleEn, invalid })
 =>` the text "scanned", or `null` for a cancel; it may throw `kino.error("permission_denied")` and the like. Without one,
 and with `device: "tv"`, `kino.qr.scan` fails with `unavailable`, as on a TV. The kit applies the same checks, in the same
-order, with the same errors as the app: `not_allowed` unless the call is your plugin's `action` or `panelAction` (the kit
+order, with the same errors as the app: `not_allowed` unless the call is your plugin's `action`, `panelAction` or `screenEvent` (the kit
 knows which export is running when it is called through `run.mjs` or `loadPlugin`), `busy` for a second scan while one is
 open, `invalid_request` for a bad title. A code over 4,096 characters is ignored like on the phone: the kit asks your fake
 again with `invalid: true` (the scanner keeps looking), and answers `timeout` after 10 ignored codes.

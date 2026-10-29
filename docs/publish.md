@@ -336,3 +336,10 @@ La lista descarta, tenga las estrellas que tenga:
    espera hasta lo que pidió GitHub.
 9. **¿Acabas de subir el cambio?** `raw.githubusercontent.com` guarda los archivos en caché unos cinco
    minutos.
+
+## Si tu repositorio desaparece: el archivo del plugin { #plugin-files }
+
+Desde Kino 0.9.74 (la próxima versión, aún no publicada) la persona puede exportar cualquier plugin instalado como un
+archivo `.kinoplugin` e instalarlo en otro celular como plugin local; tu firma se conserva y, si vuelves a publicar en un
+repositorio nuevo firmado con la misma llave, se puede actualizar desde ahí. Todo en
+[Exportar e importar un plugin como archivo](plugin-files.md).

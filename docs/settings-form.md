@@ -6,6 +6,11 @@ y cada plugin instalado tiene su propia pestaña en Ajustes. Esta página tiene 
 campo](#types), los tres tipos sin valor, las [dos ayudas para configurar](#aids) de apiVersion 12,
 las funciones que los llenan y los revisan, y [un ejemplo completo](#example).
 
+!!! tip "Para una interfaz nueva, usa las pantallas"
+    Desde apiVersion 14 (Kino 0.9.74, aún no publicada) la forma preferida de construir la configuración, la bienvenida o
+    un tablero de tu plugin son las [pantallas](screens.md), que también pueden mostrar este mismo formulario con el
+    [nodo `settings`](screen-forms.md#settings-node). Este formulario sigue funcionando para compatibilidad.
+
 ## Su propia pestaña en Ajustes { #own-tab }
 
 Cada plugin instalado y encendido tiene **su propia pestaña en Ajustes** (celular y TV), con el nombre
@@ -241,6 +246,36 @@ valores con "Recibir configuración". Un aparato desconocido, una lista vacía o
 el manifiesto (`"devices" of the setting "<key>" must be a list of different devices: "phone", "tv"`);
 por debajo de apiVersion 12 la clave se ignora. El kit de Node no dibuja un formulario: `validate.mjs`
 solo revisa el campo.
+
+## Un ajuste que guarda el código +18 (`unlockWith`, apiVersion 14, Kino 0.9.74) { #unlock-with }
+
+!!! note "Disponible con Kino 0.9.74"
+    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Por debajo de apiVersion 14 la clave se ignora.
+
+Un `toggle` o un `select` puede decir `"unlockWith": "adultCode"`: antes de que la persona lo mueva **lejos de
+su `default`** (un toggle fuera de su valor por defecto, un select a cualquier otra opción), Kino pide el código +18
+del aparato con su propia ventana (el campo «Código» de Ajustes en el celular, el diálogo de teclado del candado en un
+TV; mientras rige el código por defecto, la ventana lo dice, como toda ventana +18). El cambio se aplica solo cuando el
+código es correcto; un código equivocado dice «Código incorrecto» y deja el valor anterior, y Cancelar o Atrás dejan el
+control como estaba. Volver **hacia** el valor por defecto nunca lo pide. Tu plugin nunca ve el código, y darlo no
+desbloquea nada más (ninguna entrada +18 aparece por eso). Úsalo para un filtro que la persona no debería apagar a la
+ligera, como el «No mostrar noticias +18» del ejemplo de noticias (encendido por defecto).
+
+```json
+{ "key": "hideAdult", "label": "No mostrar noticias +18", "labelEn": "Hide 18+ news", "type": "toggle", "default": true, "unlockWith": "adultCode" }
+```
+
+Funciona en el formulario de ajustes de Kino dondequiera que se dibuje: tu pestaña en Ajustes y el
+[nodo `settings`](screen-forms.md#settings-node) de una pantalla o de un panel. Tu propio código solo puede mover el
+ajuste hacia su valor por defecto: un `config` de una respuesta que lo aleja se descarta (`is locked (unlockWith
+adultCode): only the person moves it away from its default, in Kino's settings form`), un `setSettings` de una
+acción que lo aleja se rechaza entero, y un campo no puede hacerle `bind` (`bind "<key>" is locked (unlockWith
+adultCode): show it in a settings node`): muéstralo con `{ "type": "settings", "keys": ["<key>"] }`. El valor se
+sincroniza con los otros aparatos de la persona como cualquier ajuste (y viaja con «Enviar a otro aparato»); el código
+se pide en cada aparato en el momento del cambio. `unlockWith` en otro tipo, o un valor distinto de `"adultCode"`,
+rechaza el manifiesto (`Only a setting of type toggle or select has "unlockWith" ("<key>")`, `"unlockWith" of the
+setting "<key>" must be one of: adultCode`). El kit de Node no dibuja un formulario: `validate.mjs` revisa el campo y
+`run.mjs` aplica las mismas reglas de `config`, `bind` y `setSettings`.
 
 ## Acciones que solo corre un `link` (`linkOnly`, apiVersion 12, Kino 0.9.74) { #link-only }
 

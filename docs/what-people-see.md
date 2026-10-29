@@ -140,6 +140,29 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   cuando abre el túnel rápido de Cloudflare, las palabras para "Otra red"), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
   etiquetas de los ajustes que llegaron, nunca sus valores, y "Aplicar".
 
+## Pantallas y apiVersion 14 (Kino 0.9.74) { #v14 }
+
+!!! note "Disponible con Kino 0.9.74"
+    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Una versión anterior de Kino rechaza estos
+    plugins con «Este plugin necesita una versión más nueva de Kino»; para seguir llegando a quien tiene una versión
+    anterior usa `enhancements` (ver [Pantallas sin subir tu apiVersion](enhancements.md)).
+
+- **Pantallas.** Un plugin con una [pantalla](screens.md) tiene una entrada en la barra lateral del TV (las primeras tres
+  pantallas de plugins directamente, las demás bajo «Más pantallas») y un chip en la franja de Inicio del celular, o un
+  botón arriba en su página de ajustes; la pantalla se abre con la barra de título de Kino (el nombre del plugin y un
+  botón para cerrar).
+- **Líneas en rojo nuevas.** `library`, `playerPanelTab`, `playerControl`, `room`, `schedule` y `ai` muestran cada una
+  su línea en rojo en la hoja de consentimiento y se piden en la instalación y en la actualización que las agrega; `shared`
+  muestra una línea normal. La persona puede apagar cada una en la pestaña del plugin en Ajustes
+  ([Salas, biblioteca y control del reproductor](rooms.md), [Trabajos, resultados compartidos e IA](jobs-and-shared.md)).
+- **Actualizaciones.** Una actualización que agrega una línea en rojo o un host nuevo lo muestra primero, abierto, bajo
+  «Nuevo en esta actualización».
+- **Pestañas en el panel del reproductor.** Un plugin con `playerPanelTab` agrega una pestaña al panel del reproductor de
+  cualquier título; la persona puede ocultarla («Mostrar en el reproductor») u ordenarla (Ajustes, «Paneles del
+  reproductor»). [Panel del reproductor](player-panel.md#contributed-tab).
+- **Exportar un plugin.** Plugins ▸ Instalados ▸ Gestionar ▸ "Exportar plugin" comparte un archivo `.kinoplugin` que se
+  instala en otro celular como plugin local. [Exportar e importar un plugin](plugin-files.md).
+
 ## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }
 
 Todavía no está en un Kino publicado. Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):

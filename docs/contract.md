@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 13)
+# El contrato (apiVersion 1 a 14)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -36,11 +36,16 @@ la sincronización entre los aparatos de la persona con `syncPull`, `syncPush` y
 un `action` también puede responder `setSettings` y `link` ([Formulario de
 ajustes](settings-form.md#set-settings)). Desde `"apiVersion": 13` (en desarrollo, la próxima versión de Kino): `read`
 para un stream que sirve tu plugin e `image` para una imagen que sirve ([Bytes e imágenes que sirve tu
-plugin](#apiversion-13)).
+plugin](#apiversion-13)). Desde `"apiVersion": 14` (Kino 0.9.74, aún no publicada): `screen` y `screenEvent` para una
+[pantalla](screens.md#exports) y `job` para un [trabajo en segundo plano](jobs-and-shared.md#jobs); un plugin con
+`playerPanelTab` usa el export `panel` ([Panel del reproductor](player-panel.md#contributed-tab)).
 
 ```js
 export async function read({ handle, offset, length }) { /* -> { bytes: base64 } (apiVersion 13, byteSource) */ }
 export async function image({ handle }) { /* -> { bytes: base64, mime } (apiVersion 13, imageSource) */ }
+export async function screen(ctx) { /* -> a tree of nodes (apiVersion 14, screen) */ }
+export async function screenEvent(ev) { /* -> { state, toast, go, ui, config... } or null (apiVersion 14, screen) */ }
+export async function job(ctx) { /* answer ignored (apiVersion 14, schedule) */ }
 ```
 
 ([`kino.d.ts`](reference/index.md) tiene las mismas formas como declaraciones de TypeScript.)

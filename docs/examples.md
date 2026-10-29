@@ -75,6 +75,17 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
     uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los tres proveedores de
     ejemplo](sync-providers.md#examples).
 
+!!! note "Pantallas (apiVersion 14, con Kino 0.9.74, aún no publicada): tres ejemplos"
+    - **Galería UI** ([kinotvapp/kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery)): cada
+      componente de una [pantalla](screens.md) dibujado en el aparato, por pestañas; las capturas del
+      [catálogo de componentes](screen-components.md) salen de ella.
+    - **Solo noticias** ([kinotvapp/kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news)): una pantalla con
+      tarjetas de noticias de lo que ves y un [trabajo en segundo plano](jobs-and-shared.md#jobs) que las actualiza;
+      código en `src/` empaquetado con esbuild ([Estructurar un plugin grande](structure.md)).
+    - **Party Chat** ([kinotvapp/kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party)): una
+      pestaña del [panel del reproductor](player-panel.md#contributed-tab) para ver un título con amigos, con
+      [salas](rooms.md#room), chat y el video sincronizado con [`playerControl`](rooms.md#player-control).
+
 !!! note "apiVersion 13 (en desarrollo): un ejemplo de stream de bytes"
     Ningún plugin de ejemplo publicado usa apiVersion 13 todavía (ningún Kino publicado lo acepta). La guía tiene un
     plugin completo con `socket` y `byteSource`, una biblioteca de videos detrás de un WebSocket, con la prueba de Node

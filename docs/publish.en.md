@@ -317,3 +317,10 @@ The list drops, whatever the stars:
 8. **Is the device's copy old?** The list refreshes at most every 12 hours; tap "Actualizar" (wait
    60 seconds between taps). After a 403/429 from GitHub the device waits up to what GitHub asked.
 9. **Did you just push?** `raw.githubusercontent.com` caches files for about five minutes.
+
+## If your repository disappears: the plugin file { #plugin-files }
+
+From Kino 0.9.74 (the next version, not published yet) a person can export any installed plugin as a `.kinoplugin` file
+and install it on another phone as a local plugin; your signature is kept and, if you republish in a new repository
+signed with the same key, it can update from there. Everything in
+[Exporting and importing a plugin file](plugin-files.md).

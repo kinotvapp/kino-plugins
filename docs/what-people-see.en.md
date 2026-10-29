@@ -121,6 +121,28 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   Cloudflare quick tunnel opens, the words for "Otra red"), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
   never their values, and "Aplicar".
 
+## Screens and apiVersion 14 (Kino 0.9.74) { #v14 }
+
+!!! note "Available with Kino 0.9.74"
+    Available with Kino 0.9.74 (the next version, not published yet). An older Kino refuses these plugins with
+    «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an older version use
+    `enhancements` (see [Screens without raising your apiVersion](enhancements.md)).
+
+- **Screens.** A plugin with a [screen](screens.md) gets an entry on the TV sidebar (the first three plugin screens
+  directly, the others under «Más pantallas») and a chip on the phone's Inicio strip, or a button at the top of its
+  settings page; the screen opens with Kino's title bar (the plugin's name and a close button).
+- **New red lines.** `library`, `playerPanelTab`, `playerControl`, `room`, `schedule` and `ai` each show their red line on
+  the consent sheet and are asked at install and on the update that adds them; `shared` shows a plain line. The person can
+  switch each one off in the plugin's tab in Ajustes ([Rooms, the library and player control](rooms.md),
+  [Background jobs, shared results and AI](jobs-and-shared.md)).
+- **Updates.** An update that adds a red consent line or a new host shows it first, open, under «Nuevo en esta
+  actualización».
+- **Tabs in the player panel.** A plugin with `playerPanelTab` adds a tab to the player panel of any title; the person
+  can hide it ("Mostrar en el reproductor") or reorder it (Ajustes, "Paneles del reproductor").
+  [The player panel](player-panel.md#contributed-tab).
+- **Exporting a plugin.** Plugins ▸ Instalados ▸ Gestionar ▸ "Exportar plugin" shares a `.kinoplugin` file that installs
+  on another phone as a local plugin. [Exporting and importing a plugin file](plugin-files.md).
+
 ## The next Kino version (apiVersion 13, in development) { #v13 }
 
 Not in a released Kino yet. With the apiVersion 13 capabilities ([What's new](changelog.md#v13)):

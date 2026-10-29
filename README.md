@@ -23,6 +23,18 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   a SQLite catalog and a larger storage ([Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/)),
   images the plugin serves ([Images from the plugin](https://kinotvapp.github.io/kino-plugins/en/images/)) and QR codes
   ([QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/)).
+- **Screens** (apiVersion 14, upcoming with Kino 0.9.74, not published yet): a plugin can draw its own full screen
+  inside Kino from a JSON tree of Flutter-style components, the same tree on the phone and the TV, and the preferred way
+  to build a plugin's UI: [Screens](https://kinotvapp.github.io/kino-plugins/en/screens/) and the component catalogue
+  ([layout, content and actions](https://kinotvapp.github.io/kino-plugins/en/screen-components/),
+  [forms, overlays and navigation](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
+  [state, style and recipes](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)); also player-panel tabs on any
+  title, [rooms](https://kinotvapp.github.io/kino-plugins/en/rooms/), [background jobs, shared results and
+  AI](https://kinotvapp.github.io/kino-plugins/en/jobs-and-shared/), and [`enhancements`](https://kinotvapp.github.io/kino-plugins/en/enhancements/)
+  to offer all of it without raising your apiVersion. Examples:
+  [kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery),
+  [kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news) and
+  [kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

@@ -73,6 +73,17 @@ same files. A fork would work as a plugin too, but Kino's community search leave
     `kinotvapp/kino-plugin-sync-gram-account`). Each has a guide in English and Spanish
     and offline tests. See [The three example providers](sync-providers.md#examples).
 
+!!! note "Screens (apiVersion 14, with Kino 0.9.74, not published yet): three examples"
+    - **UI gallery** ([kinotvapp/kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery)): every
+      [screen](screens.md) component drawn on the device, by tabs; the [component catalogue](screen-components.md)'s
+      captures come from it.
+    - **Solo noticias** ([kinotvapp/kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news)): a screen of news
+      cards about what you watch and a [background job](jobs-and-shared.md#jobs) that refreshes them; code in `src/`
+      bundled with esbuild ([Structure a bigger plugin](structure.md)).
+    - **Party Chat** ([kinotvapp/kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party)): a
+      [player-panel](player-panel.md#contributed-tab) tab to watch a title with friends, with [rooms](rooms.md#room),
+      a chat and the video in sync through [`playerControl`](rooms.md#player-control).
+
 !!! note "apiVersion 13 (in development): a byte-stream example"
     No published example plugin uses apiVersion 13 yet (no released Kino accepts it). The guide has a complete
     `socket` + `byteSource` plugin, a video library behind a WebSocket, with the Node test that checks every range it

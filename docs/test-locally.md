@@ -5,7 +5,7 @@ también solo en [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-p
 `run.mjs` (ejecuta una función), `validate.mjs` (revisa un plugin como lo hace Kino), `init.mjs` (crea
 el esqueleto de uno nuevo), `kino-shim.mjs` (la API `kino` en Node), `contract.mjs` (las reglas,
 leídas de `contract.json`), `seal.mjs` (sella un [secreto](manifest.md#secrets) para tu manifiesto, y con `--keygen`/`--sign` firma un [plugin firmado](signed.md)) y
-`guide-tables.mjs` (regenera las tablas de la guía). No hay nada que
+`guide-tables.mjs` (regenera las tablas de la guía) y `ui-tables.mjs` (regenera las tablas de los componentes de pantalla). No hay nada que
 instalar. Necesita Node 18 o más nuevo (probado en 18.20, 20.11 y 24.14);
 `node --test sdk/test/kit.test.mjs` ejecuta sus propias pruebas.
 
@@ -268,6 +268,41 @@ revisa las seis capacidades nuevas (cada una rechazada por debajo de 13, `read` 
 - **`init.mjs --with byteSource,images,catalog,socket`** (cualquiera de ellas) arma un plugin de apiVersion 13 que declara
   esas capacidades, con un ejemplo de cada una que funciona y viene comentado (`read`, `image`, `kino.catalog`,
   `kino.ws`).
+
+## apiVersion 14: pantallas, paneles, trabajos y lo compartido { #api14 }
+
+!!! note "Disponible con Kino 0.9.74"
+    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). El kit ya lo conoce todo, así que puedes escribir
+    y probar el plugin desde ya.
+
+Las [pantallas](screens.md), los paneles en modo pantalla, las pestañas que aportas al panel de otro plugin, los
+[trabajos en segundo plano](jobs-and-shared.md#jobs) y `kino.shared` tienen sus propios comandos:
+
+```
+node sdk/validate.mjs <folder>                                    # the manifest, the exports, every consent line, enhancements
+node sdk/run.mjs <folder> screen                                  # the tree as Kino reads it (aliases resolved, drops logged)
+node sdk/run.mjs --device tv <folder> screen                      # as a TV
+node sdk/run.mjs --state '{"inputs":{"q":"dune"}}' <folder> screenEvent search
+node sdk/run.mjs --context '{"route":{"name":"categories","params":{},"args":{"from":"categories"}}}' <folder> screen
+node sdk/run.mjs <folder> panel <ref>                             # a panel (legacy or screen format)
+node sdk/run.mjs --state '{}' --screen <folder> panelAction <ref> <name> press
+node sdk/run.mjs --foreign latino:Latino <folder> panel <ref>     # a tab you contribute to another plugin's title
+node sdk/run.mjs --device phone <folder> job refresh manual       # one job run, with Kino's caps
+node sdk/run.mjs --device tv <folder> screen                      # ...then read what the job shared, as the TV
+node sdk/run.mjs <folder> shared                                  # what the simulated phone and TV hold
+```
+
+`run.mjs` imprime el árbol después de las reglas de Kino (con los nombres anteriores que Kino lee por dentro y los valores
+por tamaño resueltos en `byClass`), cada nodo y campo descartado, y los campos de la respuesta; `validate.mjs` revisa el
+árbol y los objetos `go` como la app, y reporta como problema cada bloque de [`enhancements`](enhancements.md) que Kino
+descartaría. Las variables de entorno `KINO_LIBRARY_FIXTURE`, `KINO_LIBRARY_REVOKED`, `KINO_ROOM_REVOKED`,
+`KINO_PLAYER_CONTROL_REVOKED`, `KINO_AI_REPLY`, `KINO_AI_ERROR` y `KINO_AI_REVOKED` hacen el papel de los datos y las
+decisiones de la persona. En los archivos de `node --test`, importa las ayudas del kit (`createKino`, `createKitRoom`...)
+como lo hacen las pruebas de los ejemplos ([kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news),
+[kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party)). Los archivos de casos de `sdk/test/`
+(`screen-cases.json`, `room-cases.json`, `job-cases.json`, `ai-cases.json`, `shared-cases.json`,
+`player-control-cases.json`, `panel-foreign-cases.json`, `qr-origin-cases.json`) son los mismos casos que corren las
+pruebas de la app. Más en [Pantallas: probar con el kit](screens.md#testing).
 
 ## Lo que el kit de Node no reproduce { #differences }
 

@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 13)
+# The contract (apiVersion 1 to 14)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -35,11 +35,16 @@ none can say so with `"catalogOnly": true` ([Catalog-only plugins](#catalog-only
 At every `apiVersion`, from Kino 0.9.74, an `action` may also answer `setSettings` and `link`
 ([The settings form](settings-form.md#set-settings)). From `"apiVersion": 13` (in development, the next Kino version):
 `read` for a stream your plugin serves and `image` for a picture it serves ([Bytes and images your plugin
-serves](#apiversion-13)).
+serves](#apiversion-13)). From `"apiVersion": 14` (Kino 0.9.74, not published yet): `screen` and `screenEvent` for a
+[screen](screens.md#exports) and `job` for a [background job](jobs-and-shared.md#jobs); a plugin with
+`playerPanelTab` uses the `panel` export ([The player panel](player-panel.md#contributed-tab)).
 
 ```js
 export async function read({ handle, offset, length }) { /* -> { bytes: base64 } (apiVersion 13, byteSource) */ }
 export async function image({ handle }) { /* -> { bytes: base64, mime } (apiVersion 13, imageSource) */ }
+export async function screen(ctx) { /* -> a tree of nodes (apiVersion 14, screen) */ }
+export async function screenEvent(ev) { /* -> { state, toast, go, ui, config... } or null (apiVersion 14, screen) */ }
+export async function job(ctx) { /* answer ignored (apiVersion 14, schedule) */ }
 ```
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
