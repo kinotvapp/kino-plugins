@@ -41,6 +41,14 @@
 | `kino.shared` (apiVersion 14) | 4 keys of at most 40 characters per plugin; a value at most 64 KB and 16 levels, 128 KB in all; 30 writes a minute; a key's new value travels at most once every 60 s |
 <!-- contract:limits:end -->
 
+<!-- Hand-written: the generated table above does not know these yet. -->
+
+| What (apiVersion 15) | Limit |
+| --- | --- |
+| `kino.identity` (apiVersion 15) | only inside a call the person started; at most 10 calls a minute per plugin; a `challenge` of 16 to 128 characters `A-Z a-z 0-9 _ -`; only plugins signed with Kino's own author key ([Identity](identity.md)) |
+| `kino.notifications` (apiVersion 15) | at most 20 posts an hour per plugin, 30 notices kept for 30 days; a `title` of 1 to 80 characters, a `text` of at most 160; a request of at most 8,192 characters ([Notices in the bell](notifications.md#limits)) |
+| Stores (`pluginStore`, apiVersion 15) | at most 5,000 entries and 4 MB of JSON per `storeSync`, a 16 KB `state`; one `storeSync` run at most 60 s, 40 requests and 8 MB downloaded; for a live store, 5 s a call, 20 calls a minute and a 30-minute cache ([Plugin stores](plugin-stores.md#limits)) |
+
 The "Time per call" row leaves some calls out: `details` 20 s (apiVersion 8, Kino 0.9.54; see
 [A title's own details](contract.md#details)), and the settings form's `settingsStatus` 10 s, `action`
 30 s and `validateSettings` 20 s (apiVersion 6; also in the table below). They count your fetches and

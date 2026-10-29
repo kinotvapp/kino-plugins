@@ -116,6 +116,12 @@ travels as is to the person's other devices with plugin sync.
 can paste the address of a Stremio addon's `manifest.json` (or a `stremio://` link) and Kino generates
 a plugin for it. Nothing in this guide changes for your plugin.
 
+!!! tip "New: identity, notices and plugin stores (apiVersion 15, with the next Kino version, not published yet)"
+    A plugin can know who the person is without a sign-up ([Identity](identity.md)), leave notices in the Home bell
+    ([Notices](notifications.md)) and be a **store**: a source of plugins for Kino's store, backed by GitHub, by its own
+    server or by a JSON file ([Plugin stores](plugin-stores.md), with two [example stores](store-examples.md)). What
+    changed: [What's new](changelog.md#v15).
+
 !!! tip "New: your plugin's own screens (apiVersion 14, with Kino 0.9.74, not published yet)"
     A plugin can draw its own full screen inside Kino: columns, cards, lists, tabs, forms, pop-ups and Kino's own poster
     rows, with Kino's look, on the phone and on the TV from the same JSON tree. Start with [Screens](screens.md) and the
@@ -158,6 +164,10 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |
+| [Identity](identity.md) | apiVersion 15: `kino.identity.telegram`, a pseudonym of the person for your plugin and the signed token, only for plugins signed with Kino's key |
+| [Notices in the bell](notifications.md) | apiVersion 15: `kino.notifications.post` and `clear`, limits, `go.screen` |
+| [Plugin stores](plugin-stores.md) | apiVersion 15: `pluginStore`, `storeSync` full or as changes, local and live stores, how Kino mixes them, the blocklist, 18+ and limits |
+| [Example stores](store-examples.md) | Two complete stores to copy: one with a static JSON, one with its own API |
 | [Get listed in Kino](listed.md) | The five steps to show in "De la comunidad", how long it takes and how to check it |
 | [Publishing](publish.md) | Releases, updates and approvals, and appearing in "De la comunidad" |
 | [What people see](what-people-see.md) | The consent sheet, host dialogs, player messages, Configurar, statuses, disabling and uninstalling |

@@ -38,6 +38,9 @@
 | Trabajos (`schedule`, apiVersion 14) | de 1 a 3 trabajos, cada 15 a 1.440 minutos; una ejecución de máximo 20 s, 10 peticiones una a la vez, 2 MB de respuestas y 256 KB escritos en `kino.storage`; 96 ejecuciones al día por plugin; un fallo espera 15 minutos, el doble cada vez hasta 6 h, y 3 seguidos pausan el trabajo |
 | `kino.ai` (apiVersion 14) | un prompt de máximo 8.192 bytes, `system` 2.048; la respuesta cortada en `maxChars` (de 1 a 4.096, 2.048 por defecto); 10 preguntas en cualquier minuto, 100 al día y 1 a la vez por plugin; 300 al día y 2 a la vez para todos los plugins del aparato juntos; 20 s por pregunta |
 | `kino.shared` (apiVersion 14) | 4 claves de máximo 40 caracteres por plugin; un valor de máximo 64 KB y 16 niveles, 128 KB en total; 30 escrituras por minuto; el valor nuevo de una clave viaja como mucho una vez cada 60 s |
+| `kino.identity` (apiVersion 15) | solo dentro de una llamada de la persona; máximo 10 llamadas por minuto por plugin; un `challenge` de 16 a 128 caracteres `A-Z a-z 0-9 _ -`; solo plugins firmados con la llave de autor de Kino ([Identidad](identity.md)) |
+| `kino.notifications` (apiVersion 15) | máximo 20 publicaciones por hora por plugin, 30 avisos guardados durante 30 días; un `title` de 1 a 80 caracteres, un `text` de máximo 160; una petición de máximo 8.192 caracteres ([Avisos en la campanita](notifications.md#limits)) |
+| Tiendas (`pluginStore`, apiVersion 15) | máximo 5.000 entradas y 4 MB de JSON por `storeSync`, un `state` de 16 KB; una ejecución de `storeSync` de máximo 60 s, 40 peticiones y 8 MB descargados; en una tienda en vivo, 5 s por llamada, 20 llamadas por minuto y un caché de 30 minutos ([Tiendas de plugins](plugin-stores.md#limits)) |
 
 Desde apiVersion 6, además:
 

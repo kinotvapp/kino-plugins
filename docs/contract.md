@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 14)
+# El contrato (apiVersion 1 a 15)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -46,7 +46,14 @@ export async function image({ handle }) { /* -> { bytes: base64, mime } (apiVers
 export async function screen(ctx) { /* -> a tree of nodes (apiVersion 14, screen) */ }
 export async function screenEvent(ev) { /* -> { state, toast, go, ui, config... } or null (apiVersion 14, screen) */ }
 export async function job(ctx) { /* answer ignored (apiVersion 14, schedule) */ }
+export async function storeSync({ reason, since, state }) { /* -> { full, entries, removed?, state? } (apiVersion 15, pluginStore) */ }
+export async function storeList({ category, sort, cursor }) { /* -> { entries, next? } (apiVersion 15, a live store) */ }
+export async function storeSearch({ q, category, cursor }) { /* -> { entries, next? } (apiVersion 15, a live store) */ }
 ```
+
+Desde `"apiVersion": 15` (la próxima versión de Kino, aún no publicada): `storeSync`, y `storeList` y `storeSearch` en una tienda
+en vivo, para un plugin que es una fuente de plugins ([Tiendas de plugins](plugin-stores.md)). `identity` y `notifications`
+son declarativas y no exportan nada ([Identidad](identity.md), [Avisos en la campanita](notifications.md)).
 
 ([`kino.d.ts`](reference/index.md) tiene las mismas formas como declaraciones de TypeScript.)
 

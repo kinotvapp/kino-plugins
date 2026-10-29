@@ -68,8 +68,13 @@ interface KinoLibraryEntry {
   ids: { tmdb?: number; imdb?: string }; // each only when Kino knows it; may be empty
   progress?: number;                   // watched only: 0..1 in steps of 0.01 (1 when finished)
   watchedAtMs?: number;                // watched only: rounded down to the day (UTC midnight)
+  season?: number;                     // watched series only (apiVersion 15): the season of the latest chapter played
+  episode?: number;                    // watched series only (apiVersion 15): the number of that chapter
 }
 ```
+
+- **`season` and `episode`** (arriving with the next Kino version): on a **watched series**, the latest chapter played, only
+  when its source numbered it. Never on a movie or on a series with no numbered chapter.
 
 - `kind` is `movie` or `series` and works as a filter; music and podcasts are left out.
 - `limit`: default 50, at most 100 (above 100 gives 100). `sinceMs` keeps titles played on that day (UTC) or later. A

@@ -163,6 +163,24 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 - **Exportar un plugin.** Plugins ▸ Instalados ▸ Gestionar ▸ "Exportar plugin" comparte un archivo `.kinoplugin` que se
   instala en otro celular como plugin local. [Exportar e importar un plugin](plugin-files.md).
 
+## La próxima versión de Kino (apiVersion 15) { #v15 }
+
+!!! note "Disponible con la próxima versión de Kino"
+    Todavía sin publicar. Una versión anterior de Kino rechaza estos plugins con «Este plugin necesita una versión más nueva
+    de Kino».
+
+- **La campanita de Inicio.** Un plugin con [`notifications`](notifications.md) deja avisos cortos: la campanita muestra una
+  insignia con los sin leer y las actualizaciones de plugins que esperan aprobación; tocar un aviso lleva a la pantalla del
+  plugin y lo marca leído. Cada aparato guarda los suyos.
+- **Líneas nuevas en la hoja de consentimiento.** `identity` muestra, en rojo, «Podrá saber tu usuario de Telegram y enviarlo
+  a sus servicios»; `notifications`, «Podrá mostrarte avisos en la campanita»; una tienda (`pluginStore`), «Agrega plugins de
+  sus servidores a tu tienda» y, si es en vivo, también en rojo «Lo que busques en la tienda llegará a sus servidores». La
+  persona puede apagar `identity` y `notifications` en la pestaña del plugin en Ajustes.
+- **La tienda de plugins.** Plugins muestra una sola tienda armada con las tiendas activas (Kino Plugins viene con la app):
+  Destacados, Populares e Instalados, un filtro de tiendas y, en cada tarjeta, «de &lt;tienda&gt;». Buscar, filtrar y paginar son
+  locales; Kino aplica su lista de bloqueo y el código +18 a todo lo que listan las tiendas. Un plugin que una tienda deja
+  de listar sigue instalado y en Instalados dice «Ya no está en ninguna tienda». [Tiendas de plugins](plugin-stores.md).
+
 ## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }
 
 Todavía no está en un Kino publicado. Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):

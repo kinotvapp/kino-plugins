@@ -296,6 +296,23 @@ import the kit's helpers (`createKino`, `createKitRoom`...) as the examples' tes
 `player-control-cases.json`, `panel-foreign-cases.json`, `qr-origin-cases.json`) are the very cases the app's tests
 run. More in [Screens: testing with the kit](screens.md#testing).
 
+## apiVersion 15: identity, notices and stores { #api15 }
+
+Arrives with the next Kino version (not published yet). The kit already checks and runs all of it with the app's rules:
+
+- **`identity`**: `kino.identity.telegram` answers with a fake account: `KINO_IDENTITY_TG=<id|none>`,
+  `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR` and `KINO_IDENTITY_REVOKED=1`. Only inside a call the person started
+  (`screen`, `screenEvent`, `panelAction`). The kit does not apply Kino's author-key rule. [Identity](identity.md#kit).
+- **`notifications`**: `kino.notifications.post` and `clear` write to `<folder>/.kino-notices.json`;
+  `node sdk/run.mjs . notifications` prints it and `KINO_NOTIFICATIONS_REVOKED=1` simulates the person switching it off.
+  [Notices in the bell](notifications.md#kit).
+- **`pluginStore`**: `node sdk/run.mjs <folder> storeSync [--since <ms>] [--state '<json>']`, `storeList [popular|recent]
+  [category]` and `storeSearch "<q>" [category]` print the answer as Kino's index would keep it and tell you on stderr
+  what Kino would drop. `node sdk/init.mjs my-store --store local|live` scaffolds a store.
+  [Plugin stores](plugin-stores.md#kit) and [Example stores](store-examples.md).
+- **`kino.library`**: on a watched series, `season` and `episode` (the latest chapter played, only when its source numbered
+  it); never on a movie. With `KINO_LIBRARY_FIXTURE`.
+
 ## What the Node kit does not reproduce { #differences }
 
 Kino is the authority; the kit only approximates it so

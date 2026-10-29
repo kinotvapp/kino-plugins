@@ -3,6 +3,35 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Próximamente: `apiVersion` 15, identidad, avisos y tiendas de plugins { #v15 }
+
+!!! note "Disponible con la próxima versión de Kino"
+    Disponible con la próxima versión de Kino (después de 0.9.74, todavía sin publicar). Una versión anterior rechaza estos
+    plugins con «Este plugin necesita una versión más nueva de Kino»; ninguna de las novedades se ofrece con
+    `enhancements`.
+
+Documentado el 2026-10-29. `contract.json` dice `maxApiVersion` 15; la versión de la app de `apiVersion` 15 todavía no está
+fijada. El kit de Node ya lo conoce todo ([Probar en local](test-locally.md#api15)).
+
+| Función | Desde | Cómo saberlo |
+| --- | --- | --- |
+| La capacidad `identity` y `kino.identity.telegram` | `apiVersion` 15 | `typeof kino.identity === "object"` |
+| La capacidad `notifications`, `kino.notifications.post` y `clear` | `apiVersion` 15 | `typeof kino.notifications === "object"` |
+| La capacidad `pluginStore`, el bloque `pluginStore` del manifiesto y los exports `storeSync`, `storeList` y `storeSearch` | `apiVersion` 15 | un Kino más viejo rechaza `apiVersion` 15 |
+| `season` y `episode` en `kino.library.watched()` de una serie | la próxima versión de Kino, con la capacidad `library` | los campos solo están en una serie vista |
+
+- **Identidad**: el servidor de tu plugin sabe quién es la persona sin un registro, con un seudónimo por plugin y un token
+  firmado, ligado a este aparato y a tu código con un desafío. Solo responde a plugins firmados con la llave de autor de
+  Kino. [Identidad](identity.md).
+- **Avisos**: tu plugin deja avisos cortos en la campanita de Inicio, desde una pantalla o su trabajo en segundo plano.
+  [Avisos en la campanita](notifications.md).
+- **Tiendas de plugins**: un plugin que es una **fuente de plugins** para la tienda de Kino (local, con una lista que
+  entrega en segundo plano, o en vivo, con su propia API). Kino pinta la tienda desde un índice local, mezcla las tiendas,
+  aplica su lista de bloqueo y el código +18, y instala con su hoja de consentimiento. Con **Kino Plugins**, la tienda que
+  viene en la app, la app ya no busca en GitHub por su cuenta. [Tiendas de plugins](plugin-stores.md) y dos
+  [tiendas de ejemplo](store-examples.md); `node sdk/init.mjs mi-tienda --store local|live`.
+- **La biblioteca**: una serie vista trae `season` y `episode`. [Salas, biblioteca y control del reproductor](rooms.md#library).
+
 ## Próximamente con Kino 0.9.74: `apiVersion` 14, pantallas del plugin { #v14 }
 
 !!! note "Disponible con Kino 0.9.74"

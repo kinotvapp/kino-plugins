@@ -124,6 +124,15 @@ Revisa que:
 
 ## Hazte encontrar: aparece en "De la comunidad" { #get-found }
 
+!!! note "Cambia con la próxima versión de Kino"
+    Con la próxima versión de Kino (apiVersion 15, todavía sin publicar) la app **ya no busca en GitHub por su cuenta**: la
+    lista de la comunidad la entrega **Kino Plugins**, su tienda integrada ([Tiendas de plugins](plugin-stores.md#kino-plugins)),
+    a partir de un índice que se construye cada día con los repositorios que tienen el topic `kino-plugin` y de lo que cambió
+    desde entonces. Las reglas de abajo (repositorio público, no un fork, `kino-plugin.json` válido, el topic) siguen siendo
+    las que te dejan en esa lista; lo que cambia es dónde la ve la persona: una sola tienda con búsqueda y categorías, sin las
+    pestañas «De la comunidad» ni «Buscar en GitHub». Y puedes publicar tu **propia tienda** con otra lista:
+    [Tiendas de plugins](plugin-stores.md).
+
 Kino lista los plugins de la comunidad buscando en GitHub repositorios públicos con el topic
 `kino-plugin` (los forks quedan por fuera).
 

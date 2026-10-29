@@ -175,3 +175,10 @@ A few powers are deliberately **not** in it, because a server at home never need
 ([recipe](live-channels.md#recipe-m3u)), sealed secrets ([`kino.secret`](kino-api.md#secret)), the
 author's signature ([Signed plugins](signed.md)), the hidden browser and `kino.html.select`
 ([Hidden browser](browser.md)), and key pairs ([Key pairs](kino-api.md#key-pairs)).
+
+## Example plugin stores { #store-examples }
+
+To **publish your own store** (apiVersion 15, with the next Kino version) there are two complete, copyable plugins: a
+**local** store whose list is a static JSON file and a **live** store with its own API. Both pass the kit and ship tests
+that run without a network: [Example stores](store-examples.md). The store that ships in the app, Kino Plugins, is another
+real example ([Plugin stores](plugin-stores.md#kino-plugins)).

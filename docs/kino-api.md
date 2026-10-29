@@ -666,6 +666,16 @@ alojada en el aparato ([`room`](rooms.md#room)), una pregunta a la IA de texto d
 unos pocos resultados pequeños sincronizados entre los aparatos de la persona ([`shared`](jobs-and-shared.md#shared)). Un
 `job(ctx)` en segundo plano (`schedule`) está en [Trabajos en segundo plano](jobs-and-shared.md#jobs).
 
+## `kino.identity` y `kino.notifications` (apiVersion 15) { #api15 }
+
+Cada una necesita su capacidad (declarativa, no exportas nada): `kino.identity.telegram({ challenge? })` responde un seudónimo
+de la persona para tu plugin y el token firmado que lo prueba, solo a plugins firmados con la llave de autor de Kino
+([`identity`](identity.md)); `kino.notifications.post({ id, title, titleEn?, text?, textEn?, go? })` y `clear(id?)` dejan y
+quitan avisos en la campanita de Inicio ([`notifications`](notifications.md)). Detéctalas con
+`typeof kino.identity === "object"` y `typeof kino.notifications === "object"`. En una serie vista,
+`kino.library.watched()` trae además `season` y `episode` ([Salas, biblioteca y control del reproductor](rooms.md#library)).
+Un plugin que es una tienda no llama a `kino`: exporta `storeSync` ([Tiendas de plugins](plugin-stores.md)).
+
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo

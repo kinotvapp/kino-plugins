@@ -624,6 +624,16 @@ hosted on the device ([`room`](rooms.md#room)), one ask to Kino's text AI ([`ai`
 results synced between the person's devices ([`shared`](jobs-and-shared.md#shared)). A background `job(ctx)`
 (`schedule`) is described in [Background jobs](jobs-and-shared.md#jobs).
 
+## `kino.identity` and `kino.notifications` (apiVersion 15) { #api15 }
+
+Each needs its capability (declarative, you export nothing): `kino.identity.telegram({ challenge? })` answers a pseudonym of
+the person for your plugin and the signed token that proves it, only to plugins signed with Kino's own author key
+([`identity`](identity.md)); `kino.notifications.post({ id, title, titleEn?, text?, textEn?, go? })` and `clear(id?)` leave
+and remove notices in the Home bell ([`notifications`](notifications.md)). Detect them with
+`typeof kino.identity === "object"` and `typeof kino.notifications === "object"`. On a watched series,
+`kino.library.watched()` also carries `season` and `episode` ([Rooms, the library and player control](rooms.md#library)).
+A plugin that is a store does not call `kino`: it exports `storeSync` ([Plugin stores](plugin-stores.md)).
+
 ## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` waits 0 to 5000 ms (for a site that rate-limits you); the time counts

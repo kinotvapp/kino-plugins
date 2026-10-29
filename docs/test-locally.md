@@ -304,6 +304,23 @@ como lo hacen las pruebas de los ejemplos ([kino-plugin-news](https://github.com
 `player-control-cases.json`, `panel-foreign-cases.json`, `qr-origin-cases.json`) son los mismos casos que corren las
 pruebas de la app. Más en [Pantallas: probar con el kit](screens.md#testing).
 
+## apiVersion 15: identidad, avisos y tiendas { #api15 }
+
+Llega con la próxima versión de Kino (todavía sin publicar). El kit ya revisa y corre todo con las reglas de la app:
+
+- **`identity`**: `kino.identity.telegram` responde con una cuenta de mentira: `KINO_IDENTITY_TG=<id|none>`,
+  `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR` y `KINO_IDENTITY_REVOKED=1`. Solo dentro de una llamada de la persona
+  (`screen`, `screenEvent`, `panelAction`). El kit no aplica la regla de la llave de autor de Kino. [Identidad](identity.md#kit).
+- **`notifications`**: `kino.notifications.post` y `clear` guardan en `<carpeta>/.kino-notices.json`;
+  `node sdk/run.mjs . notifications` lo imprime y `KINO_NOTIFICATIONS_REVOKED=1` simula que la persona la apagó.
+  [Avisos en la campanita](notifications.md#kit).
+- **`pluginStore`**: `node sdk/run.mjs <carpeta> storeSync [--since <ms>] [--state '<json>']`, `storeList [popular|recent]
+  [categoría]` y `storeSearch "<q>" [categoría]` imprimen la respuesta como la guardaría el índice de Kino y avisan por
+  stderr lo que Kino descartaría. `node sdk/init.mjs mi-tienda --store local|live` arma una tienda.
+  [Tiendas de plugins](plugin-stores.md#kit) y [Tiendas de ejemplo](store-examples.md).
+- **`kino.library`**: en una serie vista, `season` y `episode` (el último capítulo reproducido, solo si su fuente lo numeró);
+  nunca en una película. Con `KINO_LIBRARY_FIXTURE`.
+
 ## Lo que el kit de Node no reproduce { #differences }
 
 Kino es la autoridad; el kit solo se le aproxima para que puedas iterar rápido. Antes de publicar,

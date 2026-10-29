@@ -143,6 +143,23 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
 - **Exporting a plugin.** Plugins ▸ Instalados ▸ Gestionar ▸ "Exportar plugin" shares a `.kinoplugin` file that installs
   on another phone as a local plugin. [Exporting and importing a plugin file](plugin-files.md).
 
+## The next Kino version (apiVersion 15) { #v15 }
+
+!!! note "Available with the next Kino version"
+    Not published yet. An older Kino refuses these plugins with «Este plugin necesita una versión más nueva de Kino».
+
+- **The Home bell.** A plugin with [`notifications`](notifications.md) leaves short notices: the bell shows a badge with the
+  unread ones and the plugin updates waiting for approval; tapping a notice goes to the plugin's screen and marks it read.
+  Each device keeps its own.
+- **New consent lines.** `identity` shows, in red, «Podrá saber tu usuario de Telegram y enviarlo a sus servicios»;
+  `notifications`, «Podrá mostrarte avisos en la campanita»; a store (`pluginStore`), «Agrega plugins de sus servidores a tu
+  tienda» and, if it is live, also in red «Lo que busques en la tienda llegará a sus servidores». The person can switch
+  `identity` and `notifications` off in the plugin's tab in Ajustes.
+- **The plugin store.** Plugins shows one store built from the active stores (Kino Plugins ships with the app): Destacados,
+  Populares and Instalados, a store filter and, on every card, «de &lt;store&gt;». Searching, filtering and paging are local; Kino
+  applies its blocklist and the 18+ code to everything stores list. A plugin a store stops listing stays installed and
+  Instalados says «Ya no está en ninguna tienda». [Plugin stores](plugin-stores.md).
+
 ## The next Kino version (apiVersion 13, in development) { #v13 }
 
 Not in a released Kino yet. With the apiVersion 13 capabilities ([What's new](changelog.md#v13)):

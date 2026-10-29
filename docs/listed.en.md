@@ -10,6 +10,14 @@ People get your plugin in two ways:
 Nobody approves community plugins: the app searches GitHub itself, with the rules below. Follow the
 five steps and you are in.
 
+!!! note "Changes with the next Kino version"
+    With the next Kino version (apiVersion 15, not published yet) the app **no longer searches GitHub by itself**: the
+    community list comes from **Kino Plugins**, its built-in store ([Plugin stores](plugin-stores.md#kino-plugins)), which
+    reads an index built every day from the repositories with the `kino-plugin` topic plus what changed since. The rules below
+    (public repository, not a fork, a valid `kino-plugin.json`, the topic) are still what gets you into that list; what
+    changes is where people see it: one store with search and categories, without the «De la comunidad» and «Buscar en
+    GitHub» tabs. And you can publish a **store of your own** with another list: [Plugin stores](plugin-stores.md).
+
 ## The five steps { #steps }
 
 ### 1. A public repository, created from the template (not a fork) { #public-not-fork }

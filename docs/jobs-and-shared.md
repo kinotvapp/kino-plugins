@@ -128,6 +128,7 @@ Una lista permitida:
 - [`kino.library`](rooms.md#library), con su propia aprobación (la misma regla de +18, redondeo y ritmo).
 - [`kino.ai`](#ai), con su propia aprobación; cada pregunta es una de las 10 peticiones de la ejecución.
 - [`kino.shared`](#shared).
+- [`kino.notifications`](notifications.md) (apiVersion 15), con su propia aprobación: lo habitual es que el trabajo publique aquí lo nuevo.
 - [`kino.seed`](kino-api.md#seed), con las mismas reglas de siempre: el mismo consentimiento de telemetría, el mismo
   filtro y los mismos topes. Así una contribución puede pasar de después de Inicio a un trabajo (con
   [`enabledBy`](#enabled-by) en tu ajuste de contribución, corre justo mientras la persona deje ese ajuste encendido).

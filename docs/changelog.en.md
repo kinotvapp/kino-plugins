@@ -3,6 +3,34 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Upcoming: `apiVersion` 15, identity, notices and plugin stores { #v15 }
+
+!!! note "Available with the next Kino version"
+    Available with the next Kino version (after 0.9.74, not published yet). An older version refuses these plugins with
+    «Este plugin necesita una versión más nueva de Kino»; none of these features is offered through `enhancements`.
+
+Documented on 2026-10-29. `contract.json` says `maxApiVersion` 15; the app version of `apiVersion` 15 is not fixed yet. The
+Node kit already knows all of it ([Test it locally](test-locally.md#api15)).
+
+| Feature | Since | How to tell |
+| --- | --- | --- |
+| The `identity` capability and `kino.identity.telegram` | `apiVersion` 15 | `typeof kino.identity === "object"` |
+| The `notifications` capability, `kino.notifications.post` and `clear` | `apiVersion` 15 | `typeof kino.notifications === "object"` |
+| The `pluginStore` capability, the manifest's `pluginStore` block and the exports `storeSync`, `storeList` and `storeSearch` | `apiVersion` 15 | an older Kino refuses `apiVersion` 15 |
+| `season` and `episode` in a series' `kino.library.watched()` | the next Kino version, with the `library` capability | the fields exist only on a watched series |
+
+- **Identity**: your plugin's server knows who the person is without a sign-up, with a pseudonym per plugin and a signed token,
+  bound to this device and to your code through a challenge. It answers only plugins signed with Kino's own author key.
+  [Identity](identity.md).
+- **Notices**: your plugin leaves short notices in the Home bell, from a screen or its background job.
+  [Notices in the bell](notifications.md).
+- **Plugin stores**: a plugin that is a **source of plugins** for Kino's store (local, with a list it hands over in the
+  background, or live, with its own API). Kino paints the store from a local index, mixes the stores, applies its blocklist
+  and the 18+ code, and installs through its consent sheet. With **Kino Plugins**, the store that ships in the app, the app no
+  longer searches GitHub by itself. [Plugin stores](plugin-stores.md) and two [example stores](store-examples.md);
+  `node sdk/init.mjs my-store --store local|live`.
+- **The library**: a watched series carries `season` and `episode`. [Rooms, the library and player control](rooms.md#library).
+
 ## Upcoming with Kino 0.9.74: `apiVersion` 14, plugin screens { #v14 }
 
 !!! note "Available with Kino 0.9.74"

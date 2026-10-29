@@ -127,6 +127,7 @@ An allow-list:
 - [`kino.library`](rooms.md#library), with its own approval (the same 18+ rule, rounding and rate).
 - [`kino.ai`](#ai), with its own approval; each ask is one of the run's 10 requests.
 - [`kino.shared`](#shared).
+- [`kino.notifications`](notifications.md) (apiVersion 15), with its own approval: typically the job posts what is new here.
 - [`kino.seed`](kino-api.md#seed), under exactly its usual rules: the same telemetry consent, filter and caps. So a
   contribution may move from after Home into a job (with [`enabledBy`](#enabled-by) on your contribution setting, it runs
   exactly while the person leaves that setting on).
