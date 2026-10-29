@@ -374,7 +374,7 @@ función, o nadie está usando la app), `rate_limited` e `invalid_request`.
 
 ## Un ejemplo real { #real-world }
 
-[**Maratón**](https://github.com/xuper-plugin/maraton) (firmado, `apiVersion` 6, `"browser": "pages"`) es un plugin hecho así:
+**Maratón** (firmado, `apiVersion` 6, `"browser": "pages"`) es un plugin hecho así:
 lista los servidores e idiomas de cada capítulo con `kino.fetch` normal, reproduce el primero con
 `kino.browser.capture` y ofrece los demás como [copias perezosas con etiqueta](contract.md#lazy-copies)
 en el menú Servidor del reproductor, cada una capturada solo cuando la persona la escoge. Para todo lo

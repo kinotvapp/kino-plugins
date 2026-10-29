@@ -807,7 +807,7 @@ only when you use one of these.
    `browser_unavailable`. Each page starts with no cookies and is wiped after; it never reaches the
    home network.
 6. **Combine it with labelled lazy copies**: capture the first server in `resolve`, list the other
-   servers/languages as `{ label, ref }`, and capture each only when its `ref` comes back. ([Maratón](https://github.com/xuper-plugin/maraton),
+   servers/languages as `{ label, ref }`, and capture each only when its `ref` comes back. (Maratón,
    a signed community plugin, works this way; "Tu servidor" stays the complete
    reference for everything else.) Full page:
    [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
