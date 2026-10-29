@@ -133,7 +133,7 @@ filas nunca cuentan como la lista sincronizada de la tienda.
   desinstala** nada: un plugin instalado sigue funcionando y en Instalados dice «Ya no está en ninguna tienda».
 - **Apagar una tienda.** Cada tienda se apaga desde su pestaña en Ajustes (y se desinstala como cualquier plugin, salvo Kino
   Plugins), donde también se elige su intervalo; sus filas salen del índice al instante.
-- **Instalar.** Siempre `PluginInstaller`: vista previa de la dirección, hoja de consentimiento («Plugin no verificado…» si no
+- **Instalar.** Siempre el instalador de Kino: vista previa de la dirección, hoja de consentimiento («Plugin no verificado…» si no
   está firmado) e instalación. Nada se instala solo.
 
 ## Límites { #limits }
@@ -164,8 +164,8 @@ node sdk/init.mjs mi-tienda --host plugins.ana.example --store local     # o --s
 capacidad, `pluginStore`, y los hosts `api.github.com`, `raw.githubusercontent.com`, `cdn.jsdelivr.net` y `archive.org`.
 Su código fuente vive en el repositorio `kinotvapp/kino-plugin-store`. Lo que responde su `storeSync`:
 
-1. **La primera vez**, sin red: la lista que trae el propio plugin (los plugins recomendados del catálogo y los de la
-   comunidad), así que la tienda está llena desde el primer arranque. Las entradas del catálogo llevan `recommended`.
+1. **La primera vez**, sin red: la lista que trae el propio plugin (los plugins que Kino Plugins lista por defecto y los de la
+   comunidad), así que la tienda está llena desde el primer arranque. Las del catálogo de Kino llevan `recommended`.
 2. **Una vez al día**, el `index.json` de `kinotvapp/kino-plugins`: un archivo estático que **se construye cada día** con una
    acción de GitHub que recorre los repositorios con el topic `kino-plugin`. Releerlo trae las estrellas y quita los
    repositorios que perdieron el topic o se borraron.

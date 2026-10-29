@@ -163,8 +163,8 @@ node sdk/init.mjs my-store --host plugins.ana.example --store local     # or --s
 `pluginStore`, and the hosts `api.github.com`, `raw.githubusercontent.com`, `cdn.jsdelivr.net` and `archive.org`. Its source
 lives in the repository `kinotvapp/kino-plugin-store`. What its `storeSync` answers:
 
-1. **The first time**, with no network: the list the plugin itself carries (the catalog's recommended plugins and the
-   community's), so the store is full from the first start. The catalog's entries carry `recommended`.
+1. **The first time**, with no network: the list the plugin itself carries (the plugins Kino Plugins lists by default and the
+   community's), so the store is full from the first start. The ones from Kino's catalog carry `recommended`.
 2. **Once a day**, `index.json` from `kinotvapp/kino-plugins`: a static file that **is built every day** by a GitHub Action
    that walks the repositories with the `kino-plugin` topic. Re-reading it brings the stars and drops repositories that lost
    the topic or were deleted.
