@@ -101,6 +101,16 @@ plugins:
             Home por categorías: Home categories
             Registro y telemetría: Logs and telemetry
             Reclamos y retiro de plugins: Claims and plugin takedowns
+            Pantallas: Screens
+            Pantallas del plugin: Plugin screens
+            "Componentes: diseño, contenido y acciones": "Components: layout, content and actions"
+            "Componentes: formularios, ventanas y navegación": "Components: forms, overlays and navigation"
+            "Componentes: estado, estilo y recetas": "Components: state, style and recipes"
+            "Salas, biblioteca y control del reproductor": "Rooms, the library and player control"
+            "Trabajos, resultados compartidos e IA": "Background jobs, shared results and AI"
+            Pantallas sin subir tu apiVersion: Screens without raising your apiVersion
+            Estructurar un plugin grande: Structure a bigger plugin
+            Exportar e importar un plugin: Exporting and importing a plugin
 
 hooks:
   - hooks/llms.py
@@ -115,6 +125,14 @@ nav:
   - Plugins firmados: signed.md
   - Firma tu plugin, paso a paso: sign-tutorial.md
   - Novedades: changelog.md
+  - Pantallas:
+      - Pantallas del plugin: screens.md
+      - "Componentes: diseño, contenido y acciones": screen-components.md
+      - "Componentes: formularios, ventanas y navegación": screen-forms.md
+      - "Componentes: estado, estilo y recetas": screen-reference.md
+      - "Salas, biblioteca y control del reproductor": rooms.md
+      - "Trabajos, resultados compartidos e IA": jobs-and-shared.md
+      - Pantallas sin subir tu apiVersion: enhancements.md
   - Guía:
       - Manifiesto: manifest.md
       - Contrato: contract.md
@@ -137,8 +155,10 @@ nav:
       - Home por categorías: categories.md
       - Registro y telemetría: diagnostics.md
       - Límites y trampas del motor: engine-limits.md
+      - Estructurar un plugin grande: structure.md
       - Probar en local: test-locally.md
       - Publicar: publish.md
+      - Exportar e importar un plugin: plugin-files.md
       - Lo que ve la persona: what-people-see.md
       - Recetario: cookbook.md
       - Scrapers de Nuvio: nuvio.md
