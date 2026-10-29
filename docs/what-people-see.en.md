@@ -155,9 +155,11 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   `notifications`, «Podrá mostrarte avisos en la campanita»; a store (`pluginStore`), «Agrega plugins de sus servidores a tu
   tienda» and, if it is live, also in red «Lo que busques en la tienda llegará a sus servidores». The person can switch
   `identity` and `notifications` off in the plugin's tab in Ajustes.
-- **The plugin store.** Plugins shows one store built from the active stores (Kino Plugins ships with the app): Destacados,
-  Populares and Instalados, a store filter and, on every card, «de &lt;store&gt;». Searching, filtering and paging are local; Kino
-  applies its blocklist and the 18+ code to everything stores list. A plugin a store stops listing stays installed and
+- **The plugin store.** Plugins shows one store built from the active stores (Kino Plugins ships with the app): the tabs «De Kino»
+  (From Kino: Kino Plugins' default list), «De la comunidad» (Community: everything else, from every store, with the
+  «Populares»/«Recientes» sort) and «Instalados» (Installed), a store filter and, on every card, «de &lt;store&gt;». A reload
+  icon syncs the stores and ends with a toast, «Se actualizaron N plugins» or «Tus plugins están al día». Searching, filtering and paging are local; Kino
+  applies its blocklist and the 18+ code to everything stores list, and keeps one plugin per `id` across stores. A plugin a store stops listing stays installed and
   Instalados says «Ya no está en ninguna tienda». [Plugin stores](plugin-stores.md).
 
 ## The next Kino version (apiVersion 13, in development) { #v13 }

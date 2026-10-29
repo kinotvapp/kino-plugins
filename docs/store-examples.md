@@ -15,7 +15,8 @@ Para empezar de cero: `node sdk/init.mjs mi-tienda --host mi-sitio.example --sto
 
 La lista completa es un archivo (`plugins.json`) que publicas donde quieras por https; el plugin lo descarga en `storeSync`
 y le entrega a Kino toda la lista (`full: true`), o un cambio vacío si el archivo no cambió. Kino nunca le pregunta nada
-mientras la persona navega.
+mientras la persona navega. Solo se ahorra el trabajo si guarda un `state` de antes: si Kino perdió las filas de la tienda, vuelve
+a pedir sin `since` ni `state` y el plugin responde la lista completa.
 
 Descargas: [`kino-plugin.json`](store-examples/store-local/kino-plugin.json) ·
 [`plugin.js`](store-examples/store-local/plugin.js) · [`plugins.json`](store-examples/store-local/plugins.json) ·

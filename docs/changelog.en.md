@@ -26,7 +26,7 @@ Node kit already knows all of it ([Test it locally](test-locally.md#api15)).
   [Notices in the bell](notifications.md).
 - **Plugin stores**: a plugin that is a **source of plugins** for Kino's store (local, with a list it hands over in the
   background, or live, with its own API). Kino paints the store from a local index, mixes the stores, applies its blocklist
-  and the 18+ code, and installs through its consent sheet. With **Kino Plugins**, the store that ships in the app, the app no
+  and the 18+ code, and installs through its consent sheet. The store view has the tabs «De Kino» (From Kino), «De la comunidad» (Community) and «Instalados»; a reload icon ends with a toast. One plugin per `id` across stores; a store whose rows Kino lost is synced from scratch (no `since`, no `state`: answer the full list); the blocklist refreshes with every sync. With **Kino Plugins**, the store that ships in the app, the app no
   longer searches GitHub by itself. [Plugin stores](plugin-stores.md) and two [example stores](store-examples.md);
   `node sdk/init.mjs my-store --store local|live`.
 - **The library**: a watched series carries `season` and `episode`. [Rooms, the library and player control](rooms.md#library).

@@ -126,8 +126,9 @@ Check that:
     community list comes from **Kino Plugins**, its built-in store ([Plugin stores](plugin-stores.md#kino-plugins)), which
     reads an index built every day from the repositories with the `kino-plugin` topic plus what changed since. The rules below
     (public repository, not a fork, a valid `kino-plugin.json`, the topic) are still what gets you into that list; what
-    changes is where people see it: one store with search and categories, without the «De la comunidad» and «Buscar en
-    GitHub» tabs. And you can publish a **store of your own** with another list: [Plugin stores](plugin-stores.md).
+    changes is where people see it: one store view with search, categories and the tabs «De Kino» (Kino Plugins' default
+    list), «De la comunidad» (everything else, from every store) and «Instalados», without the old «Buscar en GitHub» tab.
+    There is one plugin per `id` across all stores, and the owner's blocklist is refreshed with every sync. And you can publish a **store of your own** with another list: [Plugin stores](plugin-stores.md).
 
 Kino lists community plugins by searching GitHub for public repositories with the topic
 `kino-plugin` (forks are left out).

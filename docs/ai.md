@@ -119,6 +119,10 @@ Antes de escribir nada:
    servidor mío, y Sync-Gram Cuenta (https://github.com/kinotvapp/kino-plugin-sync-gram-account, la propia
    cuenta de Telegram de la persona por un WebSocket, apiVersion 13: sync.generateKey, una contraseña 2FA de un
    solo uso en provision, hide en settingsStatus) para una cuenta mía.
+7. Si mi plugin es una tienda (una fuente de plugins para la tienda de Kino), o usa identidad o avisos, lee primero
+   https://kinotvapp.github.io/kino-plugins/plugin-stores/, /store-examples/, /identity/ y /notifications/
+   (apiVersion 15, la próxima versión de Kino, todavía sin publicar) y parte de una tienda de ejemplo con
+   node sdk/init.mjs mi-tienda --host <host> --store local|live.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -131,6 +135,8 @@ Lo que quiero:
 - Proveedor de sincronización (el plugin lleva la sincronización de Kino entre mis aparatos en vez de la red local): <<< no / sí: el servicio, si le da a cada persona un token largo y aleatorio, y si el servicio puede leer los datos sincronizados >>>
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
 - Su propia pantalla (un tablero, una configuración paso a paso, una pestaña del panel...): <<< no / sí: qué muestra y qué hace ahí la persona >>>
+- Una tienda (una fuente de plugins para la tienda de Kino, apiVersion 15): <<< no / sí: local (una lista que entrega en segundo plano, desde GitHub, mi servidor o un archivo JSON estático) o en vivo (también responde mientras la persona navega: storeList y storeSearch, así que lo que busque llega a mi servidor), los hosts que usa y los plugins que lista >>>
+- Identidad o avisos (apiVersion 15): <<< no / sí: quién necesita el seudónimo de Telegram de la persona (solo responde a plugins firmados con la llave de autor de Kino) y qué avisos dejar en la campanita de Inicio >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
@@ -303,7 +309,28 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra;
 - si tiene una pantalla: node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
   cada nombre de evento que usas tiene respuesta en screenEvent y, si su apiVersion es menor que 14, la pantalla
-  llega por "enhancements" y node sdk/validate.mjs . no reporta ningún bloque descartado.
+  llega por "enhancements" y node sdk/validate.mjs . no reporta ningún bloque descartado;
+- apiVersion 15 (la próxima versión de Kino, todavía sin publicar: NINGÚN Kino publicado lo instala; avísame antes de
+  usarlo). Una tienda: "capabilities": ["pluginStore"] (puede ir sola) y, si quieres, "pluginStore": { "mode": "local" |
+  "live", "name" }. storeSync({ reason, since, state }) responde { full, entries, removed?, state? } y since/state pueden
+  faltar en cualquier momento: cuando Kino pierde las filas de una tienda la sincroniza de nuevo desde cero, así que la
+  tienda debe responder entonces su lista completa (full: true) y nunca depender de un cursor guardado. Una tienda en
+  vivo (mode "live") exporta además storeList({ category, sort, cursor }) y storeSearch({ q, category, cursor }), 5 s y
+  20 llamadas por minuto. Cada entrada lleva address (owner/repo, owner/repo/ruta, owner/repo@ref o url:https://...), id,
+  name (de 1 a 60 caracteres) y, opcionales, description, categories, icon, popularity, updatedAt, signed/authorKey
+  (solo pistas); "recommended" se ignora fuera de Kino Plugins. Máximo 5.000 entradas y 4 MB. Un plugin por id en todas
+  las tiendas: si dos repositorios reclaman un id gana el de la lista de Kino Plugins y, si no, se conserva uno de forma
+  determinista, y ninguna tienda puede listar el id kino-plugins. La tienda solo entrega direcciones: nunca instala nada
+  ni dice que aprueba un plugin; Kino aplica su lista de bloqueo y el código +18, y muestra las líneas de consentimiento
+  (una en rojo para una tienda en vivo). Quien publica un plugin responde por él; Kino solo lo lista. La vista de la
+  tienda tiene las pestañas «De Kino» (la lista por defecto de Kino Plugins), «De la comunidad» (todo lo demás, de todas
+  las tiendas) e «Instalados». Comprueba con node sdk/validate.mjs . y node sdk/run.mjs . storeSync (y storeList /
+  storeSearch si es en vivo) sin nada reportado como [dropped by Kino]. identity: kino.identity.telegram({ challenge? })
+  responde { id, token } solo a plugins firmados con la llave de autor de Kino y solo dentro de una llamada que la persona
+  inició; nunca registres ni muestres el token; el plugin funciona si se rechaza (permission_denied). notifications:
+  kino.notifications.post({ id, title, text?, go? }) y clear(id?), títulos de 80 caracteres, textos de 160, 20 avisos por
+  hora, desde una pantalla o el trabajo. library: kino.library.watched() trae season y episode en las series. Todo
+  declarativo y probado con node sdk/run.mjs . notifications y las variables KINO_IDENTITY_*.
 
 Al final, llévame de la mano:
 1. Publicarlo: repositorio público (nunca fork) con los archivos en la raíz; el topic kino-plugin y
@@ -388,6 +415,11 @@ Desde Kino 0.9.54 la app lee los resultados de a 100, en el orden que elige la p
 nombre y la descripción de su repositorio, así que también se encuentra un plugin sin estrellas. Cada
 dispositivo busca de nuevo cada 12 horas, o al tocar "Actualizar". Los clics exactos y cómo
 comprobarlo: [Aparecer en Kino](listed.md).
+
+Con la próxima versión de Kino (apiVersion 15, todavía sin publicar) la app ya no busca en GitHub por su cuenta: la pestaña
+«De la comunidad» de la vista de la tienda (junto a «De Kino» e «Instalados») la llena Kino Plugins, cuyo índice diario se
+construye con los repositorios que tienen el topic `kino-plugin`; las reglas de arriba siguen valiendo. Hay un plugin por `id`
+en todas las tiendas y un ícono de recargar termina con un aviso («Se actualizaron N plugins» o «Tus plugins están al día»).
 
 ## Plugins firmados { #signed }
 

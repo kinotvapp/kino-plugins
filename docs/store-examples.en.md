@@ -15,7 +15,8 @@ To start from scratch: `node sdk/init.mjs my-store --host my-site.example --stor
 
 The whole list is one file (`plugins.json`) that you publish anywhere over https; the plugin downloads it in `storeSync` and
 hands Kino the whole list (`full: true`), or an empty change when the file did not change. Kino never asks it anything while
-the person browses.
+the person browses. It only skips the work when it holds a `state` from before: if Kino lost the store's rows it asks again
+with no `since` and no `state`, and the plugin answers the whole list.
 
 Downloads: [`kino-plugin.json`](store-examples/store-local/kino-plugin.json) ·
 [`plugin.js`](store-examples/store-local/plugin.js) · [`plugins.json`](store-examples/store-local/plugins.json) ·

@@ -27,7 +27,7 @@ fijada. El kit de Node ya lo conoce todo ([Probar en local](test-locally.md#api1
   [Avisos en la campanita](notifications.md).
 - **Tiendas de plugins**: un plugin que es una **fuente de plugins** para la tienda de Kino (local, con una lista que
   entrega en segundo plano, o en vivo, con su propia API). Kino pinta la tienda desde un índice local, mezcla las tiendas,
-  aplica su lista de bloqueo y el código +18, y instala con su hoja de consentimiento. Con **Kino Plugins**, la tienda que
+  aplica su lista de bloqueo y el código +18, y instala con su hoja de consentimiento. La vista de la tienda tiene las pestañas «De Kino», «De la comunidad» e «Instalados»; un ícono de recargar termina con un aviso. Un plugin por `id` en todas las tiendas; una tienda cuyas filas perdió Kino se sincroniza desde cero (sin `since` ni `state`: responde la lista completa); la lista de bloqueo se refresca con cada sincronización. Con **Kino Plugins**, la tienda que
   viene en la app, la app ya no busca en GitHub por su cuenta. [Tiendas de plugins](plugin-stores.md) y dos
   [tiendas de ejemplo](store-examples.md); `node sdk/init.mjs mi-tienda --store local|live`.
 - **La biblioteca**: una serie vista trae `season` y `episode`. [Salas, biblioteca y control del reproductor](rooms.md#library).

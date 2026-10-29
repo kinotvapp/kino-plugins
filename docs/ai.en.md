@@ -116,6 +116,10 @@ Before writing anything:
    (https://github.com/kinotvapp/kino-plugin-sync-gram-account, the person's own Telegram account over a
    WebSocket, apiVersion 13: sync.generateKey, a one-shot 2FA password in provision, settingsStatus hide) for
    an account of my own.
+7. If my plugin is a store (a source of plugins for Kino's store), or uses identity or notifications, read
+   https://kinotvapp.github.io/kino-plugins/en/plugin-stores/, /en/store-examples/, /en/identity/ and
+   /en/notifications/ first (apiVersion 15, the next Kino version, not published yet) and start from an example
+   store with node sdk/init.mjs my-store --host <host> --store local|live.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -128,6 +132,8 @@ What I want:
 - Sync provider (the plugin carries Kino's sync between my devices instead of the local network): <<< no / yes: the service, whether it gives each person a long random token, and whether the service may read the synced data >>>
 - Name in Kino and a short description: <<< e.g. "Mi fuente": "Películas de …, en español" >>>
 - Its own screen (a dashboard, a setup flow, a panel tab...): <<< no / yes: what it shows and what the person does there >>>
+- A store (a source of plugins for Kino's store, apiVersion 15): <<< no / yes: local (a list it hands over in the background, from GitHub, my server or a static JSON file) or live (also answers while the person browses: storeList and storeSearch, so what they search reaches my server), the hosts it uses, and the plugins it lists >>>
+- Identity or notices (apiVersion 15): <<< no / yes: who needs the person's Telegram pseudonym (only plugins signed with Kino's author key get an answer) and what notices to leave in the Home bell >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 
@@ -294,7 +300,28 @@ you hand the plugin over run this self-check and tell me the result of each line
   that checks every range byte for byte, no handle holds a secret, and every socket is closed;
 - if it has a screen: node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
   event name you use answers in screenEvent, and, if its apiVersion is below 14, the screen comes through
-  "enhancements" and node sdk/validate.mjs . reports no dropped block.
+  "enhancements" and node sdk/validate.mjs . reports no dropped block;
+- apiVersion 15 (the next Kino version, not published yet: NO released Kino installs it; tell me before using it).
+  A store: "capabilities": ["pluginStore"] (it may stand alone) and optionally "pluginStore": { "mode": "local" | "live",
+  "name" }. storeSync({ reason, since, state }) answers { full, entries, removed?, state? } and since/state may be
+  absent at any time: when Kino loses a store's rows it syncs it again from scratch, so the store must then answer
+  its whole list (full: true) and never rely on a saved cursor. A live store (mode "live") also exports storeList({
+  category, sort, cursor }) and storeSearch({ q, category, cursor }), 5 s and 20 calls a minute. Each entry has an
+  address (owner/repo, owner/repo/path, owner/repo@ref or url:https://...), an id, a name (1 to 60 characters) and
+  optional description, categories, icon, popularity, updatedAt, signed/authorKey (hints only); "recommended" is
+  ignored outside Kino Plugins. At most 5,000 entries and 4 MB. One plugin per id across all stores: if two repos
+  claim an id the one in Kino Plugins' list wins, otherwise one is kept deterministically, and no store may list the
+  id kino-plugins. The store only hands over addresses: it never installs anything and never claims to approve a
+  plugin; Kino applies its blocklist and the 18+ code, and shows the consent lines (a red one for a live store). The
+  people who publish a plugin answer for it; Kino only lists it. The store view has the tabs "De Kino" (Kino Plugins'
+  default list), "De la comunidad" (everything else from every store) and "Instalados". Check with node sdk/validate.mjs
+  . and node sdk/run.mjs . storeSync (and storeList / storeSearch for a live store) with nothing reported as [dropped by
+  Kino]. identity: kino.identity.telegram({ challenge? }) answers { id, token } only to plugins signed with Kino's author
+  key and only inside a call the person started; never log or show the token; the plugin works with it refused
+  (permission_denied). notifications: kino.notifications.post({ id, title, text?, go? }) and clear(id?), 80-character
+  titles, 160-character texts, 20 posts an hour, from a screen or the job. library: kino.library.watched() carries
+  season and episode on series. All of it declarative, tested with node sdk/run.mjs . notifications and the KINO_IDENTITY_*
+  variables.
 
 At the end, walk me through:
 1. Publishing it: a public repository (never a fork) with the files at the root; the topic
@@ -378,6 +405,11 @@ or "Recientes"), "Cargar más" reads the next 100, and "Buscar en GitHub" finds 
 repository's name and description, so a plugin with no stars is found too. Each device searches again
 every 12 hours, or when "Actualizar" is tapped. The exact clicks and how
 to check it: [Get listed in Kino](listed.md).
+
+With the next Kino version (apiVersion 15, not published yet) the app no longer searches GitHub by itself: the "De la
+comunidad" tab of the store view (beside "De Kino" and "Instalados") is filled by Kino Plugins, whose daily index is built
+from the repositories with the `kino-plugin` topic; the rules above still apply. There is one plugin per `id` across stores,
+and a reload icon ends with a toast ("Se actualizaron N plugins" or "Tus plugins están al día").
 
 ## Signed plugins { #signed }
 

@@ -177,8 +177,8 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   sus servidores a tu tienda» y, si es en vivo, también en rojo «Lo que busques en la tienda llegará a sus servidores». La
   persona puede apagar `identity` y `notifications` en la pestaña del plugin en Ajustes.
 - **La tienda de plugins.** Plugins muestra una sola tienda armada con las tiendas activas (Kino Plugins viene con la app):
-  Destacados, Populares e Instalados, un filtro de tiendas y, en cada tarjeta, «de &lt;tienda&gt;». Buscar, filtrar y paginar son
-  locales; Kino aplica su lista de bloqueo y el código +18 a todo lo que listan las tiendas. Un plugin que una tienda deja
+  las pestañas «De Kino» (la lista por defecto de Kino Plugins), «De la comunidad» (todo lo demás, de todas las tiendas, con el orden «Populares»/«Recientes») e «Instalados», un filtro de tiendas y, en cada tarjeta, «de &lt;tienda&gt;». Un ícono de recargar sincroniza las tiendas y termina con un aviso, «Se actualizaron N plugins» o «Tus plugins están al día». Buscar, filtrar y paginar son
+  locales; Kino aplica su lista de bloqueo y el código +18 a todo lo que listan las tiendas, y deja un plugin por `id` en todas las tiendas. Un plugin que una tienda deja
   de listar sigue instalado y en Instalados dice «Ya no está en ninguna tienda». [Tiendas de plugins](plugin-stores.md).
 
 ## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }

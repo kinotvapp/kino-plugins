@@ -19,6 +19,9 @@ por sí sola: instalar es siempre el flujo de Kino (vista previa, hoja de consen
   consultas locales, instantáneas y iguales sin red.
 - **Tu plugin solo entrega entradas.** Se sincroniza (`storeSync`) en segundo plano y, si es una tienda en vivo, responde
   mientras la persona navega (`storeList`, `storeSearch`). No dibuja nada.
+- **Tres pestañas.** La vista de la tienda tiene «De Kino», «De la comunidad» e «Instalados». «De Kino» es la lista por
+  defecto de Kino Plugins. «De la comunidad» es todo lo demás, de todas las tiendas, **sin la lista de Kino**: ahí están el
+  orden («Populares» o «Recientes»), el filtro de tiendas y las tiendas en vivo.
 - **Cada tarjeta dice de dónde viene**: abajo lleva el ícono de la tienda y «de &lt;nombre de la tienda&gt;». Arriba hay un filtro
   de tiendas: «Todas las tiendas» (por defecto) y luego cada tienda instalada y activa.
 - **Kino Plugins** es la tienda que viene en la app: un plugin corriente, firmado, que no se puede desinstalar (sí apagar).
@@ -41,15 +44,17 @@ por sí sola: instalar es siempre el flujo de Kino (vista previa, hoja de consen
 - El bloque `pluginStore` es opcional: `mode` es `"local"` (por defecto) o `"live"`, y `name` (de 1 a 60 caracteres) es cómo
   sale la tienda en el filtro y en las tarjetas (por defecto, el `name` del plugin). El bloque sin la capacidad se rechaza.
 - `hosts`: tu tienda solo llega a los hosts que declaras, como cualquier plugin.
-- No uses el id `kino-plugins`: es el de la tienda de Kino. Y una entrada cuyo `id` ya lista Kino Plugins desde otro repositorio se descarta (ver [cómo mezcla Kino](#mixing)).
+- **Un plugin por `id`.** No uses el id `kino-plugins`: es el de la tienda de Kino y ninguna tienda puede listarlo. Y si dos
+  repositorios reclaman un mismo `id` en todas las tiendas, se queda uno solo: el de la lista de Kino Plugins y, si ninguno
+  está ahí, uno elegido de forma determinista (ver [cómo mezcla Kino](#mixing)).
 
 ## `storeSync`: todas las tiendas { #store-sync }
 
 ```js
 export async function storeSync({ reason, since, state }) {
   // reason: "schedule" (el refresco en segundo plano) o "reload" (la persona tocó recargar)
-  // since:  cuándo se sincronizó esta tienda por última vez, en ms (ausente la primera vez)
-  // state:  lo que devolviste como `state` la vez anterior (como mucho 16 KB de JSON)
+  // since:  cuándo se sincronizó esta tienda por última vez, en ms (ausente la primera vez, y cuando Kino perdió tus filas)
+  // state:  lo que devolviste como `state` la vez anterior (como mucho 16 KB de JSON; también ausente en esos casos)
   const r = await kino.fetch("https://plugins.ana.example/list.json");
   return { full: true, entries: r.json().plugins.map(toEntry), state: { etag: "…" } };
 }
@@ -64,9 +69,12 @@ Responde `{ full, entries, removed?, state? }`:
 | `state` | Un objeto pequeño (un cursor, un etag, la fecha de tu último índice) que Kino guarda y te devuelve en la siguiente llamada. |
 
 Cómo consigues la lista (GitHub, tu servidor, un archivo estático) es asunto tuyo. `storeSync` corre **solo en segundo
-plano**, al ritmo que elija la persona (cada 2 horas por defecto, solo con Wi-Fi), y cuando toca recargar («Actualizar mis
-fuentes»); nada espera por él mientras la persona navega. Una tienda con 3 fallos seguidos se pausa hasta la siguiente
-recarga.
+plano**, al ritmo que elija la persona (cada 2 horas por defecto, solo con Wi-Fi), y cuando toca el ícono de recargar; nada
+espera por él mientras la persona navega. Una tienda con 3 fallos seguidos se pausa hasta la siguiente recarga.
+
+**Prepárate para que `since` falte en cualquier momento.** Si Kino pierde las filas de tu tienda (una restauración, una base de
+datos reconstruida), la sincroniza de nuevo desde cero: sin `since` y sin `state`, igual que la primera vez. Tu `storeSync`
+debe contestar entonces su lista **completa** (`full: true`) y no suponer que tiene un cursor guardado.
 
 ## Una entrada (`StoreEntry`) { #entry }
 
@@ -79,10 +87,10 @@ recarga.
 | `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`. |
 | `tags`, `icon`, `screenshots` | Hasta 10 etiquetas de 30 caracteres; el ícono y hasta 8 capturas, solo `https`. |
 | `version`, `author` | Texto corto (40 y 60 caracteres). |
-| `popularity`, `updatedAt` | Números: para el orden «Populares» y «Recientes» (`updatedAt` en ms). |
+| `popularity`, `updatedAt` | Números: para el orden «Populares» y «Recientes» de «De la comunidad» (`updatedAt` en ms). |
 | `stremio`, `requires`, `needsSetup` | Un addon de Stremio se instala por el flujo de Stremio (entonces `address` puede faltar); `requires` lista capacidades que la versión de Kino debe poder correr, o la entrada se oculta; `needsSetup` avisa que pide configuración. |
 | `signed`, `authorKey` | **Pistas**: la tarjeta dice «Firmado» y un plugin instalado con ese id y esa llave de autor (64 caracteres hex en minúsculas) sale como instalado. Kino lo vuelve a comprobar al instalar. |
-| `recommended` | Solo lo respeta Kino si viene de **Kino Plugins**; en cualquier otra tienda se ignora. |
+| `recommended` | Solo lo respeta Kino si viene de **Kino Plugins**, y es lo que pone la entrada en «De Kino»; en cualquier otra tienda se ignora. |
 
 Una entrada sin `address` ni `stremio`, sin un `id` válido o sin `name` se descarta; los textos largos se cortan; un ícono que
 no es `https` se descarta. Pasadas 5000 entradas (contando solo las válidas, sin repetir direcciones) el resto se descarta.
@@ -114,7 +122,11 @@ filas nunca cuentan como la lista sincronizada de la tienda.
 2. **Orden estable.** En «Todas las tiendas» primero van las entradas locales, en el orden elegido; las de una tienda en vivo
    se **agregan al final** a medida que llegan. Nada de lo que ya está en pantalla se mueve y el foco (en el TV) no salta.
 3. **Sin repetidos.** Una entrada en vivo cuya dirección ya está en la lista se omite; una misma dirección de dos tiendas se
-   muestra una vez (la de Kino Plugins primero). Un mismo `id` de plugin con otro repositorio gana el de Kino Plugins.
+   muestra una vez (la de Kino Plugins primero). **Un solo repositorio por `id`, en todas las tiendas:** gana el de la lista de
+   Kino Plugins; si ninguno está ahí, Kino conserva uno de forma determinista. Y ninguna tienda puede listar el `id`
+   `kino-plugins`.
+   «De la comunidad» deja fuera lo que muestra «De Kino», la liste la tienda que la liste, y por eso una tienda en vivo solo
+   responde ahí.
 4. **Un solo «Cargar más».** Pagina primero el índice local y luego le pide a cada tienda en vivo su página siguiente.
 5. **Búsqueda.** Los resultados locales se actualizan al escribir; las búsquedas en vivo esperan a que la persona deje de
    escribir (medio segundo) y una búsqueda nueva cancela la anterior.
@@ -123,16 +135,20 @@ filas nunca cuentan como la lista sincronizada de la tienda.
 ## Lo que Kino hace por su cuenta { #kino-does }
 
 - **La lista de bloqueo.** Kino aplica su lista de bloqueo (`community-blocklist.json`, ver
-  [Reclamos y retiro de plugins](claims.md)) a **cada entrada de cada tienda** antes de pintar, y otra vez al instalar. Las
-  tiendas no la reciben ni la aplican: como Kino pinta, ninguna tienda puede mostrar un plugin bloqueado.
+  [Reclamos y retiro de plugins](claims.md)) a **cada entrada de cada tienda** antes de pintar, y otra vez al instalar. Kino
+  refresca esa lista en cada sincronización de las tiendas (y al recargar), y el índice diario de Kino Plugins ya deja fuera los
+  repositorios bloqueados. Las tiendas no la reciben ni la aplican: como Kino pinta, ninguna tienda puede mostrar un plugin
+  bloqueado.
 - **El código +18.** Mientras el código +18 de la persona esté bloqueado, una entrada con la categoría `adult`, o que Kino ya
-  conoce como +18, se oculta de Destacados, Populares, la búsqueda, la ficha y los conteos, de todas las tiendas; una tienda
+  conoce como +18, se oculta de «De Kino», «De la comunidad», la búsqueda, la ficha y los conteos, de todas las tiendas; una tienda
   cuyo propio plugin es +18 no sale en el filtro. Al desbloquear aparecen. Instalar uno pasa por la puerta +18 de siempre.
 - **Plugins que desaparecen.** Si un repositorio se borra o pierde el topic, sale de la siguiente lista de su tienda; un
   plugin cuyo manifiesto responde 404 al verlo o instalarlo se descarta al instante. Una tienda que se va **nunca
   desinstala** nada: un plugin instalado sigue funcionando y en Instalados dice «Ya no está en ninguna tienda».
 - **Apagar una tienda.** Cada tienda se apaga desde su pestaña en Ajustes (y se desinstala como cualquier plugin, salvo Kino
   Plugins), donde también se elige su intervalo; sus filas salen del índice al instante.
+- **Recargar.** La vista de la tienda tiene un ícono de recargar que sincroniza ahora todas las tiendas activas. Al terminar,
+  un aviso dice «Se actualizaron N plugins» o, si nada cambió, «Tus plugins están al día».
 - **Instalar.** Siempre el instalador de Kino: vista previa de la dirección, hoja de consentimiento («Plugin no verificado…» si no
   está firmado) e instalación. Nada se instala solo.
 
@@ -162,13 +178,14 @@ node sdk/init.mjs mi-tienda --host plugins.ana.example --store local     # o --s
 
 **Kino Plugins** (`kinotvapp`, firmada con la llave de autor de Kino) es una tienda **local** corriente, con una sola
 capacidad, `pluginStore`, y los hosts `api.github.com`, `raw.githubusercontent.com`, `cdn.jsdelivr.net` y `archive.org`.
-Su código fuente vive en el repositorio `kinotvapp/kino-plugin-store`. Lo que responde su `storeSync`:
+Viene dentro de Kino y está firmada con la llave de autor de Kino (versión 1.0.1). Lo que responde su `storeSync`:
 
 1. **La primera vez**, sin red: la lista que trae el propio plugin (los plugins que Kino Plugins lista por defecto y los de la
    comunidad), así que la tienda está llena desde el primer arranque. Las del catálogo de Kino llevan `recommended`.
 2. **Una vez al día**, el `index.json` de `kinotvapp/kino-plugins`: un archivo estático que **se construye cada día** con una
    acción de GitHub que recorre los repositorios con el topic `kino-plugin`. Releerlo trae las estrellas y quita los
-   repositorios que perdieron el topic o se borraron.
+   repositorios que perdieron el topic, se borraron o están en la lista de bloqueo del dueño. Aplica la regla de un solo
+   repositorio por `id`.
 3. **Entre un índice y el siguiente**, un cambio pequeño (`full: false`): una búsqueda de GitHub de lo que cambió desde la
    última vez, guardando su cursor en `state`.
 

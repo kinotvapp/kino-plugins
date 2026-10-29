@@ -19,6 +19,9 @@ installing is always Kino's own flow (preview, consent sheet, install).
   local queries, instant and the same with no network.
 - **Your plugin only hands over entries.** It syncs (`storeSync`) in the background and, if it is a live store, answers
   while the person browses (`storeList`, `storeSearch`). It draws nothing.
+- **Three tabs.** The store view has "From Kino", "Community" and "Installed" (in Spanish: «De Kino», «De la comunidad»,
+  «Instalados»). "From Kino" is Kino Plugins' default list. "Community" is everything else, from every store, **without Kino's
+  list**: it has the sort («Populares» or «Recientes»), the store filter and the live stores.
 - **Every card says where it came from**: at the bottom, the store's icon and «de &lt;store name&gt;». At the top there is a
   store filter: «Todas las tiendas» (the default), then every installed and active store.
 - **Kino Plugins** is the store that ships in the app: an ordinary, signed plugin that cannot be uninstalled (it can be
@@ -41,16 +44,17 @@ installing is always Kino's own flow (preview, consent sheet, install).
 - The `pluginStore` block is optional: `mode` is `"local"` (the default) or `"live"`, and `name` (1 to 60 characters) is how
   the store shows in the filter and on its cards (default: the plugin's `name`). The block without the capability is refused.
 - `hosts`: your store reaches only the hosts you declare, like any plugin.
-- Do not use the id `kino-plugins`: it is Kino's own store. And an entry whose `id` Kino Plugins already lists from another
-  repository is dropped (see [how Kino mixes stores](#mixing)).
+- **One plugin per `id`.** Do not use the id `kino-plugins`: it is Kino's own store and no store may list it. And when two
+  repositories claim the same `id` across all stores, only one stays: the one in Kino Plugins' list or, if none is there, one
+  picked deterministically (see [how Kino mixes stores](#mixing)).
 
 ## `storeSync`: every store { #store-sync }
 
 ```js
 export async function storeSync({ reason, since, state }) {
   // reason: "schedule" (the background refresh) or "reload" (the person pressed reload)
-  // since:  when this store last synced successfully, in ms (absent the first time)
-  // state:  what you returned as `state` last time (at most 16 KB of JSON)
+  // since:  when this store last synced successfully, in ms (absent the first time, and when Kino lost your rows)
+  // state:  what you returned as `state` last time (at most 16 KB of JSON; also absent in those cases)
   const r = await kino.fetch("https://plugins.ana.example/list.json");
   return { full: true, entries: r.json().plugins.map(toEntry), state: { etag: "…" } };
 }
@@ -65,8 +69,12 @@ It answers `{ full, entries, removed?, state? }`:
 | `state` | A small object (a cursor, an etag, the date of your last index) that Kino keeps and hands back on the next call. |
 
 How you get the list (GitHub, your server, a static file) is your business. `storeSync` runs **only in the background**, at the
-interval the person chooses (every 2 hours by default, Wi-Fi only), and when they press reload («Actualizar mis fuentes»);
-nothing waits for it while they browse. A store that fails 3 times in a row pauses until the next reload.
+interval the person chooses (every 2 hours by default, Wi-Fi only), and when they press the reload icon; nothing waits for it
+while they browse. A store that fails 3 times in a row pauses until the next reload.
+
+**Be ready for `since` to be absent at any time.** If Kino loses your store's rows (a restore, a rebuilt database), it syncs the
+store again from scratch: no `since` and no `state`, just like the first time. Your `storeSync` must then answer its **whole**
+list (`full: true`) and not assume it has a saved cursor.
 
 ## An entry (`StoreEntry`) { #entry }
 
@@ -79,10 +87,10 @@ nothing waits for it while they browse. A store that fails 3 times in a row paus
 | `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`. |
 | `tags`, `icon`, `screenshots` | Up to 10 tags of 30 characters; the icon and up to 8 screenshots, `https` only. |
 | `version`, `author` | Short text (40 and 60 characters). |
-| `popularity`, `updatedAt` | Numbers: for the «Populares» and «Recientes» sorts (`updatedAt` in ms). |
+| `popularity`, `updatedAt` | Numbers: for the «Populares» and «Recientes» sorts of "Community" (`updatedAt` in ms). |
 | `stremio`, `requires`, `needsSetup` | A Stremio addon installs through Kino's Stremio flow (then `address` may be absent); `requires` lists capabilities this Kino must be able to run, or the entry is hidden; `needsSetup` says it asks for configuration. |
 | `signed`, `authorKey` | **Hints**: the card says «Firmado», and an installed plugin with that id pinned to that author key (64 lowercase hex characters) reads as installed. Kino re-checks at install. |
-| `recommended` | Kino honours it **only** from Kino Plugins; from any other store it is ignored. |
+| `recommended` | Kino honours it **only** from Kino Plugins, and it is what puts the entry in "From Kino"; from any other store it is ignored. |
 
 An entry with no `address` and no `stremio`, no valid `id` or no `name` is dropped; long texts are cut; a non-`https` icon is
 dropped. Past 5000 entries (counting only valid ones, repeats of an address skipped) the rest are dropped. Kino never trusts
@@ -113,7 +121,9 @@ cache: going back to the same search or page shows it at once, and those rows ne
 2. **Stable order.** In «Todas las tiendas» local entries come first, in the chosen order; a live store's results are
    **appended at the end** as they arrive. Nothing already on screen moves and focus (on a TV) never jumps.
 3. **No repeats.** A live entry whose address is already in the list is skipped; the same address from two stores shows once
-   (Kino Plugins' copy first). The same plugin `id` from a different repository keeps Kino Plugins'.
+   (Kino Plugins' copy first). **One repository per `id`, across all stores:** the one in Kino Plugins' list wins; if none is
+   there, Kino keeps one deterministically. And no store may list the id `kino-plugins`. "Community" leaves out what "From
+   Kino" shows, whichever store lists it, so a live store only answers there.
 4. **One «Cargar más».** It pages through the local index first, then asks each live store for its next page.
 5. **Search.** Local results update as the person types; live searches wait until typing stops (half a second) and a newer
    search cancels an older one.
@@ -123,15 +133,18 @@ cache: going back to the same search or page shows it at once, and those rows ne
 
 - **The blocklist.** Kino applies its blocklist (`community-blocklist.json`, see [Claims and plugin takedowns](claims.md)) to
   **every entry of every store** before painting, and again at install. Stores neither receive nor apply it: because Kino
-  paints, no store can show a blocked plugin.
+  paints, no store can show a blocked plugin. Kino refreshes that list with every store sync (and on reload), and Kino Plugins'
+  daily index already leaves blocked repositories out.
 - **The 18+ code.** While the person's 18+ code is locked, an entry whose categories include `adult`, or that Kino already
-  knows as 18+, is hidden from Destacados, Populares, search, the detail sheet and the counts, from every store; a store whose
+  knows as 18+, is hidden from "From Kino", "Community", search, the detail sheet and the counts, from every store; a store whose
   own plugin is 18+ is not offered in the filter. Unlocking shows them. Installing one goes through the usual 18+ gate.
 - **Plugins that disappear.** A repository that is deleted or loses the topic leaves its store's next list; a plugin whose
   manifest answers 404 when viewed or installed is dropped at once. Leaving a store **never uninstalls** anything: an
   installed plugin keeps working and Instalados says «Ya no está en ninguna tienda».
 - **Switching a store off.** A store is switched off from its tab in Ajustes (and uninstalled like any plugin, except Kino
   Plugins), where its interval is also set; its rows leave the index at once.
+- **Reloading.** The store view has a reload icon that syncs every active store now. When it ends, a toast says
+  "N plugins updated" (Spanish: «Se actualizaron N plugins») or, if nothing changed, "Your plugins are up to date" («Tus plugins están al día»).
 - **Installing.** Always the installer: address preview, consent sheet («Plugin no verificado…» when it is not signed) and
   install. Nothing installs by itself.
 
@@ -160,14 +173,14 @@ node sdk/init.mjs my-store --host plugins.ana.example --store local     # or --s
 ## Kino Plugins: the store that ships in the app { #kino-plugins }
 
 **Kino Plugins** (`kinotvapp`, signed with Kino's author key) is an ordinary **local** store, with a single capability,
-`pluginStore`, and the hosts `api.github.com`, `raw.githubusercontent.com`, `cdn.jsdelivr.net` and `archive.org`. Its source
-lives in the repository `kinotvapp/kino-plugin-store`. What its `storeSync` answers:
+`pluginStore`, and the hosts `api.github.com`, `raw.githubusercontent.com`, `cdn.jsdelivr.net` and `archive.org`. It
+ships inside Kino and is signed with Kino's author key (version 1.0.1). What its `storeSync` answers:
 
 1. **The first time**, with no network: the list the plugin itself carries (the plugins Kino Plugins lists by default and the
    community's), so the store is full from the first start. The ones from Kino's catalog carry `recommended`.
 2. **Once a day**, `index.json` from `kinotvapp/kino-plugins`: a static file that **is built every day** by a GitHub Action
    that walks the repositories with the `kino-plugin` topic. Re-reading it brings the stars and drops repositories that lost
-   the topic or were deleted.
+   the topic, were deleted or are on the owner's blocklist. It applies the one-repository-per-`id` rule.
 3. **Between one index and the next**, a small change (`full: false`): a GitHub search for what changed since the last time,
    keeping its cursor in `state`.
 

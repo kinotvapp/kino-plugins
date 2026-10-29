@@ -818,14 +818,20 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
 - `pluginStore` → a **store**: the plugin is a source of plugins for Kino's store. Kino keeps one local index of every
   store's entries, paints the store from it (cards, search, categories, sort, pagination, a "de <store>" badge and a store
   filter), applies its own blocklist and the 18+ code, and installs through its own consent sheet: **a store only hands over
-  addresses and never installs anything**. Authors answer for the plugins they list; Kino only lists them. Manifest:
+  addresses and never installs anything**. Authors answer for the plugins they list; Kino only lists them. The store view
+  has three tabs: "De Kino" (EN "From Kino"), Kino Plugins' default list; "De la comunidad" (EN "Community"), everything
+  else from every store **without Kino's list**, with the "Populares"/"Recientes" sort, the store filter and the live
+  stores; and "Instalados" (EN "Installed"). A reload icon syncs every store and ends with a toast, "Se actualizaron N
+  plugins" or "Tus plugins están al día". Manifest:
   `"capabilities": ["pluginStore"]` (may stand alone: no `resolve`, no `search`) and an optional
   `"pluginStore": { "mode": "local" | "live", "name": 1..60 chars }` (the block without the capability is refused).
   - `storeSync({ reason: "schedule" | "reload", since?, state? })` → `{ full, entries, removed?, state? }`: `full: true`
     is the whole list (Kino replaces the store's rows), `full: false` is upserts plus `removed` addresses (an empty change
     means nothing changed); `state` (<= 16 KB of JSON) comes back on the next call. It runs only in the background (every
     2 h by default, Wi-Fi only) and on reload: at most 60 s, 40 `kino.fetch` requests and 8 MB downloaded. At most 5,000
-    entries and 4 MB of JSON per answer.
+    entries and 4 MB of JSON per answer. **`since` (and `state`) may be absent at any time, not only the first time:** when
+    Kino loses a store's rows (a restore, a rebuilt database) it syncs that store from scratch, with no `since` and no
+    `state`, and the store must then answer its whole list (`full: true`). Never rely on a stored cursor.
   - A **live** store (`"mode": "live"`) must export all three: `storeSync` (a base list), `storeList({ category?, sort:
     "popular" | "recent", cursor? })` and `storeSearch({ q, category?, cursor? })`, each answering `{ entries, next? }`, at
     most 5 s per call and 20 calls a minute per store, cached 30 minutes. Kino paints local entries first and appends live
@@ -837,8 +843,14 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
     `icon` and `screenshots` (https), `version`, `author`, `popularity` (number), `updatedAt` (ms), `stremio`, `requires`,
     `needsSetup`, and the hints `signed`/`authorKey` (Kino re-checks at install). `recommended` is honoured only from
     Kino's own store (Kino Plugins). Invalid entries are dropped, long texts cut.
-  - Never use the id `kino-plugins`. Leaving a store never uninstalls anything. 18+ entries stay hidden while the person's
-    18+ code is locked.
+  - **One plugin per `id` across all stores.** If two repositories claim an id, the one in Kino Plugins' list wins; if none is
+    there, one is kept deterministically and the rest are dropped. No store may list the id `kino-plugins` (Kino's own store).
+    "De la comunidad" leaves out what "De Kino" shows. Leaving a store never uninstalls anything. 18+ entries stay hidden
+    while the person's 18+ code is locked.
+  - Consent lines: a store shows «Agrega plugins de sus servidores a tu tienda» and, if live, also in red «Lo que busques en la
+    tienda llegará a sus servidores». The owner's blocklist is applied by Kino to every entry and refreshed with every store
+    sync; Kino Plugins' daily index already leaves blocked repositories out. Kino Plugins ships inside Kino (version 1.0.1),
+    signed with Kino's author key.
   - Kit: `node sdk/init.mjs my-store --host store.example.org --store local|live` scaffolds one;
     `node sdk/run.mjs . storeSync [--since <ms>] [--state '<json>']`, `storeList [popular|recent] [category]` and
     `storeSearch "<q>" [category]` print the answer as Kino's index keeps it and report what it drops. Copyable examples
@@ -980,6 +992,8 @@ people. See
 **From the next Kino version (apiVersion 15, not published yet)** the app no longer searches GitHub by itself: the community
 list comes from the built-in store, Kino Plugins (a `pluginStore` plugin), which reads an index built every day from the
 repositories with the `kino-plugin` topic plus what changed since. The rules below are still what gets a plugin into that list.
+People see it in the store view's "De la comunidad" tab (the old "Buscar en GitHub" tab is gone), beside "De Kino" and
+"Instalados". There is one plugin per `id` across stores.
 Anyone can also publish a store of their own (see apiVersion 15 above).
 
 Kino lists community plugins itself; nobody approves them. The step-by-step for the person, with
@@ -1014,9 +1028,9 @@ Every rule, as the app applies it (full detail:
    raw files are cached about 5 minutes.
 7. If GitHub cannot answer, a backup list published by the Kino team is used; it is rebuilt from the
    same search, so nothing needs requesting. A repository in `community-blocklist.json` (a claim was
-   upheld) never shows, in either list.
+   upheld) never shows, in either list. From the next Kino version the list is refreshed with every store sync.
 8. Nothing installs by itself: the person always sees the consent sheet ("Plugin no verificado…").
-9. Where to look in the app: Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), the "De la
+9. Where to look in the app (before the next Kino version, apiVersion 15): Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), the "De la
    comunidad" tab, beside "Recomendados" ("Plugins de la comunidad — Kino no los revisa ni responde por
    su contenido.") with its "Actualizar" button (from Kino 0.9.54 also "Populares"/"Recientes",
    "Cargar más" and "Buscar en GitHub"); also the first-run "Elige tus fuentes", which has the same
