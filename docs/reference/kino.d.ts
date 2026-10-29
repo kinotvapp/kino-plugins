@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 14; 14 adds the screen capability (screen, screenEvent and the manifest's screen block: a full-screen canvas the plugin builds), library, playerPanelTab, playerControl, room (kino.room, a mailbox hosted on the person's device over the Internet), schedule (background jobs: the manifest's jobs and the job export) and the manifest's enhancements; 13 adds the socket capability (kino.ws, outbound WebSockets) and the byteSource capability (a stream whose bytes the plugin serves through its read export) and the storageLarge capability (a 16 MiB kino.storage for a plugin that keeps a catalog) and the catalog capability (kino.catalog, a searchable SQLite catalog of up to 100,000 items per plugin in a 64 MiB file) and the qrScan capability (kino.qr.scan, the phone's camera scanner for a QR code) and the settings form's qr setting (a QR whose text settingsStatus gives, refreshed every refreshMs) and the kino.crypto operations aesIge, modPow, gunzip, convert and aesIgeVerify and the imageSource capability (a poster, backdrop, still or hero image the plugin serves through its image export, KinoImageRef); 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 15; 15 adds the identity capability (kino.identity.telegram: a per-plugin pseudonym of the person and the signed token that proves it), the notifications capability (kino.notifications: notices in the Home bell), library episodes (the latest season and episode of a watched series) and the pluginStore capability (the plugin is a source of plugins for Kino's store: storeSync, and storeList and storeSearch for a live store); 14 adds the screen capability (screen, screenEvent and the manifest's screen block: a full-screen canvas the plugin builds), library, playerPanelTab, playerControl, room (kino.room, a mailbox hosted on the person's device over the Internet), schedule (background jobs: the manifest's jobs and the job export) and the manifest's enhancements; 13 adds the socket capability (kino.ws, outbound WebSockets) and the byteSource capability (a stream whose bytes the plugin serves through its read export) and the storageLarge capability (a 16 MiB kino.storage for a plugin that keeps a catalog) and the catalog capability (kino.catalog, a searchable SQLite catalog of up to 100,000 items per plugin in a 64 MiB file) and the qrScan capability (kino.qr.scan, the phone's camera scanner for a QR code) and the settings form's qr setting (a QR whose text settingsStatus gives, refreshed every refreshMs) and the kino.crypto operations aesIge, modPow, gunzip, convert and aesIgeVerify and the imageSource capability (a poster, backdrop, still or hero image the plugin serves through its image export, KinoImageRef); 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -2473,6 +2473,138 @@ type KinoAiAnswer =
   | { ok: true; text: string; model: string }
   | { ok: false; error: "unavailable" | "rate_limited" | "too_large" | "timeout" | "refused"; message: string };
 
+/** A notice for the Home bell (`kino.notifications.post`, apiVersion 15). */
+interface KinoNotice {
+  /** 1 to 64 of `A-Z a-z 0-9 . _ -`; the same id replaces an earlier notice of yours, unread again. */
+  id: string;
+  /** 1 to 80 characters, plain text, one line. */
+  title: string;
+  titleEn?: string;
+  /** At most 160 characters, plain text, one line. */
+  text?: string;
+  textEn?: string;
+  /**
+   * Where a tap goes: your own screen at a route (`{ screen: { route?, args? } }`), or a title (`{ title: {...} }`,
+   * `{ titleByIds: {...} }`, which open your screen's root for now). Anything else is dropped: the tap opens your screen.
+   */
+  go?: { screen: { route?: string; args?: Record<string, unknown> } } | { title: { ref: string; kind: string; id?: string; title?: string } } | { titleByIds: KinoScreenTitleByIds };
+}
+
+/**
+ * One plugin a store offers (apiVersion 15, capability "pluginStore"). Kino keeps what fits the caps (contract.json `kinoStore`),
+ * paints it with its own cards and re-checks everything at install. An entry with no `address` and no `stremio`, no valid `id`
+ * or no `name` is dropped.
+ */
+interface StoreEntry {
+  /** `owner/repo[/path][@ref]` or `url:https://.../kino-plugin.json`. Absent only for a `stremio` entry. */
+  address?: string;
+  /** The plugin's id (`^[a-z0-9][a-z0-9-]{1,39}$`). */
+  id: string;
+  /** 1 to 60 characters. */
+  name: string;
+  /** At most 300 characters. */
+  description?: string;
+  /** At most 4000 characters. */
+  longDescription?: string;
+  /** Any of `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`. */
+  categories?: string[];
+  tags?: string[];
+  /** An https URL. */
+  icon?: string;
+  /** Https URLs. */
+  screenshots?: string[];
+  version?: string;
+  author?: string;
+  /** Higher is more popular: the "popular" sort. */
+  popularity?: number;
+  /** When it last changed, in milliseconds since 1970: the "recent" sort. */
+  updatedAt?: number;
+  /** Honoured only from Kino's own built-in store; ignored from any other. */
+  recommended?: boolean;
+  /** A Stremio manifest URL, installed through Kino's Stremio flow (then `address` may be absent). */
+  stremio?: string;
+  /** Capabilities the plugin needs: Kino hides an entry this build cannot run. */
+  requires?: string[];
+  needsSetup?: boolean;
+  /** A hint that the plugin is signed by its author (the card says "Firmado"); Kino re-checks at install. */
+  signed?: boolean;
+  /** A hint of the author key that signs it (64 lowercase hex); display only. */
+  authorKey?: string;
+}
+
+/** `storeSync(arg)`: the argument (apiVersion 15, capability "pluginStore"). */
+interface StoreSyncArg {
+  /** `"schedule"`: the background refresh at the person's interval. `"reload"`: the person pressed reload. */
+  reason: "schedule" | "reload";
+  /** When this store last synced successfully, in milliseconds since 1970 (absent on the first sync). */
+  since?: number;
+  /** What you returned as `state` last time. */
+  state?: Record<string, unknown>;
+}
+
+/** `storeSync(arg)`: the answer. */
+interface StoreSyncAnswer {
+  /** `true`: `entries` is the store's whole list and anything missing is removed. `false`: upserts, plus `removed`. */
+  full: boolean;
+  /** At most 5000 kept; the whole answer at most 4 MB of JSON. */
+  entries: StoreEntry[];
+  /** With `full: false`, the addresses that left the store. */
+  removed?: string[];
+  /** A small object (at most 16 KB of JSON) Kino keeps for you and hands back next time: a cursor, an etag, a date. */
+  state?: Record<string, unknown>;
+}
+
+/** `storeList(arg)` of a live store (`"pluginStore": { "mode": "live" }`). */
+interface StoreListArg {
+  category?: string;
+  sort: "popular" | "recent";
+  cursor?: string;
+}
+
+/** `storeSearch(arg)` of a live store. Both live calls answer `{ entries, next? }` within 5 s, at most 20 a minute. */
+interface StoreSearchArg {
+  q: string;
+  category?: string;
+  cursor?: string;
+}
+
+/** `kino.identity.telegram(options?)` (apiVersion 15). */
+interface KinoIdentityOptions {
+  /** A nonce your server issued: 16 to 128 of `A-Z a-z 0-9 _ -`. With it, Kino signs and attests (see [KinoIdentity]). */
+  challenge?: string;
+}
+
+/** What `kino.identity.telegram` answers (apiVersion 15). */
+interface KinoIdentity {
+  /**
+   * A pseudonym of the person for YOUR plugin: the first 32 lowercase hex characters of SHA-256 over UTF-8
+   * `"kino-identity-v1\n" + pluginId + "\n" + telegramAccountId`. Stable for your plugin on every install and device of the
+   * person (install-independent), different for every plugin. Never the Telegram id nor the username.
+   */
+  id: string;
+  /**
+   * The gate token Kino's bot signed for this device (`base64url(payload).base64url(Ed25519 signature)`). It still carries the
+   * Telegram account, so your server can verify it with the bot's public key; a per-audience token from the bot is the
+   * planned fix. A credential: never log or show it.
+   */
+  token: string;
+  /** With a challenge: the public key (X.509 SubjectPublicKeyInfo DER, base64url without padding) of Kino's key for your plugin on this install. */
+  deviceKey?: string;
+  /**
+   * With a challenge: SHA256withECDSA (DER, base64url without padding) over UTF-8
+   * `"kino-identity-v2\n" + pluginId + "\n" + challenge + "\n" + author + "\n" + codeHash`.
+   */
+  signature?: string;
+  /**
+   * With a challenge: the fingerprint of the author key Kino verified and pinned at install (`XXXX-XXXX-XXXX-XXXX`, upper-case
+   * hex), `""` for an unsigned plugin. From Kino's record, never your code: your server can require its own fingerprint so a
+   * modified copy cannot log in.
+   */
+  author?: string;
+  /** With a challenge: lowercase hex SHA-256 of the installed entry file Kino runs. */
+  codeHash?: string;
+}
+
 /**
  * apiVersion 14, capability `"library"`: one title the person watched or saved, as `kino.library` gives it (contract.json
  * `kinoLibrary`). Nothing else ever comes: no stream, no plugin ref, no Kino id, no profile.
@@ -2489,6 +2621,13 @@ interface KinoLibraryEntry {
   progress?: number;
   /** `watched` only: when it was last played, rounded down to the day (UTC midnight, ms since the epoch). */
   watchedAtMs?: number;
+  /**
+   * `watched` series only (contract.json `additiveFromApp["kino.library.episode"]`): the season of the latest chapter played,
+   * only when its source numbered it. Absent on a movie and on an older Kino: feature-detect by its presence.
+   */
+  season?: number;
+  /** `watched` series only: the number of the latest chapter played (with [season]), only when its source numbered it. */
+  episode?: number;
 }
 
 /** `kino.library.watched`'s options: `limit` 1..100 (default 50; above 100 gives 100), `kind` filters, `sinceMs` keeps titles played on that day (UTC) or later: it is rounded down to the day, like `watchedAtMs`. A number that is not finite is `bad_request`. */
@@ -2874,6 +3013,31 @@ declare namespace kino {
    */
   namespace ai {
     function ask(options: KinoAiAskOptions): Promise<KinoAiAnswer>;
+  }
+
+  /**
+   * apiVersion 15, capability "identity" (a red consent line, approved by the person, revocable in Ajustes): who the person is,
+   * for your server, without a login. Only inside a call the person started from `screen`, `screenEvent` or `panelAction`
+   * (never a timer tick, a job, Home or search), 10 a minute. Rejects with a KinoError whose `code` is `permission_denied`,
+   * `not_available` (this device has no validation with the Telegram account), `rate_limited` or `bad_request`. Present on every
+   * apiVersion 15 runtime: feature-detect with `typeof kino.identity === "object"` (the Node kit answers a fake account:
+   * `KINO_IDENTITY_TG`, `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR`, `KINO_IDENTITY_REVOKED=1`).
+   */
+  namespace identity {
+    function telegram(options?: KinoIdentityOptions): Promise<KinoIdentity>;
+  }
+
+  /**
+   * apiVersion 15, capability "notifications" (a plain consent line, approved by the person, revocable in Ajustes): short notices
+   * in the Home bell, from your `screen`, `screenEvent` or scheduled `job`. 20 posts an hour, 30 kept, 30 days; the same `id`
+   * replaces a notice (unread again). Rejects with a KinoError whose `code` is `permission_denied`, `rate_limited` or
+   * `bad_request`. Not synced: each device keeps its own. Feature-detect with `typeof kino.notifications === "object"`; the kit
+   * keeps them in `<folder>/.kino-notices.json` (`node sdk/run.mjs <folder> notifications`).
+   */
+  namespace notifications {
+    function post(notice: KinoNotice): Promise<void>;
+    /** One notice of yours by id, or all of them. */
+    function clear(id?: string): Promise<void>;
   }
 
   /**
