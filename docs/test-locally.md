@@ -306,7 +306,7 @@ pruebas de la app. Más en [Pantallas: probar con el kit](screens.md#testing).
 
 ## apiVersion 15: identidad, avisos y tiendas { #api15 }
 
-Llega con la próxima versión de Kino (todavía sin publicar). El kit ya revisa y corre todo con las reglas de la app:
+Llega con Kino 0.9.77. El kit ya revisa y corre todo con las reglas de la app:
 
 - **`identity`**: `kino.identity.telegram` responde con una cuenta de mentira: `KINO_IDENTITY_TG=<id|none>`,
   `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR` y `KINO_IDENTITY_REVOKED=1`. Solo dentro de una llamada de la persona

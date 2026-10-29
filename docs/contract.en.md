@@ -50,7 +50,7 @@ export async function storeList({ category, sort, cursor }) { /* -> { entries, n
 export async function storeSearch({ q, category, cursor }) { /* -> { entries, next? } (apiVersion 15, a live store) */ }
 ```
 
-From `"apiVersion": 15` (the next Kino version, not published yet): `storeSync`, and `storeList` and `storeSearch` in a live
+From `"apiVersion": 15` (Kino 0.9.77): `storeSync`, and `storeList` and `storeSearch` in a live
 store, for a plugin that is a source of plugins ([Plugin stores](plugin-stores.md)). `identity` and `notifications` are
 declarative and export nothing ([Identity](identity.md), [Notices in the bell](notifications.md)).
 

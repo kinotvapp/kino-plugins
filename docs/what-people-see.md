@@ -163,10 +163,10 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 - **Exportar un plugin.** Plugins ▸ Instalados ▸ Gestionar ▸ "Exportar plugin" comparte un archivo `.kinoplugin` que se
   instala en otro celular como plugin local. [Exportar e importar un plugin](plugin-files.md).
 
-## La próxima versión de Kino (apiVersion 15) { #v15 }
+## Kino 0.9.77 (apiVersion 15) { #v15 }
 
-!!! note "Disponible con la próxima versión de Kino"
-    Todavía sin publicar. Una versión anterior de Kino rechaza estos plugins con «Este plugin necesita una versión más nueva
+!!! note "Disponible con Kino 0.9.77"
+    Una versión anterior de Kino rechaza estos plugins con «Este plugin necesita una versión más nueva
     de Kino».
 
 - **La campanita de Inicio.** Un plugin con [`notifications`](notifications.md) deja avisos cortos: la campanita muestra una

@@ -1,7 +1,7 @@
 # Avisos en la campanita { #notifications }
 
-!!! note "Disponible con la próxima versión de Kino"
-    `notifications` es de `apiVersion` 15 y llega con la próxima versión de Kino (todavía sin publicar). Una versión anterior
+!!! note "Disponible con Kino 0.9.77"
+    `notifications` es de `apiVersion` 15 y llega con Kino 0.9.77. Una versión anterior
     rechaza estos plugins con «Este plugin necesita una versión más nueva de Kino».
 
 `notifications` deja que tu plugin deje **avisos cortos en la campanita de Inicio**: «Beto y 2 más comentaron tu publicación».

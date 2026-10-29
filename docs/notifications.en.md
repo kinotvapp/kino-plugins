@@ -1,7 +1,7 @@
 # Notices in the bell { #notifications }
 
-!!! note "Available with the next Kino version"
-    `notifications` is `apiVersion` 15 and arrives with the next Kino version (not published yet). An older version refuses
+!!! note "Available with Kino 0.9.77"
+    `notifications` is `apiVersion` 15 and arrives with Kino 0.9.77. An older version refuses
     these plugins with «Este plugin necesita una versión más nueva de Kino».
 
 `notifications` lets your plugin leave **short notices in the Home bell**: «Beto y 2 más comentaron tu publicación». It is a

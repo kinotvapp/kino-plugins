@@ -3,22 +3,21 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Próximamente: `apiVersion` 15, identidad, avisos y tiendas de plugins { #v15 }
+## Kino 0.9.77: `apiVersion` 15, identidad, avisos y tiendas de plugins { #v15 }
 
-!!! note "Disponible con la próxima versión de Kino"
-    Disponible con la próxima versión de Kino (después de 0.9.74, todavía sin publicar). Una versión anterior rechaza estos
+!!! note "Disponible con Kino 0.9.77"
+    Disponible con Kino 0.9.77. Una versión anterior rechaza estos
     plugins con «Este plugin necesita una versión más nueva de Kino»; ninguna de las novedades se ofrece con
     `enhancements`.
 
-Documentado el 2026-10-29. `contract.json` dice `maxApiVersion` 15; la versión de la app de `apiVersion` 15 todavía no está
-fijada. El kit de Node ya lo conoce todo ([Probar en local](test-locally.md#api15)).
+Documentado el 2026-10-29. `contract.json` dice `maxApiVersion` 15; `apiVersion` 15 llega con Kino 0.9.77. El kit de Node ya lo conoce todo ([Probar en local](test-locally.md#api15)).
 
 | Función | Desde | Cómo saberlo |
 | --- | --- | --- |
 | La capacidad `identity` y `kino.identity.telegram` | `apiVersion` 15 | `typeof kino.identity === "object"` |
 | La capacidad `notifications`, `kino.notifications.post` y `clear` | `apiVersion` 15 | `typeof kino.notifications === "object"` |
 | La capacidad `pluginStore`, el bloque `pluginStore` del manifiesto y los exports `storeSync`, `storeList` y `storeSearch` | `apiVersion` 15 | un Kino más viejo rechaza `apiVersion` 15 |
-| `season` y `episode` en `kino.library.watched()` de una serie | la próxima versión de Kino, con la capacidad `library` | los campos solo están en una serie vista |
+| `season` y `episode` en `kino.library.watched()` de una serie | Kino 0.9.77, con la capacidad `library` | los campos solo están en una serie vista |
 
 - **Identidad**: el servidor de tu plugin sabe quién es la persona sin un registro, con un seudónimo por plugin y un token
   firmado, ligado a este aparato y a tu código con un desafío. Solo responde a plugins firmados con la llave de autor de

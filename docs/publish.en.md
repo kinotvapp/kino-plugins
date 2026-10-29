@@ -121,8 +121,8 @@ Check that:
 
 ## Get found: appear in "De la comunidad" { #get-found }
 
-!!! note "Changes with the next Kino version"
-    With the next Kino version (apiVersion 15, not published yet) the app **no longer searches GitHub by itself**: the
+!!! note "Changes with Kino 0.9.77"
+    With Kino 0.9.77 (apiVersion 15) the app **no longer searches GitHub by itself**: the
     community list comes from **Kino Plugins**, its built-in store ([Plugin stores](plugin-stores.md#kino-plugins)), which
     reads an index built every day from the repositories with the `kino-plugin` topic plus what changed since. The rules below
     (public repository, not a fork, a valid `kino-plugin.json`, the topic) are still what gets you into that list; what

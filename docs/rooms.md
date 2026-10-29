@@ -74,7 +74,7 @@ interface KinoLibraryEntry {
 }
 ```
 
-- **`season` y `episode`** (llegan con la próxima versión de Kino): en una **serie vista**, el último capítulo reproducido, solo
+- **`season` y `episode`** (llegan con Kino 0.9.77): en una **serie vista**, el último capítulo reproducido, solo
   cuando su fuente lo numeró. Nunca en una película ni en una serie sin capítulo numerado.
 
 - `kind` es `movie` o `series` y sirve de filtro; la música y los podcasts quedan fuera.

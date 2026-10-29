@@ -121,7 +121,7 @@ Antes de escribir nada:
    solo uso en provision, hide en settingsStatus) para una cuenta mía.
 7. Si mi plugin es una tienda (una fuente de plugins para la tienda de Kino), o usa identidad o avisos, lee primero
    https://kinotvapp.github.io/kino-plugins/plugin-stores/, /store-examples/, /identity/ y /notifications/
-   (apiVersion 15, la próxima versión de Kino, todavía sin publicar) y parte de una tienda de ejemplo con
+   (apiVersion 15, Kino 0.9.77) y parte de una tienda de ejemplo con
    node sdk/init.mjs mi-tienda --host <host> --store local|live.
 
 Lo que quiero:
@@ -310,8 +310,7 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
 - si tiene una pantalla: node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
   cada nombre de evento que usas tiene respuesta en screenEvent y, si su apiVersion es menor que 14, la pantalla
   llega por "enhancements" y node sdk/validate.mjs . no reporta ningún bloque descartado;
-- apiVersion 15 (la próxima versión de Kino, todavía sin publicar: NINGÚN Kino publicado lo instala; avísame antes de
-  usarlo). Una tienda: "capabilities": ["pluginStore"] (puede ir sola) y, si quieres, "pluginStore": { "mode": "local" |
+- apiVersion 15 (Kino 0.9.77 o posterior). Una tienda: "capabilities": ["pluginStore"] (puede ir sola) y, si quieres, "pluginStore": { "mode": "local" |
   "live", "name" }. storeSync({ reason, since, state }) responde { full, entries, removed?, state? } y since/state pueden
   faltar en cualquier momento: cuando Kino pierde las filas de una tienda la sincroniza de nuevo desde cero, así que la
   tienda debe responder entonces su lista completa (full: true) y nunca depender de un cursor guardado. Una tienda en
@@ -416,7 +415,7 @@ nombre y la descripción de su repositorio, así que también se encuentra un pl
 dispositivo busca de nuevo cada 12 horas, o al tocar "Actualizar". Los clics exactos y cómo
 comprobarlo: [Aparecer en Kino](listed.md).
 
-Con la próxima versión de Kino (apiVersion 15, todavía sin publicar) la app ya no busca en GitHub por su cuenta: la pestaña
+Con Kino 0.9.77 (apiVersion 15) la app ya no busca en GitHub por su cuenta: la pestaña
 «De la comunidad» de la vista de la tienda (junto a «De Kino» e «Instalados») la llena Kino Plugins, cuyo índice diario se
 construye con los repositorios que tienen el topic `kino-plugin`; las reglas de arriba siguen valiendo. Hay un plugin por `id`
 en todas las tiendas y un ícono de recargar termina con un aviso («Se actualizaron N plugins» o «Tus plugins están al día»).

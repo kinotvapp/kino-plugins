@@ -10,8 +10,8 @@ La gente consigue tu plugin de dos maneras:
 Nadie aprueba los plugins de la comunidad: la app los busca ella misma en GitHub, con las reglas de
 abajo. Si cumples los cinco pasos, apareces.
 
-!!! note "Cambia con la próxima versión de Kino"
-    Con la próxima versión de Kino (apiVersion 15, todavía sin publicar) la app **ya no busca en GitHub por su cuenta**: la
+!!! note "Cambia con Kino 0.9.77"
+    Con Kino 0.9.77 (apiVersion 15) la app **ya no busca en GitHub por su cuenta**: la
     lista de la comunidad la entrega **Kino Plugins**, su tienda integrada ([Tiendas de plugins](plugin-stores.md#kino-plugins)),
     a partir de un índice que se construye cada día con los repositorios que tienen el topic `kino-plugin` y de lo que cambió
     desde entonces. Las reglas de abajo (repositorio público, no un fork, `kino-plugin.json` válido, el topic) siguen siendo

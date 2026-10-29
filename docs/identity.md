@@ -1,7 +1,7 @@
 # Identidad: saber quién es la persona sin un registro { #identity }
 
-!!! note "Disponible con la próxima versión de Kino"
-    `identity` es de `apiVersion` 15 y llega con la próxima versión de Kino (todavía sin publicar). Una versión anterior
+!!! note "Disponible con Kino 0.9.77"
+    `identity` es de `apiVersion` 15 y llega con Kino 0.9.77. Una versión anterior
     rechaza estos plugins con «Este plugin necesita una versión más nueva de Kino».
 
 `identity` deja que el servidor de tu plugin sepa **quién es la persona sin pedirle un usuario ni una contraseña**. Es una

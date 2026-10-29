@@ -73,7 +73,7 @@ interface KinoLibraryEntry {
 }
 ```
 
-- **`season` and `episode`** (arriving with the next Kino version): on a **watched series**, the latest chapter played, only
+- **`season` and `episode`** (arriving with Kino 0.9.77): on a **watched series**, the latest chapter played, only
   when its source numbered it. Never on a movie or on a series with no numbered chapter.
 
 - `kind` is `movie` or `series` and works as a filter; music and podcasts are left out.

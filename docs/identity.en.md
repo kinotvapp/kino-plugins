@@ -1,7 +1,7 @@
 # Identity: knowing who the person is without a sign-up { #identity }
 
-!!! note "Available with the next Kino version"
-    `identity` is `apiVersion` 15 and arrives with the next Kino version (not published yet). An older version refuses these
+!!! note "Available with Kino 0.9.77"
+    `identity` is `apiVersion` 15 and arrives with Kino 0.9.77. An older version refuses these
     plugins with «Este plugin necesita una versión más nueva de Kino».
 
 `identity` lets your plugin's server know **who the person is without asking for a username or a password**. It is a

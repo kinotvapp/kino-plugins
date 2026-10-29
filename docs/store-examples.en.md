@@ -1,7 +1,7 @@
 # Example stores { #store-examples }
 
-!!! note "Available with the next Kino version"
-    Plugin stores are `apiVersion` 15 and arrive with the next Kino version (not published yet). Read
+!!! note "Available with Kino 0.9.77"
+    Plugin stores are `apiVersion` 15 and arrive with Kino 0.9.77. Read
     [Plugin stores](plugin-stores.md) first.
 
 Two complete plugins you can copy and change. Both pass `node sdk/validate.mjs .`, ship tests that run without a network

@@ -10,8 +10,7 @@ between their devices. apiVersion 13 (in development for the next Kino version, 
 sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes. apiVersion 14
 (with Kino 0.9.74 as well, the next version, **not published yet**) adds **screens**: a full-screen canvas the plugin
 describes as a JSON tree that Kino draws on the phone and the TV, plus player-panel tabs on any title, rooms over the
-Internet, background jobs, small results shared between the person's devices and Kino's text AI. apiVersion 15 (the
-next Kino version after that, **not published yet**) adds `identity` (who the person is, without a sign-up),
+Internet, background jobs, small results shared between the person's devices and Kino's text AI. apiVersion 15 (Kino 0.9.77) adds `identity` (who the person is, without a sign-up),
 `notifications` (notices in the Home bell) and `pluginStore`: a plugin that is a **store**, a source of plugins for
 Kino's own store.
 
@@ -812,7 +811,7 @@ only when you use one of these.
    reference for everything else.) Full page:
    [Hidden browser](https://kinotvapp.github.io/kino-plugins/en/browser/).
 
-**apiVersion 15 (the next Kino version, not published yet; every older Kino refuses it and none of these is offered
+**apiVersion 15 (Kino 0.9.77; every older Kino refuses it and none of these is offered
 through `enhancements`)**. Each has its own page, read it whole before using it:
 
 - `pluginStore` → a **store**: the plugin is a source of plugins for Kino's store. Kino keeps one local index of every
@@ -989,7 +988,7 @@ people. See
 
 ## 6. Being discovered ("De la comunidad")
 
-**From the next Kino version (apiVersion 15, not published yet)** the app no longer searches GitHub by itself: the community
+**From Kino 0.9.77 (apiVersion 15)** the app no longer searches GitHub by itself: the community
 list comes from the built-in store, Kino Plugins (a `pluginStore` plugin), which reads an index built every day from the
 repositories with the `kino-plugin` topic plus what changed since. The rules below are still what gets a plugin into that list.
 People see it in the store view's "De la comunidad" tab (the old "Buscar en GitHub" tab is gone), beside "De Kino" and
@@ -1028,9 +1027,9 @@ Every rule, as the app applies it (full detail:
    raw files are cached about 5 minutes.
 7. If GitHub cannot answer, a backup list published by the Kino team is used; it is rebuilt from the
    same search, so nothing needs requesting. A repository in `community-blocklist.json` (a claim was
-   upheld) never shows, in either list. From the next Kino version the list is refreshed with every store sync.
+   upheld) never shows, in either list. From Kino 0.9.77 the list is refreshed with every store sync.
 8. Nothing installs by itself: the person always sees the consent sheet ("Plugin no verificado…").
-9. Where to look in the app (before the next Kino version, apiVersion 15): Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), the "De la
+9. Where to look in the app (before Kino 0.9.77, apiVersion 15): Plugins (phone: menu ☰ → Plugins; TV: Ajustes → Plugins), the "De la
    comunidad" tab, beside "Recomendados" ("Plugins de la comunidad — Kino no los revisa ni responde por
    su contenido.") with its "Actualizar" button (from Kino 0.9.54 also "Populares"/"Recientes",
    "Cargar más" and "Buscar en GitHub"); also the first-run "Elige tus fuentes", which has the same

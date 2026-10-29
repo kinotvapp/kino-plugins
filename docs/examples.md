@@ -182,7 +182,7 @@ firma del autor ([Plugins firmados](signed.md)), el navegador oculto y `kino.htm
 
 ## Tiendas de plugins de ejemplo { #store-examples }
 
-Para **publicar tu propia tienda** (apiVersion 15, con la próxima versión de Kino) hay dos plugins completos y copiables:
+Para **publicar tu propia tienda** (apiVersion 15, con Kino 0.9.77) hay dos plugins completos y copiables:
 una tienda **local** cuya lista es un archivo JSON estático y una tienda **en vivo** con su propia API. Los dos pasan el kit y
 traen pruebas sin red: [Tiendas de ejemplo](store-examples.md). La tienda que viene en la app, Kino Plugins, es otro ejemplo
 real ([Tiendas de plugins](plugin-stores.md#kino-plugins)).

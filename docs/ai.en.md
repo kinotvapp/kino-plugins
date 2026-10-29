@@ -118,7 +118,7 @@ Before writing anything:
    an account of my own.
 7. If my plugin is a store (a source of plugins for Kino's store), or uses identity or notifications, read
    https://kinotvapp.github.io/kino-plugins/en/plugin-stores/, /en/store-examples/, /en/identity/ and
-   /en/notifications/ first (apiVersion 15, the next Kino version, not published yet) and start from an example
+   /en/notifications/ first (apiVersion 15, Kino 0.9.77) and start from an example
    store with node sdk/init.mjs my-store --host <host> --store local|live.
 
 What I want:
@@ -301,7 +301,7 @@ you hand the plugin over run this self-check and tell me the result of each line
 - if it has a screen: node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
   event name you use answers in screenEvent, and, if its apiVersion is below 14, the screen comes through
   "enhancements" and node sdk/validate.mjs . reports no dropped block;
-- apiVersion 15 (the next Kino version, not published yet: NO released Kino installs it; tell me before using it).
+- apiVersion 15 (Kino 0.9.77 or later).
   A store: "capabilities": ["pluginStore"] (it may stand alone) and optionally "pluginStore": { "mode": "local" | "live",
   "name" }. storeSync({ reason, since, state }) answers { full, entries, removed?, state? } and since/state may be
   absent at any time: when Kino loses a store's rows it syncs it again from scratch, so the store must then answer
@@ -406,7 +406,7 @@ repository's name and description, so a plugin with no stars is found too. Each 
 every 12 hours, or when "Actualizar" is tapped. The exact clicks and how
 to check it: [Get listed in Kino](listed.md).
 
-With the next Kino version (apiVersion 15, not published yet) the app no longer searches GitHub by itself: the "De la
+With Kino 0.9.77 (apiVersion 15) the app no longer searches GitHub by itself: the "De la
 comunidad" tab of the store view (beside "De Kino" and "Instalados") is filled by Kino Plugins, whose daily index is built
 from the repositories with the `kino-plugin` topic; the rules above still apply. There is one plugin per `id` across stores,
 and a reload icon ends with a toast ("Se actualizaron N plugins" or "Tus plugins están al día").

@@ -116,7 +116,7 @@ travels as is to the person's other devices with plugin sync.
 can paste the address of a Stremio addon's `manifest.json` (or a `stremio://` link) and Kino generates
 a plugin for it. Nothing in this guide changes for your plugin.
 
-!!! tip "New: identity, notices and plugin stores (apiVersion 15, with the next Kino version, not published yet)"
+!!! tip "New: identity, notices and plugin stores (apiVersion 15, with Kino 0.9.77)"
     A plugin can know who the person is without a sign-up ([Identity](identity.md)), leave notices in the Home bell
     ([Notices](notifications.md)) and be a **store**: a source of plugins for Kino's store, backed by GitHub, by its own
     server or by a JSON file ([Plugin stores](plugin-stores.md), with two [example stores](store-examples.md)). What

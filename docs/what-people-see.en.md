@@ -143,10 +143,10 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
 - **Exporting a plugin.** Plugins ▸ Instalados ▸ Gestionar ▸ "Exportar plugin" shares a `.kinoplugin` file that installs
   on another phone as a local plugin. [Exporting and importing a plugin file](plugin-files.md).
 
-## The next Kino version (apiVersion 15) { #v15 }
+## Kino 0.9.77 (apiVersion 15) { #v15 }
 
-!!! note "Available with the next Kino version"
-    Not published yet. An older Kino refuses these plugins with «Este plugin necesita una versión más nueva de Kino».
+!!! note "Available with Kino 0.9.77"
+    An older Kino refuses these plugins with «Este plugin necesita una versión más nueva de Kino».
 
 - **The Home bell.** A plugin with [`notifications`](notifications.md) leaves short notices: the bell shows a badge with the
   unread ones and the plugin updates waiting for approval; tapping a notice goes to the plugin's screen and marks it read.

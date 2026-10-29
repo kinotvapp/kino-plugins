@@ -1,7 +1,7 @@
 # Tiendas de ejemplo { #store-examples }
 
-!!! note "Disponible con la próxima versión de Kino"
-    Las tiendas de plugins son de `apiVersion` 15 y llegan con la próxima versión de Kino (todavía sin publicar). Antes,
+!!! note "Disponible con Kino 0.9.77"
+    Las tiendas de plugins son de `apiVersion` 15 y llegan con Kino 0.9.77. Antes,
     lee [Tiendas de plugins](plugin-stores.md).
 
 Dos plugins completos que puedes copiar y cambiar. Los dos pasan `node sdk/validate.mjs .`, traen pruebas que corren sin red

@@ -3,13 +3,13 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Upcoming: `apiVersion` 15, identity, notices and plugin stores { #v15 }
+## Kino 0.9.77: `apiVersion` 15, identity, notices and plugin stores { #v15 }
 
-!!! note "Available with the next Kino version"
-    Available with the next Kino version (after 0.9.74, not published yet). An older version refuses these plugins with
+!!! note "Available with Kino 0.9.77"
+    Available with Kino 0.9.77. An older version refuses these plugins with
     «Este plugin necesita una versión más nueva de Kino»; none of these features is offered through `enhancements`.
 
-Documented on 2026-10-29. `contract.json` says `maxApiVersion` 15; the app version of `apiVersion` 15 is not fixed yet. The
+Documented on 2026-10-29. `contract.json` says `maxApiVersion` 15; `apiVersion` 15 ships in Kino 0.9.77. The
 Node kit already knows all of it ([Test it locally](test-locally.md#api15)).
 
 | Feature | Since | How to tell |
@@ -17,7 +17,7 @@ Node kit already knows all of it ([Test it locally](test-locally.md#api15)).
 | The `identity` capability and `kino.identity.telegram` | `apiVersion` 15 | `typeof kino.identity === "object"` |
 | The `notifications` capability, `kino.notifications.post` and `clear` | `apiVersion` 15 | `typeof kino.notifications === "object"` |
 | The `pluginStore` capability, the manifest's `pluginStore` block and the exports `storeSync`, `storeList` and `storeSearch` | `apiVersion` 15 | an older Kino refuses `apiVersion` 15 |
-| `season` and `episode` in a series' `kino.library.watched()` | the next Kino version, with the `library` capability | the fields exist only on a watched series |
+| `season` and `episode` in a series' `kino.library.watched()` | Kino 0.9.77, with the `library` capability | the fields exist only on a watched series |
 
 - **Identity**: your plugin's server knows who the person is without a sign-up, with a pseudonym per plugin and a signed token,
   bound to this device and to your code through a challenge. It answers only plugins signed with Kino's own author key.

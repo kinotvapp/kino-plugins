@@ -298,7 +298,7 @@ run. More in [Screens: testing with the kit](screens.md#testing).
 
 ## apiVersion 15: identity, notices and stores { #api15 }
 
-Arrives with the next Kino version (not published yet). The kit already checks and runs all of it with the app's rules:
+Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app's rules:
 
 - **`identity`**: `kino.identity.telegram` answers with a fake account: `KINO_IDENTITY_TG=<id|none>`,
   `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR` and `KINO_IDENTITY_REVOKED=1`. Only inside a call the person started

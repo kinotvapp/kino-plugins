@@ -129,7 +129,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
     [componentes](screen-components.md); también llegan salas por internet, trabajos en segundo plano, resultados
     compartidos entre aparatos y la IA de texto de Kino. Lo que cambió: [Novedades](changelog.md#v14).
 
-!!! tip "Nuevo: identidad, avisos y tiendas de plugins (apiVersion 15, con la próxima versión de Kino, aún no publicada)"
+!!! tip "Nuevo: identidad, avisos y tiendas de plugins (apiVersion 15, con Kino 0.9.77)"
     Un plugin puede saber quién es la persona sin un registro ([Identidad](identity.md)), dejar avisos en la campanita de
     Inicio ([Avisos](notifications.md)) y ser una **tienda**: una fuente de plugins para la tienda de Kino, respaldada por
     GitHub, por un servidor propio o por un archivo JSON ([Tiendas de plugins](plugin-stores.md), con dos

@@ -1,7 +1,7 @@
 # Tiendas de plugins { #plugin-stores }
 
-!!! note "Disponible con la próxima versión de Kino"
-    `pluginStore` es de `apiVersion` 15 y llega con la próxima versión de Kino (todavía sin publicar), junto con
+!!! note "Disponible con Kino 0.9.77"
+    `pluginStore` es de `apiVersion` 15 y llega con Kino 0.9.77, junto con
     [`identity`](identity.md) y [`notifications`](notifications.md). Una versión anterior rechaza estos plugins con
     «Este plugin necesita una versión más nueva de Kino».
 
