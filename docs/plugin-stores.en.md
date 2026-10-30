@@ -85,7 +85,7 @@ list (`full: true`) and not assume it has a saved cursor.
 | `name` | 1 to 60 characters. Required. |
 | `description`, `longDescription` | Up to 300 and up to 4000 characters. |
 | `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`. |
-| `tags`, `icon`, `screenshots` | Up to 10 tags of 30 characters; the icon and up to 8 screenshots, `https` only. |
+| `tags`, `icon`, `screenshots` | Up to 10 tags of 30 characters; the icon and up to 8 screenshots, `https` only and from a public host (never an IP address, `localhost`, a name without a dot or a local-network name). |
 | `version`, `author` | Short text (40 and 60 characters). |
 | `popularity`, `updatedAt` | Numbers: for the «Populares» and «Recientes» sorts of "Community" (`updatedAt` in ms). |
 | `stremio`, `requires`, `needsSetup` | A Stremio addon installs through Kino's Stremio flow (then `address` may be absent); `requires` lists capabilities this Kino must be able to run, or the entry is hidden; `needsSetup` says it asks for configuration. |
@@ -153,6 +153,7 @@ cache: going back to the same search or page shows it at once, and those rows ne
 | What | Limit |
 | --- | --- |
 | Entries per `storeSync` | 5000 (the rest are dropped) |
+| Entries per page of a live store | 50 (the rest are dropped) |
 | Size of a `storeSync` answer | 4 MB of JSON |
 | `state` | 16 KB of JSON |
 | One `storeSync` run | 60 s, 40 `kino.fetch` requests and 8 MB downloaded (more than a scheduled job) |

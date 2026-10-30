@@ -85,7 +85,7 @@ debe contestar entonces su lista **completa** (`full: true`) y no suponer que ti
 | `name` | De 1 a 60 caracteres. Obligatorio. |
 | `description`, `longDescription` | Hasta 300 y hasta 4000 caracteres. |
 | `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`. |
-| `tags`, `icon`, `screenshots` | Hasta 10 etiquetas de 30 caracteres; el ícono y hasta 8 capturas, solo `https`. |
+| `tags`, `icon`, `screenshots` | Hasta 10 etiquetas de 30 caracteres; el ícono y hasta 8 capturas, solo `https` y de un sitio público (nunca una IP, `localhost`, un nombre sin punto ni una dirección de red local). |
 | `version`, `author` | Texto corto (40 y 60 caracteres). |
 | `popularity`, `updatedAt` | Números: para el orden «Populares» y «Recientes» de «De la comunidad» (`updatedAt` en ms). |
 | `stremio`, `requires`, `needsSetup` | Un addon de Stremio se instala por el flujo de Stremio (entonces `address` puede faltar); `requires` lista capacidades que la versión de Kino debe poder correr, o la entrada se oculta; `needsSetup` avisa que pide configuración. |
@@ -157,6 +157,7 @@ filas nunca cuentan como la lista sincronizada de la tienda.
 | Qué | Límite |
 | --- | --- |
 | Entradas por `storeSync` | 5000 (las demás se descartan) |
+| Entradas por página de una tienda en vivo | 50 (las demás se descartan) |
 | Tamaño de una respuesta de `storeSync` | 4 MB de JSON |
 | `state` | 16 KB de JSON |
 | Una corrida de `storeSync` | 60 s, 40 peticiones `kino.fetch` y 8 MB descargados (más que un trabajo programado) |
