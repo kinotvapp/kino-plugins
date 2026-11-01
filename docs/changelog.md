@@ -3,6 +3,19 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## La próxima versión de Kino: `apiVersion` 19, letras { #v19 }
+
+!!! note "Todavía en ningún Kino publicado"
+    El `apiVersion` 19 llega con la próxima versión de Kino (`contract.json` nombra la 0.9.81). Todo Kino anterior rechaza un
+    manifiesto con `"apiVersion": 19` con «Este plugin necesita una versión más nueva de Kino». `contract.json` dice `maxApiVersion` 19.
+
+| Novedad | Desde | Cómo saberlo |
+| --- | --- | --- |
+| La capacidad `lyrics` y la exportación `lyrics(query)`: la letra sincronizada o en texto plano de una canción, para la «Letra» del reproductor de música | `apiVersion` 19 | un Kino anterior rechaza el `apiVersion` 19 |
+
+- **Letras**: un plugin responde `{ synced?, plain?, label?, instrumental?, matchDurationMs? }` para la canción que suena; la
+  persona elige la fuente cuando varios plugins responden. [Letras para el reproductor de música](contract.md#lyrics).
+
 ## La próxima versión de Kino: `apiVersion` 18, temas de la app { #v18 }
 
 !!! note "Todavía en ningún Kino publicado"

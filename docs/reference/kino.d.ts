@@ -1,4 +1,4 @@
-// TypeScript declarations for Kino plugins (apiVersion 1 to 17; 17 adds the stats operation of the library capability (kino.library.stats, a month's totals and top titles); 16 adds the coins capability (kino.coins: the person's Kino coins balance, and giving one coin for a post); 15 adds the identity capability (kino.identity.telegram: a per-plugin pseudonym of the person and the signed token that proves it), the notifications capability (kino.notifications: notices in the Home bell), library episodes (the latest season and episode of a watched series) and the pluginStore capability (the plugin is a source of plugins for Kino's store: storeSync, and storeList and storeSearch for a live store); 14 adds the screen capability (screen, screenEvent and the manifest's screen block: a full-screen canvas the plugin builds), library, playerPanelTab, playerControl, room (kino.room, a mailbox hosted on the person's device over the Internet), schedule (background jobs: the manifest's jobs and the job export) and the manifest's enhancements; 13 adds the socket capability (kino.ws, outbound WebSockets) and the byteSource capability (a stream whose bytes the plugin serves through its read export) and the storageLarge capability (a 16 MiB kino.storage for a plugin that keeps a catalog) and the catalog capability (kino.catalog, a searchable SQLite catalog of up to 100,000 items per plugin in a 64 MiB file) and the qrScan capability (kino.qr.scan, the phone's camera scanner for a QR code) and the settings form's qr setting (a QR whose text settingsStatus gives, refreshed every refreshMs) and the kino.crypto operations aesIge, modPow, gunzip, convert and aesIgeVerify and the imageSource capability (a poster, backdrop, still or hero image the plugin serves through its image export, KinoImageRef); 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
+// TypeScript declarations for Kino plugins (apiVersion 1 to 19; 19 adds the lyrics capability (the lyrics(query) export: a song's time-synced or plain lyrics for the music player's overlay); 18 adds the app themes (go.useTheme, go.setExperience, appThemes with price, experience and logo); 17 adds the stats operation of the library capability (kino.library.stats, a month's totals and top titles); 16 adds the coins capability (kino.coins: the person's Kino coins balance, and giving one coin for a post); 15 adds the identity capability (kino.identity.telegram: a per-plugin pseudonym of the person and the signed token that proves it), the notifications capability (kino.notifications: notices in the Home bell), library episodes (the latest season and episode of a watched series) and the pluginStore capability (the plugin is a source of plugins for Kino's store: storeSync, and storeList and storeSearch for a live store); 14 adds the screen capability (screen, screenEvent and the manifest's screen block: a full-screen canvas the plugin builds), library, playerPanelTab, playerControl, room (kino.room, a mailbox hosted on the person's device over the Internet), schedule (background jobs: the manifest's jobs and the job export) and the manifest's enhancements; 13 adds the socket capability (kino.ws, outbound WebSockets) and the byteSource capability (a stream whose bytes the plugin serves through its read export) and the storageLarge capability (a 16 MiB kino.storage for a plugin that keeps a catalog) and the catalog capability (kino.catalog, a searchable SQLite catalog of up to 100,000 items per plugin in a 64 MiB file) and the qrScan capability (kino.qr.scan, the phone's camera scanner for a QR code) and the settings form's qr setting (a QR whose text settingsStatus gives, refreshed every refreshMs) and the kino.crypto operations aesIge, modPow, gunzip, convert and aesIgeVerify and the imageSource capability (a poster, backdrop, still or hero image the plugin serves through its image export, KinoImageRef); 12 adds the syncProvider capability (syncPull, syncPush, syncStatus and the manifest's sync block); 11 adds the externalResolve capability (a stream's `external` hand-off to a resolver app, the manifest's externalResolver) and, from Kino 0.9.66, a stream's advisory `media` and its `portable` universal copy; 10 adds the playlists capability; 9 adds the player panel (panel, panelAction, playerEvent, the manifest's panel and settingsLayout), fetchHosts "any" for hand-written plugins, English setting texts and kino.meta by title; 8 adds the audio item kinds music and podcast; 7 adds tracking and segments; apiVersion 5 only adds the manifest's signature, 6 the plain-plugin SDK: typed and larger secrets, migrate, signed streams, the settings form, debug, telemetry, section, categories, theme and scopedSearch). Reference them from plugin.js
 // with `/// <reference path="./kino.d.ts" />` for editor help; Kino itself runs plain JavaScript.
 // The numbers in the comments come from contract.json, which is authoritative. The app checks that
 // every `kino` member declared here exists in its runtime and nothing else does (KinoDtsTest).
@@ -2139,8 +2139,47 @@ interface KinoSegment { type: "intro" | "outro" | "recap" | "credits" | "preview
  */
 type KinoSegmentsFn = (query: KinoSegmentsQuery) => Promise<KinoSegment[] | null>;
 
+/**
+ * `lyrics(query)`'s argument (apiVersion 19, the "lyrics" capability): the song that is playing in the music player. `artist` may be
+ * "" and `album`, `durationMs` and `ids` absent. The audio's address is never sent.
+ */
+interface KinoLyricsQuery {
+  title: string;
+  artist: string;
+  album?: string;
+  /** The song's length: answer for that cut. */
+  durationMs?: number;
+  /** Only the ids Kino knows: `isrc`, `musicbrainz`, `youtube`. */
+  ids?: { isrc?: string; musicbrainz?: string; youtube?: string };
+}
+
+/** One synchronized line: it starts at `ms` (a whole number of ms, at least 0, never below the previous line's) and has text. */
+interface KinoLyricsLine { ms: number; text: string }
+
+/**
+ * What Kino shows. Give `synced` and/or `plain`; `instrumental: true` alone says the song has no lyrics. `label` (60 characters) names
+ * the source in the picker; `matchDurationMs` is the length of the entry you matched, so Kino can tell whether the timing fits.
+ */
+interface KinoLyricsAnswer {
+  synced?: KinoLyricsLine[];
+  plain?: string;
+  label?: string;
+  instrumental?: boolean;
+  matchDurationMs?: number;
+}
+
+/**
+ * `lyrics` -- required with the capability "lyrics" (apiVersion 19). `null`, `[]` or `{}` means "nothing for this song". Each bad
+ * synced line is dropped on its own; 800 lines of 300 characters, a plain text of 20,000, the whole answer under 102,400 characters.
+ * 10 s, a background call.
+ */
+type KinoLyricsFn = (query: KinoLyricsQuery) => Promise<KinoLyricsAnswer | null>;
+
+/** A lyrics source: capabilities only "lyrics" (and maybe "subtitles", "tracking" or "segments"). */
+interface KinoLyricsSource { lyrics: KinoLyricsFn; subtitles?: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn }
+
 /** A plugin that plays (`resolve` required, as above), optionally finding subtitles, tracking or segments too. */
-interface KinoPlayingPlugin extends KinoPlugin { subtitles?: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn; meta?: KinoMetaFn }
+interface KinoPlayingPlugin extends KinoPlugin { subtitles?: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn; lyrics?: KinoLyricsFn; meta?: KinoMetaFn }
 
 /** A subtitle provider: capabilities only "subtitles" (and maybe "tracking" or "segments"), so `subtitles` is its export. */
 interface KinoSubtitleProvider { subtitles: KinoSubtitlesFn; track?: KinoTrackFn; segments?: KinoSegmentsFn }
@@ -2169,7 +2208,7 @@ interface KinoCatalogOnlyPlugin extends Omit<KinoPlugin, "resolve" | "sign" | "l
 }
 
 /** Your module's exports: one of these. */
-type KinoPluginModule = KinoPlayingPlugin | KinoCatalogOnlyPlugin | KinoSubtitleProvider | KinoTracker | KinoSegmentSource;
+type KinoPluginModule = KinoPlayingPlugin | KinoCatalogOnlyPlugin | KinoSubtitleProvider | KinoTracker | KinoSegmentSource | KinoLyricsSource;
 
 // ---------- the kino API ----------
 

@@ -17,6 +17,7 @@ export async function liveSearch({ query }) { /* -> { items: LiveChannel[] } */ 
 export async function subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages, file }) { /* -> { lang, url, format?, label?, translated? }[] */ }
 export async function track(event) { /* -> { ok: true } or { skipped: true }, or throw kino.error(code) (apiVersion 7) */ }
 export async function segments(query) { /* -> { type, startMs, endMs }[] (apiVersion 7) */ }
+export async function lyrics(query) { /* -> { synced?, plain?, label?, instrumental?, matchDurationMs? } o null (apiVersion 19) */ }
 ```
 
 Desde `"apiVersion": 6` (Kino 0.9.50) hay más exports opcionales, cada uno con su página:
@@ -1027,6 +1028,53 @@ responde"); Kino la espera máximo 12 s. Pruébalo con
 `node sdk/run.mjs <carpeta del plugin> segments tt0133093 8160000` (una película y su duración) o
 `segments tmdb:1396 1 2 2880000` (un capítulo, por el id de la serie): muestra lo que Kino conserva, lo
 que descartó y por qué, y el botón que arma con eso.
+
+## Letras para el reproductor de música (`lyrics`, apiVersion 19) { #lyrics }
+
+!!! note "Todavía en ningún Kino publicado"
+    El `apiVersion` 19 llega con la próxima versión de Kino (`contract.json` nombra la 0.9.81). Los Kino anteriores rechazan un
+    manifiesto con `"apiVersion": 19` con «Este plugin necesita una versión más nueva de Kino».
+
+Un plugin que encuentra la letra de una canción -- LRCLIB, un sitio de letras, la biblioteca de la persona -- declara
+`"capabilities": ["lyrics"]` (solo, con `subtitles`/`tracking`/`segments`, o junto a las capacidades de una fuente) y
+`"apiVersion": 19`, y exporta `lyrics(query)`. Kino muestra entonces un botón «Letra» junto a los controles de reproducción del
+reproductor de música, sobre la carátula, en el teléfono y en la TV.
+
+- **Consentimiento.** La hoja de instalación dice lo que tu plugin sabe: el título y el artista de lo que la persona escucha (no
+  va en rojo). Una actualización que agrega `lyrics` no necesita aprobación propia.
+- **Cuándo.** Solo cuando la persona activó la letra para una canción, en segundo plano: la reproducción nunca te espera. Si
+  hay varios plugins `lyrics`, se les pregunta a todos a la vez y la persona elige la fuente; Kino guarda una respuesta 7 días y
+  el «no encontrada» 10 minutos (un fallo nunca se guarda).
+
+```js
+{
+  title: "Song",
+  artist: "Artist",                        // puede ser ""
+  album?: "Album",
+  durationMs?: 215000,                     // la duración de la canción: responde para ESA versión
+  ids?: { isrc?, musicbrainz?, youtube? }  // solo lo que Kino conoce; la forma más exacta de hallar una canción
+}
+```
+
+Nunca se envía la dirección del audio. Busca por `ids` cuando puedas, luego por artista y título, y usa `durationMs` para
+elegir entre versiones de la misma canción.
+
+**Devuelve** un objeto con cualquiera de `synced` (`[{ ms, text }]`, sincronizada con el tiempo), `plain` (solo el texto),
+`label` (60 caracteres, nombra la fuente), `instrumental: true` (la canción no tiene letra) y `matchDurationMs` (la duración
+de la entrada que encontraste); `null`, `[]` o `{}` significa «nada para esta canción». Kino revisa cada línea sincronizada por
+separado y descarta la mala sin perder las demás: `ms` que no sea un número entero de al menos 0, menor que el de la línea
+anterior, o sin texto. Lee las primeras 800 líneas, corta una línea a los 300 caracteres y un texto plano a los 20.000,
+quita los caracteres de control y de inversión de dirección, y descarta entera una respuesta de más de 102.400 caracteres.
+
+**Qué se muestra.** Las líneas sincronizadas solo cuando es verosímil que encajen con la canción: `matchDurationMs` a menos de
+3 s de la duración de la canción o, sin él, una última línea a no más de 5 s después del final. Si no, `plain`, y si no diste
+ninguno, nada. Con la duración de la canción desconocida se prefiere `plain` y las líneas sincronizadas solo se muestran
+cuando es lo único que hay. La letra que existe gana sobre `instrumental`.
+
+La llamada es de segundo plano (10 s, nunca «No responde»). Los registros de Kino llevan solo ids de plugin y conteos, nunca
+el título ni el artista. Las letras tienen derechos de autor: tu plugin y su fuente son responsabilidad tuya. Pruébalo con
+`node sdk/run.mjs <carpeta del plugin> lyrics "Song" "Artist" "Album" 215000` o una consulta JSON: imprime lo que Kino
+conserva, lo que descartó y por qué, y lo que dibujaría.
 
 ## Ser el transporte de la sincronización de la persona (`syncProvider`, apiVersion 12, Kino 0.9.74) { #sync-provider }
 

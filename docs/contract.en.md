@@ -17,6 +17,7 @@ export async function liveSearch({ query }) { /* -> { items: LiveChannel[] } */ 
 export async function subtitles({ imdbId, tmdbId, kind, season, episode, title, year, languages, file }) { /* -> { lang, url, format?, label?, translated? }[] */ }
 export async function track(event) { /* -> { ok: true } or { skipped: true }, or throw kino.error(code) (apiVersion 7) */ }
 export async function segments(query) { /* -> { type, startMs, endMs }[] (apiVersion 7) */ }
+export async function lyrics(query) { /* -> { synced?, plain?, label?, instrumental?, matchDurationMs? } or null (apiVersion 19) */ }
 ```
 
 From `"apiVersion": 6` (Kino 0.9.50) there are more optional exports, each with its own page:
@@ -984,6 +985,53 @@ The call is a background one (8 s, never "No responde"); Kino waits for it at mo
 `node sdk/run.mjs <plugin dir> segments tt0133093 8160000` (a movie and its length) or
 `segments tmdb:1396 1 2 2880000` (an episode, by the show's id): it prints what Kino keeps, what it
 dropped and why, and the button it makes of it.
+
+## Lyrics for the music player (`lyrics`, apiVersion 19) { #lyrics }
+
+!!! note "Not in any released Kino"
+    `apiVersion` 19 ships with the next Kino version (`contract.json` names Kino 0.9.81). Older Kinos refuse a manifest with
+    `"apiVersion": 19` with «Este plugin necesita una versión más nueva de Kino».
+
+A plugin that finds a song's lyrics -- LRCLIB, a lyrics site, the person's own library -- declares
+`"capabilities": ["lyrics"]` (alone, with `subtitles`/`tracking`/`segments`, or next to a source's capabilities) and
+`"apiVersion": 19`, and exports `lyrics(query)`. Kino then shows a "Letra" button next to the playback controls of the music
+player, over the cover, on phone and TV.
+
+- **Consent.** The install sheet says what your plugin learns: the title and artist of what the person listens to (not in
+  red). An update that adds `lyrics` needs no approval of its own.
+- **When.** Only when the person turned the lyrics on for a song, in the background: playback never waits for you. Several
+  `lyrics` plugins are asked at once and the person picks the source; Kino keeps an answer for 7 days and "nothing found" for
+  10 minutes (a failure is never kept).
+
+```js
+{
+  title: "Song",
+  artist: "Artist",                        // may be ""
+  album?: "Album",
+  durationMs?: 215000,                     // the song's length: answer for THAT cut
+  ids?: { isrc?, musicbrainz?, youtube? }  // only what Kino knows; the most exact way to find a song
+}
+```
+
+The audio's address is never sent. Search by `ids` when you can, then by artist and title, and use `durationMs` to pick
+between versions of the same song.
+
+**Return** an object with any of `synced` (`[{ ms, text }]`, time-synchronized), `plain` (the text only), `label` (60
+characters, names the source), `instrumental: true` (the song has no lyrics) and `matchDurationMs` (the length of the entry you
+matched); `null`, `[]` or `{}` means "nothing for this song". Kino checks each synced line on its own and drops a bad one
+without losing the rest: `ms` not a whole number of at least 0, below the previous line's, or no text. It reads the first 800
+lines, cuts a line at 300 characters and a plain text at 20,000, removes control and right-to-left override characters, and
+drops an answer over 102,400 characters whole.
+
+**What is shown.** The synchronized lines only when they plausibly fit the song: `matchDurationMs` within 3 s of the song's
+length, or, without it, a last line no more than 5 s past the end. Otherwise `plain`, and if you gave none, nothing. With the
+song's length unknown, `plain` is preferred and the synchronized lines show only when they are all there is. Lyrics that exist
+win over `instrumental`.
+
+The call is a background one (10 s, never "No responde"). Kino's logs carry only plugin ids and counts, never the title or the
+artist. Lyrics are copyrighted: your plugin and its source are yours to answer for. Try it with
+`node sdk/run.mjs <plugin dir> lyrics "Song" "Artist" "Album" 215000` or a JSON query: it prints what Kino keeps, what it
+dropped and why, and what it would draw.
 
 ## Being the person's sync transport (`syncProvider`, apiVersion 12, Kino 0.9.74) { #sync-provider }
 
