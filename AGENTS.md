@@ -13,9 +13,12 @@ describes as a JSON tree that Kino draws on the phone and the TV, plus player-pa
 Internet, background jobs, small results shared between the person's devices and Kino's text AI. apiVersion 15 (Kino 0.9.77) adds `identity` (who the person is, without a sign-up),
 `notifications` (notices in the Home bell) and `pluginStore`: a plugin that is a **store**, a source of plugins for
 Kino's own store. apiVersion 16 (Kino 0.9.78) adds `coins` (`kino.coins`: the person's Kino coin balance, and giving a
-coin), and Kino 0.9.78 adds `kino.sync.setActive` for a sync provider. apiVersion 17 (the next Kino version, no number yet;
-the maximum today) adds `kino.library.stats`, `perProfile` jobs, `kino.tmdb` in jobs, the `pages` widget and `hero` style,
-the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. See
+coin), and Kino 0.9.78 adds `kino.sync.setActive` for a sync provider. apiVersion 17 (the next Kino version, no number yet)
+adds `kino.library.stats`, `perProfile` jobs, `kino.tmdb` in jobs, the `pages` widget and `hero` style,
+the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. apiVersion 18 (the next Kino version too: the
+contract names Kino 0.9.81; **not in any released Kino**; the maximum today) adds **app themes**: `appThemes` in the manifest
+(whole-app looks as data, optionally sold for kinos), and the `go.useTheme` and `go.setExperience` screen actions with
+`activeTheme` (section 4, "apiVersion 18: app themes"). See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
@@ -35,7 +38,12 @@ compatibility. apiVersion 14 arrives with Kino 0.9.74 (not published yet): to st
 (also `--device tv`). Follow the component catalogue ([layout, content and actions](https://kinotvapp.github.io/kino-plugins/en/screen-components/),
 [forms, overlays and navigation](https://kinotvapp.github.io/kino-plugins/en/screen-forms/), [state, style and recipes](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)) and the
 [TV focus rules](https://kinotvapp.github.io/kino-plugins/en/screens/#tv-focus): Kino draws its focus ring only on nodes the person can press; a node the remote
-must stop on just to read it gets `"canRequestFocus": true`.
+must stop on just to read it gets `"canRequestFocus": true`. Section 4, "The screen UI in one place", summarises every
+widget, style token, answer field, `go` shape and limit, so you can write a correct tree from this file alone.
+
+A plugin that wants to change **how the whole app looks** (colours, corners, type sizes, player controls, the menu logo) does
+not draw anything: it declares `appThemes` (apiVersion 18) as data, and may add a small presentation screen whose button
+turns the theme on with `go.useTheme`. See section 4, "apiVersion 18: app themes".
 
 ## 1. Read first, in this order
 
@@ -71,7 +79,12 @@ must stop on just to read it gets `"canRequestFocus": true`.
    published yet): [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/),
    [Example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/),
    [Identity](https://kinotvapp.github.io/kino-plugins/en/identity/) and
-   [Notices in the bell](https://kinotvapp.github.io/kino-plugins/en/notifications/). For apiVersion 6
+   [Notices in the bell](https://kinotvapp.github.io/kino-plugins/en/notifications/). For Kino coins (apiVersion 16) and a
+   month's habits (apiVersion 17): [`kino.coins`](https://kinotvapp.github.io/kino-plugins/en/kino-api/#coins) and
+   [`kino.library.stats`](https://kinotvapp.github.io/kino-plugins/en/kino-api/#library-stats). For **app themes**
+   (apiVersion 18, the next Kino version, not released): [App themes](https://kinotvapp.github.io/kino-plugins/en/themes/),
+   then [`go.useTheme`](https://kinotvapp.github.io/kino-plugins/en/screen-forms/#go-use-theme) and
+   [`go.setExperience`](https://kinotvapp.github.io/kino-plugins/en/screen-forms/#go-set-experience). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
    shows it, [Customize your plugin](https://kinotvapp.github.io/kino-plugins/en/customize/)):
    [The settings form](https://kinotvapp.github.io/kino-plugins/en/settings-form/),
@@ -148,7 +161,15 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `qr` setting, `syncProvider` next to `socket`/`storageLarge`/`catalog`/`qrScan` without `resolve`/`search`/`home`,
   `setSettings` on a `password`, `sync.generateKey`, a `"sync": false` password in `sync.provision`, `settingsStatus`
   `hide` or `"sync": false` on a `password`/`text`: **Kino 0.9.74, the next release, not published yet** (every Kino before 0.9.74 refuses an apiVersion
-  13 plugin, as it refuses 12), so use it only when the person agrees to wait for Kino 0.9.74, and say so plainly. `kino.crypto`'s byte
+  13 plugin, as it refuses 12), so use it only when the person agrees to wait for Kino 0.9.74, and say so plainly. `14` only for
+  `screen`, `library`, `playerPanelTab`, `playerControl`, `room`, `schedule` (with `jobs`), `ai`, `shared`, a setting's
+  `unlockWith` or `kino.fetch`'s `maxBytes`/`stopAt` (Kino 0.9.74; to stay installable on older Kino offer the first eight
+  through `enhancements` instead); `15` only for `identity`, `notifications` or `pluginStore` (Kino 0.9.77); `16` only for
+  `coins` (Kino 0.9.78); `17` only for `kino.library.stats`, a `perProfile` job, `kino.tmdb` inside a job, the bigger AI job
+  budget, the `pages` widget, the `hero` text style, the `share`/`enableJob` answers or `go.search` with `"scope": "all"` (the
+  next Kino version, no number yet); `18` only for `appThemes`, `go.useTheme`, `go.setExperience`, `activeTheme` or
+  `"hosts": []` in a themes-only plugin (the next Kino version, which the contract numbers 0.9.81). **17 and 18 are in no
+  released Kino**: every older Kino refuses the whole plugin, so use them only when the person accepts the wait. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
   manifest (Kino 0.9.74 has all five, an older Kino none): feature-detect each one with
   `typeof kino.crypto.convert === "function"` and keep a fallback.
@@ -182,6 +203,11 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   data, shown in red; a service without such a token cannot be a provider), what a second device needs
   (`sync.provision`), and the hosts. It is not a way to add content.
   See "Sync providers" in section 4.
+- **A look for the whole app?** (apiVersion 18, the next Kino version.) Settle the colours (a dark background, readable
+  text: section 4 lists the pairs Kino checks), what the person may adjust (offer swatches: a TV remote cannot type a colour
+  comfortably), whether the theme is free or costs kinos (then the author's 64-hex coins account for `payTo`), whether it
+  looks best with the light or the full experience, and whether it needs its own logo or a presentation screen. A theme
+  plugin needs no hosts, no capabilities and no code.
 - If the person wants a **Nuvio scraper**, stop: Kino installs Nuvio repositories directly
   ([Nuvio scrapers](https://kinotvapp.github.io/kino-plugins/en/nuvio/)); no plugin needs writing.
 - If the person wants a **CloudStream plugin** in Kino, stop too: from Kino 0.9.54 Kino installs the plugins of a
@@ -251,7 +277,11 @@ exact message Kino shows, never a summary.
     `./plugin.js migrate '{"kind":"title","ref":"…"}'`, `--within '<ref>' ./plugin.js search "…"`,
     `./plugin.js sign '{"url":…,"kind":"segment","ref":…,"context":…}'`,
     `--retry conflict:1 ./plugin.js resolve '<ref>'`, and `node sdk/validate.mjs . --run liveSearch <q>`
-    for the 18+ marks. Lines marked `[dropped by Kino]` are what the app would drop.
+    for the 18+ marks. Lines marked `[dropped by Kino]` are what the app would drop. Screens (apiVersion 14+):
+    `node sdk/run.mjs . screen` (and `--device tv`), `--state '<json>' . screenEvent <name> [arg] ['<value json>'] --trigger
+    tap|change|submit`, `--context '{"activeTheme":"<id>"}' . screen` (apiVersion 18). Themes (apiVersion 18):
+    `node sdk/validate.mjs .` prints every theme's dropped tokens for the phone and the TV. Coins: `KINO_COINS_BALANCE=<n>`
+    (default 5), `KINO_COINS_DISABLED=1`, `KINO_COINS_REVOKED=1`.
 6. **Record fixtures and test offline**: `node sdk/run.mjs --record test/fixtures.json . search "algo"`,
    then `node --test test/plugin.test.mjs` (the scaffold's test: it validates the manifest and
    replays the fixtures offline). Name the file explicitly: a bare `node --test test/` does not work
@@ -281,7 +311,10 @@ exact message Kino shows, never a summary.
    hosts, `permissions`, `download`, `drm`, `channels`, `migrate`, `telemetry` (or `true` → `"verbose"`),
    `liveStreamHosts`, `streamHosts`, `browser` (or `true` → `"pages"`), an `insecureHttp` host, or `secrets` to a plugin that had none
    makes the update wait for the person's approval; so does adding `syncProvider` or `sync.keySecret`
-   (never approved on its own). From Kino 0.9.50 updates are also checked at app
+   (never approved on its own), and adding any of `tracking`, `nuvio`, `library`, `playerPanelTab`, `playerControl`, `room`,
+   `schedule`, `ai`, `identity`, `notifications`, `coins` or `pluginStore` (`contract.json` `capabilities.needsApproval`), a
+   job's `perProfile`, or raising a `library` plugin to apiVersion 17 (its consent line grew). `shared` shows a plain line and
+   waits for nothing; `appThemes` asks nothing at all. From Kino 0.9.50 updates are also checked at app
    start (at most every 12 h), a badge counts the waiting ones, and a failed call of a plugin whose
    update waits says "Hay una versión nueva de <name>: actualízala en Ajustes ▸ Plugins".
 
@@ -386,7 +419,22 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.nuvio` (apiVersion 11, Kino 0.9.71) | 20 calls a minute per plugin; 1 to 4 `nuvioRepos`; up to 12 scrapers per `use`/`streams` call (`streams` asks 4 at a time); 60 s per scraper (`timeoutMs` 2,000 to 60,000); installs 45 s each; `available` up to 200 scrapers; scraper filter up to 64 ids; query 4,096 characters; `resolve` 75 s |
 | Section / categories (apiVersion 6) | label 20; 8 tabs × 24 chars; hero text 300; 24 category tiles, titles 40 |
 | Error text | `kino.error` detail 200 characters; `userMessage` 160 (apiVersion 6) |
-| Sync provider (apiVersion 12) | blob ≤ `sync.maxBlobBytes` ≤ 4,194,304 bytes decoded; `pullEveryMs` ≥ 30 s, `pushDebounceMs` ≥ 5 s; 60 rounds an hour; `provision` 8 keys; `kino.sync.remoteChanged()` once per 30 s; action `setSettings` 8 keys, link `candidate` 64 characters |
+| Sync provider (apiVersion 12) | blob ≤ `sync.maxBlobBytes` ≤ 4,194,304 bytes decoded; `pullEveryMs` ≥ 30 s, `pushDebounceMs` ≥ 5 s; 60 rounds an hour; `provision` 8 keys; `kino.sync.remoteChanged()` once per 30 s; action `setSettings` 8 keys, link `candidate` 64 characters; `kino.sync.setActive` (Kino 0.9.78) waits up to 120 s for the person's answer |
+| Manifest texts | `name` 40, `description` 300, `author` 60, `homepage` 200 characters; `version` `MAJOR.MINOR.PATCH` (each ≤ 6 digits, no leading zeros); `color` `#RRGGBB`; `entry`/`icon` paths ≤ 200 characters; setting `key` `^[a-z][a-zA-Z0-9_]{0,31}$`, `label` 40, `hint` 80 (a `section` hint 300), `select` 20 options of ≤ 40 characters |
+| Signing lane (apiVersion 6) | `sign` 1.5 s per call, 3 s in all for one request |
+| Screen (`screen`, apiVersion 14) | `screen`/`screenEvent` 20 s each; tree depth 10, 600 nodes, 500 items per list, 1,000 titles per tree (60 drawn at once in a rail or grid); state 64 KB; a text 2,000 characters; events 100 ms apart, 8 waiting; 1 pop-up open, 3 dialog buttons, 8 menu items; 8 `ui` operations per action; `config` 32 keys; 3 timers of 1 s..24 h (3 failures switch one off); toasts 2,000..8,000 ms (default 3,500); `go.screen` `route` 64 characters, `args` 4 KB; `go.search` `q` 200; `go.url` `href` 2,048 (10 a minute), `go.copy` 500 characters / 6 lines (20 a minute); one page-opening `go` per 500 ms; manifest `screen.label` 1..20, `settingsButton.label` 1..40, `iconFile` 96×96 PNG ≤ 24 KB |
+| Player panel tab (`playerPanelTab`, apiVersion 14) and `playerControl` | contributed tab label 24 characters; controlled player actions: 30 a minute, one seek or pause per second per plugin, never while Kino is in the background, a Kino dialog is up or the person seeks; only `pause` on live |
+| `kino.library` (apiVersion 14) | `limit` default 50, at most 100; 30 calls a minute (with `stats`); times rounded down to the day, `progress` to 0.01; never 18+; only from `screen`, `screenEvent`, `home`, `section`, `search` (and jobs) |
+| `kino.library.stats` (apiVersion 17) | `month` `yyyy-mm` (the current one by default); `top` ≤ 20 titles; nothing finer than the month |
+| `kino.room` (apiVersion 14) | payload 8,192 bytes, 4 levels deep; 5 messages a second, 100 and 256 KB a minute per member; 2..8 members (default 6); TTL 10..240 min (default 120); code 4..12 digits (default 12); mailbox 200 events / 15 min, `inbox` `limit` ≤ 50; 2 joined + 1 hosted per device, 2 per plugin; 5 wrong codes lock joins 60 s (doubling to 30 min), 30 in its life close the room; a member silent 120 s leaves; closed after 30 min in the background |
+| Jobs (`schedule`, apiVersion 14) | 1..3 jobs; `id` `^[a-z0-9-]{1,24}$`; `label.es` 1..40; `everyOptions` 1..6 values of 15..1440 min; per run 20 s, 10 requests, 2 MB of bodies, 256 KB written to `kino.storage` (apiVersion 17 with `ai` approved: 60 s and 20 requests); 96 runs a day per plugin; 3 failures in a row pause the job (backoff 15 min doubling to 360); waits up to 30 s for your own screen or panel call; `perProfile` turns share a 9-minute window; each job starts off, Wi-Fi only by default |
+| `kino.ai.ask` (apiVersion 14) | prompt 8,192 UTF-8 bytes, `system` 2,048; reply `maxChars` ≤ 4,096 (default 2,048); 10 asks in any 60 s, 100 a day, 1 at a time, 20 s each; for all plugins of the device 300 a day and 2 at once |
+| `kino.shared` (apiVersion 14) | 4 keys per profile, key `^[A-Za-z0-9_.-]{1,40}$`, a value 64 KB and 16 levels of strict JSON, 128 KB in all; 30 writes a minute; a key travels at most once a minute, 4 keys a minute; 8 removals kept 30 days; secret-like keys refused |
+| `kino.identity.telegram` (apiVersion 15) | 10 calls a minute; `challenge` 16..128 of `A-Za-z0-9_-`; only from `screen`, `screenEvent`, `panelAction`; only plugins signed with Kino's own author key |
+| `kino.notifications` (apiVersion 15) | `id` `^[A-Za-z0-9._-]{1,64}$`; `title` 1..80, `text` ≤ 160; 20 posts an hour, 30 kept, 30 days; not synced |
+| `kino.coins` (apiVersion 16) | 30 calls a minute (both functions); `give` `to` 1..128, `postId` 1..64 characters; `give` only from `screen`, `screenEvent`, `panelAction`; `balance` also from a timer tick and a job |
+| Plugin store (`pluginStore`, apiVersion 15) | `storeSync` 60 s, 40 requests, 8 MB downloaded; ≤ 5,000 entries and 4 MB of JSON per answer; `state` 16 KB; live store 5 s a call, 20 calls a minute, 50 entries a page, cached 30 min; entry `name` 60, `description` 300, `longDescription` 4,000, 10 `tags` of 30, 8 `screenshots`, `version` 40, `author` 60 |
+| App themes (`appThemes`, apiVersion 18) | 1..8 themes; `id` `^[a-z0-9][a-z0-9-]{1,39}$`; `name` 40; 39 tokens (ranges in section 4); `adjustable` ≤ 40 tokens; gradient 2..8 colours; `price.kinos` 1..1000, `payTo` 64 lowercase hex; `logo` 1..8 paths of ≤ 2,000 characters on a canvas ≤ 1,000 × 1,000, ≤ 8 times wider than tall |
 
 **Home categories** (the optional "Home por categorías"; the full vocabulary and aliases are at
 <https://kinotvapp.github.io/kino-plugins/en/categories/>): preferably group the plugin's content in
@@ -528,6 +576,108 @@ when the plugin must keep installing there)**. Each has its own page, read it wh
 - Test with the kit: `node sdk/run.mjs . screen`, `--device tv`, `--state '{...}' . screenEvent <name>`,
   `. panel <ref>`, `--foreign <id>:<Name> . panel <ref>`, `--device phone . job <id> manual`, `. shared`;
   `KINO_AI_REPLY` / `KINO_AI_ERROR` / `KINO_AI_REVOKED=1`. <https://kinotvapp.github.io/kino-plugins/en/test-locally/#api14>
+- **Jobs in detail**: the manifest's `jobs` is 1..3 `{ id, label: { es, en? }, everyMin, everyOptions, runOn?, enabledBy?,
+  perProfile? }`; `job(ctx)` gets `{ id, reason: "scheduled" | "manual", lastRunMs, attempt }` and its answer is ignored (write to
+  `kino.storage` or `kino.shared`; the screen reads it when it opens). A job may use only `kino.fetch`, `storage`, `log`,
+  `library`, `config`, `cookies`, `crypto`, `sleep`, `html`, `secret`, `error`, `rank`, `ai`, `shared`, `seed`, `notifications`,
+  `coins` and (apiVersion 17) `tmdb`; everything else (`room`, `qr`, `browser`, `ws`, `meta`, `nuvio`, `catalog`, `sync`,
+  `identity`, `jobOn`) answers `not_allowed`, and no UI can come out of it. `runOn: "preferPhone"` runs it on ONE linked device,
+  a phone first. `enabledBy: "<toggle setting key>"` lets one of your toggles switch it. Kino draws the job's rows in your
+  Ajustes tab (switch, frequency, «Solo con Wi-Fi», last run, «Ejecutar ahora»); you draw nothing.
+- **Other `kino` members a screen plugin meets**: `kino.screen.names` / `.widgets` / `.version` (what this Kino draws:
+  feature-detect a newer widget with `kino.screen.names.includes("DataTable")`), `kino.apiVersion`, `kino.appVersion`,
+  `kino.lang`, `kino.device`, `kino.cookies`, and `kino.rank.shortQuery` / `sortBySimilarity` / `filterRelevant` (title
+  matching helpers for a search backend).
+
+**The screen UI in one place (apiVersion 14 to 18).** The rich UI is the tree `screen()` returns, not the old settings form
+or the legacy panel. Everything below is checked by Kino and by `node sdk/run.mjs . screen`; what fails is dropped and
+logged, never drawn wrong. Full catalogue: [layout, content and actions](https://kinotvapp.github.io/kino-plugins/en/screen-components/),
+[forms, overlays and navigation](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
+[state, style and recipes](https://kinotvapp.github.io/kino-plugins/en/screen-reference/).
+
+- **The exports.** `screen({ state, route, device, size, lang, activeTheme })` is a pure view: no network, return what `state`
+  holds (a `Skeleton` while it loads). `screenEvent({ name, arg, value, state, route, device, lang, activeTheme })` reacts; the
+  first call is the reserved event `open` (load data there and answer a `state` patch; no node may use the name `open`).
+  `device` is `"phone"`, `"tv"` or `"desktop"`; `size` `{ widthClass, heightClass, orientation }` (`compact` < 600 dp,
+  `medium` 600..839, `expanded` ≥ 840; a TV is `expanded`); `lang` `"es"` or `"en"`; `activeTheme` (apiVersion 18) the id of
+  your active app theme or `null`. `route` is `{ name, params, args? }` (`"main"` at the root).
+- **State lives in Kino**, not in your variables (the runtime closes when idle): an answer's `state` patch merges key by key
+  (`null` removes), then `screen()` runs again. `state.inputs.<key>` holds every input's value; answer
+  `{ state: { inputs: { key: value } } }` to set a field (no event fires). 64 KB, this opening only: keep what must survive in
+  `kino.storage`.
+- **Widgets** (Flutter-style names are the documented spelling; the older lowercase names in brackets are still accepted):
+  layout `Column` (col), `Row` (row; `wrap: true` makes a 12-column row with `span`/`offset`), `Stack` (box; children may be
+  `positioned`), `Card`, `Spacer`/`SizedBox`, `Divider`, `SingleChildScrollView` (scroll), `GridView` (grid, ≤ 8 `columns`),
+  `ListView` (list), `TabBar` (tabs), `ExpansionTile` (accordion), `steps` (≤ 12 steps), `Scaffold` (`appBar`, `body`,
+  `floatingActionButton`, `bottomNavigationBar`; ≤ 4 app-bar actions, 2..5 nav items), `AppBar`, `NavigationBar`, `PageView`
+  (pageView, ≤ 24 pages, a carousel with dots, `autoPlayMs` 3,000..60,000), `pages` (apiVersion 17: 2..8 full-screen pages under
+  Kino's progress bar, `key` required, the index in `state.inputs.<key>`), `ListTile` (listTile); content `Text` (styles
+  `hero` (apiVersion 17, 72 sp), `h1`..`h5`, `p`, `caption`, `label`; `time` + `timeFormat` `relative`/`clock`/`countdown`),
+  `Image`, `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
+  radius 12..64), `MaterialBanner` (banner), `LinearProgressIndicator` (progress), `CircularProgressIndicator` (loading),
+  `Skeleton` (`line`, `block`, `circle`, `card`; ≤ 6 lines), `QrImage` (qr, ≤ 1,000 characters), `DataTable` (table, `TableRow`
+  /`TableCell`: ≤ 20 columns, 200 rows, `colSpan` ≤ 8), `emptyState`, `errorState`; Kino's own title cards `titleCard`,
+  `titleRail`, `titleGrid`, `heroCard` (≤ 2 buttons); actions `ElevatedButton`/`TextButton`/`IconButton`/`Button`,
+  `FloatingActionButton` (fab, 1 per screen), `Chips`; forms `Form`, `TextField` (textInput; `multiline`/`maxLines` > 1 makes a
+  textArea; `obscureText` for a secret; `kind` `text`/`number`/`email`/`url`/`search`), `DropdownButton`, `RadioGroup`,
+  `Checkbox`, `Switch`, `Slider`, `NumberStepper` (≤ 6 decimals), and the `settings` node (your manifest settings drawn and
+  saved by Kino, `bind`/`config`, `onSaved`); overlays `AlertDialog`/`BottomSheet`/`PopupMenuButton` (popup `kind` `dialog`,
+  `sheet`, `menu`; declared in the tree and opened with `ui`, or sent in an answer). An unknown type is dropped, logged. Not
+  available: date pickers, rich text, charts, pull-to-refresh, segmented buttons, autocomplete, file inputs.
+- **Style comes from scales, never free values** (an off-scale value is dropped): spacing `padding`/`margin`/`gap` 0, 4, 8, 12,
+  16, 24, 32, 48 (or per side); sizes `width`/`height`/`minHeight`/`minWidth`/`maxWidth`/`maxHeight` 16, 24, 32, 40, 48, 64, 80,
+  96, 120, 160, 200, 240, 320, 400, 480, 560, 640; `borderRadius` `none`/`small`/`medium`/`large`/`full` (or per corner);
+  colour roles `primary`, `secondary`, `surface`, `muted`, `warning`, `error`, `onPrimary`, `primaryContainer`,
+  `surfaceVariant` (for `color`, `background`, `border.color`); `flex` 1..12; `crossAxisAlignment`/`alignSelf` `start`,
+  `center`, `end`, `stretch`; `mainAxisAlignment` adds `spaceBetween`, `spaceAround`; `textAlign`; `maxWidthFraction` 0.25..1
+  by 0.05; `border` width 0..8; `elevation` 0..24 (a `Card` or `Stack`); `opacity` 0..1 (below 0.38 it takes no press);
+  `animate { duration 100..600 ms, curve standard|ease|decelerate }` (≤ 24 animating nodes); banner and toast `role` `info`,
+  `warning`, `error`, `success`. Your screen is painted in the active app theme's colours: never hard-code a hex colour.
+- **Per-size values**: any style or layout property may be `{ compact?, medium?, expanded? }` (a missing class takes the next
+  smaller one); an invalid value in any class drops the whole node. `devices: ["tv"]` and `sizes: ["expanded"]` draw a node only
+  there.
+- **Common properties**: `key` (unique; required on inputs, pop-ups, `ExpansionTile`, a dismissible banner, `pages`), `onTap`
+  (`onPressed` on a button), `onLongPress`, `arg` (≤ 4,096), `enabled`, `hidden`, `visible`, `autofocus`, `selected`, `badge`
+  (`"dot"` or `{ text ≤ 12, color }`), `tooltip` (≤ 80), `enabledAt` (epoch ms), `loading`, `testKey` (≤ 64),
+  `canRequestFocus` (a TV read stop). Texts take an English twin: `text`/`textEn`, `labelText`/`labelTextEn`,
+  `hintText`/`hintTextEn`. An action is an event name, or `{ event, arg, ui, go, timeoutMs }` (`timeoutMs` 1,000..30,000 ms, on a
+  press only: that call's own budget instead of 20 s; past 400 ms Kino draws the pressed node busy by itself).
+- **Answers** (`screenEvent`, a timer, a pop-up's `onClose`, a panel's `panelAction`) may carry `state`, `dialog` (≤ 3
+  buttons), `sheet`, `menu` (1..8 items), `toast` (a string or `{ text, textEn, role, action, ms }`), `toastEn`, `go`, `route`
+  (`{ push, params }` or `{ pop: true }`), `close`, `focus` (a key), `config` (≤ 32 of your settings), `ui` (≤ 8 local
+  operations: `show`, `hide`, `toggle`, `enable`, `disable`, `focus`, `set`, `clear`, `open`, `close`), `share` (apiVersion 17:
+  `{ key }` draws that node as a 1080×1350 PNG and opens the system share sheet; phone only, never 18+ titles) and `enableJob`
+  (apiVersion 17: a job id; turns on Kino's own row of that job). A timer's answer keeps only `state`, `toast`, `close`,
+  `config`; an `onClose` answer drops pop-ups, `go`, `route`, `share`, `enableJob`; `open`'s answer drops `go` except
+  `go.screen`. `share`, `enableJob` and the person-only `go` shapes need the answer to come within 5 s of the person's tap.
+- **`go`: fifteen shapes, always into your own content or one of Kino's pages** (nothing else: no intent, no app):
+
+  | `go` | Opens | From |
+  | --- | --- | --- |
+  | `title`, `play` | your title page / plays your title (`ref`, `kind` of `movie`, `series`, `episode`, `live`, `music`, `podcast`; `id`, `title`, `adult` for one not on the canvas) | a tap or an event's answer |
+  | `search` | Kino's search with `q` (≤ 200), only your plugin as the source (needs `search`); `"scope": "all"` (apiVersion 17) every source, needs nothing | a tap or an event's answer (`scope: "all"` only a tap) |
+  | `browse`, `section`, `categories`, `close` | your «Ver más» list, your section, Kino's Categorías with your group first, closes the screen | a tap or an event's answer |
+  | `screen` | your own screen at `route` (≤ 64) with `args` (≤ 4 KB) | a tap or any answer, `open`'s included |
+  | `titleByIds` | Kino's own title page for `tmdb`/`imdb` ids, every source the person has | the person's press or submit only |
+  | `url` | an https link, after Kino's own sheet (a QR on a TV) | the person's press or submit only |
+  | `copy` | copies `text` (≤ 500, 6 lines), Kino's «Copiado» toast; not on a TV | the person's press or submit only |
+  | `liveChannel` | tunes to an En vivo provider's channel (a tab with `"kinds": ["live"]` only) | the person's press or submit only |
+  | `syncProvider` | Kino's sync-provider settings (only with `syncProvider`) | the person's press or submit only |
+  | `useTheme` | `{ theme }`: turns on one of your `appThemes` (or `null`: back to Kino's) | the person's press or submit on your screen, apiVersion 18, never a panel |
+  | `setExperience` | `"light"` or `"full"`: asks for that whole-app experience; Kino asks first | the person's press or submit on your screen, apiVersion 18, never a panel |
+
+  The 18+ gate holds everywhere; one page-opening `go` per 500 ms; Back returns to your screen with its state.
+- **Timers**: the root's (or the manifest's `screen.every`) `{ ms, event }` (1 s..24 h, ≤ 3) fires only while the screen is open
+  and in front; a tick is nobody's press.
+- **Events**: one at a time per screen, 100 ms apart, ≤ 8 waiting; a timeout or three failures show Kino's error state with
+  «Reintentar»; a screen never makes the plugin "No responde".
+- **TV**: Kino draws its focus ring only on nodes that can be pressed; a node the remote must stop on to read gets
+  `canRequestFocus: true`; use `autofocus` for the one way forward; test with `--device tv`.
+- **The manifest's `screen` block**: `label` 1..20 (`labelEn`), `icon` (one of the 50 names) or `iconFile` (96×96 PNG ≤ 24 KB),
+  `menuOpens` `section`/`screen`/`both`, `opensFrom` `["menu"]` (default) and/or `"settings"` (a button on your settings page,
+  named by `settingsButton.label` 1..40), `settingsIn` `settings`/`screen`/`both`, `replaces: ["categories"]` (needs `browse`
+  and `categories`), `every`, `adult`. Kino keeps a remote switch (`screensEnabled`) that hides every plugin screen and stops
+  rooms and jobs.
 
 **apiVersion 13 (in development, the next Kino version; no released Kino accepts it)**: use these only when the
 person needs them and accepts the wait; never present them as already in the app. Each has its own page, read it whole
@@ -877,6 +1027,119 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
 - `kino.library.watched()` also carries `season` and `episode` (the latest chapter played) on a watched series, never on a
   movie.
 
+**apiVersion 16 (Kino 0.9.78) and the Kino 0.9.78 sync switch.** `coins` is not offered through `enhancements`:
+
+- `coins` → declarative, never alone, red consent line («Podrá ver tu saldo de kinos y regalar tus kinos»), no switch of its
+  own (the person revokes it by disabling or removing the plugin). `await kino.coins.balance()` → `{ balance, earnedToday,
+  capToday }`; `await kino.coins.give({ to, postId })` gives ONE coin to the coins account `to` (1..128 characters, which your
+  own server hands you) for the post `postId` (1..64) → `{ balance, postTotal }`. Kinos are Kino's free coin: 1 every 10
+  minutes watched, at most 20 a UTC day. `give` only from `screen`, `screenEvent` or `panelAction` after the person's action;
+  `balance` also from a timer tick and a job. 30 calls a minute. Errors: `permission_denied`, `not_available` (service down or
+  this device never validated: keep working without coins), `rate_limited`, `bad_request`, `disabled` (the person switched
+  Kinos off: show nothing about kinos at all), and `no_balance`, `self_gift`, `unknown_account`. Feature-detect
+  `typeof kino.coins === "object"`. Your plugin never learns the service's address or session.
+  <https://kinotvapp.github.io/kino-plugins/en/kino-api/#coins>
+- `kino.sync.active()` and `kino.sync.setActive(on)` (Kino 0.9.78, no apiVersion, `syncProvider` only): read or change whether
+  this plugin is the device's sync provider; `true` asks the person in Kino's own dialog (a decline answers `false`), `false`
+  asks nothing. Changes only from a tap (`action`, `panelAction`, `screenEvent`), never a job; up to 120 s; errors `busy`,
+  `timeout`, `unavailable`, `invalid_request`, `not_allowed`. Feature-detect `typeof kino.sync.setActive === "function"`.
+
+**apiVersion 17 (the next Kino version, no number yet; not in any released Kino).**
+
+- `kino.library.stats({ month? })` (with `library`; only a plugin declaring 17 has the function, and an update that raises a
+  `library` plugin to 17 asks the person again): one month's aggregates of the active profile, every device summed:
+  `{ month, estimated, seconds, secondsByKind: { movie, series, live }, secondsByBand: { morning, afternoon, night, lateNight }
+  | null, titles, episodes, activeDays, longestStreakDays, top: [{ title, year?, kind, ids, poster?, genres?, seconds }] }`.
+  `month` `yyyy-mm` (the current one by default); `top` ≤ 20; never 18+; live channels counted, never named; nothing finer
+  than the month. Shares the 30 calls a minute of `watched`/`saved`. Feature-detect `typeof kino.library.stats === "function"`.
+- Jobs: `perProfile: true` (with `runOn: "any"`, never with `enabledBy`) runs `job(ctx)` once per profile of the device that has
+  your plugin on, each its own run with that profile's storage, library, shared values and config (ctx gives no profile id);
+  `kino.notifications`, `kino.coins` and `kino.seed` answer `not_allowed` there. Its consent is Kino's own job row (off by
+  default, each profile may leave itself out), with a longer red line. `kino.tmdb` is allowed in any job (each call one of
+  the run's requests). A plugin with `ai` approved gets 60 s and 20 requests per run.
+- Screens: `kino.jobOn("<jobId>")` (only in `screen`/`screenEvent`) says whether a job's row is on, and the answer
+  `enableJob: "<jobId>"` turns it on after the person's tap (never off; a row the person switched off stays off). The `pages`
+  widget, the `hero` text style, the `share` answer and `go.search` with `"scope": "all"` (see "The screen UI in one place"). A
+  lower apiVersion gets each of these dropped, logged.
+
+**apiVersion 18: app themes (the next Kino version, which the contract numbers 0.9.81; not in any released Kino; not offered
+through `enhancements`).** A plugin may restyle the **whole app** on the phone and the TV, as data in the manifest: no code,
+no network, no capability, no consent line (turning a theme on is the person's consent). Full page:
+<https://kinotvapp.github.io/kino-plugins/en/themes/>.
+
+- **The plugin.** `"appThemes": [ … ]` (1..8 themes). A plugin whose only content is themes may leave `capabilities` out (or
+  declare only `screen` for a presentation page), may have `"hosts": []` (its card says it does not connect), should declare
+  `"categories": ["themes"]` (Kino's store lists it under Temas; `themes` is the ninth marketplace value) and ships an entry
+  file that does nothing (`export {};`). It plays nothing, so it does not get the person past Kino's first source picker. Any
+  other plugin may carry `appThemes` too. Below apiVersion 18 the field is ignored.
+- **A theme** is `{ id, name, colors?, background?, shape?, typography?, elevation?, motion?, player?, tv?, phone?,
+  adjustable?, pluginColors?, price?, experience?, logo? }`. `id` `^[a-z0-9][a-z0-9-]{1,39}$`, unique, never changed after
+  release; `name` `{ es, en }` (one missing takes the other) or one string, ≤ 40 characters. Every token is optional: what is
+  missing stays Kino's. A format error (an unknown field or token, a wrong type, a bad or repeated id, more than 8 themes,
+  `background.image`) **refuses the manifest**; a value out of range **only drops that token**, with a warning.
+- **Tokens (39)** and ranges (`contract.json` `manifest.appThemes`):
+  `colors.` `accent` (Kino's `#E50914`), `onAccent` (`#FFFFFF`), `background` (`#0E0E0E`), `surface` (`#181818`),
+  `surfaceHigh` (`#242424`), `textPrimary` (`#F5F5F5`), `textSecondary` (`#B3B3B3`), `focus` (`#FFFFFF`), `onFocus`
+  (`#000000`), `outline`, `railPanel`, `placeholderTop`, `placeholderBottom`, `success`, `warning`, `error`, `favorite`,
+  `scrim`, all `#RRGGBB`; `shape.` `cardRadius`, `channelRadius`, `buttonRadius`, `chipRadius`, `dialogRadius`, `inputRadius`
+  0..32; `typography.` `scale`, `titleScale`, `bodyScale` 0.85..1.3; `elevation.` `cardShadow` 0..1, `heroScrim` 0.3..1,
+  `dialogShadow` 0..1; `motion.` `focusZoom` 1..1.15, `crossfadeMs` 0..800, `heroDrift` `"on"`/`"off"`; `player.` `buttonScale`
+  0.8..1.4, `playButtonScale` 0.8..1.6, `seekBarScale` 0.8..2, `labelScale` 0.85..1.3, `buttonShape`
+  `"circle"`/`"rounded"`/`"square"`. `background` is `{ type: "solid", colors: [one] }` or `{ type: "gradient", colors: [2..8],
+  angle }` (whole degrees, default 180); an image arrives in a later Kino. `tv` and `phone` take the same groups and
+  `background` and override the theme on that form.
+- **Resolution, low to high**: Kino's value < the theme < its `tv`/`phone` block < the person's adjustments (only tokens in
+  `adjustable`, clamped to it and to the ranges) < **the device** (reduced effects make `motion` do nothing; the person's
+  "Esquinas redondeadas" switch decides whether TV cards are rounded at all). A player button may look smaller on the phone but
+  its touch target stays ≥ 48 dp; the TV focus treatment stays, only recoloured.
+- **Legibility guardrails** (the apiVersion 6 `theme` numbers, on the effective colours): the background (every gradient stop)
+  must be dark, relative luminance ≤ 0.05 (light themes come later); `accent` ≥ 3:1 on the background and `onAccent` ≥ 4.5:1 on
+  `accent` (else both fall back, as a pair); Kino's accent must stand out 3:1 on your background (else your background falls
+  back); `textPrimary`/`textSecondary` ≥ 4.5:1 on the background, `surface` and (`textPrimary`) `surfaceHigh`; `focus` ≥ 3:1 on
+  the background and `onFocus` ≥ 4.5:1 on `focus`. A failing pair falls back on the side your theme set. There is no
+  "far from Kino's red" rule for `appThemes`.
+- **`adjustable`** (≤ 40 entries, keyed by token path, `background` included): `true`, `{ "swatches": ["#RRGGBB", …] }`
+  (colours only) or `{ "min", "max" }` (numbers only). Ajustes ▸ Apariencia ▸ Personalizar shows only these (swatches work with
+  a remote; a hex field and a stepper too) and «Volver a los valores del tema».
+- **`pluginColors`**: `"respect"` (default: other plugins keep their own apiVersion 6 `theme` colours on their pages and player
+  accent) or `"override"` (the theme's colours win everywhere). The person always has a «Colores de los plugins» switch.
+- **`price`** `{ "kinos": 1..1000, "payTo": "<the author's coins account: 64 lowercase hex>" }`; no `price` = free. Before a
+  priced theme turns on (from Apariencia, the plugin's manage sheet or `go.useTheme`) Kino shows **its own** sheet: the price,
+  the person's balance, «Comprar por N kinos» enabled only when the balance covers it («Te faltan N kinos…» otherwise). Bought
+  once per theme and account, valid on all their devices; the kinos go to `payTo`; a failed purchase charges nothing. The
+  plugin never sees the purchase and **needs no `coins` capability** to sell. The price lives in a public manifest: it is what
+  Kino charges and pays, not DRM over your files.
+- **`experience`** `"light"` (no shadows, no effects, square corners) or `"full"` (every effect, rounded corners): when the
+  theme is turned on Kino asks («Este tema se ve mejor con la experiencia completa. ¿La usamos también?») and changes nothing
+  without a yes, nor asks when the app already has it.
+- **`logo`** `{ wordmark?, mark? }` (at least one): each `{ size: [w, h], paths: [{ d, fill }] }`, `w`/`h` whole 1..1000 and
+  at most 8 times wider than tall, 1..8 paths, `d` ≤ 2,000 characters of SVG path data (`MmLlHhVvCcSsQqTtAaZz`, digits, `e`,
+  `.`, `,`, spaces, signs), `fill` `accent`/`onAccent`/`textPrimary`/`textSecondary` or `#RRGGBB`. The wordmark replaces Kino's
+  in the phone's menu and header and the TV's open rail; the mark in the TV's collapsed rail. Vector only: no image, no network.
+- **What a theme never restyles**: Ajustes ▸ Apariencia itself and its preview, the purchase and experience questions, the
+  install and update consent sheets, the 18+ code and setting locks, the `go.url` sheet, the lock screen and every other
+  screen that asks the person for a decision keep Kino's own look; the splash, the gate and those screens keep Kino's logo; QR
+  codes stay black on white; what is drawn over video or artwork keeps its colours.
+- **On your own screen**: `screen` and `screenEvent` receive `activeTheme` (your active theme's id or `null`; Kino calls
+  `screen` again after any change, Apariencia's too). A button `{ go: { useTheme: { theme: "<your id>" | null } } }` turns
+  your theme on (`null`: back to Kino's, only while one of yours is active), exactly as Apariencia does, with Kino's toast
+  «Tema aplicado» / «Volviste al tema de Kino»; refused, logged, for an id Apariencia does not list as yours (another
+  plugin's, yours switched off in this profile, 18+ while locked). `{ go: { setExperience: "light" | "full" } }` asks for that
+  experience with Kino's own question («Tu plugin» pide la experiencia completa. ¿La usamos?). Both only from the person's own
+  press or submit on your screen (never `open`, a timer, a change, a load-more, an `onClose`, a panel or a notice); below
+  apiVersion 18 dropped. A presentation screen usually opens from the settings page only: `"screen": { "label": …,
+  "opensFrom": ["settings"], "settingsButton": { "label": "Ver presentación", "labelEn": "See presentation" } }`.
+- **The person's side**: one theme active per profile, picked in Ajustes ▸ Apariencia (Tema de Kino, a built-in theme plugin,
+  is always first; a preview shows a Home row, a dialog and the player controls before «Usar este tema»); choice and
+  adjustments sync both ways between linked devices; disabling or removing the plugin returns to Kino's theme (the choice
+  comes back on reinstall); an update re-resolves the theme and drops adjustments no longer `adjustable`; any failure gives
+  Kino's look, never a crash.
+- **Kit**: `node sdk/validate.mjs .` checks the format with the app's parser and prints each theme's dropped tokens for the
+  phone and the TV, word for word as the app logs them (`appThemes neon (tv): shape.cardRadius: 40.0 is outside 0.0..32.0;
+  Kino's is used`); `node sdk/run.mjs --context '{"activeTheme":"<id>"}' . screen` and `. screenEvent <name> --trigger tap`
+  check the screen and say what Kino does with `go.useTheme` / `go.setExperience`. The kit draws no colours: look at the theme in
+  Kino's preview.
+
 What Kino 0.9.50 does for every plugin, with no field: plays a plugin title on the paired TV through
 the TV's own copy of the plugin (keep `id` and refs identical across devices), checks followed series
 for new chapters through `episodes(ref)` (keep series refs stable), saves "Para ti" picks by `ref`,
@@ -926,7 +1189,9 @@ people. See
       capability: it needs Kino 0.9.65+; 11 only for the `externalResolve` capability (Kino 0.9.66+) or the `nuvio` capability (Kino 0.9.71+);
       12 only for `syncProvider`, the `sync` block or a `link`/`help` setting: it needs Kino 0.9.74+;
       13 only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a `qr` setting:
-      in development, no released Kino accepts it yet, and the person was told).
+      Kino 0.9.74+; 14 only for screens and their capabilities (Kino 0.9.74+); 15 only for `identity`, `notifications`
+      or `pluginStore` (Kino 0.9.77+); 16 only for `coins` (Kino 0.9.78+); 17 and 18 only for what section 2 lists for them:
+      the next Kino version, no released Kino accepts them yet, and the person was told).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
@@ -967,6 +1232,16 @@ people. See
       right (`removed`); `state` is small; no secret in an entry; the store never claims to install or approve anything.
 - [ ] apiVersion 15 / `identity`, `notifications`: the plugin works with them switched off or refused (`permission_denied`); no
       token logged or shown; a notice's `id` groups events, its `go` points to the plugin's own screen.
+- [ ] apiVersion 16 / `coins`: feature-detected (`typeof kino.coins === "object"`); on `disabled` nothing about kinos shows;
+      `give` only after the person's tap; the screen works when the call answers `not_available`.
+- [ ] apiVersion 17: `kino.library.stats`, `perProfile`, `pages`, `hero`, `share`, `enableJob` and `go.search` `scope` used
+      only with `"apiVersion": 17` or more; `share` hidden on a TV; a `perProfile` job has `runOn: "any"` and no `enabledBy`, and
+      catches `not_allowed` from `kino.notifications`/`kino.coins`/`kino.seed`.
+- [ ] apiVersion 18 / `appThemes`: `node sdk/validate.mjs .` prints no theme warning you did not expect (phone and TV); the
+      background is dark and every text, accent and focus pair reads; ids are final; `name` has `es` and `en`; `adjustable`
+      offers swatches; a `price` carries the author's real `payTo` and the plugin does not declare `coins` just to sell; a
+      themes-only plugin has `"categories": ["themes"]`, no capabilities (or only `screen`) and `"hosts": []`; a screen that
+      turns the theme on reads `activeTheme` and sends `go.useTheme` only from a tap.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
@@ -1012,7 +1287,8 @@ Every rule, as the app applies it (full detail:
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (12 from Kino 0.9.74, 11 on 0.9.66 to 0.9.73, 10 on 0.9.65, 9 on 0.9.55 to 0.9.64, 8 on 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (17 and 18 from the next Kino version, which the
+   contract numbers 0.9.81 for 18; 16 from Kino 0.9.78; 15 on 0.9.77; 14 on 0.9.74 to 0.9.76, 11 on 0.9.66 to 0.9.73, 10 on 0.9.65, 9 on 0.9.55 to 0.9.64, 8 on 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
    `own-server`), never the template's `archive-org`; the same id installed from
@@ -1081,3 +1357,19 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   "cannot read" the data (with `keySecret`, always required, it can).
 - `setSettings` on a `url` setting (or a `password` below apiVersion 13), or a `link` whose `confirm` is the answering action or an
   action with its own `confirm` question: refused whole.
+- Keeping screen state in a module variable (it is gone when the runtime closes), fetching inside `screen()` instead of the
+  `open` event, or naming a node's event `open`.
+- Free values in a screen tree (`"padding": 10`, `"color": "#FF0000"`, `"width": 300`): off-scale values are dropped; use the
+  spacing and size scales and the colour roles. A node invalid in one size class is dropped whole.
+- Sending a person-only `go` (`url`, `copy`, `titleByIds`, `liveChannel`, `syncProvider`, `useTheme`, `setExperience`) or
+  `share`/`enableJob` from `open`, a timer, a change or an `onClose`, or more than 5 s after the tap: dropped.
+- A TV screen where a status card cannot be reached with the remote (no `canRequestFocus`), or a `share` button shown on a TV.
+- A theme with a light background, grey text on a grey surface or an accent that does not stand out: Kino drops those tokens
+  and the theme looks like Kino's. Run `validate.mjs` and read its warnings for the phone and the TV.
+- `background.image`, an unknown token (`colors.primary`), a number given as a string, or a theme `id` with capitals: the whole
+  manifest is refused.
+- Declaring `coins` to sell a theme (not needed: Kino sells it), a `price` without `payTo` or with someone else's account, or
+  promising the person a theme "unlocks" anything beyond the look.
+- Changing the light/full experience or the theme without the person's tap (`go.useTheme` from `open`), or expecting
+  `go.useTheme` to turn on another plugin's theme: refused.
+- Confusing the apiVersion 6 `theme` (your own pages' colours) with `appThemes` (the whole app).
