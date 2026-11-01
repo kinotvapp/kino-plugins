@@ -183,6 +183,13 @@ máximo 20 por día UTC).
   Declara [`coins`](kino-api.md#coins) (apiVersion 16, línea de consentimiento en rojo) solo si tu propia pantalla quiere mostrar
   el saldo con `kino.coins.balance()`; cuando rechace con `disabled`, no muestres nada sobre kinos.
 - El precio y la cuenta están en tu manifiesto público: son lo que Kino cobra y paga, no un candado sobre tus archivos.
+- **Tu cuenta.** Una cuenta de kinos es el mismo identificador de 64 hexadecimales que Kino Social llama `user_key` del autor:
+  el servicio de monedas lo calcula a partir de la identidad de Telegram de la persona con un secreto, y nunca guarda el id de
+  Telegram. Es el id de quien inició sesión en Kino con Telegram, así que `payTo` debe ser la cuenta de quien cobra.
+- **Tu propio tema.** El servicio rechaza una compra cuyo comprador y `payTo` son la misma cuenta (`self_purchase`): no se
+  cobra nada. Para probar el flujo de compra usa una segunda cuenta, o los mocks del kit y una compilación de depuración.
+- **Reembolsos.** No hay: una compra es definitiva, los kinos ya están en el saldo del autor y el servicio no tiene operación de
+  reembolso. Lo que la persona nunca paga es una compra fallida: no cobra nada, y comprar dos veces el mismo tema cobra una vez.
 
 ## La experiencia (`experience`, `go.setExperience`) { #experience }
 
