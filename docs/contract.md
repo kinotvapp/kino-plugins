@@ -613,6 +613,11 @@ Cómo se conectan las piezas:
   (podcast): se recorta, máximo 200 caracteres, y se ignora en cualquier otro tipo. La página del álbum o
   del podcast lo muestra como la línea debajo del título (y Kino lo nombra como artista donde reproduce el
   audio). Sin él no hay esa línea: Kino nunca la saca de `overview` ni de `genres`.
+- `ids` (opcional) nombra además, en un ítem `music` o `podcast` (apiVersion 19), los ids con los que un plugin de letras
+  puede reconocer la canción: `youtube` (un id de video, el más exacto para YouTube Music), `isrc`, `musicbrainz`; cada uno
+  un texto de 1 a 64 caracteres, los demás se omiten. Kino los guarda con el artista del ítem en el aparato (una caché que
+  se vuelve a aprender la próxima vez que el ítem aparece en una lista) y los envía en el `ids` de la consulta de `lyrics`
+  mientras suena.
 - `runtimeMinutes` se conserva en un ítem de audio (a diferencia de uno `live`). `search` puede recibir
   `type: "music"` o `type: "podcast"` cuando Kino se inclina hacia ahí; `"any"` los incluye, y sigue
   siendo una pista.
