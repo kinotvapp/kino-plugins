@@ -182,6 +182,30 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   every profile) and, for each profile, «Incluir este perfil», on by default
   ([Background jobs](jobs-and-shared.md#per-profile)).
 
+## Kino 0.9.81 (apiVersion 18): app themes { #v18 }
+
+!!! note "Next Kino version, not published yet"
+    App themes are apiVersion 18, which arrives with Kino 0.9.81. An older Kino refuses a plugin that declares `appThemes`
+    with «Este plugin necesita una versión más nueva de Kino».
+
+- **Ajustes ▸ Apariencia.** Lists Kino's own theme and every theme of the installed plugins, each with the plugin it comes
+  from. The person opens a preview (cards, a dialog, the player's controls), then turns it on; one theme is active at a time,
+  per profile, and the choice syncs between their devices. «Personalizar» changes only what the theme's author allows.
+- **No consent line.** A theme is data: no network, no code, no capability. It can never restyle what Kino asks the person to
+  decide: Ajustes ▸ Apariencia itself, the purchase and experience questions, the gate and the splash keep Kino's own look.
+- **A theme can cost kinos.** In the list the row says «Gran Tesoro · 50 kinos», on the preview the button reads «Comprar por
+  50 kinos» and, above it, «Tienes N kinos.» (the person's balance). Pressing it opens Kino's own sheet with the price and the
+  balance; «Comprar por N kinos» is enabled only when the balance covers it («Te faltan N kinos…» otherwise). It is bought once
+  per account and works on every device; a failed purchase charges nothing. The same sheet appears when the plugin's own
+  screen asks to turn the theme on. Free themes show none of this ([App themes](themes.md#price)).
+- **The experience.** A theme may suggest the light or the full experience of the whole app; Kino asks the person first
+  («Experiencia para “…”», «Dejar la actual» / «Usar la ligera» or «Usar la completa»), and a plugin's screen may ask the same
+  with `go.setExperience` ([App themes](themes.md#experience)).
+- **The logo.** A theme may draw its own logo in the side menu, the TV rail and the header.
+- **Where the author is paid.** Ajustes ▸ App ▸ «Tu cuenta de kinos» shows the person's account (first and last 8 characters)
+  and copies all 64 on a tap: the `payTo` of a theme's `price`.
+- **A gift.** Kino announces «Te regalamos 100 kinos» in the Home bell, once, as its own notice (not a plugin's).
+
 ## The next Kino version (apiVersion 13, in development) { #v13 }
 
 Not in a released Kino yet. With the apiVersion 13 capabilities ([What's new](changelog.md#v13)):

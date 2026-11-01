@@ -201,6 +201,31 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   (apagada por defecto, vale para todos los perfiles) y, por cada perfil, «Incluir este perfil», encendida por defecto
   ([Trabajos en segundo plano](jobs-and-shared.md#per-profile)).
 
+## Kino 0.9.81 (apiVersion 18): temas de la app { #v18 }
+
+!!! note "Próxima versión de Kino, aún sin publicar"
+    Los temas de la app son apiVersion 18, que llega con Kino 0.9.81. Una versión anterior rechaza un plugin que declare
+    `appThemes` con «Este plugin necesita una versión más nueva de Kino».
+
+- **Ajustes ▸ Apariencia.** Lista el tema propio de Kino y cada tema de los plugins instalados, con el plugin de donde viene.
+  La persona abre una vista previa (tarjetas, un diálogo, los controles del reproductor) y luego lo activa; hay un tema activo a
+  la vez, por perfil, y la elección se sincroniza entre sus aparatos. «Personalizar» cambia solo lo que el autor permite.
+- **Sin línea de consentimiento.** Un tema es solo datos: sin red, sin código, sin capacidades. Nunca restiliza lo que Kino le
+  pide decidir a la persona: Apariencia, las preguntas de compra y de experiencia, el acceso y la pantalla de inicio conservan el
+  aspecto de Kino.
+- **Un tema puede costar kinos.** En la lista la fila dice «Gran Tesoro · 50 kinos»; en la vista previa el botón dice «Comprar
+  por 50 kinos» y encima «Tienes N kinos.» (su saldo). Al pulsarlo se abre la hoja de Kino con el precio y el saldo; «Comprar
+  por N kinos» solo se activa si el saldo alcanza (si no, «Te faltan N kinos…»). Se compra una vez por cuenta y vale en todos
+  los aparatos; una compra fallida no cobra. La misma hoja aparece cuando la pantalla del plugin pide activar el tema. Un tema
+  gratis no muestra nada de esto ([Temas de la app](themes.md#price)).
+- **La experiencia.** Un tema puede sugerir la experiencia ligera o la completa de toda la app; Kino pregunta antes a la persona
+  («Experiencia para “…”», «Dejar la actual» / «Usar la ligera» o «Usar la completa»), y la pantalla de un plugin puede pedir lo
+  mismo con `go.setExperience` ([Temas de la app](themes.md#experience)).
+- **El logo.** Un tema puede dibujar su propio logo en el menú lateral, el riel de la TV y el encabezado.
+- **Dónde cobra el autor.** Ajustes ▸ App ▸ «Tu cuenta de kinos» muestra la cuenta de la persona (primeros y últimos 8
+  caracteres) y copia los 64 al tocarla: el `payTo` del `price` de un tema.
+- **Un regalo.** Kino anuncia «Te regalamos 100 kinos» en la campana de Inicio, una vez, como aviso propio (no de un plugin).
+
 ## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }
 
 Todavía no está en un Kino publicado. Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):

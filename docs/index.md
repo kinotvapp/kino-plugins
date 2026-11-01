@@ -173,6 +173,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
+| [Temas de la app](themes.md) | `appThemes` (apiVersion 18): tokens y rangos, `price` en kinos, `experience`, un `logo` vectorial, `go.useTheme` y `go.setExperience` |
 | [Panel del reproductor](player-panel.md) | `panel`, `panelAction` y `playerEvent`, acciones sobre el reproductor y `settingsLayout` (apiVersion 9); el panel en modo pantalla, las pestañas en el panel de otro plugin y en un canal en vivo, el panel fijo (apiVersion 14) |
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
