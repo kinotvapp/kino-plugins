@@ -185,7 +185,9 @@ máximo 20 por día UTC).
 - El precio y la cuenta están en tu manifiesto público: son lo que Kino cobra y paga, no un candado sobre tus archivos.
 - **Tu cuenta.** Una cuenta de kinos es el mismo identificador de 64 hexadecimales que Kino Social llama `user_key` del autor:
   el servicio de monedas lo calcula a partir de la identidad de Telegram de la persona con un secreto, y nunca guarda el id de
-  Telegram. Es el id de quien inició sesión en Kino con Telegram, así que `payTo` debe ser la cuenta de quien cobra.
+  Telegram. Es el id de quien inició sesión en Kino con Telegram, así que `payTo` debe ser la cuenta de quien cobra. En la
+  próxima versión de Kino (0.9.81, aún sin publicar) la ves y la copias en **Ajustes ▸ App ▸ Tu cuenta de kinos** (necesita el
+  interruptor Kinos activado y tu sesión de Telegram): toca la fila para copiar los 64 caracteres completos.
 - **Tu propio tema.** El servicio rechaza una compra cuyo comprador y `payTo` son la misma cuenta (`self_purchase`): no se
   cobra nada. Para probar el flujo de compra usa una segunda cuenta, o los mocks del kit y una compilación de depuración.
 - **Reembolsos.** No hay: una compra es definitiva, los kinos ya están en el saldo del autor y el servicio no tiene operación de

@@ -178,7 +178,9 @@ A theme may cost **kinos**, Kino's free coin (the person earns them by watching:
 - The price and the account are in your public manifest: they are what Kino charges and pays, not a lock on your files.
 - **Your account.** A coins account is the same 64-hex identifier Kino Social calls the author's `user_key`: the coins service
   derives it from the person's Telegram identity with a secret, and never stores the Telegram id. It is the id of the person
-  who signed in to Kino with Telegram, so `payTo` must be the account of the person who is paid.
+  who signed in to Kino with Telegram, so `payTo` must be the account of the person who is paid. In the next Kino version
+  (0.9.81, not published yet) you read and copy it in **Ajustes ▸ App ▸ Tu cuenta de kinos** (it needs the Kinos switch on and
+  your Telegram sign-in): tap the row to copy the whole 64 characters.
 - **Your own theme.** The service refuses a purchase whose buyer and `payTo` are the same account (`self_purchase`): nothing
   is charged. To test the purchase flow, use a second account, or the kit's mocks and a debug build.
 - **Refunds.** There are none: a purchase is final, the kinos are already in the author's balance, and the service has no

@@ -1110,7 +1110,8 @@ no network, no capability, no consent line (turning a theme on is the person's c
   plugin never sees the purchase and **needs no `coins` capability** to sell. The price lives in a public manifest: it is what
   Kino charges and pays, not DRM over your files.
   `payTo` is the 64-hex coins account of whoever is paid: the same id Kino Social calls the author's `user_key` (derived from
-  their Telegram identity; the Telegram id is never stored). Buyer and `payTo` being the same account is refused
+  their Telegram identity; the Telegram id is never stored; in the next Kino version, 0.9.81, not published yet, the author reads
+  and copies it in Ajustes ▸ App ▸ Tu cuenta de kinos, which needs the Kinos switch on and a Telegram sign-in). Buyer and `payTo` being the same account is refused
   (`self_purchase`, nothing charged), so test the flow with a second account or the kit mocks. There are **no refunds**: a
   purchase is final; a failed one charges nothing and buying the same theme twice charges once.
 - **`experience`** `"light"` (no shadows, no effects, square corners) or `"full"` (every effect, rounded corners): when the
