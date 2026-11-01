@@ -731,6 +731,8 @@ conoce la dirección del servicio ni su sesión, y no necesita `hosts` para él.
   quitar tu plugin.
 - **Detéctalo** con `typeof kino.coins === "object"`: un Kino anterior no tiene `kino.coins`, así que oculta allí tu botón de
   kinos (`kinoCoins` en el contrato, [`contract.json`](reference/index.md)).
+- **Vender un tema no necesita nada de esto:** un [tema de la app](themes.md#price) con precio (apiVersion 18) se compra en la
+  hoja propia de Kino, que muestra el precio y el saldo y le paga al autor; tu plugin nunca ve la compra.
 
 ## `kino.library.stats` (apiVersion 17): los hábitos de un mes { #library-stats }
 

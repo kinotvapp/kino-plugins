@@ -684,6 +684,8 @@ service's address nor its session, and never needs `hosts` for it.
   unticked in a kit import. There is no switch of its own: the person revokes it by disabling or removing your plugin.
 - **Detect it** with `typeof kino.coins === "object"`: an older Kino has no `kino.coins`, so hide your coin button there
   (`kinoCoins` in the contract, [`contract.json`](reference/index.md)).
+- **Selling a theme needs none of this:** a priced [app theme](themes.md#price) (apiVersion 18) is bought through Kino's own
+  sheet, which shows the price and the balance and pays the author; your plugin never sees the purchase.
 
 ## `kino.library.stats` (apiVersion 17): a month's habits { #library-stats }
 

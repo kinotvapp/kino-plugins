@@ -18,6 +18,7 @@ you use one of those, because Kino 0.9.49 and older refuse an apiVersion 6 plugi
 | "Is this you?" and filling your own settings | the same tab | an `action` that answers `link` or `setSettings` | any (Kino 0.9.74) | [The settings form](settings-form.md#link) |
 | Your status line as a sync provider | Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor | `syncStatus` | 12 | [Sync providers](sync-providers.md#settings) |
 | Colors | your section, your Ajustes tab, your group title in Categorías, the player's accent while you play | `theme` | 6 | [Your colors](section-theme.md#theme) |
+| A look for the whole app | every screen of Kino, the player controls, the menu logo; picked in Ajustes ▸ Apariencia | `appThemes` (optionally `go.useTheme` on your screen) | 18 | [App themes](themes.md) |
 | A section of your own, with tabs and a banner | TV sidebar, phone chip strip atop Inicio | `"section": { "label" }` + `section({ tab })` | 6 | [A section of your own](section-theme.md#section) |
 | Tiles in Categorías | Categorías, a group named after you | `categories()` (with `browse`) | 6 | [Your own categories](section-theme.md#categories) |
 | Home rows, "Ver más" and their genre | Inicio, Categorías | `home()` rows with `ref` and `genre` | 1 | [The contract](contract.md#paging) |

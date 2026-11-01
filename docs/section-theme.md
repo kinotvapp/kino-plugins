@@ -61,6 +61,10 @@ export async function categories() {
 
 ## Tus colores (`theme`) { #theme }
 
+!!! tip "Cambiar el aspecto de toda la app"
+    `theme` solo colorea tus propias páginas. Para ofrecer un aspecto para **toda la app** (todas las pantallas, el
+    reproductor, el logo), mira [Temas de la app](themes.md) (`appThemes`, apiVersion 18).
+
 `"theme"` recibe hasta cinco colores, cada uno `#RRGGBB`, cada uno opcional:
 
 ```json

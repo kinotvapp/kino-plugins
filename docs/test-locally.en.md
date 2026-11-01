@@ -313,6 +313,21 @@ Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app
 - **`kino.library`**: on a watched series, `season` and `episode` (the latest chapter played, only when its source numbered
   it); never on a movie. With `KINO_LIBRARY_FIXTURE`.
 
+## apiVersion 16 to 18: coins, your month and app themes { #api16 }
+
+- **`kino.coins`** (apiVersion 16): a pretend balance with the app's gates (the capability, the calling export, 30 calls a
+  minute). `KINO_COINS_BALANCE=<n>` sets the starting balance (5 by default; each `give` lowers it by one),
+  `KINO_COINS_DISABLED=1` is the person's Kinos switch off (`disabled`) and `KINO_COINS_REVOKED=1` a revoked approval
+  (`permission_denied`). [`kino.coins`](kino-api.md#coins).
+- **`kino.library.stats`** (apiVersion 17): answered from `KINO_LIBRARY_FIXTURE` like `watched` and `saved`;
+  `KINO_LIBRARY_REVOKED=1` simulates the switch off. A screen's `enableJob` answer is checked (`run.mjs` says on stderr when Kino
+  would drop it, for example below apiVersion 17).
+- **`appThemes`** (apiVersion 18): `node sdk/validate.mjs .` checks the format with the app's parser and prints each theme's
+  warnings for the phone and the TV (`appThemes <id> (tv): …; Kino's is used`). `node sdk/run.mjs --context
+  '{"activeTheme":"<id>"}' . screen` draws your presentation screen with a theme on, and `screenEvent <name> --trigger tap`
+  says what Kino does with a `go.useTheme` or `go.setExperience` in the answer. The kit draws no colours: check the look in
+  Kino. [App themes](themes.md#kit).
+
 ## What the Node kit does not reproduce { #differences }
 
 Kino is the authority; the kit only approximates it so

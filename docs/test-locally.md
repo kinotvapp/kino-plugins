@@ -321,6 +321,21 @@ Llega con Kino 0.9.77. El kit ya revisa y corre todo con las reglas de la app:
 - **`kino.library`**: en una serie vista, `season` y `episode` (el último capítulo reproducido, solo si su fuente lo numeró);
   nunca en una película. Con `KINO_LIBRARY_FIXTURE`.
 
+## apiVersion 16 a 18: kinos, tu mes y temas de la app { #api16 }
+
+- **`kino.coins`** (apiVersion 16): un saldo de mentira con las mismas reglas de la app (la capacidad, el export que llama, 30
+  llamadas por minuto). `KINO_COINS_BALANCE=<n>` fija el saldo inicial (5 por defecto; cada `give` lo baja en uno),
+  `KINO_COINS_DISABLED=1` es el interruptor de Kinos apagado por la persona (`disabled`) y `KINO_COINS_REVOKED=1` una aprobación
+  retirada (`permission_denied`). [`kino.coins`](kino-api.md#coins).
+- **`kino.library.stats`** (apiVersion 17): se responde desde `KINO_LIBRARY_FIXTURE` igual que `watched` y `saved`;
+  `KINO_LIBRARY_REVOKED=1` simula el interruptor apagado. La respuesta `enableJob` de una pantalla se revisa (`run.mjs` dice en
+  stderr cuándo Kino la descartaría, por ejemplo por debajo de apiVersion 17).
+- **`appThemes`** (apiVersion 18): `node sdk/validate.mjs .` revisa el formato con el mismo analizador de la app y muestra las
+  advertencias de cada tema para el celular y el TV (`appThemes <id> (tv): …; Kino's is used`). `node sdk/run.mjs --context
+  '{"activeTheme":"<id>"}' . screen` dibuja tu pantalla de presentación con un tema activo, y `screenEvent <nombre> --trigger tap`
+  dice qué hace Kino con un `go.useTheme` o un `go.setExperience` en la respuesta. El kit no dibuja colores: revisa el aspecto en
+  Kino. [Temas de la app](themes.md#kit).
+
 ## Lo que el kit de Node no reproduce { #differences }
 
 Kino es la autoridad; el kit solo se le aproxima para que puedas iterar rápido. Antes de publicar,

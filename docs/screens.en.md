@@ -118,7 +118,8 @@ export async function screenEvent({ name, arg, value, state, route, device, lang
   `route: { push: "detail", params }` goes one screen deeper inside your canvas, `{ pop: true }` back; Back pops a pushed
   route before it closes the canvas. `args` come from a [`go.screen`](#go) that opened it.
 - **`device`** `"phone"`, `"tv"` or `"desktop"`; **`size`** `{ widthClass, heightClass, orientation }` with the Material
-  window classes (`compact` under 600 dp, `medium` 600 to 839, `expanded` 840 and up); **`lang`** `"es"` or `"en"`.
+  window classes (`compact` under 600 dp, `medium` 600 to 839, `expanded` 840 and up); **`lang`** `"es"` or `"en"`;
+  **`activeTheme`** (apiVersion 18) the id of your [`appThemes`](themes.md) theme active now, else null (`screenEvent` gets it too).
   You may return a different tree per device, but [per-size values](#layout) usually do it better.
 - **One runtime per plugin.** `kino.storage`, `kino.config`, cookies and secrets are shared with your other exports, so a
   catalog (`home`, `search`...) can feed the screen and the reverse; calls are serialised with your other calls.
@@ -584,10 +585,10 @@ settings (the same store, the same sync between the person's devices, read with 
 
 ## Where a screen sends the person: `go` { #go }
 
-A node's action or an answer may carry `go`: one of thirteen shapes, **always into this plugin's own content or one of Kino's
+A node's action or an answer may carry `go`: one of fifteen shapes, **always into this plugin's own content or one of Kino's
 own pages**. No shape names an intent or an app, and only `liveChannel` names another plugin (an En vivo provider, for a
 plugin whose player tab declares `"kinds": ["live"]`); anything else is dropped. Each shape has its own entry in the
-reference, from [`go.title`](screen-forms.md#go-title) to [`go.syncProvider`](screen-forms.md#go-sync-provider).
+reference, from [`go.title`](screen-forms.md#go-title) to [`go.setExperience`](screen-forms.md#go-set-experience).
 
 | `go` | What opens | Sent from |
 | --- | --- | --- |
@@ -604,6 +605,8 @@ reference, from [`go.title`](screen-forms.md#go-title) to [`go.syncProvider`](sc
 | `copy` | Kino puts the plugin's text on the clipboard and always shows its own «Copiado» toast (a TV cannot copy) | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
 | `liveChannel` | the player tunes to an En vivo provider's channel (`provider`, `code`), only for a plugin whose player tab declares `"kinds": ["live"]` | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
 | `syncProvider` | Kino's sync-provider settings (Ajustes ▸ Conectar ▸ Proveedor), where the person picks this plugin; only for a plugin that declares `syncProvider`, see [`go.syncProvider`](screen-forms.md#go-sync-provider) | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
+| `useTheme` | turns on one of this plugin's own [`appThemes`](themes.md) as Apariencia does, or with `theme: null` goes back to Kino's theme while one of its own is active; opens nothing, Kino shows its own toast and calls `screen` again, see [`go.useTheme`](screen-forms.md#go-use-theme) | only the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button), never a panel; from apiVersion 18 |
+| `setExperience` | `"light"` or `"full"`: asks for that whole-app experience; Kino asks the person first and changes nothing without their yes, see [`go.setExperience`](screen-forms.md#go-set-experience) | only the person's own press or submit on your screen, never a panel or a notice; from apiVersion 18 |
 
 - Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go` every 500 ms (a
   second one meanwhile is dropped, logged).

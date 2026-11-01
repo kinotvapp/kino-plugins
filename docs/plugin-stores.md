@@ -84,7 +84,7 @@ debe contestar entonces su lista **completa** (`full: true`) y no suponer que ti
 | `id` | El `id` del plugin (el de su `kino-plugin.json`). Obligatorio. |
 | `name` | De 1 a 60 caracteres. Obligatorio. |
 | `description`, `longDescription` | Hasta 300 y hasta 4000 caracteres. |
-| `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `adult`. |
+| `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `themes`, `adult`. |
 | `tags`, `icon`, `screenshots` | Hasta 10 etiquetas de 30 caracteres; el ícono y hasta 8 capturas, solo `https` y de un sitio público (nunca una IP, `localhost`, un nombre sin punto ni una dirección de red local). |
 | `version`, `author` | Texto corto (40 y 60 caracteres). |
 | `popularity`, `updatedAt` | Números: para el orden «Populares» y «Recientes» de «De la comunidad» (`updatedAt` en ms). |

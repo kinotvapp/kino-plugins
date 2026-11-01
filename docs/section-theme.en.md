@@ -58,6 +58,10 @@ export async function categories() {
 
 ## Your colors (`theme`) { #theme }
 
+!!! tip "Restyling the whole app"
+    `theme` colours only your own pages. To offer a look for the **whole app** (every screen, the player, the logo), see
+    [App themes](themes.md) (`appThemes`, apiVersion 18).
+
 `"theme"` takes up to five colors, each `#RRGGBB`, each optional:
 
 ```json

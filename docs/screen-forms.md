@@ -828,7 +828,7 @@ reacción, una velocidad, un orden):
 
 ## Navegación { #navigation }
 
-La acción de un nodo o una respuesta pueden llevar `go`: una de trece formas, **siempre hacia el contenido propio de este
+La acción de un nodo o una respuesta pueden llevar `go`: una de quince formas, **siempre hacia el contenido propio de este
 plugin o hacia una de las páginas propias de Kino**. La página de Kino se abre sobre tu pantalla; Atrás vuelve a ella con
 su estado. Como máximo un `go` que abre una página cada 500 ms. Ninguna forma nombra un intent ni una app, y solo
 `liveChannel` nombra a otro plugin (un proveedor de En vivo, a cuyo canal Kino sintoniza para un plugin cuya pestaña del
@@ -849,6 +849,8 @@ reproductor se une a los canales en vivo). La guía trata `go` en [Navegar con `
 | [`copy`](#go-copy) | `{ copy: { text, label, sensitive } }` | Kino copia `text` (máximo 500 caracteres, 6 líneas) y muestra su propio aviso «Copiado»; un televisor no puede | solo la pulsación o el envío de la propia persona |
 | [`liveChannel`](#go-live-channel) | `{ liveChannel: { provider, code } }` | sintoniza el reproductor en el canal de un proveedor de En vivo (solo para un plugin cuya pestaña del reproductor se une a los canales en vivo) | solo la pulsación o el envío de la propia persona |
 | [`syncProvider`](#go-sync-provider) | `{ syncProvider: true }` | los ajustes de proveedor de sincronización de Kino (Ajustes ▸ Conectar ▸ Proveedor), donde la persona elige este plugin (solo para un plugin con `syncProvider`) | solo la pulsación o el envío de la propia persona |
+| [`useTheme`](#go-use-theme) | `{ useTheme: { theme } }` | activa uno de los `appThemes` de este plugin como lo hace Apariencia, o vuelve al tema de Kino con `theme: null`; Kino muestra su propio aviso | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 18 |
+| [`setExperience`](#go-set-experience) | `{ setExperience: "light" \| "full" }` | pide la experiencia ligera o la completa de toda la app; Kino le pregunta antes a la persona y no cambia nada sin su sí | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 18 |
 
 ![Navegación en el teléfono](assets/ui/navigation-phone.png)
 ![Navegación en el televisor](assets/ui/navigation-tv.png)
@@ -1030,6 +1032,55 @@ por ella.
   como `not_sync_provider`. Solo desde la pulsación o el envío de la propia persona, igual que `url` y `copy`.
 - Un Kino anterior a esta forma descarta todo el `go`, con registro: deja una instrucción escrita ("Abre Ajustes ▸ Conectar ▸
   Proveedor") junto al botón para que el paso se siga entendiendo en un Kino antiguo.
+
+### `go.useTheme` { #go-use-theme }
+
+Desde `apiVersion` 18: un botón en tu propia pantalla que activa uno de tus [`appThemes`](themes.md), para que la persona no
+tenga que ir a Ajustes ▸ Apariencia. Hay un solo tema activo a la vez, así que reemplaza al anterior. `theme: null` vuelve al
+tema de Kino, la salida del tuyo. `screen` y `screenEvent` reciben `activeTheme`, el id de tu tema activo ahora o null, y Kino
+vuelve a llamar a `screen` después de cualquier cambio (también uno hecho en Apariencia), así que un mismo botón puede pasar de
+activar a desactivar:
+
+```js
+export async function screen({ activeTheme }) {
+  const on = activeTheme === "noche";
+  return { type: "ElevatedButton", labelText: on ? "Desactivar" : "Activar", labelTextEn: on ? "Turn off" : "Turn on",
+    onPressed: { go: { useTheme: { theme: on ? null : "noche" } } } };
+}
+```
+
+- `theme` es el único campo: uno de los ids de `appThemes` de tu manifiesto, o null. Hace lo mismo que el botón de Apariencia:
+  la misma elección por perfil, la misma sincronización, y se conservan los ajustes que la persona le hizo a ese tema. Un tema con
+  precio que la persona no ha comprado abre primero la hoja de compra de Kino ([Temas con precio](themes.md#price)).
+- Solo desde la pulsación o el envío de la propia persona en tu pantalla (un toque, un envío, la respuesta a uno, el botón de una
+  ventana): se descarta, con registro, desde `open`, un temporizador, un cambio, un «cargar más», el `onClose` de una ventana, un
+  panel o un aviso. Por debajo de `apiVersion` 18 se descarta.
+- Se rechaza, con registro y sin cambiar nada, cuando Apariencia no muestra ese tema como tuyo (el id de otro plugin, tu plugin
+  apagado en este perfil, +18 mientras está bloqueado). `theme: null` solo actúa mientras uno de tus temas está activo, así que
+  nunca puedes quitar el de otro plugin.
+- Kino muestra su propio aviso, «Tema aplicado» o «Volviste al tema de Kino»; la app se vuelve a pintar al instante, tu pantalla
+  incluida.
+
+### `go.setExperience` { #go-set-experience }
+
+Desde `apiVersion` 18: un botón en tu propia pantalla que pide la experiencia **ligera** o la **completa** de toda la app, los dos
+modos de Ajustes ▸ Experiencia visual (ligera: sin sombras, sin efectos, esquinas rectas; completa: todos los efectos y esquinas
+redondeadas). Un tema que se ve mejor con una de ellas también puede decirlo con su campo [`experience`](themes.md#experience), y
+Kino pregunta igual cuando se activa el tema.
+
+```js
+export async function screen() {
+  return { type: "ElevatedButton", labelText: "Usar la experiencia completa", labelTextEn: "Use the full experience",
+    onPressed: { go: { setExperience: "full" } } };
+}
+```
+
+- El valor es la palabra `"light"` o `"full"`. Cualquier otra cosa descarta el `go`, con registro.
+- Kino le pregunta antes a la persona, con sus propias palabras y nombrando tu plugin («Tu plugin» pide la experiencia completa.
+  ¿La usamos?), y no cambia nada sin su sí. Si la app ya tiene esa experiencia, no pregunta nada.
+- Solo desde la pulsación o el envío de la propia persona en tu pantalla (un toque, un envío, la respuesta a uno, el botón de una
+  ventana): se descarta, con registro, desde `open`, un temporizador, un cambio, un «cargar más», el `onClose` de una ventana, un
+  panel o un aviso. Por debajo de `apiVersion` 18 se descarta.
 
 ### Rutas (`route`: push y pop) { #routes }
 

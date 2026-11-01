@@ -3,6 +3,33 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## La próxima versión de Kino: `apiVersion` 18, temas de la app { #v18 }
+
+!!! note "Todavía en ningún Kino publicado"
+    `apiVersion` 18 llega con la próxima versión de Kino (`contract.json` dice Kino 0.9.81). Todo Kino anterior rechaza un
+    manifiesto con `"apiVersion": 18` con «Este plugin necesita una versión más nueva de Kino». `contract.json` dice
+    `maxApiVersion` 18.
+
+| Función | Desde | Cómo saberlo |
+| --- | --- | --- |
+| `appThemes` en el manifiesto: de 1 a 8 temas para toda la app, como datos (39 tokens, un fondo, `tv`/`phone`, `adjustable`, `pluginColors`) | `apiVersion` 18 | un Kino más viejo rechaza `apiVersion` 18; por debajo de 18 el campo se ignora |
+| El `price` de un tema (`kinos` de 1 a 1000, `payTo` la cuenta de kinos del autor, 64 hex), que se compra una vez por cuenta en la hoja propia de Kino | `apiVersion` 18 | lo mismo |
+| La `experience` de un tema (`"light"` o `"full"`), que se pregunta con el consentimiento de la persona al activar el tema | `apiVersion` 18 | lo mismo |
+| El `logo` vectorial de un tema (`wordmark`, `mark`) en el menú, la cabecera y el riel del TV | `apiVersion` 18 | lo mismo |
+| `go.useTheme` y `go.setExperience` en la pantalla propia del plugin; `activeTheme` en `screen` y `screenEvent` | `apiVersion` 18, con `screen` | lo mismo |
+| La categoría `themes` de la tienda; `"hosts": []` en un plugin que solo trae `appThemes` | `apiVersion` 18 para `hosts: []` | lo mismo |
+
+- **Temas de la app**: un plugin puede cambiar el aspecto de toda la app (colores, fondo, esquinas, tamaño del texto, sombras,
+  movimiento, tamaño de los controles del reproductor, su propio logo). Kino mantiene los pares de legibilidad (texto 4,5:1,
+  acento y foco 3:1, un fondo oscuro por ahora), deja que mande el aparato (efectos reducidos, esquinas redondeadas apagadas) y
+  nunca cambia sus pantallas de decisión, la puerta de entrada ni la pantalla de inicio. La persona elige un tema por perfil en
+  Ajustes ▸ Apariencia, ajusta lo que el autor permite, y la elección se sincroniza. [Temas de la app](themes.md).
+- **Vender un tema**: con `price`, Kino le pide a la persona comprarlo antes de activarlo, le muestra el precio y su saldo, y le
+  paga al autor; el plugin no necesita la capacidad `coins` y nunca ve la compra. [Temas con precio](themes.md#price).
+- **Pantallas**: un botón en la pantalla propia del plugin activa o desactiva uno de sus temas (`go.useTheme`, con el aviso de
+  Kino «Tema aplicado») o pide la experiencia ligera o completa (`go.setExperience`, Kino pregunta antes). `screen` y
+  `screenEvent` reciben `activeTheme`. [`go.useTheme`](screen-forms.md#go-use-theme).
+
 ## La próxima versión de Kino: `apiVersion` 17, tu mes en Kino, trabajos por perfil y más pantallas { #v17 }
 
 !!! note "Todavía sin número de versión"

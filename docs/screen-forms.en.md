@@ -799,7 +799,7 @@ has no close button of its own. A quick pick beside a button (a reaction, a spee
 
 ## Navigation { #navigation }
 
-A node's action or an answer may carry `go`: one of thirteen shapes, **always into this plugin's own content or one of
+A node's action or an answer may carry `go`: one of fifteen shapes, **always into this plugin's own content or one of
 Kino's own pages**. Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go`
 every 500 ms. No shape names an intent or an app, and only `liveChannel` names another plugin (an En vivo provider, whose
 channel Kino tunes to for a plugin whose player tab joins live channels). The guide covers `go` in
@@ -820,6 +820,8 @@ channel Kino tunes to for a plugin whose player tab joins live channels). The gu
 | [`copy`](#go-copy) | `{ copy: { text, label, sensitive } }` | Kino copies `text` (at most 500 characters, 6 lines) and shows its own «Copiado» toast; a TV cannot | only the person's own press or submit |
 | [`liveChannel`](#go-live-channel) | `{ liveChannel: { provider, code } }` | tunes the player to an En vivo provider's channel (only for a plugin whose player tab joins live channels) | only the person's own press or submit |
 | [`syncProvider`](#go-sync-provider) | `{ syncProvider: true }` | Kino's sync-provider settings (Ajustes ▸ Conectar ▸ Proveedor), where the person picks this plugin (only for a plugin with `syncProvider`) | only the person's own press or submit |
+| [`useTheme`](#go-use-theme) | `{ useTheme: { theme } }` | turns on one of this plugin's own `appThemes` as Apariencia does, or back to Kino's theme with `theme: null`; Kino shows its own toast | only the person's own press or submit on your screen, from apiVersion 18 |
+| [`setExperience`](#go-set-experience) | `{ setExperience: "light" \| "full" }` | asks for the light or the full experience of the whole app; Kino asks the person first and changes nothing without their yes | only the person's own press or submit on your screen, from apiVersion 18 |
 
 ![Navigation on the phone](assets/ui/navigation-phone.png)
 ![Navigation on the TV](assets/ui/navigation-tv.png)
@@ -992,6 +994,53 @@ choice by itself: Kino never makes a plugin the provider for them.
   Only from the person's own press or submit, as `url` and `copy`.
 - A Kino from before this shape drops the whole `go`, logged: keep a written instruction ("Abre Ajustes ▸ Conectar ▸ Proveedor")
   beside the button so the step still reads on an older Kino.
+
+### `go.useTheme` { #go-use-theme }
+
+From `apiVersion` 18: a button on your own screen that turns on one of your [`appThemes`](themes.md), so the person need not go
+to Ajustes ▸ Apariencia. One theme is active at a time, so it replaces the one before. `theme: null` goes back to Kino's theme,
+the way out of yours. `screen` and `screenEvent` receive `activeTheme`, the id of your theme active now or null, and Kino calls
+`screen` again after any change (one made in Apariencia too), so one button can flip between turning on and off:
+
+```js
+export async function screen({ activeTheme }) {
+  const on = activeTheme === "noche";
+  return { type: "ElevatedButton", labelText: on ? "Desactivar" : "Activar", labelTextEn: on ? "Turn off" : "Turn on",
+    onPressed: { go: { useTheme: { theme: on ? null : "noche" } } } };
+}
+```
+
+- `theme` is the only field: one of your manifest's `appThemes` ids, or null. It does what Apariencia's button does: the same
+  per-profile choice, the same sync, the person's adjustments of that theme kept. A priced theme the person has not bought
+  opens Kino's purchase sheet first ([Priced themes](themes.md#price)).
+- Only from the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button): dropped,
+  logged, from `open`, a timer, a change, a load-more, a pop-up's `onClose`, a panel or a notice. Below `apiVersion` 18 it is
+  dropped.
+- Refused, logged, with nothing changed, when Apariencia does not list that theme as yours (another plugin's id, your plugin off
+  in this profile, 18+ while locked). `theme: null` acts only while your own theme is active, so you can never reset another
+  plugin's.
+- Kino shows its own toast, «Tema aplicado» or «Volviste al tema de Kino»; the app repaints at once, your screen included.
+
+### `go.setExperience` { #go-set-experience }
+
+From `apiVersion` 18: a button on your own screen that asks for the **light** or the **full** experience of the whole app, the
+two presets of Ajustes ▸ Experiencia visual (light: no shadows, no effects, square corners; full: every effect on and rounded
+corners). A theme that looks best with one of them can also say so with its [`experience`](themes.md#experience) field, asked
+the same way when the theme is turned on.
+
+```js
+export async function screen() {
+  return { type: "ElevatedButton", labelText: "Usar la experiencia completa", labelTextEn: "Use the full experience",
+    onPressed: { go: { setExperience: "full" } } };
+}
+```
+
+- The value is the word `"light"` or `"full"`. Anything else drops the `go`, logged.
+- Kino asks the person first, in its own words, naming your plugin («Tu plugin» pide la experiencia completa. ¿La usamos?),
+  and changes nothing without their yes. When the app already has that experience nothing is asked.
+- Only from the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button): dropped,
+  logged, from `open`, a timer, a change, a load-more, a pop-up's `onClose`, a panel or a notice. Below `apiVersion` 18 it is
+  dropped.
 
 ### Routes (`route` push and pop) { #routes }
 

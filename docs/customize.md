@@ -18,6 +18,7 @@ declara 6 solo si usas algo de eso, porque Kino 0.9.49 y anteriores rechazan un 
 | "¿Eres tú?" y llenar tus propios ajustes | esa misma pestaña | un `action` que responde `link` o `setSettings` | cualquiera (Kino 0.9.74) | [Formulario de ajustes](settings-form.md#link) |
 | Tu línea de estado como proveedor de sincronización | Ajustes de todos los perfiles ▸ Sincronización ▸ Proveedor | `syncStatus` | 12 | [Proveedores de sincronización](sync-providers.md#settings) |
 | Colores | tu sección, tu pestaña de Ajustes, el título de tu grupo en Categorías, el acento del reproductor mientras suena lo tuyo | `theme` | 6 | [Tus colores](section-theme.md#theme) |
+| Un aspecto para toda la app | todas las pantallas de Kino, los controles del reproductor, el logo del menú; se elige en Ajustes ▸ Apariencia | `appThemes` (y si quieres `go.useTheme` en tu pantalla) | 18 | [Temas de la app](themes.md) |
 | Una sección propia, con pestañas y un destacado | barra lateral del TV, franja de chips arriba de Inicio en el celular | `"section": { "label" }` + `section({ tab })` | 6 | [Una sección propia](section-theme.md#section) |
 | Mosaicos en Categorías | Categorías, un grupo con tu nombre | `categories()` (con `browse`) | 6 | [Tus propias categorías](section-theme.md#categories) |
 | Filas de Inicio, "Ver más" y su género | Inicio, Categorías | filas de `home()` con `ref` y `genre` | 1 | [Contrato](contract.md#paging) |
