@@ -1067,6 +1067,8 @@ type KinoScreenGo =
   | { titleByIds: KinoScreenTitleByIds }
   | { url: KinoScreenUrl }
   | { copy: KinoScreenCopy }
+  | { useTheme: KinoScreenUseTheme }
+  | { setExperience: "light" | "full" }
   | { liveChannel: KinoScreenLiveChannel }
   | { syncProvider: true };
 
@@ -1079,6 +1081,22 @@ type KinoScreenGo =
  *   person's own tap or press (as `go.url` and `go.copy`).
  * - A Kino from before this shape drops the whole `go`, logged, so keep your own written instruction beside the button.
  */
+
+/**
+ * `go: { useTheme: { theme } }` (apiVersion 18, the fourteenth shape): a button on your own screen activates one of your manifest's
+ * `appThemes` ids exactly as Apariencia does; `theme: null` goes back to Kino's theme, only while your own theme is active. Only
+ * from the person's own press or submit on your screen; dropped, logged, from `open`, timers, changes, a pop-up's `onClose`, panels
+ * and notices, and below apiVersion 18. Refused, logged, for a theme Apariencia does not list as yours. Kino shows its own toast
+ * and calls `screen` again with the new `activeTheme`.
+ *
+ * `go: { setExperience: "light" | "full" }` (apiVersion 18, the fifteenth shape): asks for the light experience (no shadows, no
+ * effects, square corners) or the full one of the whole app, the two presets of Ajustes. Kino asks the person first, in its own
+ * words naming your plugin, and changes nothing without their yes; nothing is asked when the app already has it. Only from the
+ * person's own press or submit on your screen, as `useTheme`. A theme may also suggest one with its `experience` field.
+ */
+interface KinoScreenUseTheme {
+  theme: string | null;
+}
 
 /**
  * `go: { liveChannel: { provider, code } }` (Task 11, apiVersion 14, the twelfth shape): Kino tunes the player to the channel
@@ -1691,6 +1709,8 @@ type KinoScreenFn = (arg: {
   state: Record<string, unknown>; route: KinoScreenRoute; device: KinoScreenDevice;
   size: { widthClass: KinoScreenSizeClass; heightClass: KinoScreenSizeClass; orientation: "portrait" | "landscape" };
   lang: "es" | "en";
+  /** apiVersion 18: the id of your `appThemes` theme active now, else null. A change calls `screen` again. */
+  activeTheme: string | null;
 }) => Promise<KinoScreenRoot>;
 
 /**
@@ -1748,6 +1768,8 @@ type KinoJobFn = (ctx: JobContext) => Promise<unknown>;
 
 /** `screenEvent` -- required with the capability "screen": a node's event (the first one is the reserved `open`). */
 type KinoScreenEventFn = (arg: {
+  /** apiVersion 18: the id of your `appThemes` theme active now, else null. */
+  activeTheme: string | null;
   name: string; arg?: string; value?: unknown; state: Record<string, unknown>; route: KinoScreenRoute; device: KinoScreenDevice; lang: "es" | "en";
 }) => Promise<KinoScreenAnswer | null>;
 
