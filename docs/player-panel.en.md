@@ -398,7 +398,7 @@ export async function panel(context) {
 | Context adds | `state`, `size`, and `features` holds `"screen"` while screens are on |
 | `panelAction` triggers | `press`, `change`, `submit` |
 | Answer fields kept | `state`, `toast`, `toastEn`, `ui`, `config`, `go`, `close`, `focus`, `player`, `message`, `pause`, `panel` |
-| Answer fields dropped | `dialog`, `sheet`, `menu`, `route`; legacy-only `patch`, `values`, `save` |
+| Answer fields dropped | `dialog`, `sheet`, `menu`, `route`, `share`, `enableJob`; legacy-only `patch`, `values`, `save` |
 
 Differences from a full screen:
 

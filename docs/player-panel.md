@@ -405,7 +405,7 @@ export async function panel(context) {
 | El contexto agrega | `state`, `size`, y `features` incluye `"screen"` mientras las pantallas están encendidas |
 | Disparadores de `panelAction` | `press`, `change`, `submit` |
 | Campos de la respuesta que se aplican | `state`, `toast`, `toastEn`, `ui`, `config`, `go`, `close`, `focus`, `player`, `message`, `pause`, `panel` |
-| Campos de la respuesta que se descartan | `dialog`, `sheet`, `menu`, `route`; `patch`, `values` y `save` son solo del panel clásico |
+| Campos de la respuesta que se descartan | `dialog`, `sheet`, `menu`, `route`, `share`, `enableJob`; `patch`, `values` y `save` son solo del panel clásico |
 
 Diferencias con una pantalla completa:
 

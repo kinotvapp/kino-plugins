@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 15)
+# El contrato (apiVersion 1 a 17)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -53,7 +53,8 @@ export async function storeSearch({ q, category, cursor }) { /* -> { entries, ne
 
 Desde `"apiVersion": 15` (Kino 0.9.77): `storeSync`, y `storeList` y `storeSearch` en una tienda
 en vivo, para un plugin que es una fuente de plugins ([Tiendas de plugins](plugin-stores.md)). `identity` y `notifications`
-son declarativas y no exportan nada ([Identidad](identity.md), [Avisos en la campanita](notifications.md)).
+son declarativas y no exportan nada ([Identidad](identity.md), [Avisos en la campanita](notifications.md)); desde `"apiVersion": 16`,
+`coins` tampoco exporta nada ([`kino.coins`](kino-api.md#coins)).
 
 ([`kino.d.ts`](reference/index.md) tiene las mismas formas como declaraciones de TypeScript.)
 

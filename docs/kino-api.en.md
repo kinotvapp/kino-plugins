@@ -585,6 +585,32 @@ export async function syncStatus() {
   the `syncProvider` capability with `mode: "realtime"`.
 - **Feature-detect it** with `typeof kino.sync === "object"`: an older Kino has no `kino.sync`.
 
+## `kino.sync.active()` and `kino.sync.setActive(on)` (Kino 0.9.78) { #sync-active }
+
+Additive, for a plugin with the approved `syncProvider` capability. Kino keeps one sync provider at a time, so your plugin can
+let the person switch to it, or away from it, from its own screen, instead of sending them to Ajustes ▸ Conectar:
+
+```js
+if (typeof kino.sync.setActive === "function") {
+  const on = await kino.sync.active();   // is this plugin the provider on THIS device?
+  await kino.sync.setActive(!on);        // from a button the person pressed: true asks them first, false returns to local sync
+}
+```
+
+- `setActive(true)` shows Kino's own question (your installed name and Kino's words; you cannot change them) and, if the person
+  accepts, makes your plugin the only provider on: the current one is turned off. Declined: it resolves `false` and nothing changes.
+  Already on: it resolves `true` and asks nothing.
+- `setActive(false)` asks nothing and returns the person to Kino's local sync, only when your plugin is the one on.
+- Both only run from a call the person started with a tap (a settings `action`, a `panelAction`, or a screen's `screenEvent` after their
+  own press), never from a job, a timer or a screen's `open`: they reject with `not_allowed` there. Reading `active()` works in any call.
+- Rejections carry `code`: `not_allowed`, `unavailable` (the plugin cannot be a provider now), `busy`, `timeout` (two minutes without an
+  answer) and `invalid_request` (not a boolean).
+- Set the key your provider needs (`sync.keySecret`) before offering the switch: a provider with no key shows "not set up".
+- It is not an `apiVersion`: an older Kino has neither function, so feature-detect with `typeof kino.sync.setActive === "function"` and
+  keep `go: { syncProvider: true }` (opens Kino's provider settings; see [Screen reference](screen-reference.md)) as the way for older builds.
+
+See [Sync providers](sync-providers.md).
+
 ## `kino.ws`: WebSockets (apiVersion 13, in development) { #ws }
 
 With the `socket` capability: `await kino.ws.open(url, { protocol? })` opens an outbound WebSocket and answers a socket
@@ -619,7 +645,7 @@ them, `Column`, `TextField`, `titleRail`...), `kino.screen.widgets` (the same by
 
 ## `kino.library`, `kino.room`, `kino.ai` and `kino.shared` (apiVersion 14, Kino 0.9.74) { #api14 }
 
-Each needs its capability: what the person watched and saved ([`library`](rooms.md#library)), a room over the Internet
+Each needs its capability: what the person watched and saved ([`library`](rooms.md#library); from apiVersion 17 also [`kino.library.stats`](#library-stats)), a room over the Internet
 hosted on the device ([`room`](rooms.md#room)), one ask to Kino's text AI ([`ai`](jobs-and-shared.md#ai)) and a few small
 results synced between the person's devices ([`shared`](jobs-and-shared.md#shared)). A background `job(ctx)`
 (`schedule`) is described in [Background jobs](jobs-and-shared.md#jobs).
@@ -633,6 +659,60 @@ and remove notices in the Home bell ([`notifications`](notifications.md)). Detec
 `typeof kino.identity === "object"` and `typeof kino.notifications === "object"`. On a watched series,
 `kino.library.watched()` also carries `season` and `episode` ([Rooms, the library and player control](rooms.md#library)).
 A plugin that is a store does not call `kino`: it exports `storeSync` ([Plugin stores](plugin-stores.md)).
+
+## `kino.coins` (apiVersion 16, Kino 0.9.78) { #coins }
+
+`coins` (apiVersion 16, a declarative capability that never stands alone and is not offered through `enhancements`) lets your
+plugin show the person's Kino coins and give them away. Kino coins are a free currency shared by all of Kino: the person earns 1
+coin every 10 minutes watched, at most 20 a UTC day, and gives them one at a time. `await kino.coins.balance()` answers
+`{ balance, earnedToday, capToday }`; `await kino.coins.give({ to, postId })` gives ONE coin to the account `to` (1 to 128
+characters: the coins service's id of the recipient, which your own server hands you, e.g. Kino Social's `coinsAccount`) for
+the post `postId` (1 to 64 characters) and answers `{ balance, postTotal }` (the balance left, the coins the post holds now).
+
+Kino's own client talks to the coins service, signed in with the device's Telegram validation: your plugin never learns the
+service's address nor its session, and never needs `hosts` for it.
+
+- **When:** `give` works only inside a call the person started from `screen`, `screenEvent` or `panelAction` (never a timer tick
+  nor a job); `balance` also from a timer tick and from your scheduled `job` (a daily balance notice through
+  [`kino.notifications`](notifications.md)). 30 calls a minute per plugin.
+- **Errors:** both reject with a KinoError whose `code` is `permission_denied`, `not_available` (the service is down or slow, or
+  this device was never validated with a Telegram account: keep your screen working without coins), `rate_limited`,
+  `bad_request`, `disabled` (the person switched Kinos off in Kino's Ajustes, message "kino.coins is switched off in Kino's
+  settings": show nothing of coins, no button, no balance, no notice), or the service's own `no_balance` (nothing to give),
+  `self_gift` (to yourself) and `unknown_account`.
+- **Approval:** a red consent line («Podrá ver tu saldo de kinos y regalar tus kinos»), never approved by Kino on its own and
+  unticked in a kit import. There is no switch of its own: the person revokes it by disabling or removing your plugin.
+- **Detect it** with `typeof kino.coins === "object"`: an older Kino has no `kino.coins`, so hide your coin button there
+  (`kinoCoins` in the contract, [`contract.json`](reference/index.md)).
+
+## `kino.library.stats` (apiVersion 17): a month's habits { #library-stats }
+
+```js
+const s = await kino.library.stats({ month: "2026-10" }); // default: the current month
+// { month, estimated, seconds, secondsByKind: { movie, series, live },
+//   secondsByBand: { morning, afternoon, night, lateNight } | null,
+//   titles, episodes, activeDays, longestStreakDays,
+//   top: [{ title, year?, kind, ids: { tmdb?, imdb? }, poster?, genres?, seconds }] /* at most 20 */ }
+```
+
+Same capability (`library`) and the same switch as `watched` and `saved` ([Rooms, the library and player control](rooms.md#library)),
+but **only a plugin that declares `"apiVersion": 17` or later has the function** (feature-detect with
+`typeof kino.library.stats === "function"`). Because the red consent line now says the plugin can read **how much and at what
+time of day** the person watches, an update that raises a plugin already holding `library` to apiVersion 17 asks the person again.
+
+- **Active profile only**, every device of the person summed. Nothing finer than the month's aggregates: no per-day series and no
+  timestamps. `month` is `yyyy-mm` (a real month); any other value, or any other option, is `bad_request`.
+- **Never 18+**: a title Kino knows to be 18+ when you ask leaves the totals and `top`. A title Kino merely cannot place now (its
+  plugin is gone) stays in the totals and is not in `top`. Live channels are in the totals and never named.
+- `titles` counts distinct movies and series; `episodes` the distinct chapters of series played in the month (a rewatch does not add).
+- `poster` and `genres` are only what Kino already holds for the item, with no network call; a field Kino does not have is left out.
+  Kino holds no genres for its library items today, so `genres` is usually absent: fill the gaps with `kino.tmdb`.
+- **Before the counter existed**: Kino counts the seconds really played from the release that brought it. A month before it is
+  estimated from the play history (`estimated: true`, `secondsByBand: null`); the month of the release mixes both, and its
+  `secondsByBand` covers the counted part only.
+- Same call rules, rate limit (30 a minute together with `watched` and `saved`) and error codes as the rest of `kino.library`;
+  it also answers from a job.
+- Kit: the fixture's `stats` is `{ "2026-10": { seconds, secondsByKind, secondsByBand, titles, episodes, activeDays, longestStreakDays, top } }`.
 
 ## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 

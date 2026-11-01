@@ -75,10 +75,23 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
     uno tiene una guía en español y en inglés y pruebas sin red. Mira [Los tres proveedores de
     ejemplo](sync-providers.md#examples).
 
+!!! note "Kino Sync (experimental): sincronizar con tu propio Google Drive"
+    **Kino Sync** ([kinotvapp/kino-plugin-sync-gdrive](https://github.com/kinotvapp/kino-plugin-sync-gdrive)) es un
+    [proveedor de sincronización](sync-providers.md) que guarda la copia cifrada en el **Google Drive de la propia persona**:
+    sin servidor tuyo y sin pegar tokens. La persona toca **Conectar con Google**, escribe un código en `google.com/device`
+    (el mismo paso de las apps de TV) y listo. Es un experimento: no es parte de Kino, no se recomienda y no es oficial ni
+    tiene relación con Google. Muestra una [pantalla](screens.md) (`settingsIn: "screen"`) con los pasos, un aviso con
+    «Reintentar», el estado de la copia en Drive y un acordeón de preguntas; la copia vive en una carpeta «Kino Sync» con
+    un solo archivo, `kino-sync.bin`, con el permiso `drive.file` (el plugin solo ve lo que creó). El cliente de Google va
+    incorporado como un secreto sellado, y como Drive no sabe escribir «solo si la versión es X», el plugin comprueba,
+    escribe y vuelve a comprobar para detectar un `conflict`. Trae pruebas de Node sin red, con una imitación de Google.
+
 !!! note "Pantallas (apiVersion 14, con Kino 0.9.74, aún no publicada): tres ejemplos"
     - **Galería UI** ([kinotvapp/kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery)): cada
-      componente de una [pantalla](screens.md) dibujado en el aparato, por pestañas; las capturas del
-      [catálogo de componentes](screen-components.md) salen de ella.
+      componente de una [pantalla](screens.md) dibujado en el aparato, por siete pestañas (diseño, contenido, acciones,
+      formularios, ventanas, navegación y datos), incluidas las últimas piezas: `pages` a pantalla completa, un carrusel
+      `PageView`, `ListTile`, `CircleAvatar`, el botón flotante, una ruta `Scaffold`, animaciones y un `settings` con
+      `autoSave`; las capturas del [catálogo de componentes](screen-components.md) salen de ella.
     - **Solo noticias** ([kinotvapp/kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news)): una pantalla con
       tarjetas de noticias de lo que ves y un [trabajo en segundo plano](jobs-and-shared.md#jobs) que las actualiza;
       código en `src/` empaquetado con esbuild ([Estructurar un plugin grande](structure.md)).

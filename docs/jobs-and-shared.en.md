@@ -74,6 +74,7 @@ Required with the `schedule` capability and refused without it: 1 to 3 jobs, eac
 | `everyMin` | The default: one of `everyOptions`. |
 | `runOn` | Optional: `"any"` (the default) or `"preferPhone"`; see [below](#prefer-phone). |
 | `enabledBy` | Optional: the key of one of your `toggle` settings; see [below](#enabled-by). |
+| `perProfile` | Optional, apiVersion 17 (`true` or `false`, always with `runOn: "any"`): one run per profile of the device with your plugin on; see [below](#per-profile). |
 
 Any other key of a job is ignored. The texts a manifest is refused with:
 
@@ -88,6 +89,7 @@ Any other key of a job is ignored. The texts a manifest is refused with:
 | `everyMin` | `Each job's "everyMin" must be one of its "everyOptions"` |
 | `runOn` | `Each job's "runOn" must be "any" or "preferPhone"` |
 | `enabledBy` | `Each job's "enabledBy" must name one of the plugin's toggle settings` |
+| `perProfile` | `A "perProfile" job must use "runOn": "any"` / `A job's "perProfile" needs apiVersion 17` / `Each job's "perProfile" must be true or false` / `A "perProfile" job can't use "enabledBy": Kino's own row is its consent` |
 
 ### How it runs { #jobs-run }
 
@@ -108,11 +110,14 @@ Any other key of a job is ignored. The texts a manifest is refused with:
 
 | What | Cap |
 | --- | --- |
-| Time | 20 s |
-| Requests | 10, made one at a time (the next answers `rate_limited`) |
+| Time | 20 s (60 s with `ai`, see below) |
+| Requests | 10, made one at a time (the next answers `rate_limited`); 20 with `ai` |
 | Answer bodies | 2 MB in all (an answer that would cross it is refused with `too_large`, never handed over) |
 | Written to `kino.storage` | 256 KB (UTF-8 bytes of keys and values; the next `set` throws `too_large`) |
 | Runs | 96 a day per plugin (UTC), all its jobs together |
+
+From apiVersion 17, a run of a plugin whose `ai` is approved and switched on has 60 s and 20 requests instead of 20 s and 10;
+every other cap stands.
 
 A cap crossed cuts the run and counts as a failure. A failure waits 15 minutes, doubling up to 6 h; **3 in a row pause the
 job** until the person switches it off and on, or a manual run succeeds. Kino words the failure itself (`timeout`,
@@ -125,7 +130,8 @@ An allow-list:
 - `kino.fetch` (your declared hosts and every usual rule and quota), `kino.storage`, `kino.log`, `kino.config` (read),
   `kino.cookies`, `kino.crypto`, `kino.sleep`, `kino.html`, `kino.secret`, `kino.error`, `kino.rank`.
 - [`kino.library`](rooms.md#library), with its own approval (the same 18+ rule, rounding and rate).
-- [`kino.ai`](#ai), with its own approval; each ask is one of the run's 10 requests.
+- [`kino.ai`](#ai), with its own approval; each ask is one of the run's requests (10, or 20 with `ai`).
+- `kino.tmdb` (apiVersion 17): each call, a cached one too, is one of the run's requests.
 - [`kino.shared`](#shared).
 - [`kino.notifications`](notifications.md) (apiVersion 15), with its own approval: typically the job posts what is new here.
 - [`kino.seed`](kino-api.md#seed), under exactly its usual rules: the same telemetry consent, filter and caps. So a
@@ -133,7 +139,7 @@ An allow-list:
   exactly while the person leaves that setting on).
 - The plain values: `kino.apiVersion`, `kino.appVersion`, `kino.lang`, `kino.device`, `kino.fetchAnyHost`, `kino.screen`.
 
-Everything else (`kino.room`, `kino.qr`, `kino.browser`, `kino.ws`, `kino.meta`, `kino.tmdb`, `kino.nuvio`,
+Everything else (`kino.room`, `kino.qr`, `kino.browser`, `kino.ws`, `kino.meta`, `kino.nuvio`,
 `kino.catalog`, `kino.sync`, `kino.cloudstream` and any later API) answers `not_allowed` (logged). No UI, `go`, toast,
 player action or room can come out of a job. Once a run is over (it answered or was cut), every API refuses whatever its
 evaluation still tries.
@@ -178,6 +184,39 @@ the job instead of the job's own switch (no second switch to find).
 - Anything but the key of one of your `toggle` settings refuses the manifest (`Each job's "enabledBy" must name one of the
   plugin's toggle settings`); in an `enhancements` block, the block is dropped.
 - The consent line, the permission switch, the frequency, «Solo con Wi-Fi» and every cap stay as above.
+
+### One run per profile (`"perProfile": true`) { #per-profile }
+
+From apiVersion 17 (always with `runOn: "any"`), Kino runs `job(ctx)` once for each profile of the device with your plugin on,
+one at a time, oldest result first, each as its own run: its own caps, `lastRunMs`, `attempt`, backoff and pause, and one of the
+96 runs a day.
+
+- What does not fit the worker's nine minutes continues in the next period. A failure pauses that profile's turn, not the
+  others'.
+- `ctx` is unchanged: your code gets no profile id or name and cannot tell them apart.
+- `kino.library`, `kino.shared`, `kino.storage`, `kino.config` and `kino.cookies` (with `kino.fetch`'s jar) answer for that
+  profile only. For a profile that is not the one in use the runtime is opened for that run alone, so nothing in memory crosses:
+  never count on a module variable from one run to the next.
+- There, `kino.notifications`, `kino.coins` and `kino.seed` have no per-profile home and answer `not_allowed`: catch it.
+  `kino.log` stays out of the Registro and of reports, `kino.tmdb` uses Kino's key only, and hosts, `kino.lang` and typed
+  servers are that profile's; code at module level there only reads.
+- **Consent is Kino's own row.** A `perProfile` job may not declare `enabledBy`: consent is Kino's own job row in Ajustes, off by
+  default, device-wide and synced, covering every profile of the device and linked devices. Ask on your screen, saying what
+  runs and what leaves the device, and answer the person's tap with `{ enableJob: "<jobId>" }` ([answers](screens.md#answers)):
+  it turns the row on, only after a tap, with the plugin's approvals in place; no answer turns it off.
+- `kino.jobOn("<jobId>")` answers `true` or `false` in `screen` and `screenEvent`, so you know whether to ask; it is refused in a
+  job.
+- **«Incluir este perfil» / "Include this profile".** Each profile also has Kino's own row, on by default: a profile that
+  leaves itself out gets no turn, and its data is not read. `kino.jobOn` reads the first row; nothing tells you about the
+  second: with no turn the job simply does not run for that profile.
+- A person who switched the first row off keeps it off: `enableJob` is dropped and Kino tells them to turn it on in your tab.
+  `enableJob` applies only to a job without `enabledBy`. Do not rename a `perProfile` job's id: both rows go by it, so a new id
+  loses the person's choice and every profile's left-out mark.
+- It must use `runOn: "any"` (a TV may hold profiles the phone lacks): each device serves the profiles it holds; share a result
+  through `kino.shared` and skip the work when a fresh one already arrived.
+- «Ejecutar ahora» runs the profile in use only, even one left out, since the person pressed it.
+- The consent line says it works for every profile of the device and linked devices, and an update that adds `perProfile` asks
+  again.
 
 ### Trying it with the kit { #jobs-kit }
 
@@ -304,6 +343,6 @@ The kit answers canned text. The variables `KINO_AI_REPLY` (the reply), `KINO_AI
 
 | What | Limit |
 | --- | --- |
-| Jobs (`schedule`) | 1 to 3 jobs, every 15 to 1440 minutes; one run at most 20 s, 10 requests made one at a time, 2 MB of answers and 256 KB written to `kino.storage`; 96 runs a day per plugin; a failure waits 15 minutes, doubling up to 6 h, and 3 in a row pause the job |
+| Jobs (`schedule`) | 1 to 3 jobs, every 15 to 1440 minutes; one run at most 20 s, 10 requests made one at a time, 2 MB of answers and 256 KB written to `kino.storage`; 96 runs a day per plugin; a failure waits 15 minutes, doubling up to 6 h, and 3 in a row pause the job; from apiVersion 17 a plugin with `ai` approved gets 60 s and 20 requests |
 | `kino.shared` | 4 keys of at most 40 characters per plugin; a value at most 64 KB and 16 levels, 128 KB in all; 30 writes a minute; a key's new value travels at most once every 60 s |
 | `kino.ai` | a `prompt` at most 8192 bytes, `system` 2048; the reply cut at `maxChars` (1 to 4096, default 2048); 10 asks in any minute, 100 a day and 1 at a time per plugin; 300 a day and 2 at a time for every plugin of the device together; 20 s an ask |

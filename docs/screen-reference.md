@@ -83,6 +83,46 @@ cambia la ruta.
 | `focus` | la clave del nodo que toma el foco | se descarta | se descarta | se conserva |
 | `config` | tus ajustes a escribir, como máximo 32 claves ([bind y config](screen-forms.md#bind-and-config)) | se conserva | se conserva | se conserva |
 | `ui` | operaciones locales (como máximo 8); un `open` espera al árbol que pide la respuesta | se descarta | se conserva, sin `open` ni `focus` | se conserva |
+| `share` | `{ key }`, apiVersion 17: ese nodo como imagen en la hoja de compartir del sistema ([Compartir una imagen](#share)); solo la respuesta al toque o envío de la persona | se descarta | se descarta | se descarta |
+| `enableJob` | un id de tarea, apiVersion 17: enciende la fila propia de Kino de esa tarea ([Las filas de Kino en Ajustes](jobs-and-shared.md#jobs-rows)), solo después del toque de la persona; ninguna respuesta la apaga | se descarta | se descarta | se descarta |
+
+### Compartir una imagen (`share`) { #share }
+
+`share: { key }` en una respuesta dibuja un nodo de la pantalla como imagen y abre la hoja de compartir del sistema: una
+tarjeta para enviar, no una captura de pantalla. Pide `apiVersion` 17; un plugin con una versión menor se rechaza y queda en
+el registro.
+
+```js
+screenEvent(event) {
+  if (event.name === "share") return { share: { key: "card" } };
+}
+```
+
+- **Solo después del toque o envío de la propia persona.** La respuesta al `open` reservado, a un temporizador, a un «cargar
+  más», a un cambio o a un `onClose` lo descarta, y también un panel; igual una respuesta o un árbol nuevo que llega más de 5 s
+  después del toque, y Atrás, un reinicio, un fallo, una ventana emergente más nueva o un dibujo que no pinta nada entre
+  medias. Cada caso queda en el registro.
+- **El nodo** tiene que ser uno que la persona ve ahora: en el árbol actual o en el cuerpo de una ventana emergente abierta;
+  con `state` o `route` en la misma respuesta, en el árbol que esa respuesta pide. Un nodo `hidden`, uno en una ventana
+  emergente o un elemento de acordeón cerrados, uno en otra página de [`pages`](screen-components.md#pages), una clave que
+  nombra una ventana emergente y una clave desconocida se descartan, con registro.
+- **Un `pageView` nunca se comparte entero.** Kino no sabe a qué página deslizó la persona, así que un nodo que contiene un
+  `pageView`, su propia clave o la de un ancestro, se rechaza, con registro. Dentro de uno, solo se puede compartir su primera
+  página, y solo cuando `initialPage` es 0.
+- **Los títulos +18 nunca van en una imagen,** ni con el código desbloqueado: `TitleCard`, `TitleRail` y `TitleGrid` los
+  pierden. Un nodo que se queda sin nada se descarta, con registro.
+- **La imagen** es un PNG de 1080×1350 píxeles, siempre dibujado a 360 dp de ancho y con escala de fuente 1, así que tu diseño
+  no cambia con el teléfono ni el tamaño de fuente de la persona. Tu nodo recibe el área sobre la línea propia de Kino,
+  recortado a ella, con el tema de tu pantalla. La línea de Kino nombra a tu plugin (máximo 24 caracteres), así que una tarjeta
+  nunca pasa por una de Kino; nada tuyo puede taparla.
+- **Las imágenes** esperan 3 s como máximo; después, el marcador de Kino (o tu `fallback`). Las animaciones saltan a su final.
+  Los botones y los campos se dibujan, pero no hacen nada; un nodo `settings` no se dibuja.
+- De una en una: un segundo toque mientras se hace una se descarta. Si falla, Kino lo dice en su propio aviso.
+- El título de la hoja de compartir nombra a tu plugin; no se añade nada a lo que escribe la persona. El archivo queda en la
+  caché privada de Kino, de solo lectura para la app que elija la persona, y se borra en el siguiente compartir. Sin
+  capacidad ni línea de permiso: la persona toca y elige la app.
+- **Una TV no tiene hoja de compartir:** rechaza `share`, con registro y sin aviso. Oculta el botón ahí (`kino.device`,
+  `device: "tv"`).
 
 <a id="every"></a>
 
@@ -352,7 +392,7 @@ y queda en el registro).
 | Esquinas (`borderRadius`) | `none`, `small`, `medium`, `large`, `full` (uno para todas las esquinas, o un mapa por esquina) |
 | Roles de color (`color`) | `primary`, `secondary`, `surface`, `muted`, `warning`, `error`, `onPrimary`, `primaryContainer`, `surfaceVariant` |
 | Roles (`MaterialBanner`, un `toast`) | `info`, `warning`, `error`, `success` |
-| Estilos de texto (`Text.style`) | `h1`, `h2`, `h3`, `h4`, `h5`, `p`, `caption`, `label` |
+| Estilos de texto (`Text.style`) | `hero`, `h1`, `h2`, `h3`, `h4`, `h5`, `p`, `caption`, `label` |
 | Tamaños de tarjeta (`titleCard`, `titleRail`, `QrImage`) | `small`, `medium`, `large` |
 | Clases de ancho (mapas por tamaño, `sizes`) | `compact`, `medium`, `expanded` |
 | Aparatos (`devices`, `ctx.device`) | `phone`, `tv`, `desktop` |

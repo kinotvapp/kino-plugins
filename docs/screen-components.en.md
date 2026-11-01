@@ -21,7 +21,7 @@ The catalogue is split across three pages:
 
 | Page | Families | Components |
 | --- | --- | --- |
-| This page | Layout, Content, Actions | [Column](#column) · [Row](#row) · [Twelve-column row](#wrap-row) · [Stack](#stack) · [Positioned children](#positioned) · [Spacer and SizedBox](#spacer) · [Divider](#divider) · [Scroll](#scroll) · [GridView](#grid-view) · [ListView](#list-view) · [TabBar](#tab-bar) · [ExpansionTile](#accordion) · [steps](#steps) · [Card](#card) · [Scaffold](#scaffold) ([AppBar](#app-bar), [NavigationBar](#navigation-bar)) · [PageView](#page-view) · [ListTile](#list-tile) · [Text](#text) · [Text scale](#text-scale) · [Colours](#colors) · [Image](#image) · [Icon](#icon) ([names](#icon-names)) · [Badge](#badge) · [CircleAvatar](#circle-avatar) · [MaterialBanner](#banner) · [Progress bar](#progress) · [Spinner](#loading) · [Skeleton](#skeleton) · [QrImage](#qr) ([countdown](#qr-countdown)) · [DataTable](#table) ([TableRow](#table-row), [TableCell](#table-cell)) · [emptyState](#empty-state) · [errorState](#error-state) · [titleCard](#title-card) · [titleRail](#title-rail) · [titleGrid](#title-grid) · [heroCard](#hero-card) · [Actions and events](#actions) · [Buttons](#button) ([busy presses](#busy)) · [FloatingActionButton](#floating-action-button) · [Tooltip](#tooltip) · [Chips](#chips) · [Toasts](#toast) · [Local `ui` operations](#ui-ops) |
+| This page | Layout, Content, Actions | [Column](#column) · [Row](#row) · [Twelve-column row](#wrap-row) · [Stack](#stack) · [Positioned children](#positioned) · [Spacer and SizedBox](#spacer) · [Divider](#divider) · [Scroll](#scroll) · [GridView](#grid-view) · [ListView](#list-view) · [TabBar](#tab-bar) · [ExpansionTile](#accordion) · [steps](#steps) · [Card](#card) · [Scaffold](#scaffold) ([AppBar](#app-bar), [NavigationBar](#navigation-bar)) · [PageView](#page-view) · [pages](#pages) · [ListTile](#list-tile) · [Text](#text) · [Text scale](#text-scale) · [Colours](#colors) · [Image](#image) · [Icon](#icon) ([names](#icon-names)) · [Badge](#badge) · [CircleAvatar](#circle-avatar) · [MaterialBanner](#banner) · [Progress bar](#progress) · [Spinner](#loading) · [Skeleton](#skeleton) · [QrImage](#qr) ([countdown](#qr-countdown)) · [DataTable](#table) ([TableRow](#table-row), [TableCell](#table-cell)) · [emptyState](#empty-state) · [errorState](#error-state) · [titleCard](#title-card) · [titleRail](#title-rail) · [titleGrid](#title-grid) · [heroCard](#hero-card) · [Actions and events](#actions) · [Buttons](#button) ([busy presses](#busy)) · [FloatingActionButton](#floating-action-button) · [Tooltip](#tooltip) · [Chips](#chips) · [Toasts](#toast) · [Local `ui` operations](#ui-ops) |
 | [Forms, overlays and navigation](screen-forms.md) | Forms, Overlays, Navigation | Form, TextField (secret fields, several lines), DropdownButton, RadioGroup, Checkbox, Switch, Slider, NumberStepper, focus on TV, validation, patterns, submit rules, the settings node, bind and config; Dialog, Sheet, Menu, declared pop-ups and `onClose`; every `go.*` and routes |
 | [Data, behaviour and recipes](screen-reference.md) | Data and behaviour, Recipes | State, inputs, events, answers, timers, per-size values, Flutter-style names, style, common, shared, box and text properties, animations, tokens, limits; recipes (news grid, settings form, confirmation pop-up, tabs with chips, button matrix, app bar with tabs and a floating button) |
 
@@ -708,6 +708,34 @@ inside a sideways scroll or a table cell (dropped, logged); at most 24 pages.
 ] }
 ```
 
+### pages { #pages }
+
+Full-screen pages for a story to go through (apiVersion 17): Kino's own node, so it has no Flutter name; `PageView` stays the
+carousel with dots. Put it as the root, or in a `Column` with `flex: 1`, which gives it the height left. Swiped on a phone and a
+desktop. On a TV Left and Right move a page once nothing more is focusable that way inside it, Up and Down stay in it, and focus
+goes into the new page; a page with nothing focusable still turns. On the first page Left does nothing: the plugin's area keeps
+focus, as everywhere, and Back and Kino's close leave.
+
+Kino draws the progress bar above the pages, one segment a page; you neither draw nor hide it. Nothing turns by itself. The page
+reached lives in `state.inputs.<key>` as a number from 0 (it is no input: no label, no form rules), so it survives your
+re-renders; a `ui` set or your state's `inputs` move it, and `onPageChanged` sends the settled index as `value`.
+
+2 to 8 `children` and a `key` of your own, else the whole node is dropped, logged. Never inside a sideways scroll, a table cell or
+another `pages` (dropped, logged). `autoPlayMs`, `initialPage`, `viewportFraction`, `padEnds` and `progress` are ignored, logged.
+An older Kino drops the node: check `kino.screen.widgets.includes("pages")`.
+
+| Property | Type | Default | Per size | Notes |
+| --- | --- | --- | --- | --- |
+| `children` | nodes (the pages, 2 to 8)[] | none | no | its children, drawn in order |
+| `onPageChanged` | action | none | no | its event's `value` is the settled page's index |
+
+```json
+{ "type": "pages", "key": "story", "onPageChanged": "page", "children": [
+  { "type": "Column", "padding": 24, "children": [{ "type": "Text", "text": "47", "style": "hero" }] },
+  { "type": "Column", "padding": 24, "children": [{ "type": "Text", "text": "Lo tuyo es la madrugada", "style": "h2" }] }
+] }
+```
+
 ### ListTile { #list-tile }
 
 Flutter's `ListTile`: one row of a list in Material's heights (56 dp, 72 with a `subtitle`, 48 `dense`): a `leading` and
@@ -747,7 +775,7 @@ direction. Give every text its English twin (`textEn`): Kino picks by the person
 | --- | --- | --- | --- | --- |
 | `text` | string | required (optional with `time`) | no | 1 to 2,000 characters, plain (no markup, no links); newlines kept; with a `time` it is its prefix |
 | `textEn` | string | none | no | the English twin, shown when the app is in English |
-| `style` | `h1` \| `h2` \| `h3` \| `h4` \| `h5` \| `p` \| `caption` \| `label` | `p` | yes | Kino's type scale ([Text scale](#text-scale)); `display`, `title`, `subtitle`, `body` read as `h1`, `h3`, `h4`, `p` |
+| `style` | `hero` \| `h1` \| `h2` \| `h3` \| `h4` \| `h5` \| `p` \| `caption` \| `label` | `p` | yes | Kino's type scale ([Text scale](#text-scale)); `display`, `title`, `subtitle`, `body` read as `h1`, `h3`, `h4`, `p` |
 | `maxLines` | integer ≥ 1 | none | yes | cut with an ellipsis |
 | `bold` | boolean | `false` | yes | headings are bold already; `false` never thins one |
 | `time` | epoch ms | none | no | a whole number 0 to 253,402,300,799,999: Kino writes the time itself in the app's language ([Text with a time](#text-time)) |
@@ -806,6 +834,9 @@ that time on the device's clock and turns it on by itself, with no call to your 
 `caption` is the small muted step and `label` the one buttons use. On the TV each step grows by 1.25. Headings are bold
 already. The older names `display`, `title`, `subtitle` and `body` read as `h1`, `h3`, `h4` and `p`; an unknown style is
 `p` (logged).
+
+`hero` (apiVersion 17) is one step above `h1`, for a big number: 72 sp with a 72 sp line on the phone, 90 sp on the TV, bold.
+A Kino from before apiVersion 17 does not know it and draws `p`, so check the API version when the size matters.
 
 ![Text scale on a phone](assets/ui/text-scale-phone.png)
 ![Text scale on a TV](assets/ui/text-scale-tv.png)

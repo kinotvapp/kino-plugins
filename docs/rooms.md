@@ -28,7 +28,7 @@ cambiar ni esconder:
 
 | Capacidad | Lo que lee la persona | En rojo, espera aprobación | El interruptor de la persona (tu pestaña en Ajustes) |
 | --- | --- | --- | --- |
-| `library` | «Podrá leer lo que has visto y guardado en Kino, y enviarlo a sus servicios» | sí | «Dejar que lea lo que he visto y guardado» |
+| `library` | «Podrá leer lo que has visto y guardado en Kino, cuánto lo ves y a qué hora, y enviarlo a sus servicios» | sí | «Dejar que lea lo que he visto y guardado» |
 | `playerControl` | «Podrá pausar, reanudar y mover tu video por sí solo» | sí | «Dejar que pause y mueva mi video» |
 | `room` | «Podrá abrir una sala a la que se entra por internet a través de este aparato, y enviar los mensajes de la sala a quienes entren» | sí | «Dejar que abra salas por internet» |
 
@@ -80,6 +80,10 @@ interface KinoLibraryEntry {
 - `kind` es `movie` o `series` y sirve de filtro; la música y los podcasts quedan fuera.
 - `limit`: por defecto 50, máximo 100 (más de 100 da 100). `sinceMs` deja los títulos reproducidos ese día (UTC) o después.
   Un número que no es finito es `bad_request`.
+
+Desde apiVersion 17, `kino.library.stats({ month? })` responde los agregados de un mes (segundos vistos, por tipo y por franja
+del día, títulos, días activos y un `top`) con esta misma capacidad y este mismo interruptor: mira
+[`kino.library.stats`](kino-api.md#library-stats).
 
 ### Lo que nunca llega { #library-never }
 

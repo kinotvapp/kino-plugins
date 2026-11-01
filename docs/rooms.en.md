@@ -27,7 +27,7 @@ hide:
 
 | Capability | What the person reads | Red, waits for approval | The person's switch (your tab in Ajustes) |
 | --- | --- | --- | --- |
-| `library` | «Podrá leer lo que has visto y guardado en Kino, y enviarlo a sus servicios» ("Can read what you have watched and saved in Kino, and send it to its services") | yes | «Dejar que lea lo que he visto y guardado» ("Let it read what I watched and saved") |
+| `library` | «Podrá leer lo que has visto y guardado en Kino, cuánto lo ves y a qué hora, y enviarlo a sus servicios» ("Can read what you have watched and saved in Kino, how much and at what time of day, and send it to its services") | yes | «Dejar que lea lo que he visto y guardado» ("Let it read what I watched and saved") |
 | `playerControl` | «Podrá pausar, reanudar y mover tu video por sí solo» ("Can pause, resume and move your video by itself") | yes | «Dejar que pause y mueva mi video» ("Let it pause and move my video") |
 | `room` | «Podrá abrir una sala a la que se entra por internet a través de este aparato, y enviar los mensajes de la sala a quienes entren» ("Can open a room that people reach over the Internet through this device, and send the room's messages to whoever joins") | yes | «Dejar que abra salas por internet» ("Let it open rooms over the Internet") |
 
@@ -79,6 +79,10 @@ interface KinoLibraryEntry {
 - `kind` is `movie` or `series` and works as a filter; music and podcasts are left out.
 - `limit`: default 50, at most 100 (above 100 gives 100). `sinceMs` keeps titles played on that day (UTC) or later. A
   number that is not finite is `bad_request`.
+
+From apiVersion 17, `kino.library.stats({ month? })` answers a month's aggregates (seconds watched, by kind and by time of day,
+titles, active days and a `top`) with this same capability and the same switch: see
+[`kino.library.stats`](kino-api.md#library-stats).
 
 ### What never comes { #library-never }
 

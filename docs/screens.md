@@ -220,6 +220,7 @@ Los textos de Kino son siempre suyos; los tuyos llevan un gemelo en inglés con 
 | `AppBar` | `appBar` | la barra de arriba de un Scaffold: `title`, `leading`, hasta cuatro `actions`, un TabBar en `bottom` |  |  |
 | `NavigationBar` | `navigationBar` | la barra de abajo de un Scaffold, de 2 a 5 `items` (`value`, `onChanged`) |  |  |
 | `steps` | `steps` | un flujo de configuración con el aspecto de Kino: `items` hechos, el actual (abierto, con sus `children`) o pendientes; `onStepTap` deja tocar un paso hecho | `items`, `onStepTap` |  |
+| `pages` | `pages` | páginas a pantalla completa bajo la barra de progreso de Kino, que se deslizan o se mueven con Izquierda y Derecha; el lugar queda en `state.inputs`; sin reproducción automática (apiVersion 17, [pages](screen-components.md#pages)) | `onPageChanged` |  |
 
 Un `TextField` enmascarado (`obscureText: true`) es la excepción de su fila: solo se ata a un ajuste `password` (ver
 [campos secretos](screen-forms.md#secret-field)). La barra del `Scaffold` va debajo de la barra de título de Kino, que
@@ -362,7 +363,7 @@ la marca de Kino ([Image](screen-components.md#image)).
 
 ## Texto y colores { #text-colours }
 
-- El `style` de un `Text` es de `h1` a `h5`, `p` (el valor por defecto), `caption` o `label`; los nombres anteriores
+- El `style` de un `Text` es `hero` (apiVersion 17: 72 sp con interlínea de 72 sp en el celular, 90 sp en la TV, en negrita, un escalón por encima de `h1`, para un número grande; un Kino anterior a apiVersion 17 no lo conoce y dibuja `p`, con registro, así que comprueba la versión de la API o deja el número legible en `p`), de `h1` a `h5`, `p` (el valor por defecto), `caption` o `label`; los nombres anteriores
   `display`, `title`, `subtitle` y `body` se leen como `h1`, `h3`, `h4` y `p`, y uno desconocido es `p`, con una línea en
   el registro. Kino los pasa a su propia escala tipográfica (en el celular, de `h1` headlineLarge hasta `p` bodyMedium) y
   en la TV cada paso crece 1.25, así que el orden se mantiene a tres metros. Se respeta la escala de fuente de la persona.
@@ -442,11 +443,13 @@ Todos los campos son opcionales; `null` significa nada que hacer.
 | `focus` | La `key` del nodo que debe tomar el foco. |
 | `close` | `true` cierra la pantalla. |
 | `config` | Tus ajustes para escribir ([Ajustes dentro de una pantalla](#settings-in-screen)). |
+| `enableJob` | Un id de tarea (apiVersion 17): enciende la fila propia de Kino de esa tarea, solo después del toque de la persona; véase [Las filas de Kino en Ajustes](jobs-and-shared.md#jobs-rows). |
+| `share` | `{ key }` (apiVersion 17): Kino dibuja ese nodo como una imagen de 1080×1350, con su propia línea que nombra a tu plugin, y abre la hoja de compartir del sistema ([Compartir una imagen](screen-reference.md#share)). Solo después del toque o envío de la propia persona; una TV lo rechaza, con registro, así que oculta el botón según `device`. |
 
 Algunas respuestas no vienen de un toque de la persona, así que conservan menos: la respuesta al `open` reservado pierde su
 `go` (salvo `go.screen`), así que abrir una pantalla nunca reproduce ni abre nada por sí solo; la de un
 [temporizador](#timers) conserva solo `state`, `toast`, `close` y `config`; la de cargar más nunca cambia la ruta; la de
-un `onClose` de una ventana emergente no conserva ventanas emergentes, `focus`, `go` ni `route`. Los campos descartados
+un `onClose` de una ventana emergente no conserva ventanas emergentes, `focus`, `go`, `route`, `share` ni `enableJob`. Los campos descartados
 quedan en el registro.
 
 ## Ventanas emergentes, avisos y banners { #popups }
@@ -619,17 +622,17 @@ leídos con `kino.config`); nada se copia a `kino.storage`. La referencia está 
 
 ## Adónde manda la pantalla a la persona: `go` { #go }
 
-La acción de un nodo o una respuesta puede traer `go`: una de doce formas, **siempre hacia el contenido de este mismo
+La acción de un nodo o una respuesta puede traer `go`: una de trece formas, **siempre hacia el contenido de este mismo
 plugin o hacia una página propia de Kino**. Ninguna forma nombra un intent ni una app, y solo `liveChannel` nombra otro
 plugin (un proveedor de En vivo, para un plugin cuya pestaña del reproductor declara `"kinds": ["live"]`); cualquier otra
 cosa se descarta. Cada forma tiene su entrada en la referencia, de [`go.title`](screen-forms.md#go-title) a
-[`go.liveChannel`](screen-forms.md#go-live-channel).
+[`go.syncProvider`](screen-forms.md#go-sync-provider).
 
 | `go` | Qué abre | Desde dónde se manda |
 | --- | --- | --- |
 | `title` | la página de título de este plugin (`ref`, `kind`; `id`, `title` y `adult` para un título que no está en el lienzo) | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
 | `play` | reproduce el título de este plugin (`ref`, `kind`, como `title`) | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
-| `search` | la búsqueda de Kino con `q` (máximo 200 caracteres), solo con este plugin como fuente | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
+| `search` | la búsqueda de Kino con `q` (máximo 200 caracteres), solo con este plugin como fuente; con `"scope": "all"` (apiVersion 17; un plugin con una versión menor se rechaza, con registro; cualquier otro scope descarta el go) la búsqueda normal de Kino en todas las fuentes, que no necesita un `search` tuyo y no te devuelve nada: ni resultados ni la lista de fuentes. La puerta +18 funciona como en la búsqueda de Kino. | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
 | `browse` | la lista "Ver más" de este plugin para un `ref` | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
 | `section` | la sección de este plugin | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
 | `categories` | las Categorías de Kino con el grupo de este plugin primero (su propia pantalla con `screen.replaces`) | un toque, o la respuesta a un evento (nunca la respuesta a `open`, a un temporizador o al `onClose` de una ventana emergente) |
@@ -639,6 +642,7 @@ cosa se descarta. Cada forma tiene su entrada en la referencia, de [`go.title`](
 | `url` | un enlace https en el navegador, después de la hoja de confirmación propia de Kino (un código QR en una TV) | solo un toque o envío de la propia persona (un toque, un envío, la respuesta a uno, el botón de una ventana emergente, un toque en un panel) |
 | `copy` | Kino pone el texto del plugin en el portapapeles y siempre muestra su propio aviso «Copiado» (una TV no puede copiar) | solo un toque o envío de la propia persona (un toque, un envío, la respuesta a uno, el botón de una ventana emergente, un toque en un panel) |
 | `liveChannel` | el reproductor sintoniza el canal de un proveedor de En vivo (`provider`, `code`), solo para un plugin cuya pestaña del reproductor declara `"kinds": ["live"]` | solo un toque o envío de la propia persona (un toque, un envío, la respuesta a uno, el botón de una ventana emergente, un toque en un panel) |
+| `syncProvider` | los ajustes de proveedor de sincronización de Kino (Ajustes ▸ Conectar ▸ Proveedor), donde la persona elige este plugin; solo para un plugin que declara `syncProvider`, véase [`go.syncProvider`](screen-forms.md#go-sync-provider) | solo un toque o envío de la propia persona (un toque, un envío, la respuesta a uno, el botón de una ventana emergente, un toque en un panel) |
 
 - La página de Kino se abre encima de tu pantalla; Atrás vuelve a ella con su estado. Máximo un `go` que abre una página
   cada 500 ms (uno segundo en ese lapso se descarta, con una línea en el registro).
@@ -827,7 +831,7 @@ pregunta a la persona **con sus propias palabras**, que no puedes cambiar ni esc
 | Capacidad | Lo que lee la persona | En rojo, espera aprobación | El interruptor de la persona (tu pestaña en Ajustes) |
 | --- | --- | --- | --- |
 | `screen` | nada: no tiene línea propia | no | ninguno |
-| `library` | "Podrá leer lo que has visto y guardado en Kino, y enviarlo a sus servicios" | sí | "Dejar que lea lo que he visto y guardado" |
+| `library` | "Podrá leer lo que has visto y guardado en Kino, cuánto lo ves y a qué hora, y enviarlo a sus servicios" | sí | "Dejar que lea lo que he visto y guardado" |
 | `playerPanelTab` | "Su pestaña en el reproductor verá lo que estás viendo (título, año, identificadores y posición, o el canal en vivo) mientras la tengas abierta, y podrá enviarlo a sus servicios" | sí | "Mostrar en el reproductor" |
 | `playerControl` | "Podrá pausar, reanudar y mover tu video por sí solo" | sí | "Dejar que pause y mueva mi video" |
 | `room` | "Podrá abrir una sala a la que se entra por internet a través de este aparato, y enviar los mensajes de la sala a quienes entren" | sí | "Dejar que abra salas por internet" |

@@ -135,6 +135,12 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
     GitHub, por un servidor propio o por un archivo JSON ([Tiendas de plugins](plugin-stores.md), con dos
     [tiendas de ejemplo](store-examples.md)). Lo que cambió: [Novedades](changelog.md#v15).
 
+!!! tip "Nuevo: monedas de Kino (apiVersion 16, con Kino 0.9.78) y apiVersion 17"
+    La capacidad `coins` deja mostrar el saldo de monedas de Kino de la persona y regalarlas (`kino.coins`), y
+    `kino.sync.setActive` deja que un proveedor de sincronización se encienda o se apague. `apiVersion` 17 (con la próxima
+    versión de Kino) trae `kino.library.stats`, trabajos por perfil, el widget `pages` y más. Lo que cambió:
+    [Novedades](changelog.md#v17).
+
 ## La guía, página por página { #pages }
 
 | Página | Qué tiene |

@@ -92,8 +92,8 @@ list (`full: true`) and not assume it has a saved cursor.
 | `signed`, `authorKey` | **Hints**: the card says «Firmado», and an installed plugin with that id pinned to that author key (64 lowercase hex characters) reads as installed. Kino re-checks at install. |
 | `recommended` | Kino honours it **only** from Kino Plugins, and it is what puts the entry in "From Kino"; from any other store it is ignored. |
 
-An entry with no `address` and no `stremio`, no valid `id` or no `name` is dropped; long texts are cut; a non-`https` icon is
-dropped. Past 5000 entries (counting only valid ones, repeats of an address skipped) the rest are dropped. Kino never trusts
+An entry with no `address` and no `stremio`, no valid `id` or no `name` is dropped; long texts are cut; an icon or screenshot that is not `https` on a public host (an IP address, `localhost`, a name
+without a dot or with a local suffix such as `.local`) is dropped. Past 5000 entries (counting only valid ones, repeats of an address skipped) the rest are dropped. Kino never trusts
 a store's hints.
 
 ## Local and live { #modes }
@@ -110,7 +110,7 @@ export async function storeList({ category, sort, cursor }) { /* sort: "popular"
 export async function storeSearch({ q, category, cursor }) { return { entries, next }; }
 ```
 
-Each answers `{ entries, next? }`; `next` is the cursor of the following page. A call takes **at most 5 s** and a store gets
+Each answers `{ entries, next? }`, at most **50 entries a page** (`kinoStore.limits.maxEntriesPerLivePage`; the rest are dropped); `next` is the cursor of the following page. A call takes **at most 5 s** and a store gets
 **20 calls a minute**: past either, that call adds nothing. Kino keeps a live page for about **30 minutes**, tagged as live
 cache: going back to the same search or page shows it at once, and those rows never count as the store's synced list.
 

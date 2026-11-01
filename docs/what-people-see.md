@@ -181,6 +181,26 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   locales; Kino aplica su lista de bloqueo y el código +18 a todo lo que listan las tiendas, y deja un plugin por `id` en todas las tiendas. Un plugin que una tienda deja
   de listar sigue instalado y en Instalados dice «Ya no está en ninguna tienda». [Tiendas de plugins](plugin-stores.md).
 
+## Kino 0.9.78 (apiVersion 16 y 17) { #v16 }
+
+!!! note "Disponible desde Kino 0.9.78"
+    `kino.coins` y `kino.sync.setActive` llegan con Kino 0.9.78; `kino.library.stats` y `"perProfile"` son de apiVersion 17, en
+    una versión de Kino que todavía no tiene número. Una versión anterior rechaza esos plugins con «Este plugin necesita una
+    versión más nueva de Kino».
+
+- **Kinos.** `coins` muestra, en rojo, «Podrá ver tu saldo de kinos y regalar tus kinos». No tiene interruptor propio: la
+  persona la revoca al desactivar o quitar el plugin, y si apaga los kinos en los Ajustes de Kino el plugin no debe mostrar
+  nada de kinos ([`kino.coins`](kino-api.md#coins)).
+- **La línea de `library` creció.** Ahora dice «Podrá leer lo que has visto y guardado en Kino, cuánto lo ves y a qué hora, y
+  enviarlo a sus servicios», porque con apiVersion 17 el plugin puede leer los agregados de un mes
+  ([`kino.library.stats`](kino-api.md#library-stats)). Una actualización que sube a apiVersion 17 un plugin que ya tenía
+  `library` le pregunta de nuevo a la persona.
+- **Cambiar de proveedor de sincronización desde el plugin.** Un proveedor puede ofrecer su propio botón; Kino hace siempre su
+  propia pregunta con el nombre del plugin ([`kino.sync.setActive`](kino-api.md#sync-active)).
+- **Trabajos por perfil.** Un trabajo `perProfile` tiene en la pestaña del plugin en Ajustes la fila de siempre del trabajo
+  (apagada por defecto, vale para todos los perfiles) y, por cada perfil, «Incluir este perfil», encendida por defecto
+  ([Trabajos en segundo plano](jobs-and-shared.md#per-profile)).
+
 ## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }
 
 Todavía no está en un Kino publicado. Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):

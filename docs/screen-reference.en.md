@@ -78,6 +78,41 @@ its `go` (except `go.screen`), a load-more's never changes the route.
 | `focus` | the key of the node that takes the focus | dropped | dropped | kept |
 | `config` | your settings to write, at most 32 keys ([bind and config](screen-forms.md#bind-and-config)) | kept | kept | kept |
 | `ui` | local operations (at most 8); an `open` waits for the tree the answer asks for | dropped | kept, without `open` and `focus` | kept |
+| `share` | `{ key }`, apiVersion 17: that node as an image in the system share sheet ([Sharing an image](#share)); only the answer to the person's tap or submit | dropped | dropped | dropped |
+| `enableJob` | a job id, apiVersion 17: turns on Kino's own row of that job ([Kino's rows in Ajustes](jobs-and-shared.md#jobs-rows)), only after the person's tap; no answer turns it off | dropped | dropped | dropped |
+
+### Sharing an image (`share`) { #share }
+
+`share: { key }` in an answer draws one node of the screen as an image and opens the system share sheet: a card to send, not
+a screenshot. It takes `apiVersion` 17; a lower plugin is refused and logged.
+
+```js
+screenEvent(event) {
+  if (event.name === "share") return { share: { key: "card" } };
+}
+```
+
+- **Only after the person's own tap or submit.** The answer to the reserved `open`, a timer, a load-more, a change or an
+  `onClose` drops it, and so does a panel; so does an answer or a new tree that comes more than 5 s after the tap, and Back, a
+  restart, a failure, a newer pop-up or a render that draws nothing in between. Each is logged.
+- **The node** must be one the person can see now: in the current tree or an open pop-up's body; with `state` or `route` in the
+  same answer, in the tree that answer asks for. A `hidden` node, one in a closed pop-up or accordion item, one on another page
+  of [`pages`](screen-components.md#pages), a key naming a pop-up and an unknown key are dropped, logged.
+- **A `pageView` is never shared whole.** Kino does not know which page the person swiped to, so a node that holds a `pageView`,
+  its own key or an ancestor's, is refused, logged. Inside one, only its first page can be shared, and only when `initialPage`
+  is 0.
+- **18+ titles never go in an image,** even with the code unlocked: `TitleCard`, `TitleRail` and `TitleGrid` lose them. A node
+  with nothing left is dropped, logged.
+- **The image** is a PNG of 1080×1350 pixels, always drawn 360 dp wide and at font scale 1, so your layout does not move with
+  the person's phone or font size. Your node gets the area above Kino's own line, clipped to it, in your screen's theme.
+  Kino's line names your plugin (at most 24 characters), so a card never passes as Kino's own; nothing of yours can cover it.
+- **Images** wait 3 s at most, then Kino's placeholder (or your `fallback`). Animations jump to their end. Buttons and fields
+  draw, but do nothing; a `settings` node is not drawn.
+- One at a time: a second tap while one is being made is dropped. If it fails, Kino says so in its own toast.
+- The share sheet's title names your plugin; nothing is added to what the person writes. The file stays in Kino's private
+  cache, read-only for the app the person picks, and goes at the next share. No capability and no permission line: the person
+  taps and picks the app.
+- **A TV has no share sheet:** it refuses `share`, logged, with no toast. Hide the button there (`kino.device`, `device: "tv"`).
 
 <a id="every"></a>
 
@@ -336,7 +371,7 @@ jump; an animation never delays a press or focus; at most 24 animating nodes a s
 | Corners (`borderRadius`) | `none`, `small`, `medium`, `large`, `full` (one for every corner, or a map per corner) |
 | Colour roles (`color`) | `primary`, `secondary`, `surface`, `muted`, `warning`, `error`, `onPrimary`, `primaryContainer`, `surfaceVariant` |
 | Roles (`MaterialBanner`, a toast) | `info`, `warning`, `error`, `success` |
-| Text styles (`Text.style`) | `h1`, `h2`, `h3`, `h4`, `h5`, `p`, `caption`, `label` |
+| Text styles (`Text.style`) | `hero`, `h1`, `h2`, `h3`, `h4`, `h5`, `p`, `caption`, `label` |
 | Card sizes (`titleCard`, `titleRail`, `QrImage`) | `small`, `medium`, `large` |
 | Width classes (per-size maps, `sizes`) | `compact`, `medium`, `expanded` |
 | Devices (`devices`, `ctx.device`) | `phone`, `tv`, `desktop` |

@@ -3,6 +3,61 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## La próxima versión de Kino: `apiVersion` 17, tu mes en Kino, trabajos por perfil y más pantallas { #v17 }
+
+!!! note "Todavía sin número de versión"
+    `apiVersion` 17 llega con la próxima versión de Kino (el contrato todavía no le pone número). Una versión anterior
+    rechaza un manifiesto con `"apiVersion": 17` con «Este plugin necesita una versión más nueva de Kino». `contract.json`
+    dice `maxApiVersion` 17.
+
+| Función | Desde | Cómo saberlo |
+| --- | --- | --- |
+| `kino.library.stats`: los números de un mes (`month` como `yyyy-mm`, el actual por defecto), nada más fino; `top` de hasta 20 títulos; comparte las 30 llamadas por minuto de `watched` y `saved`; nunca +18 | `apiVersion` 17, con la capacidad `library` | un Kino más viejo rechaza `apiVersion` 17 |
+| Trabajos con `perProfile` | `apiVersion` 17 | lo mismo |
+| `kino.tmdb` dentro de un trabajo | `apiVersion` 17 | lo mismo |
+| Corridas de IA de 60 s y 20 peticiones | `apiVersion` 17, con `ai` aprobada | lo mismo |
+| El widget `pages` y el estilo de texto `hero` | `apiVersion` 17 | lo mismo (un Kino anterior dibuja `hero` como `p`) |
+| Las respuestas `share` y `enableJob` | `apiVersion` 17 | lo mismo |
+| `go.search` con `"scope": "all"` y `go.syncProvider` | `apiVersion` 17 | lo mismo |
+
+- **Tu mes en Kino**: `kino.library.stats` deja leer los hábitos de un mes de la persona (agregados, no filas) con su
+  aprobación de `library`. [Salas, biblioteca y control del reproductor](rooms.md).
+- **Trabajos por perfil**: un trabajo con `perProfile` corre una vez por cada perfil del aparato. El consentimiento es una
+  fila propia de Kino (cada perfil puede quedar fuera), el trabajo entrega su resultado con `kino.shared` y se salta el
+  trabajo si ya llegó uno fresco. Un manifiesto con `perProfile` y un `apiVersion` menor se rechaza. [Trabajos, resultados
+  compartidos e IA](jobs-and-shared.md).
+- **`kino.tmdb` en un trabajo** y **más espacio para la IA**: un plugin con `ai` aprobada tiene corridas de 60 s y 20
+  peticiones (antes, 20 s y 10). [Trabajos, resultados compartidos e IA](jobs-and-shared.md).
+- **Pantallas**: el widget `pages` (páginas a pantalla completa bajo la barra de progreso de Kino, que se pasan con el dedo en
+  el celular y con Izquierda y Derecha en el TV), el estilo de texto `hero` (un número grande, un paso encima de `h1`), la
+  respuesta `share` (Kino dibuja un nodo como imagen y abre el menú de compartir del sistema, solo tras un toque de la
+  persona), la respuesta `enableJob` (enciende la fila de Kino de un trabajo, solo tras un toque), `go.search` con
+  `"scope": "all"` (la búsqueda normal de Kino en todas las fuentes) y `go.syncProvider` (abre los ajustes del proveedor de
+  sincronización). [Pantallas](screens.md) y [componentes](screen-components.md).
+
+## Kino 0.9.78: `apiVersion` 16, monedas de Kino, y `kino.sync.setActive` { #v16 }
+
+!!! note "Disponible con Kino 0.9.78"
+    `apiVersion` 16 y `kino.sync.setActive` llegan con Kino 0.9.78. Una versión anterior rechaza un manifiesto con
+    `"apiVersion": 16`.
+
+| Función | Desde | Cómo saberlo |
+| --- | --- | --- |
+| La capacidad `coins` y `kino.coins.balance()` / `kino.coins.give({ to, postId })` | `apiVersion` 16 | `typeof kino.coins === "object"` |
+| `kino.sync.active()` y `kino.sync.setActive(on)`, con la capacidad `syncProvider` | Kino 0.9.78, con cualquier `apiVersion` del manifiesto | `typeof kino.sync.setActive === "function"` |
+
+- **Monedas de Kino** (`coins`): las monedas de Kino son una moneda gratuita compartida por todo Kino: la persona gana 1 cada
+  10 minutos que ve, hasta 20 por día UTC, y las regala de una en una. `kino.coins.balance()` responde
+  `{ balance, earnedToday, capToday }` y `kino.coins.give({ to, postId })` regala UNA moneda a la cuenta `to` por la
+  publicación `postId`. Es una capacidad declarativa que no va sola, no se ofrece con `enhancements` y se aprueba con una
+  línea de consentimiento en rojo. Si la persona apaga las monedas en los ajustes de Kino, el plugin no debe mostrar nada de
+  ellas. El cliente de Kino habla con el servicio de monedas: tu plugin nunca conoce su dirección ni su sesión.
+- **Cambiar de proveedor desde el plugin**: `kino.sync.active()` dice si este plugin es el proveedor de sincronización de
+  este aparato y `kino.sync.setActive(on)` lo cambia. Encender pregunta a la persona con el diálogo de Kino (rechazar
+  responde `false` y no cambia nada); apagar no pregunta y vuelve a la sincronización local de Kino. Solo corre desde un
+  toque de la persona, nunca desde un trabajo. No es un `apiVersion`: detéctalo con
+  `typeof kino.sync.setActive === "function"`. [Proveedores de sincronización](sync-providers.md).
+
 ## Kino 0.9.77: `apiVersion` 15, identidad, avisos y tiendas de plugins { #v15 }
 
 !!! note "Disponible con Kino 0.9.77"

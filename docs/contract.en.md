@@ -1,4 +1,4 @@
-# The contract (apiVersion 1 to 15)
+# The contract (apiVersion 1 to 17)
 
 Your entry file is one ES module that exports one `async` function for each capability you
 declared, and nothing is called that you did not declare:
@@ -52,7 +52,8 @@ export async function storeSearch({ q, category, cursor }) { /* -> { entries, ne
 
 From `"apiVersion": 15` (Kino 0.9.77): `storeSync`, and `storeList` and `storeSearch` in a live
 store, for a plugin that is a source of plugins ([Plugin stores](plugin-stores.md)). `identity` and `notifications` are
-declarative and export nothing ([Identity](identity.md), [Notices in the bell](notifications.md)).
+declarative and export nothing ([Identity](identity.md), [Notices in the bell](notifications.md)); from `"apiVersion": 16`,
+`coins` exports nothing either ([`kino.coins`](kino-api.md#coins)).
 
 ([`kino.d.ts`](reference/index.md) has the same shapes as TypeScript declarations.)
 

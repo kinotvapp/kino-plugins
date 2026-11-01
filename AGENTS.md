@@ -12,7 +12,11 @@ sockets, streams and images the plugin serves itself, a SQLite catalog, a larger
 describes as a JSON tree that Kino draws on the phone and the TV, plus player-panel tabs on any title, rooms over the
 Internet, background jobs, small results shared between the person's devices and Kino's text AI. apiVersion 15 (Kino 0.9.77) adds `identity` (who the person is, without a sign-up),
 `notifications` (notices in the Home bell) and `pluginStore`: a plugin that is a **store**, a source of plugins for
-Kino's own store.
+Kino's own store. apiVersion 16 (Kino 0.9.78) adds `coins` (`kino.coins`: the person's Kino coin balance, and giving a
+coin), and Kino 0.9.78 adds `kino.sync.setActive` for a sync provider. apiVersion 17 (the next Kino version, no number yet;
+the maximum today) adds `kino.library.stats`, `perProfile` jobs, `kino.tmdb` in jobs, the `pages` widget and `hero` style,
+the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. See
+[What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
 before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style

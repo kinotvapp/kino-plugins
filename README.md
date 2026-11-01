@@ -41,6 +41,9 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   of plugins for Kino's store, local (a static list) or live (its own API); the store view has the tabs "De Kino", "De la comunidad" and "Instalados", one plugin per id across stores:
   [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/) and two copyable
   [example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/).
+- **Kino coins and apiVersion 17** (apiVersion 16 arrives with Kino 0.9.78; apiVersion 17 with the next Kino version, the
+  maximum today): the `coins` capability (`kino.coins`), `kino.sync.setActive`, `kino.library.stats`, per-profile jobs, the
+  `pages` widget and more: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

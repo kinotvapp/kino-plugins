@@ -3,6 +3,60 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## The next Kino version: `apiVersion` 17, your month in Kino, per-profile jobs and more screens { #v17 }
+
+!!! note "No version number yet"
+    `apiVersion` 17 ships with the next Kino version (the contract does not number it yet). An older Kino refuses a manifest
+    with `"apiVersion": 17` with «Este plugin necesita una versión más nueva de Kino». `contract.json` says `maxApiVersion`
+    17.
+
+| Feature | Since | How to tell |
+| --- | --- | --- |
+| `kino.library.stats`: one month's aggregates (`month` as `yyyy-mm`, the current one by default), nothing finer; `top` at most 20 titles; shares the 30 calls a minute of `watched` and `saved`; never 18+ | `apiVersion` 17, with the `library` capability | an older Kino refuses `apiVersion` 17 |
+| Jobs with `perProfile` | `apiVersion` 17 | the same |
+| `kino.tmdb` inside a job | `apiVersion` 17 | the same |
+| AI runs of 60 s and 20 requests | `apiVersion` 17, with `ai` approved | the same |
+| The `pages` widget and the `hero` text style | `apiVersion` 17 | the same (an older Kino draws `hero` as `p`) |
+| The `share` and `enableJob` answers | `apiVersion` 17 | the same |
+| `go.search` with `"scope": "all"` and `go.syncProvider` | `apiVersion` 17 | the same |
+
+- **Your month in Kino**: `kino.library.stats` reads the habits of one month of the person's (aggregates, not rows) with
+  your `library` approval. [Rooms, the library and player control](rooms.md).
+- **Per-profile jobs**: a job with `perProfile` runs once for each profile on the device. The consent is Kino's own row (each
+  profile may leave itself out), the job hands its result over through `kino.shared` and skips the work when a fresh one
+  already arrived. A manifest with `perProfile` and a lower `apiVersion` is refused. [Background jobs, shared results and
+  AI](jobs-and-shared.md).
+- **`kino.tmdb` in a job** and **more room for AI**: a plugin with `ai` approved gets runs of 60 s and 20 requests
+  (before, 20 s and 10). [Background jobs, shared results and AI](jobs-and-shared.md).
+- **Screens**: the `pages` widget (full-screen pages under Kino's progress bar, swiped on a phone and moved with Left and
+  Right on a TV), the `hero` text style (a big number, one step above `h1`), the `share` answer (Kino draws a node as an
+  image and opens the system share sheet, only after the person's tap), the `enableJob` answer (turns on Kino's own row of a
+  job, only after a tap), `go.search` with `"scope": "all"` (Kino's normal search on every source) and `go.syncProvider`
+  (opens the sync-provider settings). [Screens](screens.md) and [components](screen-components.md).
+
+## Kino 0.9.78: `apiVersion` 16, Kino coins, and `kino.sync.setActive` { #v16 }
+
+!!! note "Available with Kino 0.9.78"
+    `apiVersion` 16 and `kino.sync.setActive` ship with Kino 0.9.78. An older Kino refuses a manifest with
+    `"apiVersion": 16`.
+
+| Feature | Since | How to tell |
+| --- | --- | --- |
+| The `coins` capability and `kino.coins.balance()` / `kino.coins.give({ to, postId })` | `apiVersion` 16 | `typeof kino.coins === "object"` |
+| `kino.sync.active()` and `kino.sync.setActive(on)`, with the `syncProvider` capability | Kino 0.9.78, with any manifest `apiVersion` | `typeof kino.sync.setActive === "function"` |
+
+- **Kino coins** (`coins`): Kino coins are a free currency shared by all of Kino: the person earns 1 coin every 10 minutes
+  watched, at most 20 a UTC day, and gives them one at a time. `kino.coins.balance()` answers
+  `{ balance, earnedToday, capToday }` and `kino.coins.give({ to, postId })` gives ONE coin to the account `to` for the post
+  `postId`. It is a declarative capability that never stands alone, is not offered through `enhancements` and is approved
+  with a red consent line. If the person switches coins off in Kino's settings, the plugin must show nothing of them. Kino's
+  own client talks to the coins service: your plugin never learns its address nor its session.
+- **Switching provider from the plugin**: `kino.sync.active()` tells whether this plugin is this device's sync provider and
+  `kino.sync.setActive(on)` changes it. Turning on asks the person in Kino's own dialog (a decline answers `false` and
+  changes nothing); turning off asks nothing and returns to Kino's local sync. It only runs from a tap of the person's,
+  never from a job. It is not an `apiVersion`: feature-detect with `typeof kino.sync.setActive === "function"`.
+  [Sync providers](sync-providers.md).
+
 ## Kino 0.9.77: `apiVersion` 15, identity, notices and plugin stores { #v15 }
 
 !!! note "Available with Kino 0.9.77"

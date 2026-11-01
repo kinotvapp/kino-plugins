@@ -799,7 +799,7 @@ has no close button of its own. A quick pick beside a button (a reaction, a spee
 
 ## Navigation { #navigation }
 
-A node's action or an answer may carry `go`: one of twelve shapes, **always into this plugin's own content or one of
+A node's action or an answer may carry `go`: one of thirteen shapes, **always into this plugin's own content or one of
 Kino's own pages**. Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go`
 every 500 ms. No shape names an intent or an app, and only `liveChannel` names another plugin (an En vivo provider, whose
 channel Kino tunes to for a plugin whose player tab joins live channels). The guide covers `go` in
@@ -809,7 +809,7 @@ channel Kino tunes to for a plugin whose player tab joins live channels). The gu
 | --- | --- | --- | --- |
 | [`title`](#go-title) | `{ title: { ref, kind, id, title, adult } }` | this plugin's title page | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
 | [`play`](#go-play) | `{ play: { ref, kind, id, title, adult } }` | plays this plugin's title | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
-| [`search`](#go-search) | `{ search: { q } }` | Kino's search with `q` (at most 200 characters), only this plugin as the source | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
+| [`search`](#go-search) | `{ search: { q } }` | Kino's search with `q` (at most 200 characters), only this plugin as the source (with `scope: "all"`, apiVersion 17, Kino's search on every source, only on the person's tap) | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
 | [`browse`](#go-browse) | `{ browse: { ref, title?, titleEn? } }` | this plugin's «Ver más» list for a `ref` | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
 | [`section`](#go-section) | `{ section: true }` | this plugin's section | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
 | [`categories`](#go-categories) | `{ categories: true }` | Kino's Categorías, this plugin's group first | a tap or an event's answer (never `open`'s, a timer's or an `onClose`'s) |
@@ -819,6 +819,7 @@ channel Kino tunes to for a plugin whose player tab joins live channels). The gu
 | [`url`](#go-url) | `{ url: { href, title } }` | an https link in the browser, after Kino's own sheet (a QR code on a TV) | only the person's own press or submit |
 | [`copy`](#go-copy) | `{ copy: { text, label, sensitive } }` | Kino copies `text` (at most 500 characters, 6 lines) and shows its own «Copiado» toast; a TV cannot | only the person's own press or submit |
 | [`liveChannel`](#go-live-channel) | `{ liveChannel: { provider, code } }` | tunes the player to an En vivo provider's channel (only for a plugin whose player tab joins live channels) | only the person's own press or submit |
+| [`syncProvider`](#go-sync-provider) | `{ syncProvider: true }` | Kino's sync-provider settings (Ajustes ▸ Conectar ▸ Proveedor), where the person picks this plugin (only for a plugin with `syncProvider`) | only the person's own press or submit |
 
 ![Navigation on the phone](assets/ui/navigation-phone.png)
 ![Navigation on the TV](assets/ui/navigation-tv.png)
@@ -849,6 +850,13 @@ for a plugin without `search`.
 
 ```json
 { "go": { "search": { "q": "big buck bunny" } } }
+```
+
+With `scope: "all"` (apiVersion 17) it opens Kino's normal search across every source instead, with the 18+ gate as usual. Your
+plugin learns nothing: not the results, not which plugins exist. It needs no `search` of yours.
+
+```json
+{ "go": { "search": { "q": "big buck bunny", "scope": "all" } } }
 ```
 
 ### `go.browse` { #go-browse }
@@ -967,6 +975,23 @@ the host: the host's tab reads `context.channel`, sends it to the room, and the 
   while the 18+ code is unlocked, and an 18+ channel is not found while it is locked (Kino's usual message).
 - In the player panel on a live channel the channel changes in place (the panel and its pin stay); from anywhere else the
   panel or screen closes and the player opens the channel. Nothing comes back to you: the next context says the channel.
+
+### `go.syncProvider` { #go-sync-provider }
+
+Opens Kino's own sync-provider settings (Ajustes ▸ Conectar ▸ Proveedor), where the person taps «Usar <your plugin>» to make it
+the provider that carries their data. It is the natural last step of a sync provider's connect flow: the plugin has linked the
+account, and this button takes the person to the one place where they choose it. It carries nothing (`true`), and it changes no
+choice by itself: Kino never makes a plugin the provider for them.
+
+```json
+{ "type": "ElevatedButton", "labelText": "Abrir proveedor de sincronización", "labelTextEn": "Open the sync provider", "icon": "sync",
+  "onPressed": { "go": { "syncProvider": true } } }
+```
+
+- Only for a plugin that declares the `syncProvider` capability; any other plugin's is dropped, logged `not_sync_provider`.
+  Only from the person's own press or submit, as `url` and `copy`.
+- A Kino from before this shape drops the whole `go`, logged: keep a written instruction ("Abre Ajustes ▸ Conectar ▸ Proveedor")
+  beside the button so the step still reads on an older Kino.
 
 ### Routes (`route` push and pop) { #routes }
 

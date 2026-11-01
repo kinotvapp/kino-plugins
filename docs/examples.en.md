@@ -73,9 +73,22 @@ same files. A fork would work as a plugin too, but Kino's community search leave
     `kinotvapp/kino-plugin-sync-gram-account`). Each has a guide in English and Spanish
     and offline tests. See [The three example providers](sync-providers.md#examples).
 
+!!! note "Kino Sync (experimental): sync through your own Google Drive"
+    **Kino Sync** ([kinotvapp/kino-plugin-sync-gdrive](https://github.com/kinotvapp/kino-plugin-sync-gdrive)) is a
+    [sync provider](sync-providers.md) that keeps the encrypted copy in **the person's own Google Drive**: no server of
+    yours and no tokens to paste. The person taps **Connect with Google**, types a code at `google.com/device` (the same step
+    TV apps use) and that is it. It is an experiment: not part of Kino, not recommended, and unofficial (not affiliated with
+    Google). It draws a [screen](screens.md) (`settingsIn: "screen"`) with the steps, a banner with «Try again», the state of
+    the copy in Drive and an accordion of questions; the copy lives in a «Kino Sync» folder as a single file,
+    `kino-sync.bin`, with the `drive.file` permission (the plugin only sees what it created). The Google client is built in
+    as a sealed secret, and since Drive cannot write «only if the version is X», the plugin checks, writes and checks again
+    to detect a `conflict`. It ships offline Node tests with an imitation of Google.
+
 !!! note "Screens (apiVersion 14, with Kino 0.9.74, not published yet): three examples"
     - **UI gallery** ([kinotvapp/kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery)): every
-      [screen](screens.md) component drawn on the device, by tabs; the [component catalogue](screen-components.md)'s
+      [screen](screens.md) component drawn on the device, in seven tabs (layout, content, actions, forms, overlays, navigation and data), including the
+      latest pieces: full-screen `pages`, a `PageView` carousel, `ListTile`, `CircleAvatar`, the floating button, a `Scaffold`
+      route, animations and a `settings` node with `autoSave`; the [component catalogue](screen-components.md)'s
       captures come from it.
     - **Solo noticias** ([kinotvapp/kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news)): a screen of news
       cards about what you watch and a [background job](jobs-and-shared.md#jobs) that refreshes them; code in `src/`

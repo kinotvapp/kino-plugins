@@ -122,6 +122,11 @@ a plugin for it. Nothing in this guide changes for your plugin.
     server or by a JSON file ([Plugin stores](plugin-stores.md), with two [example stores](store-examples.md)). What
     changed: [What's new](changelog.md#v15).
 
+!!! tip "New: Kino coins (apiVersion 16, with Kino 0.9.78) and apiVersion 17"
+    The `coins` capability lets a plugin show the person's Kino coin balance and give coins away (`kino.coins`), and
+    `kino.sync.setActive` lets a sync provider switch itself on or off. `apiVersion` 17 (with the next Kino version) brings
+    `kino.library.stats`, per-profile jobs, the `pages` widget and more. What changed: [What's new](changelog.md#v17).
+
 !!! tip "New: your plugin's own screens (apiVersion 14, with Kino 0.9.74, not published yet)"
     A plugin can draw its own full screen inside Kino: columns, cards, lists, tabs, forms, pop-ups and Kino's own poster
     rows, with Kino's look, on the phone and on the TV from the same JSON tree. Start with [Screens](screens.md) and the

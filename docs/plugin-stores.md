@@ -92,8 +92,8 @@ debe contestar entonces su lista **completa** (`full: true`) y no suponer que ti
 | `signed`, `authorKey` | **Pistas**: la tarjeta dice «Firmado» y un plugin instalado con ese id y esa llave de autor (64 caracteres hex en minúsculas) sale como instalado. Kino lo vuelve a comprobar al instalar. |
 | `recommended` | Solo lo respeta Kino si viene de **Kino Plugins**, y es lo que pone la entrada en «De Kino»; en cualquier otra tienda se ignora. |
 
-Una entrada sin `address` ni `stremio`, sin un `id` válido o sin `name` se descarta; los textos largos se cortan; un ícono que
-no es `https` se descarta. Pasadas 5000 entradas (contando solo las válidas, sin repetir direcciones) el resto se descarta.
+Una entrada sin `address` ni `stremio`, sin un `id` válido o sin `name` se descarta; los textos largos se cortan; un ícono o una captura que
+no es `https` de un sitio público (una IP, `localhost`, un nombre sin punto o con un sufijo local como `.local`) se descarta. Pasadas 5000 entradas (contando solo las válidas, sin repetir direcciones) el resto se descarta.
 Kino nunca se fía de las pistas de una tienda.
 
 ## Local y en vivo { #modes }
@@ -110,7 +110,7 @@ export async function storeList({ category, sort, cursor }) { /* sort: "popular"
 export async function storeSearch({ q, category, cursor }) { return { entries, next }; }
 ```
 
-Cada una responde `{ entries, next? }`; `next` es el cursor de la página siguiente. Una llamada tarda **5 s como máximo** y una
+Cada una responde `{ entries, next? }`, con **50 entradas como máximo por página** (`kinoStore.limits.maxEntriesPerLivePage`; las demás se descartan); `next` es el cursor de la página siguiente. Una llamada tarda **5 s como máximo** y una
 tienda recibe **20 llamadas por minuto**: pasado cualquiera de los dos, esa llamada no agrega nada. Kino guarda una página en
 vivo unos **30 minutos**, marcada como caché en vivo: volver a la misma búsqueda o página la muestra al instante, y esas
 filas nunca cuentan como la lista sincronizada de la tienda.

@@ -22,7 +22,7 @@ El catálogo se reparte en tres páginas:
 
 | Página | Familias | Componentes |
 | --- | --- | --- |
-| Esta página | Diseño, Contenido, Acciones | [Column](#column) · [Row](#row) · [Fila de doce columnas](#wrap-row) · [Stack](#stack) · [Hijos posicionados](#positioned) · [Spacer y SizedBox](#spacer) · [Divider](#divider) · [Scroll](#scroll) · [GridView](#grid-view) · [ListView](#list-view) · [TabBar](#tab-bar) · [ExpansionTile](#accordion) · [steps](#steps) · [Card](#card) · [Scaffold](#scaffold) ([AppBar](#app-bar), [NavigationBar](#navigation-bar)) · [PageView](#page-view) · [ListTile](#list-tile) · [Text](#text) · [Escala de texto](#text-scale) · [Colores](#colors) · [Image](#image) · [Icon](#icon) ([nombres](#icon-names)) · [Badge](#badge) · [CircleAvatar](#circle-avatar) · [MaterialBanner](#banner) · [Barra de progreso](#progress) · [Indicador de carga](#loading) · [Skeleton](#skeleton) · [QrImage](#qr) ([cuenta regresiva](#qr-countdown)) · [DataTable](#table) ([TableRow](#table-row), [TableCell](#table-cell)) · [emptyState](#empty-state) · [errorState](#error-state) · [titleCard](#title-card) · [titleRail](#title-rail) · [titleGrid](#title-grid) · [heroCard](#hero-card) · [Acciones y eventos](#actions) · [Botones](#button) ([pulsaciones lentas](#busy)) · [FloatingActionButton](#floating-action-button) · [Tooltip](#tooltip) · [Chips](#chips) · [Toasts](#toast) · [Operaciones `ui` locales](#ui-ops) |
+| Esta página | Diseño, Contenido, Acciones | [Column](#column) · [Row](#row) · [Fila de doce columnas](#wrap-row) · [Stack](#stack) · [Hijos posicionados](#positioned) · [Spacer y SizedBox](#spacer) · [Divider](#divider) · [Scroll](#scroll) · [GridView](#grid-view) · [ListView](#list-view) · [TabBar](#tab-bar) · [ExpansionTile](#accordion) · [steps](#steps) · [Card](#card) · [Scaffold](#scaffold) ([AppBar](#app-bar), [NavigationBar](#navigation-bar)) · [PageView](#page-view) · [pages](#pages) · [ListTile](#list-tile) · [Text](#text) · [Escala de texto](#text-scale) · [Colores](#colors) · [Image](#image) · [Icon](#icon) ([nombres](#icon-names)) · [Badge](#badge) · [CircleAvatar](#circle-avatar) · [MaterialBanner](#banner) · [Barra de progreso](#progress) · [Indicador de carga](#loading) · [Skeleton](#skeleton) · [QrImage](#qr) ([cuenta regresiva](#qr-countdown)) · [DataTable](#table) ([TableRow](#table-row), [TableCell](#table-cell)) · [emptyState](#empty-state) · [errorState](#error-state) · [titleCard](#title-card) · [titleRail](#title-rail) · [titleGrid](#title-grid) · [heroCard](#hero-card) · [Acciones y eventos](#actions) · [Botones](#button) ([pulsaciones lentas](#busy)) · [FloatingActionButton](#floating-action-button) · [Tooltip](#tooltip) · [Chips](#chips) · [Toasts](#toast) · [Operaciones `ui` locales](#ui-ops) |
 | [Formularios, ventanas y navegación](screen-forms.md) | Formularios, Ventanas emergentes, Navegación | Form, TextField (campos secretos, varias líneas), DropdownButton, RadioGroup, Checkbox, Switch, Slider, NumberStepper, el foco en la TV, validación, patrones, reglas de envío, el nodo de ajustes, bind y config; Dialog, Sheet, Menu, ventanas declaradas y `onClose`; cada `go.*` y las rutas |
 | [Datos, comportamiento y recetas](screen-reference.md) | Datos y comportamiento, Recetas | Estado, entradas, eventos, respuestas, temporizadores, valores por tamaño, nombres al estilo Flutter, estilo, propiedades comunes, compartidas, de caja y de texto, animaciones, tokens, límites; recetas (rejilla de noticias, formulario de ajustes, confirmación, pestañas con chips, matriz de botones, barra de app con pestañas y botón flotante) |
 
@@ -736,6 +736,36 @@ dentro de un desplazamiento lateral ni de una celda de tabla (se descarta, con r
 ] }
 ```
 
+### pages { #pages }
+
+Páginas a pantalla completa para recorrer una historia (apiVersion 17): es un nodo propio de Kino, por eso no tiene nombre de
+Flutter; `PageView` sigue siendo el carrusel con puntos. Ponlo como raíz, o en un `Column` con `flex: 1`, que le da la altura que
+queda. Se desliza en un celular y en un escritorio. En una TV, Izquierda y Derecha pasan de página cuando dentro ya no hay nada
+más enfocable en esa dirección, Arriba y Abajo se quedan dentro, y el foco entra en la página nueva; una página sin nada enfocable
+también pasa. En la primera página Izquierda no hace nada: el área del plugin conserva el foco, como en todas partes, y Atrás y el
+cierre de Kino salen.
+
+Kino dibuja la barra de progreso encima de las páginas, un segmento por página; tú no la dibujas ni la ocultas. Nada pasa solo. La
+página a la que se llegó vive en `state.inputs.<key>` como un número desde 0 (no es un input: sin etiqueta ni reglas de formulario),
+así que sobrevive a tus nuevos dibujos; un `set` de `ui` o los `inputs` de tu estado la mueven, y `onPageChanged` envía el índice
+en el que se quedó como `value`.
+
+De 2 a 8 `children` y una `key` propia; si no, todo el nodo se descarta, con registro. Nunca dentro de un desplazamiento lateral,
+de una celda de tabla ni de otro `pages` (se descarta, con registro). `autoPlayMs`, `initialPage`, `viewportFraction`, `padEnds`
+y `progress` se ignoran, con registro. Un Kino más antiguo descarta el nodo: comprueba `kino.screen.widgets.includes("pages")`.
+
+| Propiedad | Tipo | Por defecto | Por tamaño | Notas |
+| --- | --- | --- | --- | --- |
+| `children` | nodos (las páginas, de 2 a 8)[] | ninguno | no | sus hijos, dibujados en orden |
+| `onPageChanged` | acción | ninguno | no | el `value` de su evento es el índice de la página en la que se quedó |
+
+```json
+{ "type": "pages", "key": "story", "onPageChanged": "page", "children": [
+  { "type": "Column", "padding": 24, "children": [{ "type": "Text", "text": "47", "style": "hero" }] },
+  { "type": "Column", "padding": 24, "children": [{ "type": "Text", "text": "Lo tuyo es la madrugada", "style": "h2" }] }
+] }
+```
+
 ### ListTile { #list-tile }
 
 El `ListTile` de Flutter: una fila de una lista con las alturas de Material (56 dp, 72 con `subtitle`, 48 con `dense`):
@@ -777,7 +807,7 @@ persona.
 | --- | --- | --- | --- | --- |
 | `text` | string | obligatorio (opcional con `time`) | no | de 1 a 2.000 caracteres, simple (sin marcado, sin enlaces); se conservan los saltos de línea; con un `time` es su prefijo |
 | `textEn` | string | ninguno | no | el gemelo en inglés, que se muestra cuando la app está en inglés |
-| `style` | `h1` \| `h2` \| `h3` \| `h4` \| `h5` \| `p` \| `caption` \| `label` | `p` | sí | la escala tipográfica de Kino ([Escala de texto](#text-scale)); `display`, `title`, `subtitle`, `body` se leen como `h1`, `h3`, `h4`, `p` |
+| `style` | `hero` \| `h1` \| `h2` \| `h3` \| `h4` \| `h5` \| `p` \| `caption` \| `label` | `p` | sí | la escala tipográfica de Kino ([Escala de texto](#text-scale)); `display`, `title`, `subtitle`, `body` se leen como `h1`, `h3`, `h4`, `p` |
 | `maxLines` | entero ≥ 1 | ninguno | sí | se corta con puntos suspensivos |
 | `bold` | boolean | `false` | sí | los encabezados ya son negrita; `false` nunca adelgaza uno |
 | `time` | epoch ms | ninguno | no | un número entero de 0 a 253.402.300.799.999: Kino escribe la hora él mismo en el idioma de la app ([Texto con una hora](#text-time)) |
@@ -838,6 +868,9 @@ después de un minuto.
 el escalón body-medium; `caption` es el escalón pequeño y atenuado y `label` el que usan los botones. En la TV cada
 escalón crece 1,25. Los encabezados ya son negrita. Los nombres antiguos `display`, `title`, `subtitle` y `body` se leen
 como `h1`, `h3`, `h4` y `p`; un estilo desconocido es `p` (con registro).
+
+`hero` (apiVersion 17) es un escalón por encima de `h1`, para un número grande: 72 sp con interlínea de 72 sp en el celular, 90 sp en la TV, en negrita.
+Un Kino anterior a apiVersion 17 no lo conoce y dibuja `p`, así que comprueba la versión de la API cuando el tamaño importe.
 
 ![Escala de texto en un celular](assets/ui/text-scale-phone.png)
 ![Escala de texto en una TV](assets/ui/text-scale-tv.png)

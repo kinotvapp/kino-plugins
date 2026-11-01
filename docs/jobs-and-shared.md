@@ -74,6 +74,7 @@ Obligatorio con la capacidad `schedule` y rechazado sin ella: de 1 a 3 trabajos,
 | `everyMin` | El valor por defecto: uno de `everyOptions`. |
 | `runOn` | Opcional: `"any"` (por defecto) o `"preferPhone"`; mira [abajo](#prefer-phone). |
 | `enabledBy` | Opcional: la clave de uno de tus ajustes `toggle`; mira [abajo](#enabled-by). |
+| `perProfile` | Opcional, apiVersion 17 (`true` o `false`, siempre con `runOn: "any"`): una ejecución por cada perfil del aparato que tiene tu plugin activado; mira [abajo](#per-profile). |
 
 Cualquier otra clave de un trabajo se ignora. Los textos con que se rechaza un manifiesto:
 
@@ -88,6 +89,7 @@ Cualquier otra clave de un trabajo se ignora. Los textos con que se rechaza un m
 | `everyMin` | `Each job's "everyMin" must be one of its "everyOptions"` |
 | `runOn` | `Each job's "runOn" must be "any" or "preferPhone"` |
 | `enabledBy` | `Each job's "enabledBy" must name one of the plugin's toggle settings` |
+| `perProfile` | `A "perProfile" job must use "runOn": "any"` / `A job's "perProfile" needs apiVersion 17` / `Each job's "perProfile" must be true or false` / `A "perProfile" job can't use "enabledBy": Kino's own row is its consent` |
 
 ### Cómo corre { #jobs-run }
 
@@ -108,11 +110,14 @@ Cualquier otra clave de un trabajo se ignora. Los textos con que se rechaza un m
 
 | Qué | Tope |
 | --- | --- |
-| Tiempo | 20 s |
-| Peticiones | 10, hechas una a la vez (la siguiente responde `rate_limited`) |
+| Tiempo | 20 s (60 s con `ai`, mira abajo) |
+| Peticiones | 10, hechas una a la vez (la siguiente responde `rate_limited`); 20 con `ai` |
 | Cuerpos de respuesta | 2 MB en total (una respuesta que lo pasaría se rechaza con `too_large`, nunca se entrega) |
 | Escritura en `kino.storage` | 256 KB (bytes UTF-8 de claves y valores; el siguiente `set` lanza `too_large`) |
 | Ejecuciones | 96 al día por plugin (UTC), todos sus trabajos juntos |
+
+Desde apiVersion 17, la ejecución de un plugin cuya `ai` está aprobada y encendida tiene 60 s y 20 peticiones en vez de 20 s y 10;
+los demás topes siguen igual.
 
 Un tope cruzado corta la ejecución y cuenta como falla. Una falla espera 15 minutos, duplicándose hasta 6 h; **3 seguidas
 pausan el trabajo** hasta que la persona lo apague y lo encienda, o una ejecución manual salga bien. Kino nombra la falla
@@ -126,7 +131,8 @@ Una lista permitida:
 - `kino.fetch` (tus hosts declarados y todas las reglas y cupos de siempre), `kino.storage`, `kino.log`, `kino.config`
   (solo lectura), `kino.cookies`, `kino.crypto`, `kino.sleep`, `kino.html`, `kino.secret`, `kino.error`, `kino.rank`.
 - [`kino.library`](rooms.md#library), con su propia aprobación (la misma regla de +18, redondeo y ritmo).
-- [`kino.ai`](#ai), con su propia aprobación; cada pregunta es una de las 10 peticiones de la ejecución.
+- [`kino.ai`](#ai), con su propia aprobación; cada pregunta es una de las peticiones de la ejecución (10, o 20 con `ai`).
+- `kino.tmdb` (apiVersion 17): cada llamada, también una que sale del caché, es una de las peticiones de la ejecución.
 - [`kino.shared`](#shared).
 - [`kino.notifications`](notifications.md) (apiVersion 15), con su propia aprobación: lo habitual es que el trabajo publique aquí lo nuevo.
 - [`kino.seed`](kino-api.md#seed), con las mismas reglas de siempre: el mismo consentimiento de telemetría, el mismo
@@ -135,7 +141,7 @@ Una lista permitida:
 - Los valores simples: `kino.apiVersion`, `kino.appVersion`, `kino.lang`, `kino.device`, `kino.fetchAnyHost`,
   `kino.screen`.
 
-Todo lo demás (`kino.room`, `kino.qr`, `kino.browser`, `kino.ws`, `kino.meta`, `kino.tmdb`, `kino.nuvio`,
+Todo lo demás (`kino.room`, `kino.qr`, `kino.browser`, `kino.ws`, `kino.meta`, `kino.nuvio`,
 `kino.catalog`, `kino.sync`, `kino.cloudstream` y cualquier API posterior) responde `not_allowed` (con una línea en el
 registro). De un trabajo no puede salir ninguna interfaz, `go`, aviso, acción del reproductor ni sala. Cuando la ejecución
 terminó (respondió o se cortó), toda API rechaza lo que su evaluación todavía intente.
@@ -181,6 +187,40 @@ apagado de la persona para el trabajo, en lugar del interruptor propio del traba
 - Cualquier cosa que no sea la clave de uno de tus ajustes `toggle` rechaza el manifiesto (`Each job's "enabledBy" must
   name one of the plugin's toggle settings`); en un bloque de `enhancements`, el bloque se descarta.
 - La línea de consentimiento, el interruptor del permiso, la frecuencia, «Solo con Wi-Fi» y todos los topes siguen igual.
+
+### Un trabajo por perfil (`"perProfile": true`) { #per-profile }
+
+Desde apiVersion 17 (siempre con `runOn: "any"`), Kino corre `job(ctx)` una vez por cada perfil del aparato que tiene tu
+plugin activado, de a uno y empezando por el resultado más viejo, cada una como su propia ejecución: sus propios topes,
+`lastRunMs`, `attempt`, espera tras fallas y pausa, y una de las 96 ejecuciones del día.
+
+- Lo que no cabe en los nueve minutos de la ventana del worker sigue en el periodo siguiente. Una falla pausa el turno de ese
+  perfil, no el de los demás.
+- `ctx` no cambia: tu código no recibe el id ni el nombre del perfil y no puede distinguirlos.
+- `kino.library`, `kino.shared`, `kino.storage`, `kino.config` y `kino.cookies` (con el jar de `kino.fetch`) responden solo por
+  ese perfil. Para un perfil que no es el que está en uso, el runtime se abre solo para esa ejecución, así que nada en memoria
+  pasa de una a otra: no cuentes con una variable de módulo de una ejecución a la siguiente.
+- Allí, `kino.notifications`, `kino.coins` y `kino.seed` no tienen un lugar por perfil y responden `not_allowed`: atrápalo.
+  `kino.log` queda fuera del Registro y de los reportes, `kino.tmdb` usa solo la llave de Kino, y los hosts, `kino.lang` y los
+  servidores escritos por la persona son los de ese perfil; el código de nivel de módulo ahí solo lee.
+- **El consentimiento es la fila propia de Kino.** Un trabajo `perProfile` no puede declarar `enabledBy`: su consentimiento es
+  la fila del trabajo en Ajustes, apagada por defecto, de todo el aparato y sincronizada, que cubre todos los perfiles del
+  aparato y de los aparatos vinculados. Pregunta en tu pantalla, diciendo qué corre y qué sale del aparato, y responde al toque
+  de la persona con `{ enableJob: "<jobId>" }` ([las respuestas](screens.md#answers)): enciende la fila, solo después de un
+  toque y con las aprobaciones del plugin al día; ninguna respuesta la apaga.
+- `kino.jobOn("<jobId>")` responde `true` o `false` en `screen` y `screenEvent`, para que sepas si te toca preguntar; en un
+  trabajo se rechaza.
+- **«Incluir este perfil».** Cada perfil tiene además su propia fila de Kino, «Incluir este perfil», encendida por defecto: un
+  perfil que se deja fuera no tiene turno y sus datos no se leen. `kino.jobOn` lee la primera fila; nada te avisa de la
+  segunda: sin turno, el trabajo simplemente no corre para ese perfil.
+- Quien apagó la primera fila la mantiene apagada: `enableJob` se descarta y Kino le dice que la encienda en la pestaña de tu
+  plugin. `enableJob` solo vale para un trabajo sin `enabledBy`. No renombres el id de un trabajo `perProfile`: las dos filas
+  van por él, así que un id nuevo pierde la elección de la persona y la marca de cada perfil dejado fuera.
+- Debe usar `runOn: "any"` (una TV puede tener perfiles que el celular no tiene): cada aparato atiende los perfiles que tiene;
+  comparte un resultado con `kino.shared` y salta el trabajo cuando ya llegó uno reciente.
+- «Ejecutar ahora» corre solo el perfil en uso, incluso uno dejado fuera, porque la persona lo presionó.
+- La línea de consentimiento dice que trabaja para todos los perfiles del aparato y de los aparatos vinculados, y una
+  actualización que agrega `perProfile` pregunta de nuevo.
 
 ### Probarlo con el kit { #jobs-kit }
 
@@ -313,6 +353,6 @@ El kit responde un texto de prueba. Las variables `KINO_AI_REPLY` (la respuesta)
 
 | Qué | Límite |
 | --- | --- |
-| Trabajos (`schedule`) | de 1 a 3 trabajos, cada 15 a 1440 minutos; una ejecución máximo 20 s, 10 peticiones una a la vez, 2 MB de respuestas y 256 KB escritos en `kino.storage`; 96 ejecuciones al día por plugin; una falla espera 15 minutos, duplicándose hasta 6 h, y 3 seguidas pausan el trabajo |
+| Trabajos (`schedule`) | de 1 a 3 trabajos, cada 15 a 1440 minutos; una ejecución máximo 20 s, 10 peticiones una a la vez, 2 MB de respuestas y 256 KB escritos en `kino.storage`; 96 ejecuciones al día por plugin; una falla espera 15 minutos, duplicándose hasta 6 h, y 3 seguidas pausan el trabajo; desde apiVersion 17, un plugin con `ai` aprobada tiene 60 s y 20 peticiones |
 | `kino.shared` | 4 claves de máximo 40 caracteres por plugin; un valor de máximo 64 KB y 16 niveles, 128 KB en total; 30 escrituras por minuto; el valor nuevo de una clave viaja como mucho una vez cada 60 s |
 | `kino.ai` | un `prompt` de máximo 8192 bytes, `system` 2048; la respuesta cortada en `maxChars` (1 a 4096, por defecto 2048); 10 preguntas en cualquier minuto, 100 al día y 1 a la vez por plugin; 300 al día y 2 a la vez para todos los plugins del aparato juntos; 20 s por pregunta |

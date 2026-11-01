@@ -162,6 +162,26 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   applies its blocklist and the 18+ code to everything stores list, and keeps one plugin per `id` across stores. A plugin a store stops listing stays installed and
   Instalados says «Ya no está en ninguna tienda». [Plugin stores](plugin-stores.md).
 
+## Kino 0.9.78 (apiVersion 16 and 17) { #v16 }
+
+!!! note "Available from Kino 0.9.78"
+    `kino.coins` and `kino.sync.setActive` arrive with Kino 0.9.78; `kino.library.stats` and `"perProfile"` are apiVersion 17, in
+    a Kino version that has no number yet. An older version refuses those plugins with «Este plugin necesita una versión más
+    nueva de Kino».
+
+- **Kino coins.** `coins` shows, in red, «Podrá ver tu saldo de kinos y regalar tus kinos». It has no switch of its own: the
+  person revokes it by disabling or removing the plugin, and if they switch Kinos off in Kino's Ajustes the plugin must show
+  nothing of coins ([`kino.coins`](kino-api.md#coins)).
+- **The `library` line grew.** It now reads «Podrá leer lo que has visto y guardado en Kino, cuánto lo ves y a qué hora, y
+  enviarlo a sus servicios», because with apiVersion 17 the plugin can read a month's aggregates
+  ([`kino.library.stats`](kino-api.md#library-stats)). An update that raises a plugin already holding `library` to apiVersion
+  17 asks the person again.
+- **Switching sync provider from the plugin.** A provider may offer its own button; Kino always asks its own question with the
+  plugin's name ([`kino.sync.setActive`](kino-api.md#sync-active)).
+- **Per-profile jobs.** A `perProfile` job has, in the plugin's tab in Ajustes, the usual job row (off by default, covering
+  every profile) and, for each profile, «Incluir este perfil», on by default
+  ([Background jobs](jobs-and-shared.md#per-profile)).
+
 ## The next Kino version (apiVersion 13, in development) { #v13 }
 
 Not in a released Kino yet. With the apiVersion 13 capabilities ([What's new](changelog.md#v13)):

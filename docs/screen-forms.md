@@ -828,7 +828,7 @@ reacción, una velocidad, un orden):
 
 ## Navegación { #navigation }
 
-La acción de un nodo o una respuesta pueden llevar `go`: una de doce formas, **siempre hacia el contenido propio de este
+La acción de un nodo o una respuesta pueden llevar `go`: una de trece formas, **siempre hacia el contenido propio de este
 plugin o hacia una de las páginas propias de Kino**. La página de Kino se abre sobre tu pantalla; Atrás vuelve a ella con
 su estado. Como máximo un `go` que abre una página cada 500 ms. Ninguna forma nombra un intent ni una app, y solo
 `liveChannel` nombra a otro plugin (un proveedor de En vivo, a cuyo canal Kino sintoniza para un plugin cuya pestaña del
@@ -838,7 +838,7 @@ reproductor se une a los canales en vivo). La guía trata `go` en [Navegar con `
 | --- | --- | --- | --- |
 | [`title`](#go-title) | `{ title: { ref, kind, id, title, adult } }` | la página de título de este plugin | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
 | [`play`](#go-play) | `{ play: { ref, kind, id, title, adult } }` | reproduce el título de este plugin | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
-| [`search`](#go-search) | `{ search: { q } }` | la búsqueda de Kino con `q` (máximo 200 caracteres), con este plugin como única fuente | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
+| [`search`](#go-search) | `{ search: { q } }` | la búsqueda de Kino con `q` (máximo 200 caracteres), con este plugin como única fuente (con `scope: "all"`, apiVersion 17, la búsqueda de Kino en todas las fuentes, solo con el toque de la persona) | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
 | [`browse`](#go-browse) | `{ browse: { ref, title?, titleEn? } }` | la lista «Ver más» de este plugin para un `ref` | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
 | [`section`](#go-section) | `{ section: true }` | la sección de este plugin | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
 | [`categories`](#go-categories) | `{ categories: true }` | las Categorías de Kino, primero el grupo de este plugin | un toque o la respuesta a un evento (nunca la de `open`, la de un temporizador ni la de un `onClose`) |
@@ -848,6 +848,7 @@ reproductor se une a los canales en vivo). La guía trata `go` en [Navegar con `
 | [`url`](#go-url) | `{ url: { href, title } }` | un enlace https en el navegador, después de la hoja propia de Kino (un código QR en un televisor) | solo la pulsación o el envío de la propia persona |
 | [`copy`](#go-copy) | `{ copy: { text, label, sensitive } }` | Kino copia `text` (máximo 500 caracteres, 6 líneas) y muestra su propio aviso «Copiado»; un televisor no puede | solo la pulsación o el envío de la propia persona |
 | [`liveChannel`](#go-live-channel) | `{ liveChannel: { provider, code } }` | sintoniza el reproductor en el canal de un proveedor de En vivo (solo para un plugin cuya pestaña del reproductor se une a los canales en vivo) | solo la pulsación o el envío de la propia persona |
+| [`syncProvider`](#go-sync-provider) | `{ syncProvider: true }` | los ajustes de proveedor de sincronización de Kino (Ajustes ▸ Conectar ▸ Proveedor), donde la persona elige este plugin (solo para un plugin con `syncProvider`) | solo la pulsación o el envío de la propia persona |
 
 ![Navegación en el teléfono](assets/ui/navigation-phone.png)
 ![Navegación en el televisor](assets/ui/navigation-tv.png)
@@ -879,6 +880,13 @@ rechaza para un plugin sin `search`.
 
 ```json
 { "go": { "search": { "q": "big buck bunny" } } }
+```
+
+Con `scope: "all"` (apiVersion 17) abre en cambio la búsqueda normal de Kino en todas las fuentes, con la puerta +18 de
+siempre. Tu plugin no se entera de nada: ni de los resultados ni de qué plugins existen. No necesita un `search` tuyo.
+
+```json
+{ "go": { "search": { "q": "big buck bunny", "scope": "all" } } }
 ```
 
 ### `go.browse` { #go-browse }
@@ -1004,6 +1012,24 @@ invitado pulsa «Ver el mismo canal».
 - En el panel del reproductor, sobre un canal en vivo, el canal cambia ahí mismo (el panel y su fijación se mantienen);
   desde cualquier otro lugar el panel o la pantalla se cierran y el reproductor abre el canal. No te devuelve nada: el
   siguiente contexto dice el canal.
+
+### `go.syncProvider` { #go-sync-provider }
+
+Abre los ajustes propios de Kino para el proveedor de sincronización (Ajustes ▸ Conectar ▸ Proveedor), donde la persona toca
+«Usar <tu plugin>» para que sea el proveedor que lleva sus datos. Es el último paso natural del flujo de conexión de un
+proveedor de sincronización: el plugin ya enlazó la cuenta, y este botón lleva a la persona al único lugar donde lo elige. No
+lleva nada (`true`) y no cambia ninguna elección por sí mismo: Kino nunca convierte a un plugin en el proveedor de la persona
+por ella.
+
+```json
+{ "type": "ElevatedButton", "labelText": "Abrir proveedor de sincronización", "labelTextEn": "Open the sync provider", "icon": "sync",
+  "onPressed": { "go": { "syncProvider": true } } }
+```
+
+- Solo para un plugin que declara la capacidad `syncProvider`; el de cualquier otro plugin se descarta y queda en el registro
+  como `not_sync_provider`. Solo desde la pulsación o el envío de la propia persona, igual que `url` y `copy`.
+- Un Kino anterior a esta forma descarta todo el `go`, con registro: deja una instrucción escrita ("Abre Ajustes ▸ Conectar ▸
+  Proveedor") junto al botón para que el paso se siga entendiendo en un Kino antiguo.
 
 ### Rutas (`route`: push y pop) { #routes }
 

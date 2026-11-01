@@ -208,6 +208,7 @@ Kino's own texts are always its own; yours take an English twin with the `En` su
 | `AppBar` | `appBar` | a Scaffold's top bar: `title`, `leading`, up to four `actions`, a `bottom` TabBar |  |  |
 | `NavigationBar` | `navigationBar` | a Scaffold's bottom bar of 2 to 5 `items` (`value`, `onChanged`) |  |  |
 | `steps` | `steps` | a setup flow in Kino's look: `items` done, current (open, its `children`) or pending; `onStepTap` lets a done step be pressed | `items`, `onStepTap` |  |
+| `pages` | `pages` | full-screen pages under Kino's progress bar, swiped or moved with Left and Right; the place is in `state.inputs`; no autoplay (apiVersion 17, [pages](screen-components.md#pages)) | `onPageChanged` |  |
 
 A masked `TextField` (`obscureText: true`) is the exception to its row: it binds only to a `password` setting (see
 [secret fields](screen-forms.md#secret-field)). The `Scaffold`'s bar sits under Kino's own title bar, which no plugin
@@ -342,7 +343,7 @@ or refused is kept): only `Column`, `Row`, `Stack`, `Card`, `Spacer`, `SizedBox`
 
 ## Text and colours { #text-colours }
 
-- A `Text`'s `style` is `h1` to `h5`, `p` (the default), `caption` or `label`; the older names `display`, `title`,
+- A `Text`'s `style` is `hero` (apiVersion 17: 72 sp on the phone with a 72 sp line, 90 sp on the TV, bold, one step above `h1` for a big number; a Kino from before apiVersion 17 does not know it and draws `p`, logged, so check the API version or keep the number readable at `p`), `h1` to `h5`, `p` (the default), `caption` or `label`; the older names `display`, `title`,
   `subtitle` and `body` read as `h1`, `h3`, `h4` and `p`, and an unknown one is `p`, logged. Kino maps them onto its own type
   scale (on the phone `h1` is headlineLarge down to `p` bodyMedium), and on the TV every step grows by 1.25, so the order
   holds at ten feet. The person's font scale is respected.
@@ -418,11 +419,13 @@ Every field is optional; `null` means nothing to do.
 | `focus` | The `key` of the node that should take focus. |
 | `close` | `true` closes the screen. |
 | `config` | Your settings to write ([Settings inside a screen](#settings-in-screen)). |
+| `enableJob` | A job id (apiVersion 17): turns on Kino's own row of that job, only after the person's tap, see [Kino's rows in Ajustes](jobs-and-shared.md#jobs-rows). |
+| `share` | `{ key }` (apiVersion 17): Kino draws that node as a 1080×1350 image, with its own line naming your plugin, and opens the system share sheet ([Sharing an image](screen-reference.md#share)). Only after the person's own tap or submit; a TV refuses it, logged, so hide the button by `device`. |
 
 Some answers are not the person's, so they keep less: the answer to the reserved `open` drops its `go` (except
 `go.screen`), so opening a screen never plays or pushes anything by itself; a [timer's](#timers) keeps only `state`,
-`toast`, `close` and `config`; a load-more's never changes the route; a pop-up's `onClose` keeps no pop-up, `focus`, `go` or
-`route`. Dropped fields are logged.
+`toast`, `close` and `config`; a load-more's never changes the route; a pop-up's `onClose` keeps no pop-up, `focus`, `go`,
+`route`, `share` or `enableJob`. Dropped fields are logged.
 
 ## Pop-ups, toasts and banners { #popups }
 
@@ -581,16 +584,16 @@ settings (the same store, the same sync between the person's devices, read with 
 
 ## Where a screen sends the person: `go` { #go }
 
-A node's action or an answer may carry `go`: one of twelve shapes, **always into this plugin's own content or one of Kino's
+A node's action or an answer may carry `go`: one of thirteen shapes, **always into this plugin's own content or one of Kino's
 own pages**. No shape names an intent or an app, and only `liveChannel` names another plugin (an En vivo provider, for a
 plugin whose player tab declares `"kinds": ["live"]`); anything else is dropped. Each shape has its own entry in the
-reference, from [`go.title`](screen-forms.md#go-title) to [`go.liveChannel`](screen-forms.md#go-live-channel).
+reference, from [`go.title`](screen-forms.md#go-title) to [`go.syncProvider`](screen-forms.md#go-sync-provider).
 
 | `go` | What opens | Sent from |
 | --- | --- | --- |
 | `title` | this plugin's title page (`ref`, `kind`; `id`, `title` and `adult` for a title that is not on the canvas) | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
 | `play` | plays this plugin's title (`ref`, `kind`, as `title`) | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
-| `search` | Kino's search with `q` (at most 200 characters), only this plugin as the source | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
+| `search` | Kino's search with `q` (at most 200 characters), only this plugin as the source; with `"scope": "all"` (apiVersion 17; a lower plugin is refused, logged; any other scope drops the go) Kino's normal search on every source, which needs no `search` of yours and gives you nothing back: no results and no list of sources. The 18+ gate works as in Kino's search. | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
 | `browse` | this plugin's "Ver más" list for a `ref` | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
 | `section` | this plugin's section | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
 | `categories` | Kino's Categorías with this plugin's group first (its own screen with `screen.replaces`) | a tap, or the answer to an event (never the answer to `open`, to a timer or to a pop-up's `onClose`) |
@@ -600,6 +603,7 @@ reference, from [`go.title`](screen-forms.md#go-title) to [`go.liveChannel`](scr
 | `url` | an https link in the browser, after Kino's own confirmation sheet (a QR code on a TV) | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
 | `copy` | Kino puts the plugin's text on the clipboard and always shows its own «Copiado» toast (a TV cannot copy) | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
 | `liveChannel` | the player tunes to an En vivo provider's channel (`provider`, `code`), only for a plugin whose player tab declares `"kinds": ["live"]` | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
+| `syncProvider` | Kino's sync-provider settings (Ajustes ▸ Conectar ▸ Proveedor), where the person picks this plugin; only for a plugin that declares `syncProvider`, see [`go.syncProvider`](screen-forms.md#go-sync-provider) | only the person's own press or submit (a tap, a submit, the answer to one, a pop-up's button, a panel press) |
 
 - Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go` every 500 ms (a
   second one meanwhile is dropped, logged).
@@ -765,7 +769,7 @@ cannot change or hide:
 | Capability | What the person reads | Red, waits for approval | The person's switch (your tab in Ajustes) |
 | --- | --- | --- | --- |
 | `screen` | nothing: no line of its own | no | none |
-| `library` | "Podrá leer lo que has visto y guardado en Kino, y enviarlo a sus servicios" ("Can read what you have watched and saved in Kino, and send it to its services") | yes | "Dejar que lea lo que he visto y guardado" ("Let it read what I watched and saved") |
+| `library` | "Podrá leer lo que has visto y guardado en Kino, cuánto lo ves y a qué hora, y enviarlo a sus servicios" ("Can read what you have watched and saved in Kino, how much and at what time of day, and send it to its services") | yes | "Dejar que lea lo que he visto y guardado" ("Let it read what I watched and saved") |
 | `playerPanelTab` | "Su pestaña en el reproductor verá lo que estás viendo (título, año, identificadores y posición, o el canal en vivo) mientras la tengas abierta, y podrá enviarlo a sus servicios" ("Its tab in the player will see what you are watching (title, year, ids and position, or the live channel) while you have it open, and can send it to its services") | yes | "Mostrar en el reproductor" ("Show in the player") |
 | `playerControl` | "Podrá pausar, reanudar y mover tu video por sí solo" ("Can pause, resume and move your video by itself") | yes | "Dejar que pause y mueva mi video" ("Let it pause and move my video") |
 | `room` | "Podrá abrir una sala a la que se entra por internet a través de este aparato, y enviar los mensajes de la sala a quienes entren" ("Can open a room that people reach over the Internet through this device, and send the room's messages to whoever joins") | yes | "Dejar que abra salas por internet" ("Let it open rooms over the Internet") |
