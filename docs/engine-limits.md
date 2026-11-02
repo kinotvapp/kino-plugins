@@ -39,6 +39,7 @@
 | Trabajos (`schedule`, apiVersion 14) | de 1 a 3 trabajos, cada 15 a 1.440 minutos; una ejecución de máximo 20 s, 10 peticiones una a la vez, 2 MB de respuestas y 256 KB escritos en `kino.storage`; 96 ejecuciones al día por plugin; un fallo espera 15 minutos, el doble cada vez hasta 6 h, y 3 seguidos pausan el trabajo; desde apiVersion 17, un plugin con `ai` aprobada tiene 60 s y 20 peticiones |
 | `kino.ai` (apiVersion 14) | un prompt de máximo 8.192 bytes, `system` 2.048; la respuesta cortada en `maxChars` (de 1 a 4.096, 2.048 por defecto); 10 preguntas en cualquier minuto, 100 al día y 1 a la vez por plugin; 300 al día y 2 a la vez para todos los plugins del aparato juntos; 20 s por pregunta |
 | `kino.shared` (apiVersion 14) | 4 claves de máximo 40 caracteres por plugin; un valor de máximo 64 KB y 16 niveles, 128 KB en total; 30 escrituras por minuto; el valor nuevo de una clave viaja como mucho una vez cada 60 s |
+| `kino.plugins.call` (apiVersion 20) | una petición y una respuesta de máximo 64 KB de JSON; 10 s por llamada; 30 llamadas en cualquier ventana de 10 s por puerta; un manifiesto tiene como mucho 4 puertas (cada una con 16 llamadas y 8 flujos) y 8 entradas en `consumes`; un flujo se consulta cada 30 s como mínimo; 4 suscripciones vivas por plugin; no en un trabajo en segundo plano |
 | `kino.identity` (apiVersion 15) | solo dentro de una llamada de la persona; máximo 10 llamadas por minuto por plugin; un `challenge` de 16 a 128 caracteres `A-Z a-z 0-9 _ -`; solo plugins firmados con la llave de autor de Kino ([Identidad](identity.md)) |
 | `kino.notifications` (apiVersion 15) | máximo 20 publicaciones por hora por plugin, 30 avisos guardados durante 30 días; un `title` de 1 a 80 caracteres, un `text` de máximo 160; una petición de máximo 8.192 caracteres ([Avisos en la campanita](notifications.md#limits)) |
 | Tiendas (`pluginStore`, apiVersion 15) | máximo 5.000 entradas y 4 MB de JSON por `storeSync`, un `state` de 16 KB; una ejecución de `storeSync` de máximo 60 s, 40 peticiones y 8 MB descargados; en una tienda en vivo, 5 s por llamada, 20 llamadas por minuto y un caché de 30 minutos ([Tiendas de plugins](plugin-stores.md#limits)) |
@@ -175,6 +176,23 @@ Lo que **no** puede copiar, así que un plugin puede pasar en el kit y aun así 
 
 Si algo se comporta en Kino distinto que en el kit, es una sonda por añadir: la lista de diferencias conocidas está en
 `plugins/sdk/test/engine-probes.known.json`, con una razón por línea.
+
+### El protocolo entre plugins: lo que solo revisa la app { #kit-protocol }
+
+`node sdk/run.mjs --provider <carpeta>` responde [`kino.plugins.call`](protocol.md#kit) desde un proveedor en tu computador
+con las mismas revisiones de tipos, tamaños, códigos de error y ventanas de ritmo de la app. Algunas reglas necesitan los
+plugins instalados de la persona, que solo tiene Kino, así que **el kit no las aplica**:
+
+| Regla | En Kino | En el kit |
+|---|---|---|
+| Qué plugin atiende una entrada de `consumes` | el plugin instalado de ese `repo` exacto (nunca un fork) | la primera carpeta `--provider` que tiene la puerta |
+| Un proveedor 18+ y un consumidor que no es 18+ | `provider_missing` | responde |
+| Una respuesta que lleva uno de los secretos sellados del proveedor (o una marca) | `bad_output` | pasa |
+| Un plugin que llama a su propia puerta | `not_declared` | responde (si pasas el plugin como su propio `--provider`) |
+| Un proveedor apagado o sin configurar | `provider_missing` | responde |
+| La línea de consentimiento «Usa datos de …» y la hoja de instalación de `go.installPlugin` | las muestra Kino | `run.mjs` solo dice lo que haría Kino |
+
+Prueba esos casos en Kino 0.9.81 o más nuevo con los dos plugins instalados.
 
 ## Dividir tu código en varios archivos { #splitting-files }
 

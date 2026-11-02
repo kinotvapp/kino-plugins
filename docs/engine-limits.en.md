@@ -40,6 +40,7 @@
 | Jobs (`schedule`, apiVersion 14) | 1 to 3 jobs, every 15 to 1,440 minutes; one run at most 20 s, 10 requests made one at a time, 2 MB of answers and 256 KB written to `kino.storage`; 96 runs a day per plugin; a failure waits 15 minutes, doubling up to 6 h, and 3 in a row pause the job; from apiVersion 17 a plugin with `ai` approved gets 60 s and 20 requests |
 | `kino.ai` (apiVersion 14) | a prompt at most 8,192 bytes, `system` 2,048; the reply cut at `maxChars` (1 to 4,096, default 2,048); 10 asks in any minute, 100 a day and 1 at a time per plugin; 300 a day and 2 at a time for every plugin of the device together; 20 s an ask |
 | `kino.shared` (apiVersion 14) | 4 keys of at most 40 characters per plugin; a value at most 64 KB and 16 levels, 128 KB in all; 30 writes a minute; a key's new value travels at most once every 60 s |
+| `kino.plugins.call` (apiVersion 20) | a request and an answer at most 64 KB of JSON; 10 s a call; 30 calls in any 10 s per door; a manifest holds at most 4 doors (each 16 calls and 8 streams) and 8 `consumes` entries; a stream polls every 30 s at least; 4 live subscriptions per plugin; not in a background job |
 <!-- contract:limits:end -->
 
 <!-- Hand-written: the generated table above does not know these yet. -->
@@ -186,6 +187,23 @@ What it **cannot** copy, so a plugin can pass in the kit and still fail in Kino:
 
 If something behaves in Kino unlike in the kit, that is a probe to add: the list of known differences is
 `plugins/sdk/test/engine-probes.known.json`, one reason per line.
+
+### The plugin protocol: what only the app checks { #kit-protocol }
+
+`node sdk/run.mjs --provider <folder>` answers [`kino.plugins.call`](protocol.md#kit) from a provider on your computer with the
+app's own type checks, sizes, error codes and rate buckets. Some rules need the person's installed plugins, which only Kino has,
+so **the kit does not apply them**:
+
+| Rule | In Kino | In the kit |
+|---|---|---|
+| Which plugin answers an entry of `consumes` | the installed plugin of that exact `repo` (never a fork) | the first `--provider` folder that has the door |
+| An 18+ provider and a consumer that is not 18+ | `provider_missing` | answered |
+| An answer that holds one of the provider's sealed secrets (or a marker) | `bad_output` | passed on |
+| A plugin calling its own door | `not_declared` | answered (if you pass the plugin as its own `--provider`) |
+| A provider that is off or needs setup | `provider_missing` | answered |
+| The consent line «Usa datos de …» and the install sheet of `go.installPlugin` | shown by Kino | `run.mjs` only says what Kino would do |
+
+Try those cases in Kino 0.9.81 or newer with both plugins installed.
 
 ## Splitting your code across files { #splitting-files }
 

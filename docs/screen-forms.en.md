@@ -799,10 +799,11 @@ has no close button of its own. A quick pick beside a button (a reaction, a spee
 
 ## Navigation { #navigation }
 
-A node's action or an answer may carry `go`: one of fifteen shapes, **always into this plugin's own content or one of
+A node's action or an answer may carry `go`: one of sixteen shapes, **always into this plugin's own content or one of
 Kino's own pages**. Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go`
-every 500 ms. No shape names an intent or an app, and only `liveChannel` names another plugin (an En vivo provider, whose
-channel Kino tunes to for a plugin whose player tab joins live channels). The guide covers `go` in
+every 500 ms. No shape names an intent or an app, and only `liveChannel` and `installPlugin` name another plugin (`liveChannel` an En vivo
+provider, whose channel Kino tunes to for a plugin whose player tab joins live channels; `installPlugin` a repository whose
+install sheet Kino opens). The guide covers `go` in
 [Navigation with `go`](screens.md#go).
 
 | Shape | Written | What opens | Sent from |
@@ -822,6 +823,7 @@ channel Kino tunes to for a plugin whose player tab joins live channels). The gu
 | [`syncProvider`](#go-sync-provider) | `{ syncProvider: true }` | Kino's sync-provider settings (Ajustes ▸ Conectar ▸ Proveedor), where the person picks this plugin (only for a plugin with `syncProvider`) | only the person's own press or submit |
 | [`useTheme`](#go-use-theme) | `{ useTheme: { theme } }` | turns on one of this plugin's own `appThemes` as Apariencia does, or back to Kino's theme with `theme: null`; Kino shows its own toast | only the person's own press or submit on your screen, from apiVersion 18 |
 | [`setExperience`](#go-set-experience) | `{ setExperience: "light" \| "full" }` | asks for the light or the full experience of the whole app; Kino asks the person first and changes nothing without their yes | only the person's own press or submit on your screen, from apiVersion 18 |
+| [`installPlugin`](#go-install-plugin) | `{ installPlugin: { repo } }` | Kino's own install sheet for `repo` (a plain `owner/name`); nothing installs without the person's own Instalar | only the person's own press or submit on your screen, from apiVersion 19 |
 
 ![Navigation on the phone](assets/ui/navigation-phone.png)
 ![Navigation on the TV](assets/ui/navigation-tv.png)
@@ -1041,6 +1043,72 @@ export async function screen() {
 - Only from the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button): dropped,
   logged, from `open`, a timer, a change, a load-more, a pop-up's `onClose`, a panel or a notice. Below `apiVersion` 18 it is
   dropped.
+
+### `go.installPlugin` { #go-install-plugin }
+
+From `apiVersion` 19 (Kino 0.9.81): a button on your own screen that opens Kino's own install sheet for another plugin's
+repository (the same preview and consent sheet as **Agregar un plugin**: what the plugin connects to, then Instalar or
+Cancelar), so the person installs a dependency of yours, or a sibling of your catalog, in one tap and one confirmation. The
+sheet opens over your screen: the person is not taken to Plugins, and your screen is where they are when they close it.
+**Nothing installs without the person's own Instalar** on that sheet. It is the install gate of the
+[plugin protocol](protocol.md#install-gate): a consumer shows it while its provider is missing.
+
+```js
+export async function screen() {
+  // One button per dependency: the person picks which one to install.
+  const needs = [
+    { repo: "kinotvapp/kino-plugin-archive", label: "Instalar Archive", labelEn: "Install Archive" },
+    { repo: "kinotvapp/kino-plugin-poster-pro", label: "Instalar Poster Pro", labelEn: "Install Poster Pro" },
+  ];
+  return { type: "Column", children: needs.map((n) => (
+    { type: "ElevatedButton", labelText: n.label, labelTextEn: n.labelEn, onPressed: { go: { installPlugin: { repo: n.repo } } } })) };
+}
+```
+
+- The only field is `repo`, a plain GitHub `owner/name` of at most 100 characters, kept as you wrote it (case untouched). A URL
+  (anything with `://`), a sub-path (`owner/name/dir`), a `@ref` or any other field drops the `go`, logged.
+- If that plugin is already installed Kino opens nothing and shows its own toast («Ese plugin ya está instalado» / "That plugin
+  is already installed"). To show «Instalado» instead of a button, declare the repositories in the manifest's
+  [`recommends`](#recommends-installed) and read `installed`.
+- One `go` opens one repository. To offer several dependencies, show **one button each** (the list above is the recommended
+  shape), never a single button that tries to install them all: the person decides each one.
+- Only from the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button): dropped,
+  logged, from `open`, a timer, a change, a load-more, a pop-up's `onClose`, a panel or a notice. Below `apiVersion` 19 it is
+  dropped.
+
+#### Recommended plugins and `installed` (Kino 0.9.81) { #recommends-installed }
+
+Declare the plugins yours works better with in `kino-plugin.json`, at any `apiVersion` (an older Kino ignores the field):
+
+```json
+{ "recommends": ["kinotvapp/kino-plugin-archive", "kinotvapp/kino-plugin-poster-pro"] }
+```
+
+A list of at most 8 plain GitHub `owner/name` strings (no URL, no sub-path, no `@ref`, at most 100 characters each; the case you
+write is kept and a repeat, ignoring case, collapses into the first). Anything else makes the manifest invalid:
+`The "recommends" field must be a list of at most 8 plain GitHub owner/name repositories`.
+
+`screen` and `screenEvent` then receive `installed`, an object with **one key per entry of your own `recommends`, written exactly
+as you wrote it**, `true` when that plugin is installed now on this device and `false` when not (`{}` when you declare none).
+Kino never tells you about any other plugin the person has. When it changes while your screen is open (the person installs or
+removes one), Kino calls `screen` again, so a tile can switch from the button to «Instalado». One tile per recommended plugin:
+
+```js
+const NEEDS = [
+  { repo: "kinotvapp/kino-plugin-archive", name: "Archive" },
+  { repo: "kinotvapp/kino-plugin-poster-pro", name: "Poster Pro" },
+];
+
+export async function screen({ installed }) {
+  return { type: "Column", children: NEEDS.map((n) => installed[n.repo]
+    ? { type: "ListTile", title: n.name, subtitle: "Instalado", subtitleEn: "Installed" }
+    : { type: "ListTile", title: n.name, subtitle: "Toca para instalar", subtitleEn: "Tap to install",
+        onTap: { go: { installPlugin: { repo: n.repo } } } }) };
+}
+```
+
+In the kit, `node sdk/run.mjs <plugin dir> screen` passes `installed` with every `recommends` entry `false`; mark some as
+installed with `--context '{"installed":{"kinotvapp/kino-plugin-archive":true}}'`.
 
 ### Routes (`route` push and pop) { #routes }
 
