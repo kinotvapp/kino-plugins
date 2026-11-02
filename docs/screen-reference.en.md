@@ -637,3 +637,183 @@ export async function screenEvent(e) {
   return e.name === "tab" ? { state: { tab: e.value } } : null;
 }
 ```
+
+### A search view that Back closes first { #recipe-search-back }
+
+One bar (`mergeWithKinoBar`: your `leading` where Close was, your title in place of the plugin's name) and a Back that first
+leaves the search, then the screen: while `state.searching` is true the tree declares `onBack`, and its answer turns the flag
+off, so the next Back closes the screen.
+
+```js
+export async function screen({ state }) {
+  const searching = state.searching === true;
+  return {
+    type: "Scaffold",
+    // Declared only while there is something for Back to undo.
+    onBack: searching ? "close_search" : undefined,
+    appBar: {
+      type: "AppBar", mergeWithKinoBar: true,
+      title: searching ? "Buscar" : "Mis listas", titleEn: searching ? "Search" : "My lists",
+      leading: searching
+        ? { type: "IconButton", icon: "arrow_back", labelText: "Cerrar la búsqueda", labelTextEn: "Close search", onPressed: "close_search" }
+        : { type: "IconButton", icon: "close", labelText: "Cerrar", labelTextEn: "Close", onPressed: { close: true } },
+      actions: searching ? [] : [{ type: "IconButton", icon: "search", labelText: "Buscar", labelTextEn: "Search", onPressed: "open_search" }],
+    },
+    body: { type: "Column", padding: 16, gap: 12, children: [
+      searching
+        ? { type: "TextField", key: "q", labelText: "Buscar", labelTextEn: "Search", autofocus: true }
+        : { type: "Text", text: "Tus listas", textEn: "Your lists" },
+    ] },
+  };
+}
+
+export async function screenEvent(e) {
+  if (e.name === "open_search") return { state: { searching: true } };
+  if (e.name === "close_search") return { state: { searching: false } };
+  return null;
+}
+```
+
+### A reader: pages that fit the width, zoom and a place that is kept { #recipe-reader }
+
+For manga, webtoons, comics and long documents. Four small pieces, each useful alone:
+
+- `Image` with `fit: "width"`: the picture takes the width of its box and its own height, so a page is never cut (no byte
+  measuring, no size table). The `aspect` (any `"w:h"`, like `"1.4:1"`) only holds the place until it loads.
+- `zoom: true` on the vertical scroll: pinch, double tap and drag; the content is laid out wider, so the picture stays sharp.
+- `onScroll`: where the person stopped, `0` (top) to `1` (end), 0.3 s after they stop. Save it in `kino.storage`.
+- `pages` with `reverse: true` and `progress: "bar"`: one page at a time, swiped left to right, or right to left for manga,
+  up to 250 pages, with one thin bar instead of a segment per page. A page that holds a zoomable scroll zooms; one finger on
+  an unzoomed page still swipes.
+
+```js
+export async function screen({ state }) {
+  const pages = state.pages ?? []; // [{ url }]
+  if (state.mode === "paged") {
+    return { type: "pages", key: "pgs", flex: 1, reverse: state.rtl === true, progress: "bar", onPageChanged: "page",
+      children: pages.map((p, i) => ({ type: "SingleChildScrollView", key: "z" + i, zoom: true, children: [
+        { type: "Image", url: p.url, fit: "width", aspect: "2:3", alt: "Página " + (i + 1), altEn: "Page " + (i + 1) } ] })) };
+  }
+  return { type: "SingleChildScrollView", key: "strip", flex: 1, zoom: true, onScroll: "scrolled",
+    children: [{ type: "Column", crossAxisAlignment: "center",
+      children: pages.map((p, i) => ({ type: "Image", key: "p" + i, url: p.url, fit: "width", aspect: "2:3" })) }] };
+}
+
+export async function screenEvent({ name, value }) {
+  if (name === "scrolled" || name === "page") { kino.storage.set("at", String(value)); return null; } // the place to resume
+  return null;
+}
+```
+
+- A `pages` node needs a `key` of its own and 2 or more children; with `progress: "segments"` (the default) at most 8.
+- `onScroll` is for a vertical scroll that scrolls itself (the strip); inside `pages`, the page the person reached comes from `onPageChanged`.
+- Resume a page with a `ui` `set` on the `pages` key in the answer that opens the chapter: `ui: [{ set: { key: "pgs", value: 4 } }]`.
+- The vertical strip cannot be told to scroll to a saved position: keep the place, show it, and let the person scroll.
+
+### A carousel at the top of a front page { #recipe-carousel }
+
+`PageView` with `viewportFraction` below 1: the next page peeks at the side, it turns by itself and Kino draws the dots.
+
+```js
+const page = (it, i) => ({ type: "Card", key: "car-" + i, variant: "filled", radius: "large", margin: 8,
+  onTap: { event: "open", arg: it.url },
+  children: [{ type: "Row", gap: 16, padding: 16, crossAxisAlignment: "center", children: [
+    { type: "Card", flush: true, radius: "medium", elevation: 6, children: [
+      { type: "Image", url: it.poster, width: 120, aspect: "2:3", alt: it.title } ] },
+    { type: "Column", gap: 8, flex: 1, crossAxisAlignment: "start", children: [
+      { type: "Badge", text: "#" + (i + 1), color: "primary" },
+      { type: "Text", text: it.title, style: "h3", maxLines: 3 },
+      { type: "ElevatedButton", icon: "play", radius: "full", labelText: "Ver", labelTextEn: "See", onPressed: { event: "open", arg: it.url } },
+    ] } ] }] });
+
+export async function screen({ state }) {
+  return { type: "SingleChildScrollView", children: [
+    { type: "Text", text: "Tendencias", textEn: "Trending", style: "h3", padding: 16 },
+    { type: "PageView", key: "carousel", viewportFraction: { compact: 0.9, medium: 0.6, expanded: 0.42 }, padEnds: false,
+      autoPlayMs: 5000, children: (state.trending ?? []).slice(0, 6).map(page) } ] };
+}
+```
+
+Every page counts toward the 600 nodes of a screen: a page like this one is about 9 nodes, so six pages cost 54. Keep the
+carousel to 6 to 8 pages and trim the rails under it.
+
+### A card in Kino's Home that opens your screen, with a front page to go back to { #recipe-home-opens-screen }
+
+A `home()` row item carries `open: { screen }`: tapping it opens your screen instead of the title page, from Kino's Home rows
+and from its category shelves. Give it **`args`, not a route**, so the screen opens on your front page (route `main`) and
+you push the detail over it: Back then lands on your front page instead of doing nothing.
+
+```js
+export async function home() {
+  return [{ id: "trending", title: "Mangas populares", items: titles.map((t) => ({
+    id: t.slug, ref: t.url, title: t.title, kind: "movie", poster: t.poster,
+    open: { screen: { args: { open: t.url } } },          // no route: the screen opens as "main"
+  })) }];
+}
+
+export async function screenEvent({ name, route }) {
+  if (name === "open" && typeof route?.args?.open === "string") {
+    const detail = await loadSeries(route.args.open);       // your own loader
+    return { state: { detail }, route: { push: "detail", params: { url: route.args.open } } }; // front page below, detail on top
+  }
+  return null;
+}
+```
+
+- A plugin that plays nothing declares `"catalogOnly": true`; give its items `kind: "movie"` (a `series` item needs `episodes`).
+- Check `route.args.open` yourself (a path you recognise): it comes from a saved row that an older plugin version wrote.
+- Kino keeps `home()` rows 6 hours and drops them when the plugin's version changes.
+
+### Search inside the field, with skeletons while it loads { #recipe-search-field }
+
+A `TextField` can carry its own search icon (`trailingIcon`, `trailingLabel`, `onTrailingTap`), so no separate button or `Form`
+is needed. Show a hidden skeleton grid **at once** with a local `ui` operation, and hide it in the answer: the screen never
+sits frozen while your `screenEvent` fetches.
+
+```js
+const SEARCH = { ui: [{ show: "loading" }, { hide: "results" }], event: "search" };
+
+export async function screen({ state }) {
+  return { type: "SingleChildScrollView", children: [{ type: "Column", children: [
+    { type: "TextField", key: "q", kind: "search", padding: 16, labelText: "Buscar", labelTextEn: "Search",
+      trailingIcon: "search", trailingLabel: "Buscar", trailingLabelEn: "Search", onSubmitted: SEARCH, onTrailingTap: SEARCH },
+    { type: "Column", key: "loading", hidden: true, padding: 12, children: [{ type: "GridView", columns: 3, gap: 12,
+      children: [0, 1, 2, 3, 4, 5].map((i) => ({ type: "Column", key: "sk" + i, gap: 8, children: [
+        { type: "Skeleton", shape: "block", height: 200 }, { type: "Skeleton", shape: "line", lines: 2 } ] })) }] },
+    { type: "Column", key: "results", children: (state.results ?? []).map(card) },
+  ] }] };
+}
+
+export async function screenEvent({ name, value }) {
+  if (name !== "search") return null;
+  const results = await find(String(value ?? "").trim());   // the field's text arrives as `value`
+  return { state: { results }, ui: [{ hide: "loading" }, { show: "results" }] }; // also in the answer to a failure
+}
+```
+
+Skeletons beat a spinner here: they keep the shape of the grid, so nothing jumps when the results arrive.
+
+### Filters in a bottom sheet, with a search field { #recipe-filter-sheet }
+
+Three or four filters as buttons (`Género: Todos ▾`) that open a `BottomSheet`; a long list (genres) gets a search field.
+Picking a row closes the sheet and shows skeletons while the new page loads, all with local `ui` operations on the tap.
+
+```js
+const BUSY = [{ show: "skeleton" }, { hide: "grid" }];
+
+const sheet = (key, title, options, current, event, q) => ({ type: "BottomSheet", key, title, children: [
+  options.length > 8 ? { type: "TextField", key: "gq", kind: "search", value: q, padding: 8, labelText: "Buscar", onChanged: "gq" } : null,
+  { type: "ListView", key: key + "-list", items: options.filter((o) => !q || o[1].toLowerCase().includes(q.toLowerCase())).map((o) => ({
+    type: "ListTile", key: key + "-" + o[0], dense: true, title: o[1],
+    trailing: o[0] === current ? { type: "Icon", name: "check" } : undefined,
+    onTap: { ui: [{ close: key }].concat(BUSY), event, arg: o[0] } })) },
+].filter(Boolean) });
+
+// the button that opens it
+const button = (sheetKey, label, value) => ({ type: value ? "ElevatedButton" : "TextButton", radius: "full", icon: "expand_more",
+  labelText: label + ": " + (value || "Todos"), onPressed: { ui: [{ open: sheetKey }] } });
+```
+
+- `gq` is your own state: `screenEvent` answers `{ state: { gq: value } }` and the next render filters the list; the sheet stays open.
+- A `Chips` row is fine for 3 to 5 short options; with more, scrolling sideways hides most of them. Use a sheet.
+- An option with an empty value cannot be a chip's `value`: use a word like `"all"` and read it back as empty.

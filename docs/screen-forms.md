@@ -1158,7 +1158,8 @@ marca algunas como instaladas con `--context '{"installed":{"kinotvapp/kino-plug
 
 Pantallas propias más adentro del lienzo: el `route: { push: "detail", params }` de una respuesta baja un nivel,
 `{ pop: true }` vuelve; Atrás quita una ruta agregada antes de cerrar el lienzo. `screen({ route })` recibe
-`{ name, params, args? }`.
+`{ name, params, args? }`; `name` es `"main"` cuando la pantalla se abrió sin una ruta (desde el Home de Kino, desde una
+tarjeta, desde el menú), así que trata `"main"` como tu portada.
 
 ![Rutas en el teléfono](assets/ui/route-phone.png)
 ![Rutas en el televisor](assets/ui/route-tv.png)

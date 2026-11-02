@@ -901,7 +901,8 @@ Closes the screen (the same as the answer's `close: true`).
 This plugin's own screen at a `route` with `args`, from its other surfaces (its player panel, its `home`/`section`/`browse`
 items and rows with `open: { screen }`, the «Mis plugins» card) or from inside the screen, which starts again at that
 route (the state stays). The reserved `open` event comes again with the new route, so one path loads what the args name.
-At most one restart a second.
+At most one restart a second. Give a Home row item **`args`, not a route**, so the screen opens on your front page (`main`):
+see the recipe [A card in Kino's Home that opens your screen](screen-reference.md#recipe-home-opens-screen).
 
 ```json
 { "type": "Button", "variant": "secondary", "labelText": "Ver los ajustes", "labelTextEn": "See the settings", "onPressed": { "go": { "screen": { "route": "main", "args": { "tab": "config" } } } } }
@@ -1114,7 +1115,8 @@ installed with `--context '{"installed":{"kinotvapp/kino-plugin-archive":true}}'
 
 Screens of your own deeper in the canvas: an answer's `route: { push: "detail", params }` goes one level deeper,
 `{ pop: true }` back; Back pops a pushed route before it closes the canvas. `screen({ route })` gets
-`{ name, params, args? }`.
+`{ name, params, args? }`; `name` is `"main"` when the screen was opened without a route (from Kino's Home, from a card, from
+the menu), so treat `"main"` as your front page.
 
 ![Routes on the phone](assets/ui/route-phone.png)
 ![Routes on the TV](assets/ui/route-tv.png)

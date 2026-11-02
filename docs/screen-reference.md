@@ -664,3 +664,185 @@ export async function screenEvent(e) {
   return e.name === "tab" ? { state: { tab: e.value } } : null;
 }
 ```
+
+### Una vista de búsqueda que Atrás cierra primero { #recipe-search-back }
+
+Una sola barra (`mergeWithKinoBar`: tu `leading` donde estaba Cerrar, tu título en lugar del nombre del plugin) y un Atrás
+que primero sale de la búsqueda y luego de la pantalla: mientras `state.searching` es verdadero el árbol declara `onBack`, y
+su respuesta apaga la marca, así el siguiente Atrás cierra la pantalla.
+
+```js
+export async function screen({ state }) {
+  const searching = state.searching === true;
+  return {
+    type: "Scaffold",
+    // Declared only while there is something for Back to undo.
+    onBack: searching ? "close_search" : undefined,
+    appBar: {
+      type: "AppBar", mergeWithKinoBar: true,
+      title: searching ? "Buscar" : "Mis listas", titleEn: searching ? "Search" : "My lists",
+      leading: searching
+        ? { type: "IconButton", icon: "arrow_back", labelText: "Cerrar la búsqueda", labelTextEn: "Close search", onPressed: "close_search" }
+        : { type: "IconButton", icon: "close", labelText: "Cerrar", labelTextEn: "Close", onPressed: { close: true } },
+      actions: searching ? [] : [{ type: "IconButton", icon: "search", labelText: "Buscar", labelTextEn: "Search", onPressed: "open_search" }],
+    },
+    body: { type: "Column", padding: 16, gap: 12, children: [
+      searching
+        ? { type: "TextField", key: "q", labelText: "Buscar", labelTextEn: "Search", autofocus: true }
+        : { type: "Text", text: "Tus listas", textEn: "Your lists" },
+    ] },
+  };
+}
+
+export async function screenEvent(e) {
+  if (e.name === "open_search") return { state: { searching: true } };
+  if (e.name === "close_search") return { state: { searching: false } };
+  return null;
+}
+```
+
+### Un lector: páginas que se ajustan al ancho, zoom y un punto que se guarda { #recipe-reader }
+
+Para manga, webtoons, cómics y documentos largos. Cuatro piezas pequeñas, cada una útil por sí sola:
+
+- `Image` con `fit: "width"`: la imagen toma el ancho de su caja y su alto propio, así una página nunca se corta (sin medir
+  bytes, sin tabla de tamaños). El `aspect` (cualquier `"w:h"`, como `"1.4:1"`) solo guarda el lugar hasta que carga.
+- `zoom: true` en el desplazamiento vertical: pellizcar, doble toque y arrastrar; el contenido se dibuja más ancho, así la
+  imagen se ve nítida.
+- `onScroll`: dónde se detuvo la persona, de `0` (arriba) a `1` (final), 0,3 s después de que se detiene. Guárdalo en `kino.storage`.
+- `pages` con `reverse: true` y `progress: "bar"`: una página a la vez, deslizada de izquierda a derecha, o de derecha a
+  izquierda para manga, hasta 250 páginas, con una barra fina en vez de un segmento por página. Una página que contiene un
+  desplazamiento con zoom lo amplía; un dedo sobre una página sin ampliar sigue deslizando.
+
+```js
+export async function screen({ state }) {
+  const pages = state.pages ?? []; // [{ url }]
+  if (state.mode === "paged") {
+    return { type: "pages", key: "pgs", flex: 1, reverse: state.rtl === true, progress: "bar", onPageChanged: "page",
+      children: pages.map((p, i) => ({ type: "SingleChildScrollView", key: "z" + i, zoom: true, children: [
+        { type: "Image", url: p.url, fit: "width", aspect: "2:3", alt: "Página " + (i + 1), altEn: "Page " + (i + 1) } ] })) };
+  }
+  return { type: "SingleChildScrollView", key: "strip", flex: 1, zoom: true, onScroll: "scrolled",
+    children: [{ type: "Column", crossAxisAlignment: "center",
+      children: pages.map((p, i) => ({ type: "Image", key: "p" + i, url: p.url, fit: "width", aspect: "2:3" })) }] };
+}
+
+export async function screenEvent({ name, value }) {
+  if (name === "scrolled" || name === "page") { kino.storage.set("at", String(value)); return null; } // the place to resume
+  return null;
+}
+```
+
+- Un nodo `pages` necesita una `key` propia y 2 o más hijos; con `progress: "segments"` (el valor por defecto), 8 como máximo.
+- `onScroll` es para un desplazamiento vertical que se desplaza solo (la tira); dentro de `pages`, la página a la que llegó la persona viene de `onPageChanged`.
+- Retoma una página con un `set` de `ui` sobre la `key` del `pages` en la respuesta que abre el capítulo: `ui: [{ set: { key: "pgs", value: 4 } }]`.
+- A la tira vertical no se le puede ordenar que se desplace a una posición guardada: guarda el punto, muéstralo y deja que la persona se desplace.
+
+### Un carrusel arriba de una portada { #recipe-carousel }
+
+`PageView` con `viewportFraction` menor que 1: la página siguiente asoma por el lado, pasa sola y Kino dibuja los puntos.
+
+```js
+const page = (it, i) => ({ type: "Card", key: "car-" + i, variant: "filled", radius: "large", margin: 8,
+  onTap: { event: "open", arg: it.url },
+  children: [{ type: "Row", gap: 16, padding: 16, crossAxisAlignment: "center", children: [
+    { type: "Card", flush: true, radius: "medium", elevation: 6, children: [
+      { type: "Image", url: it.poster, width: 120, aspect: "2:3", alt: it.title } ] },
+    { type: "Column", gap: 8, flex: 1, crossAxisAlignment: "start", children: [
+      { type: "Badge", text: "#" + (i + 1), color: "primary" },
+      { type: "Text", text: it.title, style: "h3", maxLines: 3 },
+      { type: "ElevatedButton", icon: "play", radius: "full", labelText: "Ver", labelTextEn: "See", onPressed: { event: "open", arg: it.url } },
+    ] } ] }] });
+
+export async function screen({ state }) {
+  return { type: "SingleChildScrollView", children: [
+    { type: "Text", text: "Tendencias", textEn: "Trending", style: "h3", padding: 16 },
+    { type: "PageView", key: "carousel", viewportFraction: { compact: 0.9, medium: 0.6, expanded: 0.42 }, padEnds: false,
+      autoPlayMs: 5000, children: (state.trending ?? []).slice(0, 6).map(page) } ] };
+}
+```
+
+Cada página cuenta para los 600 nodos de una pantalla: una página como esta son unos 9 nodos, así que seis páginas cuestan
+54. Deja el carrusel en 6 a 8 páginas y recorta los rieles que van debajo.
+
+### Una tarjeta del Home de Kino que abre tu pantalla, con una portada a la que volver { #recipe-home-opens-screen }
+
+Un elemento de una fila de `home()` lleva `open: { screen }`: al tocarlo abre tu pantalla en vez de la página del título,
+desde las filas del Home de Kino y desde sus estantes de categorías. Dale **`args`, no una ruta**, para que la pantalla se
+abra en tu portada (ruta `main`) y apiles el detalle encima: así Atrás cae en tu portada en vez de no hacer nada.
+
+```js
+export async function home() {
+  return [{ id: "trending", title: "Mangas populares", items: titles.map((t) => ({
+    id: t.slug, ref: t.url, title: t.title, kind: "movie", poster: t.poster,
+    open: { screen: { args: { open: t.url } } },          // no route: the screen opens as "main"
+  })) }];
+}
+
+export async function screenEvent({ name, route }) {
+  if (name === "open" && typeof route?.args?.open === "string") {
+    const detail = await loadSeries(route.args.open);       // your own loader
+    return { state: { detail }, route: { push: "detail", params: { url: route.args.open } } }; // front page below, detail on top
+  }
+  return null;
+}
+```
+
+- Un plugin que no reproduce nada declara `"catalogOnly": true`; dale a sus elementos `kind: "movie"` (un elemento `series` necesita `episodes`).
+- Comprueba tú `route.args.open` (una ruta que reconozcas): viene de una fila guardada que escribió una versión anterior del plugin.
+- Kino guarda las filas de `home()` 6 horas y las descarta cuando cambia la versión del plugin.
+
+### Buscar dentro del campo, con esqueletos mientras carga { #recipe-search-field }
+
+Un `TextField` puede llevar su propio icono de búsqueda (`trailingIcon`, `trailingLabel`, `onTrailingTap`), así que no hace
+falta un botón aparte ni un `Form`. Muestra **al instante** una cuadrícula de esqueletos oculta con una operación `ui`
+local, y ocúltala en la respuesta: la pantalla nunca se queda congelada mientras tu `screenEvent` consulta.
+
+```js
+const SEARCH = { ui: [{ show: "loading" }, { hide: "results" }], event: "search" };
+
+export async function screen({ state }) {
+  return { type: "SingleChildScrollView", children: [{ type: "Column", children: [
+    { type: "TextField", key: "q", kind: "search", padding: 16, labelText: "Buscar", labelTextEn: "Search",
+      trailingIcon: "search", trailingLabel: "Buscar", trailingLabelEn: "Search", onSubmitted: SEARCH, onTrailingTap: SEARCH },
+    { type: "Column", key: "loading", hidden: true, padding: 12, children: [{ type: "GridView", columns: 3, gap: 12,
+      children: [0, 1, 2, 3, 4, 5].map((i) => ({ type: "Column", key: "sk" + i, gap: 8, children: [
+        { type: "Skeleton", shape: "block", height: 200 }, { type: "Skeleton", shape: "line", lines: 2 } ] })) }] },
+    { type: "Column", key: "results", children: (state.results ?? []).map(card) },
+  ] }] };
+}
+
+export async function screenEvent({ name, value }) {
+  if (name !== "search") return null;
+  const results = await find(String(value ?? "").trim());   // the field's text arrives as `value`
+  return { state: { results }, ui: [{ hide: "loading" }, { show: "results" }] }; // also in the answer to a failure
+}
+```
+
+Aquí los esqueletos le ganan al spinner: conservan la forma de la cuadrícula, así nada salta cuando llegan los resultados.
+
+### Filtros en una hoja inferior, con un campo de búsqueda { #recipe-filter-sheet }
+
+Tres o cuatro filtros como botones (`Género: Todos ▾`) que abren una `BottomSheet`; una lista larga (géneros) lleva un campo
+de búsqueda. Elegir una fila cierra la hoja y muestra esqueletos mientras carga la página nueva, todo con operaciones `ui`
+locales en el toque.
+
+```js
+const BUSY = [{ show: "skeleton" }, { hide: "grid" }];
+
+const sheet = (key, title, options, current, event, q) => ({ type: "BottomSheet", key, title, children: [
+  options.length > 8 ? { type: "TextField", key: "gq", kind: "search", value: q, padding: 8, labelText: "Buscar", onChanged: "gq" } : null,
+  { type: "ListView", key: key + "-list", items: options.filter((o) => !q || o[1].toLowerCase().includes(q.toLowerCase())).map((o) => ({
+    type: "ListTile", key: key + "-" + o[0], dense: true, title: o[1],
+    trailing: o[0] === current ? { type: "Icon", name: "check" } : undefined,
+    onTap: { ui: [{ close: key }].concat(BUSY), event, arg: o[0] } })) },
+].filter(Boolean) });
+
+// the button that opens it
+const button = (sheetKey, label, value) => ({ type: value ? "ElevatedButton" : "TextButton", radius: "full", icon: "expand_more",
+  labelText: label + ": " + (value || "Todos"), onPressed: { ui: [{ open: sheetKey }] } });
+```
+
+- `gq` es tu propio estado: `screenEvent` responde `{ state: { gq: value } }` y el siguiente dibujo filtra la lista; la hoja sigue abierta.
+- Una fila de `Chips` sirve para 3 a 5 opciones cortas; con más, desplazarse de lado oculta casi todas. Usa una hoja.
+- Una opción con valor vacío no puede ser el `value` de un chip: usa una palabra como `"all"` y léela de vuelta como vacía.

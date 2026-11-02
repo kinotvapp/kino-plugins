@@ -325,10 +325,22 @@ vertical con `flex: 1`.
 ![Scroll en un celular](assets/ui/scroll-phone.png)
 ![Scroll en una TV](assets/ui/scroll-tv.png)
 
+Un lector (manga, webtoon, cómic, un artículo largo) suma dos cosas: `zoom` (pellizcar, doble toque y arrastrar; el contenido
+se dibuja más ancho, así una imagen con `fit: "width"` se ve nítida y más alta) y `onScroll` (dónde se detuvo la persona, de 0
+a 1, para mostrar «42 %» o guardar el punto). Las dos son aditivas: sin `apiVersion` nuevo, un Kino más antiguo las ignora.
+Mira la receta [Un lector](screen-reference.md#recipe-reader).
+
+```json
+{ "type": "SingleChildScrollView", "key": "chapter", "flex": 1, "zoom": true, "onScroll": "scrolled",
+  "children": [{ "type": "Image", "url": "https://example.com/p1.jpg", "fit": "width" }] }
+```
+
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
 | `children` | nodos[] | ninguno | no | sus hijos, dibujados en orden |
 | `direction` | `vertical` \| `horizontal` | `vertical` | sí | un `ListView` o un riel dentro de un desplazamiento de la misma dirección se dibuja todo de una vez |
+| `zoom` | `true` \| `{ max }` | ninguno | sí | un desplazamiento vertical que la persona puede ampliar pellizcando o con doble toque (hasta 4x, o `max` de 1,5 a 8) y arrastrar una vez ampliado; el contenido se dibuja más ancho, así una imagen con `fit: "width"` se ve nítida; se ignora en un desplazamiento lateral |
+| `onScroll` | acción | ninguno | no | el `value` de su evento es la posición en la que se quedó, de 0 (arriba) a 1 (final), enviada 0,3 s después de que la persona deja de desplazar; un desplazamiento vertical que se desplaza solo |
 
 ```json
 { "type": "Column", "children": [
@@ -658,7 +670,9 @@ abajo, así el cuerpo que se desplaza debajo nunca se confunde con ella. En la T
 al TabBar `bottom` de la barra en su pestaña elegida (sin `bottom`, a su última acción), nunca más allá, al Cerrar de
 Kino; mientras el cuerpo todavía puede subir, Arriba primero lo pagina. Derecha después de la última pestaña llega a las
 acciones de la barra en orden (Izquierda antes de la primera pestaña, a su `leading`), Abajo desde una acción vuelve a
-las pestañas, y Abajo desde las pestañas va al cuerpo. Atrás cierra o regresa como en todas partes.
+las pestañas, y Abajo desde las pestañas va al cuerpo. Atrás cierra o regresa como en todas partes. Una excepción a las dos
+barras, que tú pides: [`mergeWithKinoBar`](#app-bar) las vuelve una sola, y [una sola barra compacta](#one-compact-bar) es
+la configuración recomendada.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
@@ -666,6 +680,17 @@ las pestañas, y Abajo desde las pestañas va al cuerpo. Atrás cierra o regresa
 | `body` | nodo | obligatorio | no | la altura limitada que queda: un `ListView` o un desplazamiento dentro de él se desplaza solo mientras las barras se quedan |
 | `floatingActionButton` | un `FloatingActionButton` | ninguno | no | sobre la barra de abajo |
 | `bottomNavigationBar` | un `NavigationBar` | ninguno | no | abajo |
+| `onBack` | acción | ninguno | no | apiVersion 19: Atrás te la envía a ti en vez de salir (el `PopScope` de Flutter con `canPop: false`); sin `go`; una llamada que falla o vence, o un segundo Atrás mientras tanto, cierra la pantalla |
+
+**`onBack` es el `PopScope` de Flutter con `canPop: false`** (apiVersion 19). Mientras la pantalla visible la declara, el
+Atrás del sistema (el del celular, el del control de la TV) no cierra la pantalla ni saca una ruta: Kino te envía esa acción
+como la pulsación de la persona (las mismas formas que `onPressed`: `"event"`, `{ event, arg }` o `{ ui: [...], event }`,
+nunca un `go`) y respondes como siempre. Cuando el siguiente Atrás deba salir, tu siguiente árbol simplemente no declara
+`onBack`. Nunca deja atrapada a la persona: una ventana abierta se cierra primero; una ruta apilada cuya raíz la declara
+recibe el Atrás en vez de sacarse; si la llamada falla, vence o su respuesta no es válida, la pantalla se cierra; un segundo
+Atrás mientras la primera llamada sigue en curso también la cierra; el Cerrar propio de Kino no cambia. Un panel del
+reproductor no tiene un Atrás que retener y la ignora (con registro). Mira la receta
+[Una vista de búsqueda que Atrás cierra primero](screen-reference.md#recipe-search-back).
 
 Ver la receta [Una pantalla con barra de app, pestañas y un botón flotante](screen-reference.md#recipe-scaffold).
 
@@ -692,7 +717,54 @@ cae en la pestaña elegida). `bottom` se queda para la clásica segunda fila. Ve
 | `actions` | `IconButton[]` | ninguno | no | como mucho 4, cada uno con un `labelText`; se permite un `badge` |
 | `bottom` | un `TabBar` | ninguno | no | bajo la fila |
 | `centerTitle` | boolean | `false` | no | el título centrado |
+| `dense` | boolean | `false` | no | aditivo, sin apiVersion nuevo: en un celular la barra tiene 4 dp arriba y abajo de su fila en vez de 16 (una TV y un panel del reproductor conservan los suyos); también es la barra única de `mergeWithKinoBar` |
 | `backgroundColor` | un rol de color | la superficie de Kino | no | su texto y sus iconos en el color legible del rol |
+| `mergeWithKinoBar` | boolean | `false` | no | apiVersion 19, solo el del Scaffold raíz: con un `leading`, Kino dibuja una sola barra, tu `leading` en el lugar de Cerrar y tu `title` en el del nombre de tu plugin |
+
+**`mergeWithKinoBar`** (apiVersion 19, opcional, solo en la barra del `Scaffold` raíz y solo el boolean `true`): con un
+`IconButton` `leading`, Kino dibuja UNA barra en vez de dos. Tu `leading` ocupa el lugar del Cerrar de Kino (su pulsación es
+tu acción; su `labelText` es lo que dice un lector de pantalla), tu `title` (y `titleEn`) el lugar del nombre de tu plugin,
+tus `actions` se quedan al final y los botones propios de Kino (la campana del plugin) van después; el nombre de tu plugin
+sigue siendo la etiqueta de la barra para un lector de pantalla. Sin un `leading` la marca se ignora (con registro) y se ven
+las dos barras, como en todo plugin que no la usa. La salida de la persona es entonces tu `leading` y el Atrás del sistema
+(que cierra la pantalla cuando `onBack` no está o falla), así que dale al `leading` una salida real (`{ close: true }`, o un
+regreso a la vista anterior). En la TV igual, con el `leading` primero en el orden del D-pad. Un panel del reproductor la
+ignora (con registro).
+
+### Recomendado: una sola barra compacta { #one-compact-bar }
+
+De fábrica una pantalla de plugin tiene **dos barras**: la barra de título propia de Kino (el nombre de tu plugin y Cerrar) y,
+debajo, tu `AppBar`. En un celular son unos 150 dp de encabezado antes de la primera línea de contenido. La configuración
+recomendada para cada pantalla de un plugin es **una sola barra compacta**: `mergeWithKinoBar: true` (una barra, tu `leading`
+donde estaba Cerrar, tu `title` donde estaba el nombre del plugin) más `dense: true` (en un celular, 4 dp arriba y abajo de la
+fila en vez de 16: 56 dp en total).
+
+```json
+{ "type": "Scaffold",
+  "appBar": { "type": "AppBar", "mergeWithKinoBar": true, "dense": true, "title": "Catálogo", "titleEn": "Catalog",
+    "leading": { "type": "IconButton", "icon": "arrow_back", "labelText": "Atrás", "labelTextEn": "Back", "onPressed": { "event": "back" } },
+    "actions": [{ "type": "IconButton", "icon": "search", "labelText": "Buscar", "labelTextEn": "Search", "onPressed": { "event": "search" } }] },
+  "body": { "type": "SingleChildScrollView", "children": [] } }
+```
+
+Qué hace cada ventana con esos dos booleanos:
+
+| Dónde | `mergeWithKinoBar` | `dense` |
+| --- | --- | --- |
+| Celular | una barra: tu `leading`, tu título, tus acciones y los botones propios de Kino (la campana) al final | la fila tiene 4 dp arriba y abajo (56 dp) |
+| TV | la misma barra única, con tu `leading` primero en el orden del D-pad | se ignora: la TV conserva sus 24 dp, el anillo de foco necesita el espacio |
+| Panel del reproductor | se ignora (con registro) | se ignora: la barra de un panel ya es una sola fila compacta de 48 dp |
+
+Los dos son booleanos simples, no mapas por tamaño. Para elegir según la ventana, arma el árbol con `ctx.device` y `ctx.size`
+(la sección de [valores por tamaño](screen-reference.md#per-size-values)): por ejemplo la barra unida en todas partes y
+`dense` solo donde `ctx.size` es `compact`.
+
+- Dale al `leading` una salida real en **cada** pantalla: `{ close: true }` en la portada, un regreso a la vista anterior en
+  todas las demás. Con las dos barras unidas es la única salida visible además del Atrás del sistema.
+- Ponlos en cada pantalla del plugin, no solo en una: una portada con dos barras y un detalle con una parece un error.
+- `dense` solo cambia el relleno; el título, las acciones y un `TabBar` `bottom` se dibujan como siempre.
+- `dense` es aditivo (sin `apiVersion` nuevo): un Kino que no lo conoce dibuja la barra con su altura normal.
+
 
 ### NavigationBar { #navigation-bar }
 
@@ -750,14 +822,17 @@ página a la que se llegó vive en `state.inputs.<key>` como un número desde 0 
 así que sobrevive a tus nuevos dibujos; un `set` de `ui` o los `inputs` de tu estado la mueven, y `onPageChanged` envía el índice
 en el que se quedó como `value`.
 
-De 2 a 8 `children` y una `key` propia; si no, todo el nodo se descarta, con registro. Nunca dentro de un desplazamiento lateral,
-de una celda de tabla ni de otro `pages` (se descarta, con registro). `autoPlayMs`, `initialPage`, `viewportFraction`, `padEnds`
-y `progress` se ignoran, con registro. Un Kino más antiguo descarta el nodo: comprueba `kino.screen.widgets.includes("pages")`.
+De 2 a 8 `children` (hasta 250 con `progress: "bar"` o `"none"`) y una `key` propia; si no, todo el nodo se descarta, con
+registro. Nunca dentro de un desplazamiento lateral, de una celda de tabla ni de otro `pages` (se descarta, con registro).
+`autoPlayMs`, `initialPage`, `viewportFraction` y `padEnds` se ignoran, con registro. Para un capítulo de manga usa
+`reverse: true` y `progress: "bar"` (mira la receta [Un lector](screen-reference.md#recipe-reader)). Un Kino más antiguo descarta el nodo: comprueba `kino.screen.widgets.includes("pages")`.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
 | `children` | nodos (las páginas, de 2 a 8)[] | ninguno | no | sus hijos, dibujados en orden |
 | `onPageChanged` | acción | ninguno | no | el `value` de su evento es el índice de la página en la que se quedó |
+| `progress` | `segments` \| `bar` \| `none` | `segments` | no | la barra de Kino sobre las páginas: un segmento por página (hasta 8 páginas), una barra fina o ninguna (hasta 250 páginas: un capítulo, no una historia) |
+| `reverse` | boolean | `false` | no | de derecha a izquierda, con la página 0 a la derecha: deslizar hacia la izquierda pasa a la página siguiente, y en una TV también Izquierda (manga) |
 
 ```json
 { "type": "pages", "key": "story", "onPageChanged": "page", "children": [
@@ -937,7 +1012,9 @@ feed roto nunca muestra un hueco.
 | --- | --- | --- | --- | --- |
 | `url` | URL https | obligatorio sin `fallback` | no | un host https público (no hace falta declararlo); con un `fallback`, sin `url` se dibuja el fallback (también con una vacía o rechazada, con registro) |
 | `alt` | string | ninguno | no | lo que dice un lector de pantalla (`altEn` el de inglés) |
-| `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` | el de la imagen | sí | la forma de la caja |
+| `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` \| `w:h` | el de la imagen | sí | la forma de la caja; `w:h` es cualquier ancho sobre alto de 0,2 a 5, como `1.4:1` o `900:1300` |
+| `fit` | `cover` \| `contain` \| `width` | `cover` | sí | cómo se acomoda la imagen en su caja: `cover` llena y recorta, `contain` la muestra entera, `width` toma el ancho y el alto propio de la imagen (el `aspect`, o 2:3, guarda su lugar hasta que carga) |
+| `focus` | `top` \| `center` \| `bottom` | `center` | sí | la parte de la imagen que se conserva cuando `cover` la recorta |
 | `fallback` | nodo | ninguno | no | se dibuja en la caja de la imagen cuando la imagen falla o no hay `url`: solo `Column`, `Row`, `Stack`, `Card`, `Spacer`, `Divider`, `Text`, `Icon`, `Badge`, `Skeleton`, `Image`, a cualquier profundidad, nunca se pulsa |
 
 ```json
@@ -953,6 +1030,12 @@ export async function screen({ state }) {
   return { type: "Image", ...picture, aspect: "16:9", alt: "Póster", fallback: { type: "Text", text: "Sin imagen", textEn: "No picture", padding: 12 } };
 }
 ```
+
+`fit` decide cómo se acomoda la imagen en su caja (aditivo, sin `apiVersion` nuevo; un Kino más antiguo lee toda imagen como
+`cover`): `cover` llena la caja y recorta, `contain` la muestra entera, y `width` toma el ancho de la caja y el alto propio de
+la imagen, así una página o una tira larga nunca se corta. Con `width`, el `aspect` (cualquier `w:h`, como `"1.4:1"`) solo
+guarda el lugar hasta que la imagen carga. `focus` (`top`, `center`, `bottom`) elige la parte que se conserva cuando `cover`
+recorta.
 
 - **TV:** una imagen no recibe el foco salvo que ella (o lo que la contiene) tenga una acción.
 - **Celular y TV:** igual.

@@ -317,10 +317,22 @@ screens put everything under the fixed parts (a `TabBar`) in one vertical scroll
 ![Scroll on a phone](assets/ui/scroll-phone.png)
 ![Scroll on a TV](assets/ui/scroll-tv.png)
 
+A reader (manga, webtoon, comics, a long article) adds two things: `zoom` (pinch, double tap and drag; the content is laid
+out wider, so a picture with `fit: "width"` stays sharp and gets taller) and `onScroll` (where the person stopped, from 0 to
+1, to show "42 %" or to save the place). Both are additive: no new `apiVersion`, an older Kino ignores them. See the recipe
+[A reader](screen-reference.md#recipe-reader).
+
+```json
+{ "type": "SingleChildScrollView", "key": "chapter", "flex": 1, "zoom": true, "onScroll": "scrolled",
+  "children": [{ "type": "Image", "url": "https://example.com/p1.jpg", "fit": "width" }] }
+```
+
 | Property | Type | Default | Per size | Notes |
 | --- | --- | --- | --- | --- |
 | `children` | nodes[] | none | no | its children, drawn in order |
 | `direction` | `vertical` \| `horizontal` | `vertical` | yes | a `ListView` or rail inside a scroll of the same direction is drawn all at once |
+| `zoom` | `true` \| `{ max }` | none | yes | a vertical scroll the person can pinch or double-tap to zoom (to 4x, or `max` from 1.5 to 8) and drag once zoomed; the content is laid out wider, so a `fit: "width"` picture stays sharp; ignored on a sideways scroll |
+| `onScroll` | action | none | no | its event's `value` is the settled position from 0 (top) to 1 (end), sent 0.3 s after the person stops scrolling; a vertical scroll that scrolls itself |
 
 ```json
 { "type": "Column", "children": [
@@ -633,7 +645,8 @@ the `AppBar`'s `leading` and `actions` to the body, then the bottom bar and the 
 reaches the bar's `bottom` TabBar on its selected tab (with no `bottom`, its last action), never Kino's Close past it;
 while the body can still scroll up, Up pages it first. Right past the last tab reaches the bar's actions in order (Left
 past the first tab its `leading`), Down from an action goes back to the tabs, and Down from the tabs to the body. Back
-closes or pops as everywhere.
+closes or pops as everywhere. One exception to the two bars, yours to ask for: [`mergeWithKinoBar`](#app-bar) makes them one
+bar, and [one compact bar](#one-compact-bar) is the recommended setup.
 
 | Property | Type | Default | Per size | Notes |
 | --- | --- | --- | --- | --- |
@@ -641,6 +654,16 @@ closes or pops as everywhere.
 | `body` | node | required | no | the bounded height left: a `ListView` or a scroll in it scrolls itself while the bars stay |
 | `floatingActionButton` | a `FloatingActionButton` | none | no | above the bottom bar |
 | `bottomNavigationBar` | a `NavigationBar` | none | no | at the bottom |
+| `onBack` | action | none | no | apiVersion 19: Back sends this to you instead of leaving (Flutter's `PopScope` with `canPop: false`); no `go`; a failed or timed-out call, or a second Back meanwhile, closes the screen |
+
+**`onBack` is Flutter's `PopScope` with `canPop: false`** (apiVersion 19). While the screen on show declares it, the system
+Back (the phone's, the TV remote's) does not close the screen or pop a route: Kino sends you that action as the person's press
+(the same shapes as `onPressed`: `"event"`, `{ event, arg }` or `{ ui: [...], event }`, never a `go`) and you answer as usual.
+When the next Back should leave, your next tree simply does not declare `onBack`. It never traps the person: an open pop-up
+still closes first; a pushed route whose root declares it gets the Back instead of popping; if the call fails, times out or
+its answer is invalid the screen closes; a second Back while the first call is still running closes it too; Kino's own Close
+is unaffected. A player panel has no Back to hold and ignores it (logged). See the recipe
+[A search view that Back closes first](screen-reference.md#recipe-search-back).
 
 See the recipe [A screen with an app bar, tabs and a floating button](screen-reference.md#recipe-scaffold).
 
@@ -665,7 +688,51 @@ first action, Up from the body lands on the selected tab). `bottom` stays for th
 | `actions` | `IconButton[]` | none | no | at most 4, each with a `labelText`; a `badge` allowed |
 | `bottom` | a `TabBar` | none | no | under the row |
 | `centerTitle` | boolean | `false` | no | the title centred |
+| `dense` | boolean | `false` | no | additive, no new apiVersion: on a phone the bar has 4 dp above and below its row instead of 16 (a TV and a player panel keep theirs); also the one bar of `mergeWithKinoBar` |
 | `backgroundColor` | a colour role | Kino's surface | no | its text and icons in the role's readable colour |
+| `mergeWithKinoBar` | boolean | `false` | no | apiVersion 19, the root Scaffold's only: with a `leading`, Kino draws one bar, your `leading` in Close's place and your `title` in your plugin's name's |
+
+**`mergeWithKinoBar`** (apiVersion 19, opt-in, only on the root `Scaffold`'s bar and only the boolean `true`): with a
+`leading` `IconButton`, Kino draws ONE bar instead of two. Your `leading` takes the place of Kino's Close (its press is your
+action; its `labelText` is what a screen reader says), your `title` (`titleEn` too) the place of your plugin's name, your
+`actions` stay at the end and Kino's own buttons (the plugin's bell) follow them; your plugin's name stays the bar's label for
+a screen reader. Without a `leading` the flag is ignored (logged) and both bars show, as for every plugin that does not set
+it. The person's way out is then your `leading` and the system Back (which closes the screen when `onBack` is absent or
+fails), so give the `leading` a real exit (`{ close: true }`, or a back to the previous view). On the TV the same, the
+`leading` first in D-pad order. A player panel ignores it (logged).
+
+### Recommended: one compact bar { #one-compact-bar }
+
+Out of the box a plugin screen has **two bars**: Kino's own title bar (your plugin's name and Close) and, under it, your
+`AppBar`. On a phone that is about 150 dp of header before the first line of content. The recommended setup for every screen
+of a plugin is **one compact bar**: `mergeWithKinoBar: true` (one bar, your `leading` where Close was, your `title` where the
+plugin's name was) plus `dense: true` (on a phone, 4 dp above and below the row instead of 16: 56 dp in all).
+
+```json
+{ "type": "Scaffold",
+  "appBar": { "type": "AppBar", "mergeWithKinoBar": true, "dense": true, "title": "Catálogo", "titleEn": "Catalog",
+    "leading": { "type": "IconButton", "icon": "arrow_back", "labelText": "Atrás", "labelTextEn": "Back", "onPressed": { "event": "back" } },
+    "actions": [{ "type": "IconButton", "icon": "search", "labelText": "Buscar", "labelTextEn": "Search", "onPressed": { "event": "search" } }] },
+  "body": { "type": "SingleChildScrollView", "children": [] } }
+```
+
+What each window does with those two booleans:
+
+| Where | `mergeWithKinoBar` | `dense` |
+| --- | --- | --- |
+| Phone | one bar: your `leading`, your title, your actions and Kino's own buttons (the bell) at the end | the row has 4 dp above and below (56 dp) |
+| TV | the same one bar, your `leading` first in D-pad order | ignored: the TV keeps its 24 dp, the focus ring needs the room |
+| Player panel | ignored (logged) | ignored: a panel's bar is already one compact 48 dp row |
+
+Both are plain booleans, not per-size maps. To choose by window, build the tree from `ctx.device` and `ctx.size` (the
+[per-size values](screen-reference.md#per-size-values) section): for example the merged bar everywhere, and `dense` only where
+`ctx.size` is `compact`.
+
+- Give the `leading` a real exit on **every** screen: `{ close: true }` on the front page, a back to the previous view
+  everywhere else. With the two bars merged it is the only visible way out besides the system Back.
+- Set both on every screen of the plugin, not only one: a front page with two bars and a detail page with one looks like a bug.
+- `dense` only changes the padding; the title, the actions and a `bottom` TabBar are drawn as always.
+- `dense` is additive (no new `apiVersion`): a Kino that does not know it draws the bar at its normal height.
 
 ### NavigationBar { #navigation-bar }
 
@@ -720,14 +787,18 @@ Kino draws the progress bar above the pages, one segment a page; you neither dra
 reached lives in `state.inputs.<key>` as a number from 0 (it is no input: no label, no form rules), so it survives your
 re-renders; a `ui` set or your state's `inputs` move it, and `onPageChanged` sends the settled index as `value`.
 
-2 to 8 `children` and a `key` of your own, else the whole node is dropped, logged. Never inside a sideways scroll, a table cell or
-another `pages` (dropped, logged). `autoPlayMs`, `initialPage`, `viewportFraction`, `padEnds` and `progress` are ignored, logged.
+2 to 8 `children` (up to 250 with `progress: "bar"` or `"none"`) and a `key` of your own, else the whole node is dropped,
+logged. Never inside a sideways scroll, a table cell or another `pages` (dropped, logged). `autoPlayMs`, `initialPage`,
+`viewportFraction` and `padEnds` are ignored, logged. For a chapter of a manga use `reverse: true` and `progress: "bar"` (see
+the recipe [A reader](screen-reference.md#recipe-reader)).
 An older Kino drops the node: check `kino.screen.widgets.includes("pages")`.
 
 | Property | Type | Default | Per size | Notes |
 | --- | --- | --- | --- | --- |
 | `children` | nodes (the pages, 2 to 8)[] | none | no | its children, drawn in order |
 | `onPageChanged` | action | none | no | its event's `value` is the settled page's index |
+| `progress` | `segments` \| `bar` \| `none` | `segments` | no | Kino's bar over the pages: one segment a page (up to 8 pages), one thin bar or none (up to 250 pages: a chapter, not a story) |
+| `reverse` | boolean | `false` | no | right to left, page 0 at the right: a swipe to the left turns to the next page, and on a TV so does Left (manga) |
 
 ```json
 { "type": "pages", "key": "story", "onPageChanged": "page", "children": [
@@ -902,7 +973,9 @@ shows a hole.
 | --- | --- | --- | --- | --- |
 | `url` | https URL | required without `fallback` | no | a public https host (no declaration needed); with a `fallback`, no `url` draws the fallback (an empty or refused one too, logged) |
 | `alt` | string | none | no | what a screen reader says (`altEn` the English one) |
-| `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` | the picture's own | yes | the box's shape |
+| `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` \| `w:h` | the picture's own | yes | the box's shape; `w:h` is any width over height from 0.2 to 5, like `1.4:1` or `900:1300` |
+| `fit` | `cover` \| `contain` \| `width` | `cover` | yes | how the picture sits in its box: `cover` fills and crops, `contain` shows all of it, `width` takes the width and the picture's own height (the `aspect`, or 2:3, holds its place until it loads) |
+| `focus` | `top` \| `center` \| `bottom` | `center` | yes | the part of the picture that stays when `cover` crops it |
 | `fallback` | node | none | no | drawn in the image's box when the picture fails or there is no `url`: only `Column`, `Row`, `Stack`, `Card`, `Spacer`, `Divider`, `Text`, `Icon`, `Badge`, `Skeleton`, `Image`, at any depth, never pressed |
 
 ```json
@@ -918,6 +991,11 @@ export async function screen({ state }) {
   return { type: "Image", ...picture, aspect: "16:9", alt: "Póster", fallback: { type: "Text", text: "Sin imagen", textEn: "No picture", padding: 12 } };
 }
 ```
+
+`fit` decides how the picture sits in its box (additive, no new `apiVersion`; an older Kino reads every picture as `cover`):
+`cover` fills the box and crops, `contain` shows all of it, and `width` takes the box's width and the picture's own height, so
+a page or a long strip is never cut. With `width` the `aspect` (any `w:h`, like `"1.4:1"`) only holds the place until the
+picture loads. `focus` (`top`, `center`, `bottom`) picks the part that stays when `cover` crops.
 
 - **TV:** an image is not focused unless it (or what holds it) has an action.
 - **Phone and TV:** the same.

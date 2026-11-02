@@ -76,6 +76,27 @@ A `screen` plugin needs no `resolve`, `search` or `home`: the capability may be 
 (it reaches nothing your `hosts` did not already). `hosts` still needs one entry when there is no `url` setting, even if the
 screen never fetches (the calculator example names its docs site).
 
+## Recommended setup: one compact bar { #one-compact-bar }
+
+Out of the box a screen has two bars: Kino's own title bar (your plugin's name and Close) and, under it, your `AppBar`. For
+every screen of your plugin, root a `Scaffold` whose `AppBar` sets `mergeWithKinoBar: true` (one bar: your `leading` where
+Close was, your `title` where the plugin's name was; apiVersion 19) and `dense: true` (on a phone, 4 dp above and below the row
+instead of 16). Give the `leading` a real exit: `{ close: true }` on the front page, a back to the previous view elsewhere.
+The TV ignores `dense` and a player panel ignores both. The unnamed route is `main`: treat it as your front page. Full
+behaviour, the per-window table and the recipes (a reader, a carousel, a Home card that opens a screen, search in the field,
+filters in a sheet) are in [Layout, content and actions](screen-components.md#one-compact-bar) and
+[the recipes](screen-reference.md#recipes).
+
+```json
+{ "type": "Scaffold",
+  "appBar": { "type": "AppBar", "mergeWithKinoBar": true, "dense": true, "title": "Catálogo", "titleEn": "Catalog",
+    "leading": { "type": "IconButton", "icon": "close", "labelText": "Cerrar", "labelTextEn": "Close", "onPressed": { "close": true } } },
+  "body": { "type": "SingleChildScrollView", "children": [] } }
+```
+
+Prefer a `Skeleton` to a spinner while something loads, and a bottom sheet with a search field to a long row of chips. A
+screen draws at most 600 nodes: see [Screen limits](#limits).
+
 ## The manifest's `screen` block { #manifest }
 
 | Field | Rule |

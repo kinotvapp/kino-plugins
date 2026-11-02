@@ -81,6 +81,27 @@ agrega ninguna línea de consentimiento** (no llega a nada a lo que tus `hosts` 
 entrada cuando no hay un ajuste `url`, aunque la pantalla nunca haga peticiones (el ejemplo de la calculadora nombra su
 sitio de documentación).
 
+## Configuración recomendada: una sola barra compacta { #one-compact-bar }
+
+De fábrica una pantalla tiene dos barras: la barra de título propia de Kino (el nombre de tu plugin y Cerrar) y, debajo, tu
+`AppBar`. En cada pantalla de tu plugin, pon como raíz un `Scaffold` cuyo `AppBar` tenga `mergeWithKinoBar: true` (una barra:
+tu `leading` donde estaba Cerrar, tu `title` donde estaba el nombre del plugin; apiVersion 19) y `dense: true` (en un
+celular, 4 dp arriba y abajo de la fila en vez de 16). Dale al `leading` una salida real: `{ close: true }` en la portada, un
+regreso a la vista anterior en las demás. La TV ignora `dense` y un panel del reproductor ignora las dos. La ruta sin nombre
+es `main`: trátala como tu portada. El comportamiento completo, la tabla por ventana y las recetas (un lector, un carrusel,
+una tarjeta del Home que abre una pantalla, búsqueda en el campo, filtros en una hoja) están en
+[Diseño, contenido y acciones](screen-components.md#one-compact-bar) y en [las recetas](screen-reference.md#recipes).
+
+```json
+{ "type": "Scaffold",
+  "appBar": { "type": "AppBar", "mergeWithKinoBar": true, "dense": true, "title": "Catálogo", "titleEn": "Catalog",
+    "leading": { "type": "IconButton", "icon": "close", "labelText": "Cerrar", "labelTextEn": "Close", "onPressed": { "close": true } } },
+  "body": { "type": "SingleChildScrollView", "children": [] } }
+```
+
+Prefiere un `Skeleton` a un spinner mientras algo carga, y una hoja inferior con un campo de búsqueda a una fila larga de
+chips. Una pantalla dibuja como mucho 600 nodos: mira los [límites de pantalla](#limits).
+
 ## El bloque `screen` del manifiesto { #manifest }
 
 | Campo | Regla |
