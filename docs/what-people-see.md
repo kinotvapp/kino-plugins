@@ -201,6 +201,23 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   (apagada por defecto, vale para todos los perfiles) y, por cada perfil, «Incluir este perfil», encendida por defecto
   ([Trabajos en segundo plano](jobs-and-shared.md#per-profile)).
 
+## Kino 0.9.81 (apiVersion 20): plugins que se usan entre sí { #v20 }
+
+!!! note "Próxima versión de Kino, todavía sin publicar"
+    El [protocolo entre plugins](protocol.md) es el apiVersion 20, que llega con Kino 0.9.81.
+
+- **Una línea normal por puerta** en la hoja de instalación de un plugin que usa las puertas de otro: «Usa datos de TMDB
+  (Movie records from TMDB)», el nombre del proveedor y el resumen de la puerta (el repositorio, «Usa datos de
+  kinotvapp/kino-plugin-tmdb», mientras el proveedor no está instalado). Sin rojo, sin interruptor y sin aprobación propia; en
+  una actualización que agrega una puerta, la línea sale marcada como nueva. Nunca hay una pregunta por llamada.
+- **Un botón de instalar dentro del plugin.** Mientras falta el proveedor, el consumidor muestra su propia pantalla con un
+  botón; el botón abre la hoja de instalación de siempre de Kino para el proveedor, con las líneas de consentimiento del
+  proveedor, y nada se instala hasta que la persona toca Instalar. Si ya está instalado, Kino dice «Ese plugin ya está
+  instalado».
+- **Quitar al proveedor** deja instalado al consumidor; simplemente vuelve a mostrar su pantalla de instalación.
+- **Un plugin que solo provee** (sin capacidades, sin hosts) dice en su tarjeta que no se conecta a internet, y no aparece
+  como fuente en la búsqueda ni en Inicio.
+
 ## Kino 0.9.81 (apiVersion 18): temas de la app { #v18 }
 
 !!! note "Próxima versión de Kino, aún sin publicar"

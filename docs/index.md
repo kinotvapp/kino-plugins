@@ -62,7 +62,9 @@ README.md          para humanos
 Kino ejecuta tu código en un sandbox: sin sistema de archivos, sin temporizadores, sin otros plugins,
 sin acceso a los datos de la persona. La única salida es `kino.fetch`, que solo llega a los hosts que
 declara tu manifiesto y que la persona aprobó en pantalla, más los servidores que la persona escribió
-en los ajustes de tu plugin (mira [Manifiesto](manifest.md)).
+en los ajustes de tu plugin (mira [Manifiesto](manifest.md)). Los plugins nunca se llaman directamente: desde Kino 0.9.81
+uno puede usar las **puertas** que abre otro, siempre a través de Kino, que revisa cada petición y cada respuesta
+([Protocolo entre plugins](protocol.md)).
 
 Kino carga exactamente un archivo JavaScript, así que no hay nada a lo que un `import` pueda
 resolverse. Si usas un paso de compilación o una librería, empaqueta todo en ese único archivo --
@@ -151,6 +153,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Manifiesto](manifest.md) | Cada campo y regla de `kino-plugin.json`, ajustes, `streamHosts`, secretos sellados, los servidores propios de la persona, `insecureHttp`, descargas |
 | [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
 | [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
+| [Protocolo entre plugins](protocol.md) | apiVersion 20, Kino 0.9.81: plugins que se usan entre sí a través de Kino. Un proveedor abre puertas (`provides`, `proto_<puerta>_<llamada>`), un consumidor las usa (`consumes`, `kino.plugins.call`); tipos, errores, límites, flujos, la puerta de instalación con `recommends` y `go.installPlugin`, lo que ve la persona y el ejemplo de TMDB + Cine Trivia |
 | [Aplicaciones resolutoras externas](resolver.md) | `externalResolve` (apiVersion 11): pasarle un título a una app instalada por separado que lo convierte en una URL reproducible; el flujo, `media`, `portable`, errores, enviar a la TV, construir el otro lado |
 | [Proveedores de sincronización](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): llevar la sincronización entre los aparatos de la persona por un servicio con el que habla tu plugin; quién puede leer qué, el bloque `sync`, cada cuánto, conflictos, el límite de 4 MiB, pasar los ajustes a otro aparato, Sync-Gram y Sync Servidor |
 | [Sockets y bytes del plugin](bytes.md) | apiVersion 13, en desarrollo: WebSockets con `kino.ws`, streams que sirve tu plugin con `read` (Kino los reproduce y los envía al televisor), las operaciones de bytes de `kino.crypto`, un ejemplo completo sobre WebSocket con su prueba |

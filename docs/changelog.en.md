@@ -3,18 +3,46 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## The next Kino version: `apiVersion` 19, lyrics { #v19 }
+## Kino 0.9.81: `apiVersion` 20, plugins that use each other { #v20 }
 
 !!! note "Not in any released Kino"
-    `apiVersion` 19 ships with the next Kino version (`contract.json` names Kino 0.9.81). Every older Kino refuses a manifest
+    `apiVersion` 20 ships with Kino 0.9.81, not published yet. Every older Kino refuses a manifest with `"apiVersion": 20`
+    with «Este plugin necesita una versión más nueva de Kino»; a `provides` or `consumes` inside `enhancements["20"]` is
+    ignored there instead. `contract.json` says `maxApiVersion` 20.
+
+| Feature | Since | How to tell |
+| --- | --- | --- |
+| `provides` in the manifest: up to 4 **doors** other plugins can use, each with calls and streams, answered by the exports `proto_<door>_<name>` | `apiVersion` 20, or `enhancements["20"]` at any `apiVersion` | an older Kino refuses `apiVersion` 20 and ignores the enhancement |
+| `consumes` in the manifest and `kino.plugins.call(alias, call, arg)`: use another plugin's door through Kino, with seven error codes | the same | `typeof kino.plugins === "object"` |
+| Streams: `state.protocol.<alias>.<stream> = true` on a screen and the `protocol` event in `screenEvent` | `apiVersion` 20, with `screen` | the same |
+| A plugin that only `provides`: no capability, `"hosts": []` | `apiVersion` 20 | an older Kino refuses `apiVersion` 20 |
+| The consent line «Usa datos de &lt;provider&gt; (&lt;door summary&gt;)» on a consumer's install sheet | Kino 0.9.81 | — |
+
+- **The plugin protocol**: one plugin opens doors (TMDB 1.3.0 and later opens `movies`), another uses them (the
+  [Cine Trivia](https://github.com/kinotvapp/kino-plugin-cine-trivia) game). Kino is the only middleman: it validates every
+  request strictly and every answer loosely against the provider's declared types, at most 64 KB each way, 10 s per call and
+  30 calls in any 10 s per door. 18+ content never reaches a plugin that is not 18+, sealed secrets never cross, and nothing
+  installs on its own: the consumer offers the provider with `go.installPlugin`. [The plugin protocol](protocol.md).
+- **The kit**: `node sdk/run.mjs --provider <folder>` answers a consumer's calls from a provider on your computer;
+  `screenEvent protocol <alias>.<stream>` polls a stream once. [Testing offline](protocol.md#kit).
+
+## Kino 0.9.81: `apiVersion` 19, lyrics and `go.installPlugin` { #v19 }
+
+!!! note "Not in any released Kino"
+    `apiVersion` 19 ships with Kino 0.9.81, not published yet. Every older Kino refuses a manifest
     with `"apiVersion": 19` with «Este plugin necesita una versión más nueva de Kino». `contract.json` says `maxApiVersion` 19.
 
 | Feature | Since | How to tell |
 | --- | --- | --- |
 | The `lyrics` capability and the `lyrics(query)` export: a song's synchronized or plain lyrics for the music player's "Letra" overlay | `apiVersion` 19 | an older Kino refuses `apiVersion` 19 |
+| `go.installPlugin`: a button on your screen that opens Kino's own install sheet for another plugin's repository | `apiVersion` 19, with `screen` | below 19 the `go` is dropped, logged |
+| `recommends` in the manifest and `installed` in `screen` and `screenEvent`: whether each recommended plugin is installed now | Kino 0.9.81, at any `apiVersion` | an older Kino ignores the field; `installed` is absent |
 
 - **Lyrics**: a plugin answers `{ synced?, plain?, label?, instrumental?, matchDurationMs? }` for the song that plays; the person
   picks the source when several plugins answer. [Lyrics for the music player](contract.md#lyrics).
+- **Installing another plugin from yours**: `go.installPlugin` opens Kino's normal install sheet over your screen, and only
+  the person's own Instalar installs it; with `recommends`, your screen knows which of those plugins are installed and Kino
+  draws it again when that changes. [`go.installPlugin`](screen-forms.md#go-install-plugin).
 
 ## The next Kino version: `apiVersion` 18, app themes { #v18 }
 

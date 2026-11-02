@@ -328,6 +328,21 @@ Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app
   says what Kino does with a `go.useTheme` or `go.setExperience` in the answer. The kit draws no colours: check the look in
   Kino. [App themes](themes.md#kit).
 
+## apiVersion 20: the plugin protocol { #api20 }
+
+- **A consumer against a provider folder**: `node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent play`
+  answers every `kino.plugins.call` from the provider's `proto_<door>_<call>` exports, with the app's types, sizes, error
+  codes and rate limits. `--provider` can be repeated; without it every call rejects with `provider_missing`.
+- **A stream**: `node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent protocol tmdb.trending` polls the
+  stream once and sends the `protocol` event `{ alias, stream, items }`.
+- **The install gate**: `screen` gets `installed` with every `recommends` entry `false`; `--context
+  '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'` draws it as if the provider were installed.
+- **The manifest**: `node sdk/validate.mjs .` checks `provides` and `consumes`, at the top level and inside
+  `enhancements["20"]`, like the app.
+- The kit serves a `consumes` entry with the first provider that has the door (it has no repositories), and it does not
+  apply the 18+ rule, the sealed-secret check nor the self-call refusal: see [the plugin protocol](protocol.md#kit) and
+  [What the kit cannot copy](engine-limits.md#kit-protocol).
+
 ## What the Node kit does not reproduce { #differences }
 
 Kino is the authority; the kit only approximates it so

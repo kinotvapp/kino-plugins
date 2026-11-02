@@ -336,6 +336,22 @@ Llega con Kino 0.9.77. El kit ya revisa y corre todo con las reglas de la app:
   dice qué hace Kino con un `go.useTheme` o un `go.setExperience` en la respuesta. El kit no dibuja colores: revisa el aspecto en
   Kino. [Temas de la app](themes.md#kit).
 
+## apiVersion 20: el protocolo entre plugins { #api20 }
+
+- **Un consumidor contra la carpeta de un proveedor**: `node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent play`
+  responde cada `kino.plugins.call` con las exportaciones `proto_<puerta>_<llamada>` del proveedor, con los tipos, tamaños,
+  códigos de error y límites de ritmo de la app. `--provider` se puede repetir; sin él, toda llamada se rechaza con
+  `provider_missing`.
+- **Un flujo**: `node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent protocol tmdb.trending` consulta
+  el flujo una vez y manda el evento `protocol` `{ alias, stream, items }`.
+- **La puerta de instalación**: `screen` recibe `installed` con cada entrada de `recommends` en `false`; `--context
+  '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'` la dibuja como si el proveedor estuviera instalado.
+- **El manifiesto**: `node sdk/validate.mjs .` revisa `provides` y `consumes`, en el nivel principal y dentro de
+  `enhancements["20"]`, igual que la app.
+- El kit atiende una entrada de `consumes` con el primer proveedor que tiene la puerta (no tiene repositorios), y no aplica
+  la regla 18+, ni la revisión de secretos sellados, ni el rechazo de llamarse a sí mismo: mira
+  [el protocolo entre plugins](protocol.md#kit) y [Lo que el kit no puede copiar](engine-limits.md#kit-protocol).
+
 ## Lo que el kit de Node no reproduce { #differences }
 
 Kino es la autoridad; el kit solo se le aproxima para que puedas iterar rápido. Antes de publicar,
