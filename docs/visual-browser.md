@@ -73,6 +73,15 @@ que no puedes cambiar. Decir que No, Cerrar y Atrás te dan `{ status: "closed" 
   tu runtime); tu script recibe `stored` y `storedNames` (los nombres, nunca un valor). Un ajuste `password` admite 500
   caracteres: un texto más largo responde `store_failed` y no se guarda nada. Los secretos sellados mantienen su regla: solo viajan
   a tus hosts declarados.
+- **`storeAs.spill`** (opcional, para una lista de cookies de más de 500 caracteres; la de YouTube Music necesita unos 850): una
+  lista de 1 a 3 ajustes `password` tuyos **más** (declarados, distintos, ninguno igual a `setting`; si no, `bad_args`). Kino corta el
+  texto con formato en el límite del ajuste (500 caracteres) y los trozos son los valores de los ajustes **en orden**: primero
+  `setting`, luego cada uno de `spill`; un ajuste al que el texto no llega se vacía, pero solo si ahora tiene un valor. Todos se
+  guardan en **un solo** guardado (la sincronización registra un cambio), todo o nada: si `(1 + spill.length) x 500` no alcanza para
+  el texto, la respuesta es `store_failed` y no se guarda nada. Tu script sigue sin ver nunca un valor. **Para leerlo de vuelta,
+  concatena los valores de los ajustes en ese orden, sin separador** (con `"header"` un corte puede caer dentro de una cookie, así
+  que nunca partas ni recortes un trozo):
+  `[kino.config.cookieA, kino.config.cookieB, kino.config.cookieC, kino.config.cookieD].join("")`.
 - **`storeAs.thenEvent`** (opcional): una pantalla que abrió la ventana no puede ver la cuenta nueva en la misma llamada, porque la
   escritura ocurre cuando la llamada ya terminó. Nombra un `screenEvent` y Kino se lo envía a **tu pantalla abierta** cuando el
   ajuste ya se escribió con éxito, con `arg` = `{ stored: ["SID", ...] }` (solo nombres de cookies) y sin `value`; atiéndelo
@@ -87,6 +96,10 @@ que no puedes cambiar. Decir que No, Cerrar y Atrás te dan `{ status: "closed" 
 - **Nada más.** Ningún script tuyo en la página, ninguna tecla expuesta, sin ventanas emergentes, descargas, selector de archivos,
   cámara, micrófono, ubicación ni avisos. Una sola ventana a la vez en toda la app (`busy`), 10 minutos como máximo (`timeoutMs`, que
   se baja a 600.000 o se sube a 5.000), y se cierra cuando la app queda un minuto en segundo plano o se apaga la pantalla.
+- **El tiempo de la ventana es su propio `timeoutMs`.** Mientras la ventana está abierta, el límite de tiempo de la llamada que la
+  abrió (el de una acción de ajustes, una `panelAction` o un `screenEvent`) no corre, así que un inicio de sesión de Google con
+  verificación en dos pasos puede tardar lo que la persona necesite, hasta `timeoutMs`. Cuando la ventana se cierra, tu llamada
+  tiene al menos 10 segundos para ejecutar el código posterior a `open`; si se cuelga después de eso, se detiene como siempre.
 - **`doneWhen`** cierra la ventana solo: `cookies` (existen todas las cookies nombradas) y/o `urlMatches` (la dirección coincide con
   el patrón, donde `*` es cualquier tramo de caracteres y el resto es literal; 200 caracteres como máximo).
 - **`userAgent`**: `"browser"` es el texto del Chrome del teléfono, que Kino mantiene al día; o el tuyo, de 1 a 300 caracteres ASCII
@@ -131,6 +144,24 @@ async function action(key) {
   if (r.status !== "done" || !r.stored) return { message: "No se vinculó la cuenta" };
   return { message: "Cuenta vinculada" };   // Kino guarda el header cuando esta llamada termina
 }
+```
+
+La lista completa de cookies de YouTube Music es más larga que un ajuste `password` (unos 850 caracteres), así que el plugin
+declara cuatro (`cookieA` a `cookieD`) y deja que Kino reparta el texto entre ellos:
+
+```js
+const r = await kino.visualBrowser.open({
+  url: "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com",
+  title: "YouTube Music",
+  doneWhen: { cookies: ["SAPISID"] },
+  collect: {
+    cookies: ["SID", "HSID", "SSID", "APISID", "SAPISID", "__Secure-3PSID", "__Secure-3PAPISID", "__Secure-3PSIDTS", "LOGIN_INFO", "VISITOR_INFO1_LIVE", "YSC"],
+    storeAs: { setting: "cookieA", spill: ["cookieB", "cookieC", "cookieD"], format: "header", thenEvent: "account_linked" },
+  },
+  userAgent: "browser",
+});
+// Después, en cualquier llamada: los trozos son los valores de los ajustes en orden, unidos SIN separador.
+const cookieHeader = [kino.config.cookieA, kino.config.cookieB, kino.config.cookieC, kino.config.cookieD].join("");
 ```
 
 Lo mismo desde una **pantalla** (un botón de tu árbol cuyo `screenEvent` abre la ventana); `thenEvent` le avisa a la pantalla

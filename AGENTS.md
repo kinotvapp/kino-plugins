@@ -1561,11 +1561,15 @@ the "Vincular cuenta" recipe: <https://kinotvapp.github.io/kino-plugins/en/visua
   Kino asks the person in its own sheet at every open (the sites, the cookie names, the user agent); the manifest carries one
   plain consent line.
 - **Cookies**: `collect.cookies` (at most 32 names; 64 cookies and 16,384 characters back, only with `done`), `collect.html`
-  (2,000,000 characters), `collect.finalUrl`. `collect.storeAs: { setting, format: "header" | "json", thenEvent? }` makes Kino write
+  (2,000,000 characters), `collect.finalUrl`. `collect.storeAs: { setting, format: "header" | "json", spill?, thenEvent? }` makes Kino write
   the cookies into your declared `password` setting (500 characters) after your call ends; you get `stored` and `storedNames`,
-  never a value; `thenEvent` names a `screenEvent` Kino sends your open screen once they are written.
+  never a value; `thenEvent` names a `screenEvent` Kino sends your open screen once they are written. `spill` (1 to 3 more
+  declared, distinct `password` settings) takes a longer text: Kino cuts it at 500 characters over `setting` then each `spill`
+  setting in order, in one save, all or nothing (`store_failed` if it does not fit); read it back with
+  `[kino.config.cookieA, kino.config.cookieB, ...].join("")`, no separator, never trimming a piece.
 - **`doneWhen`** `{ cookies?, urlMatches? }` closes the window by itself; `timeoutMs` 5,000 to 600,000; `userAgent` is `"browser"`
-  or your own string (1 to 300 printable ASCII characters). The window starts with a clean cookie jar.
+  or your own string (1 to 300 printable ASCII characters). The window's own `timeoutMs` is its only time bound: the opening
+  call's time bound does not run while it is up, and the call has at least 10 seconds after `open` resolves. The window starts with a clean cookie jar.
 - **Test**: the Node kit has no window; `validate.mjs` checks the key and prints a note, and `kino.visualBrowser.open` answers
   `unavailable` unless a test of yours gives `createKino` a `visualBrowser` option. Try the real window on a phone or a TV.
 
