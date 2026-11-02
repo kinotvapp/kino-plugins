@@ -44,6 +44,19 @@ compatibility. apiVersion 14 arrives with Kino 0.9.74 (not published yet): to st
 must stop on just to read it gets `"canRequestFocus": true`. Section 4, "The screen UI in one place", summarises every
 widget, style token, answer field, `go` shape and limit, so you can write a correct tree from this file alone.
 
+**Every screen of a plugin uses one compact bar.** Out of the box a screen has two bars (Kino's title bar with the plugin's
+name and Close, and your `AppBar` under it: about 150 dp of header on a phone). Root every screen in a `Scaffold` whose
+`AppBar` sets `mergeWithKinoBar: true` (one bar: your `leading` where Close was, your `title` where the name was) and
+`dense: true` (on a phone, 4 dp above and below the row instead of 16), and give the `leading` a real exit: `{ close: true }`
+on the front page, a back to the previous view everywhere else. Both are plain booleans on every screen, not only one. The
+TV ignores `dense`; a player panel ignores both. The unnamed route is `main` (your front page). A Home row item that opens a
+screen is `open: { screen: { args } }` (no route) and the detail is pushed from the `open` answer, so Back returns to the
+front page. A reader (manga, comics, long text) uses `Image` `fit: "width"`, a scroll with `zoom` and `onScroll`, and `pages`
+with `reverse` and `progress`. While data loads draw a `Skeleton`, not a spinner; for many filters use a bottom sheet with a
+search field, not a long row of chips. A screen has a 600-node budget: count it. See
+[one compact bar](https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar) and the
+[recipes](https://kinotvapp.github.io/kino-plugins/en/screen-reference/#recipes).
+
 A plugin that wants to change **how the whole app looks** (colours, corners, type sizes, player controls, the menu logo) does
 not draw anything: it declares `appThemes` (apiVersion 18) as data, and may add a small presentation screen whose button
 turns the theme on with `go.useTheme`. See section 4, "apiVersion 18: app themes".
@@ -614,19 +627,40 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   `device` is `"phone"`, `"tv"` or `"desktop"`; `size` `{ widthClass, heightClass, orientation }` (`compact` < 600 dp,
   `medium` 600..839, `expanded` ≥ 840; a TV is `expanded`); `lang` `"es"` or `"en"`; `activeTheme` (apiVersion 18) the id of
   your active app theme or `null`. `route` is `{ name, params, args? }` (`"main"` at the root).
+- **One compact bar on every screen** (additive: a Kino that does not know the booleans draws two bars at the normal height).
+  The `AppBar` of every screen's root `Scaffold` sets `"mergeWithKinoBar": true` (apiVersion 19; only the boolean `true`, only
+  the root's bar, needs a `leading` `IconButton`, else it is ignored and both bars show) and `"dense": true`. Phone: one bar
+  (your `leading` where Close was, your title, your actions, then Kino's own buttons) with 4 dp above and below the row (56 dp
+  in all). TV: the same one bar, `leading` first in D-pad order; `dense` ignored. Player panel: both ignored. The `leading`
+  is the person's way out besides the system Back, so it is a real exit: `{ close: true }` on the front page, a back to the
+  previous view elsewhere. Back that must undo something first (a search) is `Scaffold` `onBack`, declared only while there is
+  something to undo (never a `go`; a failed call closes the screen).
+- **Routes and Home.** `route.name` is `"main"` when the screen opened without a route (from Kino's Home, a card, the menu): that
+  is the front page. A `home()` row item that opens a screen carries `open: { screen: { args: { ... } } }` with `args` and no
+  route; load the detail in `screenEvent` and answer `route: { push: "detail", params }` so the front page stays below and Back
+  returns to it. Check `route.args` yourself; give a catalogue-only plugin's items `kind: "movie"`.
+- **Readers, loading, filters.** Pages: `Image` `fit: "width"` (the `aspect` only holds the place), the strip a
+  `SingleChildScrollView` with `zoom: true` and `onScroll` (the settled position 0..1, 0.3 s after stopping; save it in
+  `kino.storage`), the paged mode `pages` with `reverse` (manga), `progress: "bar"` and up to 250 pages, each page a zoomable
+  scroll. A carousel is `PageView` with `viewportFraction` < 1 (6 to 8 pages: a page of ~9 nodes costs 9 of the 600). Searching
+  inside the field uses `trailingIcon`/`onTrailingTap` and a hidden `Skeleton` grid shown at once with a local `ui` op and hidden
+  in the answer; prefer skeletons to a spinner. Many options (genres) go in a `BottomSheet` with a search field, not in a row
+  of chips (chips for 3 to 5 short options). Recipes: <https://kinotvapp.github.io/kino-plugins/en/screen-reference/#recipes>.
 - **State lives in Kino**, not in your variables (the runtime closes when idle): an answer's `state` patch merges key by key
   (`null` removes), then `screen()` runs again. `state.inputs.<key>` holds every input's value; answer
   `{ state: { inputs: { key: value } } }` to set a field (no event fires). 64 KB, this opening only: keep what must survive in
   `kino.storage`.
 - **Widgets** (Flutter-style names are the documented spelling; the older lowercase names in brackets are still accepted):
   layout `Column` (col), `Row` (row; `wrap: true` makes a 12-column row with `span`/`offset`), `Stack` (box; children may be
-  `positioned`), `Card`, `Spacer`/`SizedBox`, `Divider`, `SingleChildScrollView` (scroll), `GridView` (grid, ≤ 8 `columns`),
+  `positioned`), `Card`, `Spacer`/`SizedBox`, `Divider`, `SingleChildScrollView` (scroll; `zoom: true` and `onScroll` for a reader), `GridView` (grid, ≤ 8 `columns`),
   `ListView` (list), `TabBar` (tabs), `ExpansionTile` (accordion), `steps` (≤ 12 steps), `Scaffold` (`appBar`, `body`,
-  `floatingActionButton`, `bottomNavigationBar`; ≤ 4 app-bar actions, 2..5 nav items), `AppBar`, `NavigationBar`, `PageView`
+  `floatingActionButton`, `bottomNavigationBar`, `onBack` (apiVersion 19: Back is sent to you instead of leaving); ≤ 4 app-bar
+  actions, 2..5 nav items), `AppBar` (`mergeWithKinoBar: true` + `dense: true` on every screen, see the next bullet), `NavigationBar`, `PageView`
   (pageView, ≤ 24 pages, a carousel with dots, `autoPlayMs` 3,000..60,000), `pages` (apiVersion 17: 2..8 full-screen pages under
-  Kino's progress bar, `key` required, the index in `state.inputs.<key>`), `ListTile` (listTile); content `Text` (styles
+  Kino's progress bar, `key` required, the index in `state.inputs.<key>`; `reverse: true` for right to left, `progress`
+  `segments`/`bar`/`none`, up to 250 pages with `bar` or `none`), `ListTile` (listTile); content `Text` (styles
   `hero` (apiVersion 17, 72 sp), `h1`..`h5`, `p`, `caption`, `label`; `time` + `timeFormat` `relative`/`clock`/`countdown`),
-  `Image`, `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
+  `Image` (`aspect` `16:9`/`2:3`/`1:1`/`banner` or any `w:h`; `fit` `cover`/`contain`/`width`; `focus` `top`/`center`/`bottom`), `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
   radius 12..64), `MaterialBanner` (banner), `LinearProgressIndicator` (progress), `CircularProgressIndicator` (loading),
   `Skeleton` (`line`, `block`, `circle`, `card`; ≤ 6 lines), `QrImage` (qr, ≤ 1,000 characters), `DataTable` (table, `TableRow`
   /`TableCell`: ≤ 20 columns, 200 rows, `colSpan` ≤ 8), `emptyState`, `errorState`; Kino's own title cards `titleCard`,
@@ -1345,7 +1379,8 @@ people. See
       (`askRead`) cover `read`, `run.mjs . image` covers `image`; every `kino.crypto` byte operation you use is
       feature-detected (they depend on the Kino version, not on the manifest).
 - [ ] apiVersion 14 / screens: `node sdk/run.mjs . screen` and `node sdk/run.mjs --device tv . screen` print the tree
-      with nothing dropped; every event name the tree uses is handled in `screenEvent`; no state kept in module
+      with nothing dropped; every screen's `AppBar` has `mergeWithKinoBar: true` and `dense: true` and a `leading` that is a real
+      exit (`{ close: true }` on the front page); every event name the tree uses is handled in `screenEvent`; no state kept in module
       variables; a node the TV must stop on to read has `canRequestFocus`; below apiVersion 14 the screen and its
       capabilities come through `enhancements` and `validate.mjs` reports no dropped block; nothing secret in
       `kino.shared`, a room message or an AI prompt; the AI reply and `kino.shared.get` values are validated.
@@ -1450,6 +1485,15 @@ To debug "it does not appear": open the search URL in a browser and find the rep
 the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualizar" after 60 s.
 
 ## 7. Common mistakes
+
+- A screen with two bars (no `mergeWithKinoBar: true` + `dense: true` on its `AppBar`), the booleans on only some screens, or a
+  merged bar whose `leading` is not a real exit (`{ close: true }` on the front page, a back elsewhere).
+- Treating a screen opened from Kino's Home as if it always had a route: `route.name` is `"main"` there, your front page; and
+  giving a Home row item a route instead of `open: { screen: { args } }`, so Back has no front page to return to (push the
+  detail from the `open` answer).
+- A reader that measures bytes or sizes pictures by hand instead of `Image` `fit: "width"`, a scroll with `zoom` and `onScroll`, and
+  `pages` with `reverse`/`progress`; a spinner where a `Skeleton` keeps the layout; thirty chips where a bottom sheet with a
+  search field fits; a screen that goes past its 600 nodes.
 
 - Declaring `*.site.com` only, then failing on `site.com` (or the reverse after a redirect).
 - A CDN, a subtitle host or a license server missing from `hosts`: playback stops with an error.

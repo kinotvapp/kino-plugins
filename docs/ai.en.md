@@ -92,6 +92,12 @@ check:built). Validate with node sdk/validate.mjs . and node sdk/run.mjs . scree
 the component catalogue (https://kinotvapp.github.io/kino-plugins/en/screen-components/, https://kinotvapp.github.io/kino-plugins/en/screen-forms/, https://kinotvapp.github.io/kino-plugins/en/screen-reference/) and the TV focus rules
 (https://kinotvapp.github.io/kino-plugins/en/screens/#tv-focus): Kino draws its focus ring only on nodes the person can press; a node the remote must stop on
 just to read it gets "canRequestFocus": true.
+Every screen of the plugin uses one compact bar: its AppBar sets mergeWithKinoBar: true and dense: true, with a leading
+that is a real exit ({ close: true } on the front page, a back elsewhere). The unnamed route is "main", the front page. A Home
+row item that opens a screen uses open: { screen: { args } } and the detail is pushed from the open answer, so Back returns
+to the front page. A reader uses Image fit: "width", a scroll with zoom and onScroll, and pages with reverse and progress.
+Prefer a Skeleton to a spinner and a bottom sheet with a search field to many chips; a screen has a 600-node budget.
+(https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
 Before writing anything:
 1. Read https://kinotvapp.github.io/kino-plugins/AGENTS.md completely and follow it as your
@@ -308,7 +314,8 @@ you hand the plugin over run this self-check and tell me the result of each line
   service can read the data;
 - if it uses apiVersion 13: you told me no released Kino installs it yet, read is covered by a Node test
   that checks every range byte for byte, no handle holds a secret, and every socket is closed;
-- if it has a screen: node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
+- if it has a screen: every screen's AppBar has mergeWithKinoBar: true and dense: true with a real-exit leading,
+  node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
   event name you use answers in screenEvent, and, if its apiVersion is below 14, the screen comes through
   "enhancements" and node sdk/validate.mjs . reports no dropped block;
 - apiVersion 15 (Kino 0.9.77 or later).

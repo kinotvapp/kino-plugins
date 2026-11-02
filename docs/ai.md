@@ -96,6 +96,13 @@ node sdk/run.mjs . screen (también con --device tv). Sigue el catálogo de comp
 https://kinotvapp.github.io/kino-plugins/en/screen-forms/, https://kinotvapp.github.io/kino-plugins/en/screen-reference/) y las reglas de foco del TV (https://kinotvapp.github.io/kino-plugins/en/screens/#tv-focus): Kino dibuja su anillo
 de foco solo en los nodos que la persona puede presionar; un nodo donde el control remoto debe detenerse solo para
 leerlo lleva "canRequestFocus": true.
+Cada pantalla del plugin usa una sola barra compacta: su AppBar lleva mergeWithKinoBar: true y dense: true, con un
+leading que es una salida real ({ close: true } en la portada, un regreso en las demás). La ruta sin nombre es "main",
+la portada. Un elemento de una fila del Home que abre una pantalla usa open: { screen: { args } } y el detalle se apila
+desde la respuesta de open, así Atrás vuelve a la portada. Un lector usa Image fit: "width", un desplazamiento con zoom
+y onScroll, y pages con reverse y progress. Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
+búsqueda a muchos chips; una pantalla tiene un presupuesto de 600 nodos.
+(https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
 Antes de escribir nada:
 1. Lee completo https://kinotvapp.github.io/kino-plugins/AGENTS.md y síguelo como tus instrucciones.
@@ -317,7 +324,8 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   plugin y su servicio pueden leer los datos;
 - si usa apiVersion 13: me dijiste que ningún Kino publicado lo instala todavía, read tiene una prueba de
   Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra;
-- si tiene una pantalla: node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
+- si tiene una pantalla: el AppBar de cada pantalla lleva mergeWithKinoBar: true y dense: true con un leading que es una
+  salida real, node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
   cada nombre de evento que usas tiene respuesta en screenEvent y, si su apiVersion es menor que 14, la pantalla
   llega por "enhancements" y node sdk/validate.mjs . no reporta ningún bloque descartado;
 - apiVersion 15 (Kino 0.9.77 o posterior). Una tienda: "capabilities": ["pluginStore"] (puede ir sola) y, si quieres, "pluginStore": { "mode": "local" |
