@@ -6,6 +6,11 @@ Kino 0.9.50 deja que un plugin abra la página en una **vista web oculta en el a
 peticiones de video que hizo la página: `kino.browser.capture`. Es el último recurso, no la primera
 herramienta.
 
+!!! tip "¿La persona necesita ver la página?"
+    Este navegador oculto es para páginas que corren solas. Cuando la persona tiene que **iniciar sesión, resolver una verificación o
+    aceptar términos**, usa [una ventana de navegador que la persona maneja](visual-browser.md) (`kino.visualBrowser`, apiVersion 20,
+    Kino 0.9.81).
+
 !!! tip "Prefiere `kino.fetch`"
     Prueba primero el camino barato: un [`kino.fetch`](kino-api.md#fetch) de la página o del embed, y
     la dirección leída de su HTML, su JSON o una variable de un script ([`kino.html.select`](kino-api.md#html)

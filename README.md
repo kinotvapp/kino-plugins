@@ -41,8 +41,7 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   of plugins for Kino's store, local (a static list) or live (its own API); the store view has the tabs "De Kino", "De la comunidad" and "Instalados", one plugin per id across stores:
   [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/) and two copyable
   [example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/).
-- **Kino coins and apiVersion 17** (apiVersion 16 arrives with Kino 0.9.78; apiVersion 17 with the next Kino version, the
-  maximum today): the `coins` capability (`kino.coins`), `kino.sync.setActive`, `kino.library.stats`, per-profile jobs, the
+- **Kino coins and apiVersion 17** (apiVersion 16 arrives with Kino 0.9.78; apiVersion 17 with the next Kino version): the `coins` capability (`kino.coins`), `kino.sync.setActive`, `kino.library.stats`, per-profile jobs, the
   `pages` widget and more: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 - **Plugins that use each other** (apiVersion 20, arriving with Kino 0.9.81, not published yet): a plugin opens named
   doors (`provides`) and another uses them through Kino (`consumes`, `kino.plugins.call`), validated both ways, with an
@@ -52,6 +51,9 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   kit's scaffold, `node sdk/init.mjs my-plugin --kind provider` or `--kind consumer`, and try a provider on its own with
   `node sdk/run.mjs <provider folder> proto <door>.<call> '<json>'`
   ([Testing offline with the kit](https://kinotvapp.github.io/kino-plugins/en/protocol/#kit)).
+- **A browser window the person drives** (apiVersion 20, Kino 0.9.81, not published yet): `"visualBrowser": true` and
+  `kino.visualBrowser.open` open a web window on your own hosts that the person uses to sign in or finish a step, and can
+  store the cookies straight into one of your settings: [A browser window the person drives](https://kinotvapp.github.io/kino-plugins/en/visual-browser/).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

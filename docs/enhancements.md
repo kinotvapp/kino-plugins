@@ -49,6 +49,9 @@ Otro ejemplo, con un trabajo en segundo plano:
   los del manifiesto y se revisan con las reglas del apiVersion 20: `"apiVersion": 7, "enhancements": { "20": { "provides": { … } } }`
   abre una puerta en Kino 0.9.81 y posteriores mientras el plugin se sigue instalando como siempre en todo Kino anterior (así
   abre TMDB 1.3.0 y posteriores su puerta `movies`).
+- **Clave `"20"`: `visualBrowser`** (`true`), la clave del manifest para [una ventana de navegador que la persona maneja](visual-browser.md). Reemplaza
+  la del manifest y se revisa con las reglas del apiVersion 20, así que un plugin que conserva un `apiVersion` más bajo ofrece la ventana solo
+  a un Kino que la tenga: `"enhancements": { "20": { "visualBrowser": true } }`. Revisa `kino.visualBrowser?.available` antes de usarla.
 
 ### Cuándo se descarta un bloque { #dropped }
 

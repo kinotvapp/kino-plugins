@@ -5,6 +5,10 @@ its own scripts, and the only way to learn it is to run the page. For those, Kin
 plugin open the page in a **hidden web view on the device** and get back the video requests the
 page made: `kino.browser.capture`. It is the last resort, not the first tool.
 
+!!! tip "Does the person need to see the page?"
+    This hidden browser is for pages that run on their own. When the person has to **sign in, solve a challenge or accept
+    terms**, use [a browser window the person drives](visual-browser.md) (`kino.visualBrowser`, apiVersion 20, Kino 0.9.81).
+
 !!! tip "Prefer `kino.fetch`"
     Try the cheap path first: a [`kino.fetch`](kino-api.md#fetch) of the page or of the embed, and
     the address read from its HTML, its JSON or a script variable ([`kino.html.select`](kino-api.md#html)

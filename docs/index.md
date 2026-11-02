@@ -173,6 +173,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
 | [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `setSettings` y "¿Eres tú?", las ayudas `link` y `help`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
 | [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
+| [Una ventana de navegador que la persona maneja](visual-browser.md) | `"visualBrowser": true` y `kino.visualBrowser.open` (apiVersion 20, Kino 0.9.81): una ventana web que la persona ve y usa para iniciar sesión o terminar un paso, sobre tus propios hosts; cookies, `storeAs`, la receta "Vincular cuenta", Android TV (experimental) |
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |

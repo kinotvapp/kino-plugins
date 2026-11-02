@@ -164,6 +164,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
 | [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `setSettings` and "Is this you?", the `link` and `help` aids, `validateSettings`, a complete example, the own tab and syncing |
 | [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |
+| [A browser window the person drives](visual-browser.md) | `"visualBrowser": true` and `kino.visualBrowser.open` (apiVersion 20, Kino 0.9.81): a web window the person sees and uses to sign in or finish a step, on your own hosts; cookies, `storeAs`, the "Vincular cuenta" recipe, Android TV (experimental) |
 | [Hidden browser](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` and `kino.browser.page`: when to use them, the safety model, never a captcha, timeouts and failures (apiVersion 6) |
 | [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |
 | [Section, categories and colors](section-theme.md) | `section`, `categories` and `theme` (apiVersion 6) |

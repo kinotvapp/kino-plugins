@@ -793,6 +793,17 @@ if (typeof kino.plugins === "object") {                 // no existe en un Kino 
 - Los **flujos** de un proveedor no se llaman con esta función: tu pantalla los enciende con
   `state.protocol.<alias>.<flujo> = true` y recibe el evento `protocol` ([Flujos](protocol.md#streams)).
 
+## `kino.visualBrowser.open(options)` (apiVersion 20, Kino 0.9.81) { #visual-browser }
+
+Con `"visualBrowser": true` en el manifest: abre una ventana web **que la persona ve y maneja** (para iniciar sesión, resolver una
+verificación, aceptar términos) sobre tus `hosts` declarados, y se resuelve con `{ status: "done" | "closed" | "timeout", finalUrl?,
+cookies?, html?, stored?, storedNames?, userAgent? }`. Kino le pregunta a la persona en su propia hoja en cada apertura. Solo desde una
+`action` de ajustes, una `panelAction` o un `screenEvent` que la persona tocó (`forbidden` desde cualquier otra cosa); errores
+`bad_args`, `forbidden`, `unavailable`, `busy` y `store_failed`. `kino.visualBrowser` es `undefined` sin la clave del manifest o en un
+Kino anterior a 0.9.81, y `kino.visualBrowser.available` es `false` en el escritorio y en un aparato sin WebView (Android TV tiene uno:
+experimental allí). Las reglas, los topes de cookies, `storeAs` y la receta "Vincular cuenta" están en
+[Una ventana de navegador que la persona maneja](visual-browser.md).
+
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo

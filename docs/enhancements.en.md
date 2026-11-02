@@ -48,6 +48,9 @@ Another example, with a background job:
   manifest's and are checked with apiVersion 20's rules: `"apiVersion": 7, "enhancements": { "20": { "provides": { … } } }`
   opens a door on Kino 0.9.81 and later while the plugin keeps installing as before on every older Kino (that is how TMDB
   1.3.0 and later opens its `movies` door).
+- **Key `"20"`: `visualBrowser`** (`true`), the manifest key for [a browser window the person drives](visual-browser.md). It replaces
+  the manifest's and is checked with apiVersion 20's rules, so a plugin that keeps an older `apiVersion` offers the window only
+  to a Kino that has it: `"enhancements": { "20": { "visualBrowser": true } }`. Check `kino.visualBrowser?.available` before using it.
 
 ### When a block is dropped { #dropped }
 

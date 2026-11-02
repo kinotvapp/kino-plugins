@@ -17,25 +17,26 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 
 | Line | Section |
 | --- | --- |
-| 76 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
-| 109 | [1. Read first, in this order](#1-read-first-in-this-order) |
-| 194 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
-| 297 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
-| 410 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
-| 413 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
-| 478 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
-| 649 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
-| 685 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
-| 804 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
-| 867 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
-| 1092 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
-| 1190 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1274 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts, a text-only consumer, open, recipes, kit)](#protocol) |
-| 1450 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1545 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1567 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1681 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1734 | [7. Common mistakes](#7-common-mistakes) |
+| 79 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
+| 112 | [1. Read first, in this order](#1-read-first-in-this-order) |
+| 197 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
+| 300 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
+| 413 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
+| 416 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
+| 481 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
+| 652 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
+| 688 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
+| 807 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
+| 870 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
+| 1095 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
+| 1193 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
+| 1277 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts, a text-only consumer, open, recipes, kit)](#protocol) |
+| 1453 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1548 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1573 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1595 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1709 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 1762 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -70,7 +71,9 @@ contract names Kino 0.9.81; **not in any released Kino**) adds **app themes**: `
 `activeTheme` (section 4, "apiVersion 18: app themes"). apiVersion 19 (Kino 0.9.81 too) adds the `lyrics` capability and
 `go.installPlugin`; apiVersion 20 (Kino 0.9.81, **not in any released Kino**; the maximum today) adds the **plugin
 protocol**: a plugin opens named doors in `provides` and another uses them through Kino with `consumes` and
-`kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"). See
+`kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"), and `kino.visualBrowser`, **a web window the person
+drives** to sign in or finish a step (manifest `"visualBrowser": true`; section 4, "apiVersion 20: a browser window the person
+drives"). See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 
 ## 0. The plugin's UI: screens first
@@ -1540,6 +1543,31 @@ the TV's own copy of the plugin (keep `id` and refs identical across devices), c
 for new chapters through `episodes(ref)` (keep series refs stable), saves "Para ti" picks by `ref`,
 and treats a **signed** plugin installed from two repos with the same `id` and author key as one
 plugin across devices.
+
+<a id="visual-browser"></a>
+**apiVersion 20: a browser window the person drives (`visualBrowser`, Kino 0.9.81; not in any released Kino).** When the
+person has to sign in, solve a challenge or accept a site's terms, the hidden `kino.browser` cannot help: with
+`"apiVersion": 20` and `"visualBrowser": true` (also `"enhancements": { "20": { "visualBrowser": true } }` at an older
+`apiVersion`) the plugin calls `kino.visualBrowser.open({ url, title?, doneWhen?, collect?, userAgent?, timeoutMs? })` and
+gets `{ status: "done" | "closed" | "timeout", finalUrl?, cookies?, html?, stored?, storedNames?, userAgent? }`. Full page and
+the "Vincular cuenta" recipe: <https://kinotvapp.github.io/kino-plugins/en/visual-browser/>.
+
+- **Check first**: `kino.visualBrowser?.available` (undefined on an older Kino; false on the desktop and on a device without
+  a WebView). Keep another way in (a `password` setting the person pastes the cookies into). Phone and tablet; Android TV is
+  experimental.
+- **Only from the person's own press**: a settings `action`, a `panelAction` or a `screenEvent` after a tap or submit; anything
+  else throws `forbidden`. Other errors: `bad_args`, `unavailable`, `busy` (one window in the whole app), `store_failed`.
+- **Your `hosts` only**: the first `url` and every page the window goes to must be https on the default port on a declared host.
+  Kino asks the person in its own sheet at every open (the sites, the cookie names, the user agent); the manifest carries one
+  plain consent line.
+- **Cookies**: `collect.cookies` (at most 32 names; 64 cookies and 16,384 characters back, only with `done`), `collect.html`
+  (2,000,000 characters), `collect.finalUrl`. `collect.storeAs: { setting, format: "header" | "json", thenEvent? }` makes Kino write
+  the cookies into your declared `password` setting (500 characters) after your call ends; you get `stored` and `storedNames`,
+  never a value; `thenEvent` names a `screenEvent` Kino sends your open screen once they are written.
+- **`doneWhen`** `{ cookies?, urlMatches? }` closes the window by itself; `timeoutMs` 5,000 to 600,000; `userAgent` is `"browser"`
+  or your own string (1 to 300 printable ASCII characters). The window starts with a clean cookie jar.
+- **Test**: the Node kit has no window; `validate.mjs` checks the key and prints a note, and `kino.visualBrowser.open` answers
+  `unavailable` unless a test of yours gives `createKino` a `visualBrowser` option. Try the real window on a phone or a TV.
 
 <a id="player-panel"></a>
 **The player panel (apiVersion 9, Kino 0.9.55).** `"panel": { "label", "labelEn?", "icon" | "iconFile" }` adds a

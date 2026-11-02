@@ -34,7 +34,7 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   con el nombre sacado de su id. Decláralo en la entrada del catálogo: un Kino anterior a la regla rechaza un manifiesto que
   nombra un tipo nuevo. [`categories`](manifest.md).
 
-## Kino 0.9.81: `apiVersion` 20, plugins que se usan entre sí { #v20 }
+## Kino 0.9.81: `apiVersion` 20, plugins que se usan entre sí y una ventana de navegador que la persona maneja { #v20 }
 
 !!! note "Todavía en ningún Kino publicado"
     El `apiVersion` 20 llega con Kino 0.9.81, todavía sin publicar. Todo Kino anterior rechaza un manifiesto con
@@ -47,6 +47,8 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 | `consumes` en el manifiesto y `kino.plugins.call(alias, llamada, arg)`: usar la puerta de otro plugin a través de Kino, con siete códigos de error | lo mismo | `typeof kino.plugins === "object"` |
 | Flujos: `state.protocol.<alias>.<flujo> = true` en una pantalla y el evento `protocol` en `screenEvent` | `apiVersion` 20, con `screen` | lo mismo |
 | Un plugin que solo tiene `provides`: sin capacidades, `"hosts": []` | `apiVersion` 20 | un Kino anterior rechaza el `apiVersion` 20 |
+| `visualBrowser` en el manifiesto y `kino.visualBrowser.open`: una ventana web que la persona ve y maneja (para iniciar sesión, resolver una verificación), con la hoja de consentimiento propia de Kino en cada apertura | `apiVersion` 20, o `enhancements["20"]` con cualquier `apiVersion` | `kino.visualBrowser` es `undefined` en un Kino anterior; `kino.visualBrowser.available` es `false` sin WebView |
+| `storeAs.thenEvent`: cuando Kino escribe las cookies en un ajuste `password`, le envía a tu pantalla abierta un evento que tú eliges | `apiVersion` 20, con `screen` | lo mismo |
 | La línea de consentimiento «Usa datos de &lt;proveedor&gt; (&lt;resumen de la puerta&gt;)» en la hoja de instalación de un consumidor | Kino 0.9.81 | — |
 
 - **El protocolo entre plugins**: un plugin abre puertas (TMDB 1.3.0 y posteriores abre `movies`), otro las usa (el juego
@@ -57,6 +59,12 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   [Protocolo entre plugins](protocol.md).
 - **El kit**: `node sdk/run.mjs --provider <carpeta>` responde las llamadas de un consumidor desde un proveedor en tu
   computador; `screenEvent protocol <alias>.<flujo>` consulta un flujo una vez. [Probar sin conexión](protocol.md#kit).
+- **Una ventana de navegador que la persona maneja**: con `"visualBrowser": true`, `kino.visualBrowser.open({ url, title, doneWhen, collect,
+  userAgent, timeoutMs })` abre sobre tus propios `hosts` una ventana web que la persona ve y usa, en teléfono y tableta Android y, de forma
+  experimental, en Android TV. Kino pregunta en su propia hoja en cada apertura, empieza con un almacén de cookies limpio, devuelve cookies,
+  el HTML de la página o su última dirección y, con `collect.storeAs`, escribe las cookies directo en uno de tus ajustes `password`
+  (`thenEvent` le avisa a tu pantalla cuándo). La receta "Vincular cuenta" está en [la página](visual-browser.md#recipe-link); `enhancements`
+  ahora puede llevar `visualBrowser`. [Una ventana de navegador que la persona maneja](visual-browser.md).
 
 ## Kino 0.9.81: `apiVersion` 19, letras y `go.installPlugin` { #v19 }
 
@@ -75,6 +83,8 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 - **Instalar otro plugin desde el tuyo**: `go.installPlugin` abre la hoja de instalación de siempre de Kino encima de tu
   pantalla, y solo el Instalar de la propia persona lo instala; con `recommends`, tu pantalla sabe cuáles de esos plugins
   están instalados y Kino la vuelve a dibujar cuando eso cambia. [`go.installPlugin`](screen-forms.md#go-install-plugin).
+- **Pantallas**: `Scaffold.onBack` y `AppBar.mergeWithKinoBar` son funciones de `apiVersion` 19 ([una sola barra compacta](screen-components.md#one-compact-bar)),
+  y un `TextField` esconde el teclado cuando se envía.
 
 ## La próxima versión de Kino: `apiVersion` 18, temas de la app { #v18 }
 

@@ -34,7 +34,7 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   in the catalog entry: a Kino that predates the rule refuses a manifest that names a new type.
   [`categories`](manifest.md).
 
-## Kino 0.9.81: `apiVersion` 20, plugins that use each other { #v20 }
+## Kino 0.9.81: `apiVersion` 20, plugins that use each other and a browser window the person drives { #v20 }
 
 !!! note "Not in any released Kino"
     `apiVersion` 20 ships with Kino 0.9.81, not published yet. Every older Kino refuses a manifest with `"apiVersion": 20`
@@ -47,6 +47,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 | `consumes` in the manifest and `kino.plugins.call(alias, call, arg)`: use another plugin's door through Kino, with seven error codes | the same | `typeof kino.plugins === "object"` |
 | Streams: `state.protocol.<alias>.<stream> = true` on a screen and the `protocol` event in `screenEvent` | `apiVersion` 20, with `screen` | the same |
 | A plugin that only `provides`: no capability, `"hosts": []` | `apiVersion` 20 | an older Kino refuses `apiVersion` 20 |
+| `visualBrowser` in the manifest and `kino.visualBrowser.open`: a web window the person sees and drives (to sign in, solve a challenge), with Kino's own consent sheet at every open | `apiVersion` 20, or `enhancements["20"]` at any `apiVersion` | `kino.visualBrowser` is `undefined` on an older Kino; `kino.visualBrowser.available` is `false` without a WebView |
+| `storeAs.thenEvent`: after Kino writes the cookies into a `password` setting, it sends your open screen an event of your choice | `apiVersion` 20, with `screen` | the same |
 | The consent line «Usa datos de &lt;provider&gt; (&lt;door summary&gt;)» on a consumer's install sheet | Kino 0.9.81 | — |
 
 - **The plugin protocol**: one plugin opens doors (TMDB 1.3.0 and later opens `movies`), another uses them (the
@@ -56,6 +58,12 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   installs on its own: the consumer offers the provider with `go.installPlugin`. [The plugin protocol](protocol.md).
 - **The kit**: `node sdk/run.mjs --provider <folder>` answers a consumer's calls from a provider on your computer;
   `screenEvent protocol <alias>.<stream>` polls a stream once. [Testing offline](protocol.md#kit).
+- **A browser window the person drives**: with `"visualBrowser": true`, `kino.visualBrowser.open({ url, title, doneWhen, collect, userAgent,
+  timeoutMs })` opens a web window on your own `hosts` that the person sees and uses, on an Android phone and tablet and, experimental,
+  on Android TV. Kino asks in its own sheet at every open, starts with a clean cookie jar, returns cookies, the page's HTML or its last
+  address, and with `collect.storeAs` writes the cookies straight into one of your `password` settings (`thenEvent` tells your screen
+  when). The "Vincular cuenta" recipe is on [the page](visual-browser.md#recipe-link); `enhancements` may now carry `visualBrowser`.
+  [A browser window the person drives](visual-browser.md).
 
 ## Kino 0.9.81: `apiVersion` 19, lyrics and `go.installPlugin` { #v19 }
 
@@ -74,6 +82,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 - **Installing another plugin from yours**: `go.installPlugin` opens Kino's normal install sheet over your screen, and only
   the person's own Instalar installs it; with `recommends`, your screen knows which of those plugins are installed and Kino
   draws it again when that changes. [`go.installPlugin`](screen-forms.md#go-install-plugin).
+- **Screens**: `Scaffold.onBack` and `AppBar.mergeWithKinoBar` are `apiVersion` 19 features ([one compact bar](screen-components.md#one-compact-bar)),
+  and a `TextField` hides the keyboard when it is submitted.
 
 ## The next Kino version: `apiVersion` 18, app themes { #v18 }
 

@@ -741,6 +741,17 @@ if (typeof kino.plugins === "object") {                 // absent on a Kino olde
 - A provider's **streams** are not called with this function: your screen switches them on with
   `state.protocol.<alias>.<stream> = true` and receives the event `protocol` ([Streams](protocol.md#streams)).
 
+## `kino.visualBrowser.open(options)` (apiVersion 20, Kino 0.9.81) { #visual-browser }
+
+With `"visualBrowser": true` in the manifest: opens a web window **the person sees and drives** (to sign in, solve a challenge, accept
+terms) on your declared `hosts`, and resolves with `{ status: "done" | "closed" | "timeout", finalUrl?, cookies?, html?, stored?,
+storedNames?, userAgent? }`. Kino asks the person in its own sheet at every open. Only from a settings `action`, a `panelAction` or a
+`screenEvent` the person pressed (`forbidden` from anything else); errors `bad_args`, `forbidden`, `unavailable`, `busy` and
+`store_failed`. `kino.visualBrowser` is `undefined` without the manifest key or on a Kino before 0.9.81, and
+`kino.visualBrowser.available` is `false` on the desktop and on a device without a WebView (Android TV has one: experimental there).
+The rules, the cookie caps, `storeAs` and the "Vincular cuenta" recipe are on
+[A browser window the person drives](visual-browser.md).
+
 ## `kino.sleep(ms)` and `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` waits 0 to 5000 ms (for a site that rate-limits you); the time counts
