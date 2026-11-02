@@ -34,6 +34,11 @@ you what to do at each step. This site publishes the rules in the shapes those t
     installed, those plugins say "Necesitas el complemento de CloudStream" with a button to install it. See
     [CloudStream plugins](cloudstream.md) and [the complement](cloudstream.md#complement).
 
+!!! tip "Want a plugin that uses another plugin's data, or offers its own to other plugins?"
+    From Kino 0.9.81 plugins can use each other through Kino: one opens **doors**, another asks them (a movie trivia that
+    takes its movies from the TMDB plugin, say). An assistant gets it right if it reads [The plugin protocol](protocol.md).
+    Use [the short protocol prompt](#protocol-prompt).
+
 ## Before you start { #before }
 
 You need five things. All are free except, sometimes, the assistant.
@@ -120,6 +125,10 @@ Before writing anything:
    https://kinotvapp.github.io/kino-plugins/en/plugin-stores/, /en/store-examples/, /en/identity/ and
    /en/notifications/ first (apiVersion 15, Kino 0.9.77) and start from an example
    store with node sdk/init.mjs my-store --host <host> --store local|live.
+8. If my plugin uses another plugin's data, or opens a door for other plugins, read
+   https://kinotvapp.github.io/kino-plugins/en/protocol/ first (the plugin protocol: apiVersion 20, Kino 0.9.81, not
+   published yet) and copy the patterns of Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia, a
+   consumer with the install gate) and TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, a provider).
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -134,6 +143,7 @@ What I want:
 - Its own screen (a dashboard, a setup flow, a panel tab...): <<< no / yes: what it shows and what the person does there >>>
 - A store (a source of plugins for Kino's store, apiVersion 15): <<< no / yes: local (a list it hands over in the background, from GitHub, my server or a static JSON file) or live (also answers while the person browses: storeList and storeSearch, so what they search reaches my server), the hosts it uses, and the plugins it lists >>>
 - Identity or notices (apiVersion 15): <<< no / yes: who needs the person's Telegram pseudonym (only plugins signed with Kino's author key get an answer) and what notices to leave in the Home bell >>>
+- Other plugins (the plugin protocol, apiVersion 20, Kino 0.9.81): <<< no / it uses the door of another plugin: its repository and door (e.g. kinotvapp/kino-plugin-tmdb, "movies") / it opens a door: what other plugins could ask it >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 
@@ -388,6 +398,67 @@ kino.d.ts again from kinotvapp/kino-plugin-sdk (do not remove the capability). W
 the real scrapers by installing the plugin in Kino 0.9.71 or newer, with the exact clicks.
 ```
 
+
+## Short prompt: plugins that use each other { #protocol-prompt }
+
+For a plugin that **uses** another plugin's door (a consumer) or **opens** one for other plugins (a provider). The
+[plugin protocol](protocol.md) arrives with Kino 0.9.81, which is not published yet: the plugin will only install, or only
+open its door, on Kino 0.9.81 or newer. Fill in the part that applies and delete the other:
+
+```text
+You are going to write a Kino plugin that uses the plugin protocol (apiVersion 20, Kino 0.9.81):
+plugins that use each other through Kino.
+
+I may not know how to program: explain every step in plain English, run the commands yourself (tell me
+which one and why first) and ask me before anything that cannot be undone.
+
+Read, in this order:
+1. https://kinotvapp.github.io/kino-plugins/AGENTS.md (your instructions; section 4,
+   "apiVersion 20: the plugin protocol", is the part that matters most here).
+2. https://kinotvapp.github.io/kino-plugins/en/protocol/ (provides, consumes, kino.plugins.call, the types,
+   the seven error codes, the limits, streams, the install gate, and the TMDB + Cine Trivia example).
+3. https://kinotvapp.github.io/kino-plugins/llms-full.txt (the whole guide, contract.json and kino.d.ts:
+   the "protocol" section of contract.json has every number).
+Study the two reference plugins before writing anything: https://github.com/kinotvapp/kino-plugin-cine-trivia
+(a consumer) and https://github.com/kinotvapp/kino-plugin-tmdb (a provider, TMDB 1.3.0 and later).
+
+What I want:
+- Role: <<< consumer (uses another plugin's door) / provider (opens a door for others) / both >>>
+- If consumer: the provider's repository and door: <<< e.g. kinotvapp/kino-plugin-tmdb, door "movies" >>>
+  and what my plugin does with that data: <<< e.g. a movie quiz / a "random movie tonight" screen >>>
+- If provider: what other plugins could ask for: <<< e.g. "a song's lyrics by title and artist", "today's matches" >>>
+  and where that data comes from: <<< e.g. kino.tmdb / my site https://example.org/api >>>
+- Should my plugin stay installable on older Kinos? <<< yes (use enhancements["20"]) / no (apiVersion 20) >>>
+- Name in Kino and a short description: <<< e.g. "Cine Trivia": "Preguntas de cine con películas de TMDB" >>>
+- My GitHub user: <<< e.g. my-user >>>
+
+Rules:
+- Kino is the only middleman: never import, fetch or copy the other plugin; a consumer only uses
+  `await kino.plugins.call(alias, call, arg)` with a "consumes" entry; a provider only answers through
+  exports named exactly proto_<door>_<call>(arg) and proto_<door>_<stream>(cursor) -> { items, cursor }.
+- Names of doors, calls, streams and aliases: letters and digits, starting with a letter, at most 32. Types
+  only from the closed language (string, number, boolean, T?, T[], a door type, an inline object).
+- Consumer: list in "consumes" only the calls and streams it uses, put the same repository in "recommends",
+  and while installed["owner/name"] is not true draw ONLY an install screen with one button
+  { go: { installPlugin: { repo: "owner/name" } } }; never install anything yourself. Every
+  kino.plugins.call goes in try/catch and shows a short message for each code (provider_missing,
+  not_declared, bad_input, bad_output, rate_limited, timeout, provider_failed); no retry loops, no calls from
+  a background job. Arguments never carry tokens, passwords or anything private: they reach the provider.
+- Provider: answer only what the door declares, nothing private in answers or thrown errors, never a sealed
+  secret; a short "summary" the person understands; once published, a door only grows (new calls,
+  optional fields).
+- Limits: 64 KB per request and answer, 10 s per call, 30 calls in any 10 s per door, 4 doors per plugin,
+  16 calls and 8 streams per door, 8 consumes entries, streams polled every 30 s at least.
+- Every text for the person in Spanish (neutral, tuteo, never voseo) and English (text + textEn).
+
+Test it offline with the kit before anything else: `node sdk/validate.mjs .` and, for a consumer,
+`node sdk/run.mjs --provider <provider folder> . screenEvent <event>` (and `screenEvent protocol <alias>.<stream>`
+for a stream; `--context '{"installed":{"owner/name":true}}' . screen` to draw past the install gate). That needs
+a copy of the kit with the protocol (sdk/protocol.mjs); if run.mjs does not know --provider, tell me how to get
+a newer kit instead of working around it. The kit does not check the 18+ rule, sealed secrets in answers nor
+self-calls: when you finish, tell me how to try it in Kino 0.9.81 or newer with both plugins installed, then
+with the provider removed, with the exact clicks.
+```
 
 ## Getting Kino to find your plugin { #listed }
 

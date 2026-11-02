@@ -35,6 +35,11 @@ esas herramientas:
     no esté instalado, esos plugins dicen «Necesitas el complemento de CloudStream» con un botón para instalarlo. Mira
     [Plugins de CloudStream](cloudstream.md) y [el complemento](cloudstream.md#complement).
 
+!!! tip "¿Quieres un plugin que use los datos de otro plugin, o que ofrezca los suyos a otros plugins?"
+    Desde Kino 0.9.81 los plugins pueden usarse entre sí a través de Kino: uno abre **puertas** y otro les pregunta (una
+    trivia de cine que saca sus películas del plugin TMDB, por ejemplo). Un asistente lo hace bien si lee
+    [Protocolo entre plugins](protocol.md). Usa [el prompt corto del protocolo](#protocol-prompt).
+
 ## Antes de empezar { #before }
 
 Necesitas cinco cosas. Todas son gratis salvo, a veces, el asistente.
@@ -123,6 +128,10 @@ Antes de escribir nada:
    https://kinotvapp.github.io/kino-plugins/plugin-stores/, /store-examples/, /identity/ y /notifications/
    (apiVersion 15, Kino 0.9.77) y parte de una tienda de ejemplo con
    node sdk/init.mjs mi-tienda --host <host> --store local|live.
+8. Si mi plugin usa los datos de otro plugin, o abre una puerta para otros plugins, lee primero
+   https://kinotvapp.github.io/kino-plugins/protocol/ (el protocolo entre plugins: apiVersion 20, Kino 0.9.81,
+   todavía sin publicar) y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
+   un consumidor con la puerta de instalación) y TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, un proveedor).
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -137,6 +146,7 @@ Lo que quiero:
 - Su propia pantalla (un tablero, una configuración paso a paso, una pestaña del panel...): <<< no / sí: qué muestra y qué hace ahí la persona >>>
 - Una tienda (una fuente de plugins para la tienda de Kino, apiVersion 15): <<< no / sí: local (una lista que entrega en segundo plano, desde GitHub, mi servidor o un archivo JSON estático) o en vivo (también responde mientras la persona navega: storeList y storeSearch, así que lo que busque llega a mi servidor), los hosts que usa y los plugins que lista >>>
 - Identidad o avisos (apiVersion 15): <<< no / sí: quién necesita el seudónimo de Telegram de la persona (solo responde a plugins firmados con la llave de autor de Kino) y qué avisos dejar en la campanita de Inicio >>>
+- Otros plugins (el protocolo entre plugins, apiVersion 20, Kino 0.9.81): <<< no / usa la puerta de otro plugin: su repositorio y su puerta (p. ej. kinotvapp/kino-plugin-tmdb, "movies") / abre una puerta: qué podrían pedirle otros plugins >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
@@ -397,6 +407,67 @@ contract.json y kino.d.ts desde kinotvapp/kino-plugin-sdk (no quites la capacida
 probar los scrapers de verdad instalando el plugin en Kino 0.9.71 o más nuevo, con los clics exactos.
 ```
 
+
+## Prompt corto: plugins que se usan entre sí { #protocol-prompt }
+
+Para un plugin que **usa** la puerta de otro plugin (un consumidor) o que **abre** una para otros plugins (un proveedor).
+El [protocolo entre plugins](protocol.md) llega con Kino 0.9.81, que todavía no está publicado: el plugin solo se instalará,
+o solo abrirá su puerta, en Kino 0.9.81 o más nuevo. Llena la parte que te toca y borra la otra:
+
+```text
+Vas a escribir un plugin de Kino que usa el protocolo entre plugins (apiVersion 20, Kino 0.9.81):
+plugins que se usan entre sí a través de Kino.
+
+Puede que yo no sepa programar: explícame cada paso en español sencillo, ejecuta tú los comandos
+(antes dime cuál y para qué) y pregúntame antes de cualquier cosa que no se pueda deshacer.
+
+Lee, en este orden:
+1. https://kinotvapp.github.io/kino-plugins/AGENTS.md (tus instrucciones; la sección 4,
+   "apiVersion 20: the plugin protocol", es la que más importa aquí).
+2. https://kinotvapp.github.io/kino-plugins/protocol/ (provides, consumes, kino.plugins.call, los tipos,
+   los siete códigos de error, los límites, los flujos, la puerta de instalación y el ejemplo de TMDB + Cine Trivia).
+3. https://kinotvapp.github.io/kino-plugins/llms-full.txt (la guía completa, contract.json y kino.d.ts:
+   la sección "protocol" de contract.json tiene cada número).
+Estudia los dos plugins de referencia antes de escribir nada: https://github.com/kinotvapp/kino-plugin-cine-trivia
+(un consumidor) y https://github.com/kinotvapp/kino-plugin-tmdb (un proveedor, TMDB 1.3.0 y posteriores).
+
+Lo que quiero:
+- Papel: <<< consumidor (usa la puerta de otro plugin) / proveedor (abre una puerta para otros) / los dos >>>
+- Si es consumidor: el repositorio del proveedor y su puerta: <<< p. ej. kinotvapp/kino-plugin-tmdb, puerta "movies" >>>
+  y qué hace mi plugin con esos datos: <<< p. ej. un quiz de cine / una pantalla de "película al azar para hoy" >>>
+- Si es proveedor: qué podrían pedirle otros plugins: <<< p. ej. "la letra de una canción por título y artista", "los partidos de hoy" >>>
+  y de dónde salen esos datos: <<< p. ej. kino.tmdb / mi sitio https://example.org/api >>>
+- ¿Mi plugin se debe seguir instalando en Kino anteriores? <<< sí (usa enhancements["20"]) / no (apiVersion 20) >>>
+- Nombre en Kino y una descripción corta: <<< p. ej. "Cine Trivia": "Preguntas de cine con películas de TMDB" >>>
+- Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
+
+Reglas:
+- Kino es el único intermediario: nunca importes, consultes ni copies el otro plugin; un consumidor solo usa
+  `await kino.plugins.call(alias, llamada, arg)` con una entrada de "consumes"; un proveedor solo responde con
+  exportaciones que se llaman exactamente proto_<puerta>_<llamada>(arg) y proto_<puerta>_<flujo>(cursor) -> { items, cursor }.
+- Nombres de puertas, llamadas, flujos y alias: letras y dígitos, empiezan con letra, máximo 32. Tipos solo del
+  lenguaje cerrado (string, number, boolean, T?, T[], un tipo de la puerta, un objeto en línea).
+- Consumidor: declara en "consumes" solo las llamadas y los flujos que usa, pon el mismo repositorio en "recommends",
+  y mientras installed["owner/name"] no sea true dibuja SOLO una pantalla de instalación con un botón
+  { go: { installPlugin: { repo: "owner/name" } } }; nunca instales nada tú. Cada kino.plugins.call va en
+  try/catch y muestra un mensaje corto por código (provider_missing, not_declared, bad_input, bad_output,
+  rate_limited, timeout, provider_failed); nada de reintentos en bucle ni de llamadas desde un trabajo en segundo
+  plano. Los argumentos nunca llevan tokens, contraseñas ni nada privado: le llegan al proveedor.
+- Proveedor: responde solo lo que la puerta declara, nada privado en las respuestas ni en los errores, nunca un
+  secreto sellado; un "summary" corto que la persona entienda; una vez publicada, una puerta solo crece (llamadas
+  nuevas, campos opcionales).
+- Límites: 64 KB por petición y por respuesta, 10 s por llamada, 30 llamadas en cualquier ventana de 10 s por puerta,
+  4 puertas por plugin, 16 llamadas y 8 flujos por puerta, 8 entradas en consumes, flujos consultados cada 30 s como mínimo.
+- Todo texto para la persona en español (neutro, con tuteo, nunca voseo) y en inglés (text + textEn).
+
+Pruébalo sin conexión con el kit antes que nada: `node sdk/validate.mjs .` y, para un consumidor,
+`node sdk/run.mjs --provider <carpeta del proveedor> . screenEvent <evento>` (y `screenEvent protocol <alias>.<flujo>`
+para un flujo; `--context '{"installed":{"owner/name":true}}' . screen` para dibujar más allá de la puerta de
+instalación). Eso necesita una copia del kit con el protocolo (sdk/protocol.mjs); si run.mjs no conoce --provider,
+dime cómo conseguir un kit más nuevo en vez de darle la vuelta. El kit no revisa la regla 18+, los secretos sellados
+en las respuestas ni las llamadas a sí mismo: al terminar, dime cómo probarlo en Kino 0.9.81 o más nuevo con los dos
+plugins instalados, y después con el proveedor quitado, con los clics exactos.
+```
 
 ## Que Kino encuentre tu plugin { #listed }
 
