@@ -128,8 +128,8 @@ interruptor detiene las [salas](rooms.md#room) y los [trabajos en segundo plano]
 ## Los exports: `screen` y `screenEvent` { #exports }
 
 ```js
-export async function screen({ state, route, device, size, lang }) { return /* the root node */; }
-export async function screenEvent({ name, arg, value, state, route, device, lang }) { return /* an answer, or null */; }
+export async function screen({ state, route, device, size, lang, activeTheme, installed }) { return /* the root node */; }
+export async function screenEvent({ name, arg, value, state, route, device, lang, activeTheme, installed }) { return /* an answer, or null */; }
 ```
 
 - **`screen` es una vista pura.** Con el estado, devuelve el árbol. Kino la llama cuando se abre la pantalla, después de

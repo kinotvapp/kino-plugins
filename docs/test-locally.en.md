@@ -65,6 +65,21 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
   treats it as an ES module whatever its version and `package.json` say. The line numbers are your
   `plugin.js`'s.
 
+## Copy the kit into a new plugin { #copy-the-kit }
+
+A repository made with **Use this template** already has the kit. When you start from `node sdk/init.mjs` instead, copy the
+kit next to the new plugin's `kino-plugin.json`: the folder `sdk/` and the file `contract.json` (the kit looks for it next to
+`sdk/`; `kino.d.ts` too, if your editor uses it). Leave out `sdk/test/`: those are the kit's own tests (more than 60 files),
+useless in a plugin, and a bare `node --test` would run them. Copy without it, or delete it afterwards:
+
+```sh
+cp -r kino-plugin-sdk/sdk kino-plugin-sdk/contract.json kino-plugin-sdk/kino.d.ts my-plugin/
+rm -rf my-plugin/sdk/test        # PowerShell: Remove-Item -Recurse -Force my-plugin\sdk\test
+```
+
+A plugin made from a template carries `sdk/test/` too: delete it the same way. Nothing in `sdk/` reads `sdk/test/` when it
+runs; your plugin's own tests live in `test/`, and you run them by name (`node --test test/plugin.test.mjs`).
+
 ## Sealed secrets (apiVersion 4) { #secrets }
 
 The kit can never open a seal: it has no private key. So it reads the plain values straight from
@@ -330,18 +345,30 @@ Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app
 
 ## apiVersion 20: the plugin protocol { #api20 }
 
-- **A consumer against a provider folder**: `node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent play`
-  answers every `kino.plugins.call` from the provider's `proto_<door>_<call>` exports, with the app's types, sizes, error
-  codes and rate limits. `--provider` can be repeated; without it every call rejects with `provider_missing`.
-- **A stream**: `node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent protocol tmdb.trending` polls the
-  stream once and sends the `protocol` event `{ alias, stream, items }`.
+The whole workflow, with examples, is in [the plugin protocol](protocol.md#kit). In short:
+
+- **Scaffolds**: `node sdk/init.mjs my-provider --kind provider` (provides-only, a door with a call and a stream, its test) and
+  `node sdk/init.mjs my-consumer --kind consumer --repo owner/name --host <real host>` (a screen with the install gate, the
+  error codes and a stream switch, tested against a stand-in provider in `test/provider`). `node sdk/init.mjs --help` lists
+  the options; without `--host` the consumer gets the placeholder `example.com`: replace it.
+- **A provider on its own**: `node sdk/run.mjs <provider folder> proto <door>.<call> '<arg json>'` and
+  `proto <door>.<stream> ['<cursor json>']` go through the app's checks and error codes. Exit 0 with the answer, 1 with
+  `✗ <code>: <message>`, 2 for a wrong command.
+- **A consumer against a provider folder**: `node sdk/run.mjs --context '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'
+  --provider ../kino-plugin-tmdb ./cine-trivia screenEvent play` answers every `kino.plugins.call` from the provider's
+  `proto_<door>_<call>` exports, with the app's types, sizes, error codes and rate limits. `--provider` can be repeated;
+  without it every call rejects with `provider_missing`. Without `installed` a gated consumer does nothing.
+- **A stream**: `... screenEvent protocol tmdb.trending` polls the stream once and sends the `protocol` event
+  `{ alias, stream, items }`; `--cursor '<json>'` polls from a cursor the provider already returned (try repeated items).
 - **The install gate**: `screen` gets `installed` with every `recommends` entry `false`; `--context
   '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'` draws it as if the provider were installed.
+- **The English texts**: `--lang en` (the same as `"lang": "en"` in `--context`). `run.mjs` prints the Spanish ones otherwise.
 - **The manifest**: `node sdk/validate.mjs .` checks `provides` and `consumes`, at the top level and inside
-  `enhancements["20"]`, like the app.
-- The kit serves a `consumes` entry with the first provider that has the door (it has no repositories), and it does not
-  apply the 18+ rule, the sealed-secret check nor the self-call refusal: see [the plugin protocol](protocol.md#kit) and
-  [What the kit cannot copy](engine-limits.md#kit-protocol).
+  `enhancements["20"]`, like the app; a declared call or stream without its `proto_` export fails it, and it warns about a
+  consumed repository missing from `recommends`, an `everySeconds` outside 30..86,400 and a `providesOnly` field.
+- The kit serves a `consumes` entry with the first provider that has the door (it has no repositories, so it never checks your
+  `repo`), and it does not apply the 18+ rule, the sealed-secret check nor the self-call refusal: see
+  [the plugin protocol](protocol.md#kit) and [What the kit cannot copy](engine-limits.md#kit-protocol).
 
 ## What the Node kit does not reproduce { #differences }
 

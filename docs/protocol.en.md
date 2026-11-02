@@ -239,6 +239,15 @@ When the person installs TMDB, `installed` changes and Kino calls `screen` again
 place, without reopening the plugin. From then on it loads straight away. If the person removes TMDB later, Cine Trivia is
 not touched: the gate simply shows the install screen again, and any call that was in flight answers `provider_missing`.
 
+**What `installed` says, exactly.** `installed["<owner/name>"]` is `true` while a plugin installed from that repository is on
+the device, **even when the person switched it off or it still needs its settings**; it is `false` only when no plugin from
+that repository is installed (never installed, or removed). So the gate alone is not enough: with `installed` `true` a call can
+still answer `provider_missing` (the provider is off, needs setup, or is 18+ while your plugin is not). Keep that code in your
+state and draw a sentence for it, such as «TMDB está apagado o le falta configurarse: revísalo en Plugins», with a retry
+button, not the install button (a `go.installPlugin` for a plugin that is already installed only shows Kino's toast «Ese
+plugin ya está instalado»). `recommends` does nothing else: Kino shows the person no list or badge for it, it only fills
+`installed` (an older Kino ignores the field).
+
 ### Asking a door { #calling }
 
 Each round asks TMDB for one random movie of a random era. Kino keeps a screen's state, so the handler calls, answers with
@@ -319,7 +328,7 @@ inside `enhancements["20"]` it drops only that block instead.
 | Declared | Export | Receives | Returns |
 | --- | --- | --- | --- |
 | a call `random` of the door `movies` | `proto_movies_random` | the consumer's argument, already checked against `in` (`{}` when the consumer sent none and every field of `in` is optional) | JSON that matches `out` (a value or a promise of one) |
-| a stream `trending` of the door `movies` | `proto_movies_trending` | the `cursor` you returned last time, `null` the first time | `{ items: [...], cursor }`: `items` are new since that cursor, each one an `out`; `cursor` is any JSON you want back next time |
+| a stream `trending` of the door `movies` | `proto_movies_trending` | the `cursor` you returned last time, `null` the first time | `{ items: [...], cursor }`: `items` are new since that cursor, each one an `out`; `cursor` is any small JSON you want back next time: it travels inside this answer, at most 64 KB together with the items |
 
 - **Throw to fail.** A thrown error reaches the consumer as `provider_failed` (the message is not passed on, so put nothing
   private in it). A missing export is also `provider_failed`.
@@ -394,6 +403,114 @@ Only the argument itself reads as `{}` when absent: a `null` nested inside it (a
 Two aliases may point at the same door (rarely useful): the rate limit is per **provider door**, whatever alias reaches it.
 A provider installed after the consumer simply starts working: nothing is resolved at install time.
 
+### The consumer's `hosts` { #consumer-hosts }
+
+A consumer is an ordinary plugin of its kind, so the ordinary `hosts` rule applies: **at least one host**, unless it has a `url`
+setting. `"hosts": []` is refused for a screen plugin that consumes (`The "hosts" field can only be empty if the plugin has a
+setting of type "url"`); only a [provides-only](#provides-only) plugin (or a themes-only one) may leave it empty. Data that
+arrives through a door needs no host: `hosts` is for what **your** plugin loads itself.
+
+- Declare the real host your screen loads something from: the image host of the posters it draws (`image.tmdb.org` for TMDB's
+  `posterUrl`, as Cine Trivia does), a site it reads with `kino.fetch`. The install sheet lists that host to the person, so it
+  must be true.
+- A screen that shows only text from the provider still needs one host. Do not invent one: use the host the provider's
+  answers point to (draw the poster from `posterUrl` and declare its image host), and say in your README why it is there.
+- Never publish a placeholder. `node sdk/init.mjs … --kind consumer` writes `"hosts": ["example.com"]` unless you pass
+  `--host <real host>`, and the kit's example consumer (`fixtures/protocol/consumer`) keeps `example.com` only because it is a
+  test fixture: replace it.
+
+### A minimal consumer screen that draws clean { #minimal-consumer }
+
+The smallest consumer that does everything right: the install gate, a `Scaffold` with one compact `AppBar`, a scroll, a button
+that calls the door, an error sentence per code and a stream switch. It is checked with the kit: with the example provider,
+`node sdk/run.mjs --context '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}' --provider <provider folder> . screen` prints no
+`dropped` line, with `installed` `true` and `false`, with `--lang en` and with `--device tv`. `node sdk/init.mjs my-consumer
+--kind consumer` scaffolds a bigger one with its own tests.
+
+```json
+{
+  "id": "mini-trivia",
+  "name": "Mini Trivia",
+  "version": "0.1.0",
+  "apiVersion": 20,
+  "entry": "plugin.js",
+  "description": "Una pregunta de cine con las películas del plugin TMDB",
+  "hosts": ["image.tmdb.org"],
+  "capabilities": ["screen"],
+  "screen": { "label": "Trivia", "labelEn": "Trivia" },
+  "recommends": ["kinotvapp/kino-plugin-tmdb"],
+  "consumes": { "tmdb": { "repo": "kinotvapp/kino-plugin-tmdb", "door": "movies", "calls": ["random"], "streams": ["trending"] } }
+}
+```
+
+```js
+const TMDB = "kinotvapp/kino-plugin-tmdb"; // exactly as written in "recommends"
+
+const ERRORS = {
+  provider_missing: ["TMDB está apagado o le falta configurarse: revísalo en Plugins.", "TMDB is off or needs setting up: check it in Plugins."],
+  rate_limited: ["Demasiadas preguntas seguidas. Espera un momento.", "Too many questions in a row. Wait a moment."],
+};
+const OTHER = ["No se pudo traer la película. Intenta otra vez.", "Could not get the movie. Try again."];
+
+const text = (es, en, more = {}) => ({ type: "Text", text: es, textEn: en, ...more });
+const page = (children) => ({
+  type: "Scaffold",
+  appBar: {
+    type: "AppBar", title: "Mini Trivia", titleEn: "Mini Trivia", mergeWithKinoBar: true, dense: true,
+    leading: { type: "IconButton", icon: "close", labelText: "Cerrar", labelTextEn: "Close", onPressed: { close: true } },
+  },
+  body: { type: "SingleChildScrollView", children: [{ type: "Column", padding: 16, gap: 12, children }] },
+});
+
+export async function screen({ state = {}, installed = {} }) {
+  if (installed[TMDB] !== true) {
+    return page([
+      text("Para jugar necesitas el plugin TMDB.", "To play you need the TMDB plugin."),
+      { type: "ElevatedButton", key: "install", labelText: "Instalar TMDB", labelTextEn: "Install TMDB",
+        onPressed: { go: { installPlugin: { repo: TMDB } } }, autofocus: true },
+    ]);
+  }
+  const kids = [];
+  if (state.movie) {
+    if (state.movie.poster) kids.push({ type: "Image", url: state.movie.poster, aspect: "2:3", width: 160 }); // image.tmdb.org
+    kids.push(text(`¿De qué año es ${state.movie.title}?`, `What year is ${state.movie.title} from?`, { style: "h3" }));
+  }
+  if (state.error) kids.push(text(...(ERRORS[state.error] || OTHER), { color: "error" }));
+  kids.push({ type: "ElevatedButton", key: "play", labelText: "Otra película", labelTextEn: "Another movie", onPressed: "play", autofocus: true });
+  kids.push({ type: "Switch", key: "live", labelText: "Tendencias en vivo", labelTextEn: "Live trending",
+    value: state.protocol?.tmdb?.trending === true, onChanged: "live" });
+  if (state.trending) kids.push(text(state.trending, state.trending, { style: "caption" }));
+  return page(kids);
+}
+
+export async function screenEvent({ name, value, arg, state = {}, installed = {} }) {
+  if (installed[TMDB] !== true) return null; // the gate: nothing works until the provider is installed
+  if (name === "play") {
+    try {
+      const m = await kino.plugins.call("tmdb", "random", {});
+      return { state: { movie: { title: m.title, year: m.year, poster: m.posterUrl ?? null }, error: null } };
+    } catch (e) {
+      return { state: { error: e.code || "provider_failed" } }; // provider_missing, rate_limited, timeout...
+    }
+  }
+  if (name === "live") return { state: { protocol: { tmdb: { trending: value === true } } } };
+  if (name === "protocol" && Array.isArray(arg?.items)) {
+    return { state: { trending: arg.items.map((m) => m.title).slice(0, 5).join(", ") } };
+  }
+  return null;
+}
+```
+
+Three traps that a Flutter habit walks into, and that the kit and Kino do not draw:
+
+| You write | What happens | Write instead |
+| --- | --- | --- |
+| `{ type: "SingleChildScrollView", child: { … } }` | an **empty** scroll, and **no** `dropped` line warns you | `children: [ … ]`, a list, even for one child |
+| `appBar: { title: "…" }` (no `type`) | `dropped: screen: scaffold appBar must be AppBar`: the whole bar is lost | `appBar: { type: "AppBar", title, titleEn, … }` |
+| `{ type: "FilledButton", … }` | `unknown widget "FilledButton"`: the button is dropped | `ElevatedButton` (or `TextButton`) with `labelText` + `labelTextEn` and `onPressed` |
+
+A `Text` whose `text` is `""` is dropped too (`text is empty`): leave the node out instead.
+
 ### `kino.plugins.call(alias, call, arg?)` { #call }
 
 ```js
@@ -443,7 +560,8 @@ Good to know:
 - A subscriber that joins a feed others already share gets only the items polled after it joined.
 - Streams are for plugin screens, not for a player-panel session.
 - The provider's cursor is its own business: an offset, a date, the list of ids already delivered (TMDB keeps up to 200 ids).
-  Keep it small: it travels with every poll.
+  It must be JSON, and small: it is part of the provider's answer, which may be at most 64 KB **together with the items**, and
+  it comes back with every poll. Never put the items themselves in it.
 
 ## Errors { #errors }
 
@@ -495,9 +613,13 @@ The same numbers are in [Limits and engine quirks](engine-limits.md#limits).
 ## A plugin that only provides { #provides-only }
 
 A plugin whose **only** purpose is to open doors needs nothing else: `apiVersion` 20, a non-empty `provides`, no capability at
-all (the `capabilities` field may be left out) and `"hosts": []`. It plays nothing, is no source and does not show up in
-search or Home. Its consent sheet claims no network and no role, and its installed card says it does not connect to the
-internet. It reaches the world only through Kino's services, such as [`kino.tmdb`](kino-api.md#tmdb).
+all (the `capabilities` field may be left out) and no settings. Such a plugin is **provides-only** and may declare
+`"hosts": []`. It plays nothing, is no source and does not show up in search or Home. With `"hosts": []` its consent sheet
+claims no network and no role, and its installed card says it does not connect to the internet: it reaches the world only
+through Kino's services, such as [`kino.tmdb`](kino-api.md#tmdb). `node sdk/init.mjs my-provider --kind provider` scaffolds
+one, with its test.
+
+There is **no `providesOnly` field**: Kino derives it from those conditions, and `node sdk/validate.mjs` warns if you write one.
 
 ```json
 {
@@ -516,8 +638,11 @@ internet. It reaches the world only through Kino's services, such as [`kino.tmdb
 }
 ```
 
-Declare any capability or any setting, or put `provides` below `apiVersion` 20, and the ordinary rules come back (`resolve`
-and `search` or `home`, at least one host...).
+- **A provider that needs `kino.fetch`** (its own API instead of a Kino service) lists those hosts in `hosts`, like any plugin.
+  That does not make it lose the status: with no capability and no setting it is still provides-only (no `resolve`, `search`
+  or `home` to write), but its consent sheet now lists those hosts.
+- Declare any capability or any setting, or put `provides` below `apiVersion` 20, and the ordinary rules come back (`resolve`
+  and `search` or `home`, at least one host...).
 
 ## Old Kinos: `apiVersion` 20 or `enhancements["20"]` { #versions }
 
@@ -573,33 +698,69 @@ and `search` or `home`, at least one host...).
 
 ## Testing offline with the kit { #kit }
 
-The Node kit answers `kino.plugins.call` from a provider **folder** on your computer, through the same validation and the same
-error codes:
+**Start from a scaffold.** Both have the right shapes from the first line and a test that passes as they come:
 
 ```sh
-# a call: the consumer's "play" event, answered by the provider's proto_movies_random
-node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent play
-
-# a stream: poll tmdb.trending once and send the "protocol" event { alias, stream, items }
-node sdk/run.mjs --provider ../kino-plugin-tmdb ./cine-trivia screenEvent protocol tmdb.trending
-
-# the install gate: draw the screen as if TMDB were installed (without --context every recommends entry is false)
-node sdk/run.mjs --context '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}' ./cine-trivia screen
+node sdk/init.mjs my-provider --kind provider
+#   provides-only (apiVersion 20, "hosts": [], no capabilities), door "quotes" with a call and a stream, test/plugin.test.mjs
+node sdk/init.mjs my-consumer --kind consumer --repo owner/kino-plugin-quotes --host <the host your screen loads from>
+#   a screen with the install gate, an error per code, a stream switch and TV focus; test/provider is a stand-in provider
+node sdk/init.mjs --help
 ```
 
-- `--provider <folder>` (repeatable) loads the provider's manifest and entry in its own sandbox. Without it every call rejects
-  with `provider_missing`.
-- The kit has no repositories to match: it serves each `consumes` entry with the **first provider that has its door** (the
-  app matches the entry's `repo`).
+Then copy the kit next to the new plugin: `sdk/` **without `sdk/test/`** and `contract.json` (see
+[Test it locally](test-locally.md#copy-the-kit)), and replace the scaffold's placeholders (`your-user/...`, `example.com`).
+
+**A provider on its own**, with no consumer: `proto` sends one call or one poll through the app's checks (the argument strictly
+against `in`, the answer loosely against `out`) and its error codes:
+
+```sh
+node sdk/run.mjs ./my-provider proto quotes.byId '{"id":1}'    # a call: prints the checked answer
+node sdk/run.mjs ./my-provider proto quotes.byId '{"id":"1"}'  # ✗ bad_input: $.id: expected number
+node sdk/run.mjs ./my-provider proto quotes.latest             # a stream's first poll (cursor null): prints { items, cursor }
+node sdk/run.mjs ./my-provider proto quotes.latest '2'         # the next poll, from the cursor the last one printed
+```
+
+Exit code 0 with the answer on stdout; 1 with `✗ <code>: <message>` on stderr when Kino would reject the call (if your export
+threw, its own message follows on a `·` line: the consumer never sees it); 2 for a wrong command (a door or call that does
+not exist, which it lists; JSON that does not parse; a folder without `provides`).
+
+**A consumer with its provider.** `--provider <folder>` (repeatable) loads the provider in its own sandbox and answers every
+`kino.plugins.call` from its exports; without it every call rejects with `provider_missing`. Pass `installed` to `screenEvent`
+too: a consumer with an install gate does nothing while it is `false`.
+
+```sh
+I='{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'
+node sdk/run.mjs ./cine-trivia screen                                    # the install gate: every recommends entry is false
+node sdk/run.mjs --context "$I" --provider ../kino-plugin-tmdb ./cine-trivia screen
+node sdk/run.mjs --context "$I" --lang en --provider ../kino-plugin-tmdb ./cine-trivia screen   # the English texts
+node sdk/run.mjs --context "$I" --device tv --provider ../kino-plugin-tmdb ./cine-trivia screen
+node sdk/run.mjs --context "$I" --provider ../kino-plugin-tmdb ./cine-trivia screenEvent play
+# a stream: one poll, sent as the "protocol" event { alias, stream, items }; --cursor polls from a given cursor
+node sdk/run.mjs --context "$I" --state '{"protocol":{"tmdb":{"trending":true}}}' --provider ../kino-plugin-tmdb ./cine-trivia screenEvent protocol tmdb.trending
+node sdk/run.mjs --context "$I" --cursor '[603]' --provider ../kino-plugin-tmdb ./cine-trivia screenEvent protocol tmdb.trending
+```
+
+- **Read stderr.** A `· dropped: …` line is a node Kino would not draw. The exit code stays 0 when nodes are dropped, so a
+  clean run is one with no `dropped` line. `node sdk/run.mjs` with no arguments prints every command.
+- **`--cursor`** lets you send a cursor the provider already returned, to see what your `protocol` handler does with a batch
+  it may have seen before (Kino can resend items after a return).
+- **The kit ignores `repo`.** It has no repositories, so it serves each `consumes` entry with the **first provider that has
+  its door**; the app matches the entry's `repo`. Check by hand that `repo` is the provider's exact GitHub `owner/name`
+  (open `https://github.com/<owner/name>`), the same string in `recommends` and in the key your code reads from `installed`.
 - The provider's own services work as usual in the kit: TMDB needs `KINO_TMDB_KEY` or a `KINO_TMDB_FIXTURE` for `kino.tmdb`
   ([Test it locally](test-locally.md#kino-services)).
-- `node sdk/validate.mjs <folder>` reads `provides` and `consumes` (top level and in `enhancements`) the way the app does and
-  lists what it would refuse.
+- **`node sdk/validate.mjs <folder>`** reads `provides` and `consumes` (top level and in `enhancements`) the way the app does.
+  It **fails** (`✗`, exit 1) when a declared call or stream has no `proto_<door>_<name>` export (Kino installs it, but every
+  consumer's call to it answers `provider_failed`; the name is case-sensitive). It **warns** (`!`, exit 0: read each one) when a
+  consumed repository is missing from `recommends` (the install gate would never open), when a stream's `everySeconds` is
+  outside 30..86,400 (it says the value Kino uses) and when the manifest has a `providesOnly` field (there is none).
 - In your own tests, `createProtocolCaller` and `createKino(manifest, { protocol })` from `sdk/protocol.mjs` give you the same
   caller.
-- `--provider` and `sdk/protocol.mjs` belong to the kit of Kino 0.9.81. If `run.mjs` does not know `--provider` or
-  `validate.mjs` does not know `provides`, your copy of `sdk/`, `contract.json` and `kino.d.ts` is older: replace all three
-  with a copy that has `sdk/protocol.mjs` (never silence the error by removing the blocks).
+- `--provider` and `sdk/protocol.mjs` belong to the kit of Kino 0.9.81, and `proto`, `--cursor`, `--lang` and
+  `init.mjs --kind` to its later copies. If `run.mjs` or `init.mjs` does not know one of them, or `validate.mjs` does not know
+  `provides`, your copy of `sdk/`, `contract.json` and `kino.d.ts` is older: replace all three from
+  [kinotvapp/kino-plugin-sdk](https://github.com/kinotvapp/kino-plugin-sdk) (never silence the error by removing the blocks).
 
 !!! warning "What only the app checks"
     The kit does **not** apply the 18+ rule, the refusal of sealed secrets in answers, nor the self-call refusal, and it does
@@ -617,6 +778,11 @@ node sdk/run.mjs --context '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}' .
 - Nothing private in answers or in thrown messages; no sealed secret anywhere in an answer.
 - A short `summary` the person understands; the door described in your README.
 - Changes after publishing only add (new calls, optional fields); a breaking change goes to a new door.
+- `node sdk/validate.mjs .` shows no `✗` (a missing `proto_` export fails) and you read every `!`.
+- Each call tried with `node sdk/run.mjs . proto <door>.<call> '<json>'` (also with a bad argument), each stream with
+  `proto <door>.<stream>` and again from the cursor it printed.
+- A provides-only plugin has no capability, no setting and no `providesOnly` field; its `hosts` are `[]` or the real ones its
+  `kino.fetch` needs.
 
 **Consumer**
 
@@ -626,5 +792,8 @@ node sdk/run.mjs --context '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}' .
 - Every `kino.plugins.call` in `try`/`catch`, with a Spanish and English message per case; no retry loops.
 - Arguments carry nothing the provider's author should not see.
 - No calls from a background `job`.
-- A `protocol` handler that tolerates repeated items.
-- Tried with `--provider` in the kit, and in the app with the real provider installed and removed.
+- A `protocol` handler that tolerates repeated items (try it with `--cursor`).
+- `hosts` lists a real host your screen loads from, never `example.com` or another placeholder.
+- `node sdk/validate.mjs .` shows no `!` about `recommends`; your `repo` checked by hand (the kit ignores it).
+- The screen drawn with `installed` `true` and `false`, with `--lang en` and with `--device tv`, with no `dropped` line.
+- Tried with `--provider` in the kit, and in the app with the real provider installed, switched off and removed.

@@ -48,7 +48,10 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   doors (`provides`) and another uses them through Kino (`consumes`, `kino.plugins.call`), validated both ways, with an
   install button instead of silent installs: [The plugin protocol](https://kinotvapp.github.io/kino-plugins/en/protocol/).
   Example pair: [kino-plugin-cine-trivia](https://github.com/kinotvapp/kino-plugin-cine-trivia) (consumer) and
-  [kino-plugin-tmdb](https://github.com/kinotvapp/kino-plugin-tmdb) (provider, TMDB 1.3.0 and later).
+  [kino-plugin-tmdb](https://github.com/kinotvapp/kino-plugin-tmdb) (provider, TMDB 1.3.0 and later). Start one with the
+  kit's scaffold, `node sdk/init.mjs my-plugin --kind provider` or `--kind consumer`, and try a provider on its own with
+  `node sdk/run.mjs <provider folder> proto <door>.<call> '<json>'`
+  ([Testing offline with the kit](https://kinotvapp.github.io/kino-plugins/en/protocol/#kit)).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every
   update is yours: [Signed plugins](https://kinotvapp.github.io/kino-plugins/en/signed/). What changed
   for authors, by Kino version: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).

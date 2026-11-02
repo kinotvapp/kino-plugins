@@ -134,7 +134,9 @@ Before writing anything:
 8. If my plugin uses another plugin's data, or opens a door for other plugins, read
    https://kinotvapp.github.io/kino-plugins/en/protocol/ first (the plugin protocol: apiVersion 20, Kino 0.9.81, not
    published yet) and copy the patterns of Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia, a
-   consumer with the install gate) and TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, a provider).
+   consumer with the install gate) and TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, a provider). Start
+   from the kit's scaffold: node sdk/init.mjs my-plugin --kind provider, or --kind consumer --repo owner/name
+   --host <the real host my screen loads from>.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -457,14 +459,26 @@ Rules:
 - Limits: 64 KB per request and answer, 10 s per call, 30 calls in any 10 s per door, 4 doors per plugin,
   16 calls and 8 streams per door, 8 consumes entries, streams polled every 30 s at least.
 - Every text for the person in Spanish (neutral, tuteo, never voseo) and English (text + textEn).
+- A consumer's "hosts" cannot be []: put the one real host the screen loads from (the image host of the
+  posters it draws, e.g. image.tmdb.org), never example.com or an invented one. Only a provides-only plugin
+  (apiVersion 20, provides, no capabilities, no settings) may have "hosts": []; there is no "providesOnly" field.
+- Screen trees: a Scaffold whose appBar is { "type": "AppBar", ... }; SingleChildScrollView takes "children"
+  (a list), never "child"; buttons are ElevatedButton/TextButton with labelText + labelTextEn and onPressed
+  (FilledButton does not exist). Copy the minimal consumer screen of AGENTS.md section 4.
 
-Test it offline with the kit before anything else: `node sdk/validate.mjs .` and, for a consumer,
-`node sdk/run.mjs --provider <provider folder> . screenEvent <event>` (and `screenEvent protocol <alias>.<stream>`
-for a stream; `--context '{"installed":{"owner/name":true}}' . screen` to draw past the install gate). That needs
-a copy of the kit with the protocol (sdk/protocol.mjs); if run.mjs does not know --provider, tell me how to get
-a newer kit instead of working around it. The kit does not check the 18+ rule, sealed secrets in answers nor
-self-calls: when you finish, tell me how to try it in Kino 0.9.81 or newer with both plugins installed, then
-with the provider removed, with the exact clicks.
+Start from the kit's scaffold, not from a blank file: `node sdk/init.mjs my-plugin --kind provider` or
+`node sdk/init.mjs my-plugin --kind consumer --repo owner/name --host <real host>` (`node sdk/init.mjs --help`),
+then copy `sdk/` without `sdk/test/` and `contract.json` next to it. Test it offline before anything else:
+`node sdk/validate.mjs .` (no ✗, and read every ! line); for a provider
+`node sdk/run.mjs . proto <door>.<call> '<json>'` and `node sdk/run.mjs . proto <door>.<stream> ['<cursor>']`;
+for a consumer `node sdk/run.mjs --context '{"installed":{"owner/name":true}}' --provider <provider folder> . screen`
+(also with false, with --lang en and with --device tv: no "dropped" line on stderr), the same --context and
+--provider with `screenEvent <event>`, and `screenEvent protocol <alias>.<stream>` (with --cursor '<json>' to
+try repeated items). The kit ignores "repo" (it uses the first provider with the door): check it by hand.
+If run.mjs does not know --provider or proto, or init.mjs does not know --kind, tell me how to get a newer kit
+instead of working around it. The kit does not check the 18+ rule, sealed secrets in answers nor self-calls:
+when you finish, tell me how to try it in Kino 0.9.81 or newer with both plugins installed, then with the
+provider switched off and removed, with the exact clicks.
 ```
 
 ## Getting Kino to find your plugin { #listed }

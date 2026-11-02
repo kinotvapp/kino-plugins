@@ -139,6 +139,8 @@ Antes de escribir nada:
    https://kinotvapp.github.io/kino-plugins/protocol/ (el protocolo entre plugins: apiVersion 20, Kino 0.9.81,
    todavía sin publicar) y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
    un consumidor con la puerta de instalación) y TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, un proveedor).
+   Parte de la plantilla del kit: node sdk/init.mjs mi-plugin --kind provider, o --kind consumer --repo dueño/nombre
+   --host <el host real del que carga mi pantalla>.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -467,14 +469,27 @@ Reglas:
 - Límites: 64 KB por petición y por respuesta, 10 s por llamada, 30 llamadas en cualquier ventana de 10 s por puerta,
   4 puertas por plugin, 16 llamadas y 8 flujos por puerta, 8 entradas en consumes, flujos consultados cada 30 s como mínimo.
 - Todo texto para la persona en español (neutro, con tuteo, nunca voseo) y en inglés (text + textEn).
+- Los "hosts" de un consumidor no pueden ser []: pon el único host real del que carga la pantalla (el host de
+  imágenes de los pósters que dibuja, p. ej. image.tmdb.org), nunca example.com ni uno inventado. Solo un plugin
+  que solo provee (apiVersion 20, provides, sin capacidades ni ajustes) puede tener "hosts": []; no existe un
+  campo "providesOnly".
+- Árboles de pantalla: un Scaffold cuyo appBar es { "type": "AppBar", ... }; SingleChildScrollView lleva
+  "children" (una lista), nunca "child"; los botones son ElevatedButton/TextButton con labelText + labelTextEn y
+  onPressed (FilledButton no existe). Copia la pantalla mínima de consumidor de la sección 4 de AGENTS.md.
 
-Pruébalo sin conexión con el kit antes que nada: `node sdk/validate.mjs .` y, para un consumidor,
-`node sdk/run.mjs --provider <carpeta del proveedor> . screenEvent <evento>` (y `screenEvent protocol <alias>.<flujo>`
-para un flujo; `--context '{"installed":{"owner/name":true}}' . screen` para dibujar más allá de la puerta de
-instalación). Eso necesita una copia del kit con el protocolo (sdk/protocol.mjs); si run.mjs no conoce --provider,
-dime cómo conseguir un kit más nuevo en vez de darle la vuelta. El kit no revisa la regla 18+, los secretos sellados
-en las respuestas ni las llamadas a sí mismo: al terminar, dime cómo probarlo en Kino 0.9.81 o más nuevo con los dos
-plugins instalados, y después con el proveedor quitado, con los clics exactos.
+Parte de la plantilla del kit, no de un archivo en blanco: `node sdk/init.mjs mi-plugin --kind provider` o
+`node sdk/init.mjs mi-plugin --kind consumer --repo dueño/nombre --host <host real>` (`node sdk/init.mjs --help`),
+y después copia junto a él `sdk/` sin `sdk/test/` y `contract.json`. Pruébalo sin conexión antes que nada:
+`node sdk/validate.mjs .` (ningún ✗, y lee cada línea !); para un proveedor
+`node sdk/run.mjs . proto <puerta>.<llamada> '<json>'` y `node sdk/run.mjs . proto <puerta>.<flujo> ['<cursor>']`;
+para un consumidor `node sdk/run.mjs --context '{"installed":{"dueño/nombre":true}}' --provider <carpeta del proveedor> . screen`
+(también con false, con --lang en y con --device tv: ninguna línea "dropped" en stderr), el mismo --context y
+--provider con `screenEvent <evento>`, y `screenEvent protocol <alias>.<flujo>` (con --cursor '<json>' para probar
+ítems repetidos). El kit ignora "repo" (usa el primer proveedor que tenga la puerta): revísalo a mano. Si run.mjs
+no conoce --provider ni proto, o init.mjs no conoce --kind, dime cómo conseguir un kit más nuevo en vez de darle
+la vuelta. El kit no revisa la regla 18+, los secretos sellados en las respuestas ni las llamadas a sí mismo: al
+terminar, dime cómo probarlo en Kino 0.9.81 o más nuevo con los dos plugins instalados, y después con el
+proveedor apagado y quitado, con los clics exactos.
 ```
 
 ## Que Kino encuentre tu plugin { #listed }

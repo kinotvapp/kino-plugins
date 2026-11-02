@@ -122,8 +122,8 @@ remote switch for every plugin screen: off, the entries hide at once and an open
 ## The exports: `screen` and `screenEvent` { #exports }
 
 ```js
-export async function screen({ state, route, device, size, lang }) { return /* the root node */; }
-export async function screenEvent({ name, arg, value, state, route, device, lang }) { return /* an answer, or null */; }
+export async function screen({ state, route, device, size, lang, activeTheme, installed }) { return /* the root node */; }
+export async function screenEvent({ name, arg, value, state, route, device, lang, activeTheme, installed }) { return /* an answer, or null */; }
 ```
 
 - **`screen` is a pure view.** Given the state, it returns the tree. Kino calls it when the screen opens, after every answer

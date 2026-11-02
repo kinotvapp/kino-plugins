@@ -3,10 +3,27 @@
 You are helping a person write a **Kino plugin**: a public GitHub repository with one JSON manifest
 (`kino-plugin.json`) and one JavaScript ES module (`plugin.js`) that Kino, an Android app for phones
 and TVs, runs inside a QuickJS sandbox. The plugin turns one source into search results, Home rows,
-episodes and playable streams: video, live TV channels, and (from apiVersion 8, Kino 0.9.54) music and
-podcasts; or, with `"catalogOnly": true`, a catalog that plays nothing (lists, ratings); or, with the
-`syncProvider` capability (apiVersion 12, Kino 0.9.74), the transport of the person's own Kino sync
-between their devices. apiVersion 13 (in development for the next Kino version, **not in any released Kino**) adds
+episodes and playable streams (video, live TV, music, podcasts); or it is a catalog that plays nothing, a screen of its own,
+the transport of the person's Kino sync, a look for the whole app, or a provider of data to other plugins.
+
+Your job: produce a plugin that **Kino accepts and that actually plays** (or does what it promises), verified with the Node
+kit before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
+suggestion. When this file and your prior knowledge disagree, this file and the guide win.
+
+**Start here, in this order:**
+
+1. Settle with the person what the plugin does and the lowest `apiVersion` that works (section 2).
+2. Start from a template or a kit scaffold, never from a blank file (section 3, step 1). `node sdk/init.mjs --help` lists the
+   scaffolds: a source plugin (`--host`), a provider or a consumer of the plugin protocol (`--kind provider|consumer`), a
+   store (`--store local|live`). Copy `sdk/` into the plugin **without `sdk/test/`**.
+3. Write it following the hard rules (section 4), and check it with the kit before anyone installs it:
+   `node sdk/validate.mjs .` (no `✗` line, and read every `!`) and `node sdk/run.mjs . <function>` (no `dropped` line on
+   stderr; the exit code stays 0 even when nodes are dropped).
+4. Go through the checklist (section 5) and the common mistakes (section 7) before publishing.
+
+**apiVersions at a glance.** apiVersion 8 (Kino 0.9.54) adds music and podcasts; `"catalogOnly": true` (Kino 0.9.54, any
+apiVersion) makes a catalog that plays nothing (lists, ratings); the `syncProvider` capability (apiVersion 12, Kino 0.9.74)
+carries the person's own Kino sync between their devices. apiVersion 13 (in development for the next Kino version, **not in any released Kino**) adds
 sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes. apiVersion 14
 (with Kino 0.9.74 as well, the next version, **not published yet**) adds **screens**: a full-screen canvas the plugin
 describes as a JSON tree that Kino draws on the phone and the TV, plus player-panel tabs on any title, rooms over the
@@ -23,10 +40,6 @@ contract names Kino 0.9.81; **not in any released Kino**) adds **app themes**: `
 protocol**: a plugin opens named doors in `provides` and another uses them through Kino with `consumes` and
 `kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"). See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
-
-Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
-before anyone installs it. Kino is strict: every rule below is enforced by the app, not a style
-suggestion. When this file and your prior knowledge disagree, this file and the guide win.
 
 ## 0. The plugin's UI: screens first
 
@@ -261,7 +274,16 @@ exact message Kino shows, never a summary.
     - `git clone https://github.com/kinotvapp/kino-plugin-archive` (or `-own-server`) somewhere
       else, then `node kino-plugin-archive/sdk/init.mjs my-plugin --host example.com` and copy its
       `sdk/` and `contract.json` into `my-plugin/` (the kit looks for `contract.json` next to
-      `sdk/`). `init.mjs` never overwrites a file.
+      `sdk/`). `init.mjs` never overwrites a file; `node sdk/init.mjs --help` lists its options.
+    - **A plugin of the plugin protocol** (apiVersion 20) starts from the kit's scaffolds, the recommended starting point:
+      `node kino-plugin-archive/sdk/init.mjs my-provider --kind provider` (provides-only: door `quotes` with a call and a
+      stream, `"hosts": []`, a test that runs `proto`) or `node kino-plugin-archive/sdk/init.mjs my-consumer --kind consumer
+      --repo <provider owner/name> --host <the real host the screen loads from>` (a screen with the install gate, an error
+      per code, a stream switch and TV focus, tested against a stand-in provider in `test/provider`). Replace every
+      placeholder they leave (`your-user/kino-plugin-quotes`, `example.com`). Then copy `sdk/` and `contract.json` in.
+    - **Leave the kit's own tests out of the plugin.** `sdk/test/` (more than 60 files) is the kit's suite, not needed by a
+      plugin. Copy `sdk/` without it, or delete it after copying (also in a repository made from a template):
+      `rm -rf sdk/test` (PowerShell: `Remove-Item -Recurse -Force sdk\test`). Nothing in `sdk/` reads it when it runs.
 2. **Write `kino-plugin.json`**: a new `id` (`^[a-z0-9][a-z0-9-]{1,39}$`, never a reserved one, never
    changed after release), `name`, `version` `0.1.0`, the lowest `apiVersion`, `entry`, `hosts`,
    `capabilities`, `settings` if needed, `description` in Spanish.
@@ -305,14 +327,18 @@ exact message Kino shows, never a summary.
     `--retry conflict:1 ./plugin.js resolve '<ref>'`, and `node sdk/validate.mjs . --run liveSearch <q>`
     for the 18+ marks. Lines marked `[dropped by Kino]` are what the app would drop. Screens (apiVersion 14+):
     `node sdk/run.mjs . screen` (and `--device tv`), `--state '<json>' . screenEvent <name> [arg] ['<value json>'] --trigger
-    tap|change|submit`, `--context '{"activeTheme":"<id>"}' . screen` (apiVersion 18). Themes (apiVersion 18):
+    tap|change|submit`, `--lang en . screen` (the English texts; without it `run.mjs` draws the Spanish ones),
+    `--context '{"activeTheme":"<id>"}' . screen` (apiVersion 18). Plugin protocol (apiVersion 20): a provider alone with
+    `node sdk/run.mjs . proto <door>.<call> '<arg json>'` and `. proto <door>.<stream> ['<cursor json>']`; a consumer with
+    `--context '{"installed":{"<owner/name>":true}}' --provider <provider folder> . screen` (and `screenEvent <name>`,
+    `screenEvent protocol <alias>.<stream>`, `--cursor '<json>'`): see section 4. Themes (apiVersion 18):
     `node sdk/validate.mjs .` prints every theme's dropped tokens for the phone and the TV. Coins: `KINO_COINS_BALANCE=<n>`
     (default 5), `KINO_COINS_DISABLED=1`, `KINO_COINS_REVOKED=1`.
 6. **Record fixtures and test offline**: `node sdk/run.mjs --record test/fixtures.json . search "algo"`,
    then `node --test test/plugin.test.mjs` (the scaffold's test: it validates the manifest and
    replays the fixtures offline). Name the file explicitly: a bare `node --test test/` does not work
-   on every Node version, and a bare `node --test` would also run the kit's own suite. The kit's
-   tests (`node --test sdk/test/kit.test.mjs`) are only for someone changing the kit (you should not).
+   on every Node version, and a bare `node --test` would also run the kit's own suite if `sdk/test/` is still there
+   (delete it: step 1). The kit's tests are only for someone changing the kit (you should not).
 7. **Check what Node hides** (the kit is more permissive than Kino): grep `plugin.js` for the
    missing globals (section 4) and for any `throw` before the first `await` of an async function.
 8. **Publish**: public repository, `kino-plugin.json` and `plugin.js` at the root, `.gitignore` with
@@ -621,12 +647,15 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
 [forms, overlays and navigation](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
 [state, style and recipes](https://kinotvapp.github.io/kino-plugins/en/screen-reference/).
 
-- **The exports.** `screen({ state, route, device, size, lang, activeTheme })` is a pure view: no network, return what `state`
-  holds (a `Skeleton` while it loads). `screenEvent({ name, arg, value, state, route, device, lang, activeTheme })` reacts; the
-  first call is the reserved event `open` (load data there and answer a `state` patch; no node may use the name `open`).
-  `device` is `"phone"`, `"tv"` or `"desktop"`; `size` `{ widthClass, heightClass, orientation }` (`compact` < 600 dp,
-  `medium` 600..839, `expanded` ≥ 840; a TV is `expanded`); `lang` `"es"` or `"en"`; `activeTheme` (apiVersion 18) the id of
-  your active app theme or `null`. `route` is `{ name, params, args? }` (`"main"` at the root).
+- **The exports.** `screen({ state, route, device, size, lang, activeTheme, installed })` is a pure view: no network, return
+  what `state` holds (a `Skeleton` while it loads). `screenEvent({ name, arg, value, state, route, device, lang, activeTheme,
+  installed })` reacts; the first call is the reserved event `open` (load data there and answer a `state` patch; no node may
+  use the name `open`). `device` is `"phone"`, `"tv"` or `"desktop"`; `size` `{ widthClass, heightClass, orientation }`
+  (`compact` < 600 dp, `medium` 600..839, `expanded` ≥ 840; a TV is `expanded`); `lang` `"es"` or `"en"`; `activeTheme`
+  (apiVersion 18) the id of your active app theme or `null`; `installed` (Kino 0.9.81, any apiVersion) `{ "<owner/name>":
+  true | false }`, one key per entry of your manifest's `recommends`, written as you wrote it (`{}` without `recommends`):
+  whether a plugin from that repository is installed now; a change calls `screen` again. A plugin protocol consumer's
+  install gate reads it. `route` is `{ name, params, args? }` (`"main"` at the root).
 - **One compact bar on every screen** (additive: a Kino that does not know the booleans draws two bars at the normal height).
   The `AppBar` of every screen's root `Scaffold` sets `"mergeWithKinoBar": true` (apiVersion 19; only the boolean `true`, only
   the root's bar, needs a `leading` `IconButton`, else it is ignored and both bars show) and `"dense": true`. Phone: one bar
@@ -697,7 +726,7 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   (apiVersion 17: a job id; turns on Kino's own row of that job). A timer's answer keeps only `state`, `toast`, `close`,
   `config`; an `onClose` answer drops pop-ups, `go`, `route`, `share`, `enableJob`; `open`'s answer drops `go` except
   `go.screen`. `share`, `enableJob` and the person-only `go` shapes need the answer to come within 5 s of the person's tap.
-- **`go`: fifteen shapes, always into your own content or one of Kino's pages** (nothing else: no intent, no app):
+- **`go`: sixteen shapes, always into your own content or one of Kino's pages** (nothing else: no intent, no app):
 
   | `go` | Opens | From |
   | --- | --- | --- |
@@ -712,6 +741,7 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   | `syncProvider` | Kino's sync-provider settings (only with `syncProvider`) | the person's press or submit only |
   | `useTheme` | `{ theme }`: turns on one of your `appThemes` (or `null`: back to Kino's) | the person's press or submit on your screen, apiVersion 18, never a panel |
   | `setExperience` | `"light"` or `"full"`: asks for that whole-app experience; Kino asks first | the person's press or submit on your screen, apiVersion 18, never a panel |
+  | `installPlugin` | `{ repo: "<owner/name>" }`: Kino's normal install sheet for that plugin (its toast when it is already installed) | the person's press or submit on your screen, apiVersion 19, one repository per button |
 
   The 18+ gate holds everywhere; one page-opening `go` per 500 ms; Back returns to your screen with its state.
 - **Timers**: the root's (or the manifest's `screen.every`) `{ ms, event }` (1 s..24 h, ≤ 3) fires only while the screen is open
@@ -1229,7 +1259,9 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
 - **The provider's exports, exact names**: `proto_<door>_<call>(arg)` for each call, `proto_<door>_<stream>(cursor)` for
   each stream, spelled exactly as in the manifest, case included (`proto_movies_byId`, `proto_movies_trending`). A call
   returns JSON matching `out` (or a promise of it); a stream returns `{ items: [...], cursor }`, where `items` are the new
-  ones since `cursor` (`null` the first time) and `cursor` is any small JSON you want back next poll. To fail, `throw`: the
+  ones since `cursor` (`null` the first time) and `cursor` is any small JSON you want back next poll (a number, a date
+  string, a list of the last ids: all fine). The cursor travels **inside** that answer, so items and cursor together must fit
+  in 64 KB; keep the cursor to a few KB at most and never put the items in it. To fail, `throw`: the
   consumer gets `provider_failed` and never your message (put nothing private in it). A missing export is also
   `provider_failed`. Map your rows to the declared type yourself; Kino only drops extra fields as a safety net.
 - **The type language** (closed): `string`, `number` (finite), `boolean`, `T?` (absent or null), `T[]`, a door type name,
@@ -1247,7 +1279,14 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
 
   The key (`tmdb`) is a local alias. `repo` is the provider's plain GitHub `owner/name` (no URL, sub-path or `@ref`; a fork
   does not stand in). List only the calls and streams the code really uses: an unlisted one answers `not_declared`.
-  **Always put the same repository in `recommends`**: that is what gives `screen`/`screenEvent` the `installed` map.
+  **Always put the same repository in `recommends`**: that is what gives `screen`/`screenEvent` the `installed` map
+  (`recommends` does nothing else: Kino shows the person no list for it).
+- **The consumer's `hosts`**: a consumer follows the ordinary rule, at least one host (`"hosts": []` is refused for a screen
+  plugin: `The "hosts" field can only be empty if the plugin has a setting of type "url"`). Data from a door needs no host;
+  declare the **real** host your screen loads something from, usually the image host of the pictures it draws
+  (`image.tmdb.org` for TMDB's `posterUrl`), and draw them. The install sheet lists that host to the person, so never invent
+  one and never publish the scaffold's placeholder `example.com`. If the screen shows only text, still declare the one real
+  host the provider's answers point to (its pictures) rather than a made-up one, and say why in the README.
 - **The call**: `await kino.plugins.call(alias, call, arg?)` resolves to the checked answer or rejects with an `Error`
   whose `code` is exactly one of `provider_missing` (not installed, off, needs setup, or 18+ while the consumer is not),
   `not_declared`, `bad_input`, `bad_output` (also: the answer held one of the provider's sealed secrets), `rate_limited`
@@ -1262,7 +1301,11 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
   Kino opens its normal install sheet over the screen; when the person taps Instalar, `installed` flips and Kino calls
   `screen` again, so the real UI appears in place. `go.installPlugin` is honoured from apiVersion 19, only from the person's
   own press or submit (never `open`, a timer, a change, an `onClose`, a panel or a notice), one repository per button; its
-  only field is `repo`. Also handle `provider_missing` at call time (the provider can be switched off or removed later).
+  only field is `repo`. **What `installed` means**: `true` while a plugin from that repository is installed, **even when the
+  person switched it off or it needs its settings**; `false` only when none is installed (never installed, or removed). So also
+  handle `provider_missing` at call time: with `installed` `true` it means the provider is off, needs setup or is 18+ while
+  your plugin is not; keep the code in `state` and draw a sentence ("TMDB está apagado o le falta configurarse: revísalo en
+  Plugins") with a retry button, not the install button.
 - **Streams**: switch one on from a `screenEvent` answer with the state flag
   `{ state: { protocol: { "<alias>": { "<stream>": true } } } }` (`false` switches it off; the `protocol` key is replaced
   whole, so send every flag together). While that screen is open, shown and Kino in front, Kino polls the provider every
@@ -1272,8 +1315,11 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
   three failures in a row switch it off for that opening; leaving the screen or Kino leaving the front ends it; after a
   return the cursor restarts from `null`, so **items may repeat**: make the handler idempotent. Not for player-panel sessions.
 - **Provides-only plugin**: `"apiVersion": 20`, a non-empty `provides`, no `capabilities` at all (the field may be left out),
-  `"hosts": []`, no settings. It plays nothing, is no source, and reaches the world only through Kino's services such as
-  `kino.tmdb`. Any capability or setting brings the ordinary rules back (`resolve`, `search`/`home`, hosts).
+  no settings. Kino derives this from the manifest: **there is no `providesOnly` field** (validate warns if you write one).
+  It may declare `"hosts": []`; then it plays nothing, is no source, and reaches the world only through Kino's services such
+  as `kino.tmdb`. A provider that later needs `kino.fetch` adds those hosts to `hosts` and **stays** provides-only (no
+  `resolve`/`search`/`home` to write); its consent sheet then lists the hosts. Any capability or setting brings the ordinary
+  rules back (`resolve`, `search`/`home`, at least one host).
 - **Security and privacy rules you must follow**: every argument reaches the provider, which may send it to its own hosts
   (or any host with `"fetchHosts": "any"`): never pass tokens, passwords, the person's private input or anything from a
   `password` setting. An 18+ provider answers only an 18+ consumer (`provider_missing` otherwise). An answer holding a
@@ -1287,15 +1333,121 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
 - **Evolving a door**: Kino re-reads the provider's door at every call. Only add (new calls, optional fields). Removing or
   renaming a call breaks every consumer with `not_declared`; a new required `in` field breaks old consumers with
   `bad_input`. For a breaking change open a new door (`movies2`) and keep the old one.
-- **Kit**: `node sdk/run.mjs --provider <provider folder> <consumer folder> screenEvent <event>` answers calls from the
-  provider's exports with the app's checks and codes (`--provider` repeatable; without it every call is
-  `provider_missing`); `screenEvent protocol <alias>.<stream>` polls a stream once and sends the `protocol` event;
-  `--context '{"installed":{"<owner/name>":true}}' <consumer> screen` draws past the gate; `node sdk/validate.mjs .` checks
-  both blocks (top level and `enhancements`). The kit serves an entry with the first provider that has the door (no repo
-  match) and does **not** apply the 18+ rule, the sealed-secret check or the self-call refusal: test those in Kino 0.9.81+.
-  The provider's own services need their usual kit setup (`KINO_TMDB_KEY` or `KINO_TMDB_FIXTURE` for `kino.tmdb`).
-  `--provider` needs a kit with `sdk/protocol.mjs` (the kit of Kino 0.9.81): if `run.mjs`/`validate.mjs` do not know it,
-  tell the person their copy of `sdk/`, `contract.json` and `kino.d.ts` is old; never delete the blocks to silence it.
+- **Kit** (full page: <https://kinotvapp.github.io/kino-plugins/en/protocol/#kit>):
+  - **Scaffolds**: `node sdk/init.mjs my-provider --kind provider`, `node sdk/init.mjs my-consumer --kind consumer --repo
+    <owner/name> --host <real host>` (section 3, step 1). Each comes with a test that passes as written.
+  - **A provider on its own**: `node sdk/run.mjs <provider folder> proto <door>.<call> '<arg json>'` (a call) and
+    `node sdk/run.mjs <provider folder> proto <door>.<stream> ['<cursor json>']` (one poll; it prints `{ items, cursor }` and the
+    command for the next poll). Same checks and codes as the app. Exit 0 with the answer on stdout; 1 with `✗ <code>: <message>`
+    when Kino would reject the call (your thrown message follows on a `·` line; the consumer never sees it); 2 for a wrong
+    command (unknown door or call, which it lists; bad JSON; a folder without `provides`).
+  - **A consumer with its provider**: `node sdk/run.mjs --context '{"installed":{"<owner/name>":true}}' --provider <provider
+    folder> <consumer folder> screen` draws past the gate (without `--context` every `recommends` entry is `false`: that draws
+    the gate); pass the same `--context` to `screenEvent <name>` too, or a gated consumer answers nothing. `--provider` is
+    repeatable; without it every call is `provider_missing`. `screenEvent protocol <alias>.<stream>` (with `--state
+    '{"protocol":{"<alias>":{"<stream>":true}}}'`) polls a stream once and sends the `protocol` event; `--cursor '<json>'`
+    polls from a cursor the provider already returned, to try repeated items. `--lang en` draws the English texts and
+    `--device tv` the TV. A clean run prints no `dropped` line on stderr (the exit code is 0 either way).
+  - **validate**: `node sdk/validate.mjs .` checks both blocks (top level and `enhancements`) like the app. It **fails** (`✗`,
+    exit 1) when a declared call or stream has no `proto_<door>_<name>` export (Kino would install it, but every call to it
+    answers `provider_failed`). It **warns** (`!`, exit 0) when a consumed repo is missing from `recommends`, when
+    `everySeconds` is outside 30..86,400 (it says the value Kino uses) and when the manifest has a `providesOnly` field.
+  - **What the kit does not check**: it has no repositories, so it serves an entry with the **first provider that has the
+    door and ignores `repo`**: check by hand that `repo` is the provider's exact GitHub `owner/name`, the same string in
+    `recommends` and in your `installed[...]` key. It does **not** apply the 18+ rule, the sealed-secret check or the
+    self-call refusal: test those in Kino 0.9.81+, with the provider installed, switched off and removed.
+  - The provider's own services need their usual kit setup (`KINO_TMDB_KEY` or `KINO_TMDB_FIXTURE` for `kino.tmdb`).
+    `--provider` needs a kit with `sdk/protocol.mjs`, and `proto`, `--cursor`, `--lang` and `init.mjs --kind` a recent copy:
+    if `run.mjs`/`validate.mjs`/`init.mjs` do not know them, tell the person their copy of `sdk/`, `contract.json` and
+    `kino.d.ts` is old (get it again from kinotvapp/kino-plugin-sdk); never delete the blocks to silence it.
+
+**A minimal consumer screen that draws clean (apiVersion 20).** Start a consumer from this shape (or from `init.mjs --kind
+consumer`). It is checked: with the kit's example provider (`fixtures/protocol/provider` in kinotvapp/kino-plugin-sdk),
+`node sdk/run.mjs --context '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}' --provider <provider folder> . screen` prints
+no `dropped` line, with `installed` `true` and `false`, with `--lang en` and with `--device tv`.
+
+```json
+{
+  "id": "mini-trivia",
+  "name": "Mini Trivia",
+  "version": "0.1.0",
+  "apiVersion": 20,
+  "entry": "plugin.js",
+  "description": "Una pregunta de cine con las películas del plugin TMDB",
+  "hosts": ["image.tmdb.org"],
+  "capabilities": ["screen"],
+  "screen": { "label": "Trivia", "labelEn": "Trivia" },
+  "recommends": ["kinotvapp/kino-plugin-tmdb"],
+  "consumes": { "tmdb": { "repo": "kinotvapp/kino-plugin-tmdb", "door": "movies", "calls": ["random"], "streams": ["trending"] } }
+}
+```
+
+```js
+const TMDB = "kinotvapp/kino-plugin-tmdb"; // exactly as written in "recommends"
+
+const ERRORS = {
+  provider_missing: ["TMDB está apagado o le falta configurarse: revísalo en Plugins.", "TMDB is off or needs setting up: check it in Plugins."],
+  rate_limited: ["Demasiadas preguntas seguidas. Espera un momento.", "Too many questions in a row. Wait a moment."],
+};
+const OTHER = ["No se pudo traer la película. Intenta otra vez.", "Could not get the movie. Try again."];
+
+const text = (es, en, more = {}) => ({ type: "Text", text: es, textEn: en, ...more });
+const page = (children) => ({
+  type: "Scaffold",
+  appBar: {
+    type: "AppBar", title: "Mini Trivia", titleEn: "Mini Trivia", mergeWithKinoBar: true, dense: true,
+    leading: { type: "IconButton", icon: "close", labelText: "Cerrar", labelTextEn: "Close", onPressed: { close: true } },
+  },
+  body: { type: "SingleChildScrollView", children: [{ type: "Column", padding: 16, gap: 12, children }] },
+});
+
+export async function screen({ state = {}, installed = {} }) {
+  if (installed[TMDB] !== true) {
+    return page([
+      text("Para jugar necesitas el plugin TMDB.", "To play you need the TMDB plugin."),
+      { type: "ElevatedButton", key: "install", labelText: "Instalar TMDB", labelTextEn: "Install TMDB",
+        onPressed: { go: { installPlugin: { repo: TMDB } } }, autofocus: true },
+    ]);
+  }
+  const kids = [];
+  if (state.movie) {
+    if (state.movie.poster) kids.push({ type: "Image", url: state.movie.poster, aspect: "2:3", width: 160 }); // image.tmdb.org
+    kids.push(text(`¿De qué año es ${state.movie.title}?`, `What year is ${state.movie.title} from?`, { style: "h3" }));
+  }
+  if (state.error) kids.push(text(...(ERRORS[state.error] || OTHER), { color: "error" }));
+  kids.push({ type: "ElevatedButton", key: "play", labelText: "Otra película", labelTextEn: "Another movie", onPressed: "play", autofocus: true });
+  kids.push({ type: "Switch", key: "live", labelText: "Tendencias en vivo", labelTextEn: "Live trending",
+    value: state.protocol?.tmdb?.trending === true, onChanged: "live" });
+  if (state.trending) kids.push(text(state.trending, state.trending, { style: "caption" }));
+  return page(kids);
+}
+
+export async function screenEvent({ name, value, arg, state = {}, installed = {} }) {
+  if (installed[TMDB] !== true) return null; // the gate: nothing works until the provider is installed
+  if (name === "play") {
+    try {
+      const m = await kino.plugins.call("tmdb", "random", {});
+      return { state: { movie: { title: m.title, year: m.year, poster: m.posterUrl ?? null }, error: null } };
+    } catch (e) {
+      return { state: { error: e.code || "provider_failed" } }; // provider_missing, rate_limited, timeout...
+    }
+  }
+  if (name === "live") return { state: { protocol: { tmdb: { trending: value === true } } } };
+  if (name === "protocol" && Array.isArray(arg?.items)) {
+    return { state: { trending: arg.items.map((m) => m.title).slice(0, 5).join(", ") } };
+  }
+  return null;
+}
+```
+
+Three silent traps (a Flutter habit writes them; the kit and Kino do not draw them):
+
+- `SingleChildScrollView` takes **`children`** (a list), never `child`: with `child` the scroll is **empty and no `dropped`
+  line warns you**.
+- A `Scaffold`'s `appBar` must be an **`AppBar` node**, `{ "type": "AppBar", "title": …, "titleEn": … }`: without `type` the
+  whole bar is dropped (`scaffold appBar must be AppBar`).
+- There is **no `FilledButton`** (`unknown widget "FilledButton"`, dropped): use `ElevatedButton` or `TextButton` with
+  `labelText` + `labelTextEn` and `onPressed`. Also, a `Text` with `text: ""` is dropped (`text is empty`).
 
 What Kino 0.9.50 does for every plugin, with no field: plays a plugin title on the paired TV through
 the TV's own copy of the plugin (keep `id` and refs identical across devices), checks followed series
@@ -1401,13 +1553,20 @@ people. See
       themes-only plugin has `"categories": ["themes"]`, no capabilities (or only `screen`) and `"hosts": []`; a screen that
       turns the theme on reads `activeTheme` and sends `go.useTheme` only from a tap.
 - [ ] apiVersion 20 / provider: `provides` at the top level with `"apiVersion": 20` or in `enhancements["20"]`; one export
-      `proto_<door>_<name>` per call and stream, spelled exactly; every answer matches `out` (a stream answers
-      `{ items, cursor }`); nothing private in answers or thrown messages; a short `summary`; the door documented in the
-      README; a published door only grows (new calls, optional fields).
-- [ ] apiVersion 20 / consumer: `consumes` with the provider's exact `repo` and `door` and only the names used; the same
-      repo in `recommends`; an install view with `go.installPlugin` while `installed[repo] !== true`; every
-      `kino.plugins.call` in `try`/`catch` with ES + EN messages; no call from a `job`; a `protocol` handler that tolerates
-      repeated items; tried with `node sdk/run.mjs --provider …` and in Kino 0.9.81+ with the provider installed and removed.
+      `proto_<door>_<name>` per call and stream, spelled exactly (`node sdk/validate.mjs .` fails a missing one); every answer
+      matches `out` (a stream answers `{ items, cursor }`, the cursor small JSON); nothing private in answers or thrown
+      messages; a short `summary`; the door documented in the README; a published door only grows (new calls, optional
+      fields); each call tried with `node sdk/run.mjs . proto <door>.<call> '<json>'` (and a bad argument), each stream with
+      `proto <door>.<stream>` and again from the cursor it printed. Provides-only: no capability, no setting, no
+      `providesOnly` field, `everySeconds` within 30..86,400.
+- [ ] apiVersion 20 / consumer: `consumes` with the provider's exact `repo` and `door` and only the names used (checked by
+      hand: the kit ignores `repo`); the same repo in `recommends` (no `!` from validate about it); `hosts` a real host the
+      screen loads from, never `example.com`; an install view with `go.installPlugin` while `installed[repo] !== true`, and a
+      sentence for `provider_missing` while it is `true`; every `kino.plugins.call` in `try`/`catch` with ES + EN messages; no
+      call from a `job`; a `protocol` handler that tolerates repeated items (tried with `--cursor`); the screen drawn with
+      `installed` `true` and `false`, `--lang en` and `--device tv` with no `dropped` line; tried with
+      `node sdk/run.mjs --provider …` and in Kino 0.9.81+ with the provider installed, switched off and removed.
+- [ ] `sdk/test/` is not in the plugin's repository (the kit's own suite).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
@@ -1558,3 +1717,15 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   passing a token or the person's private input as an argument; a provider that returns a sealed secret or throws messages
   with private data; a top-level `provides` below apiVersion 20 (refused: use `enhancements["20"]`); removing or renaming a
   published call.
+- Plugin protocol, kit and manifest: a consumer with `"hosts": []` (refused) or with the scaffold's `example.com` left in
+  (a lie on the consent sheet); writing `"providesOnly": true` (no such field: it is derived); a declared call whose
+  `proto_` export is missing or misspelled (validate fails it; Kino would answer `provider_failed`); `everySeconds` below 30
+  (clamped); a cursor that carries the items (the answer passes 64 KB: `bad_output`); running `screenEvent` in the kit
+  without `--context '{"installed":{…:true}}'`, so the gated consumer answers nothing and looks broken; trusting the kit to
+  check `repo` (it serves the first provider with the door); treating `installed === true` as "the provider works" (it is
+  also `true` when the provider is off).
+- Screen trees that look right and draw nothing: `SingleChildScrollView` with `child` instead of `children` (an empty
+  scroll, no warning); `appBar: { title }` without `"type": "AppBar"` (the bar is dropped); `FilledButton` (unknown: use
+  `ElevatedButton`/`TextButton` with `labelText`/`labelTextEn` and `onPressed`); a `Text` with `text: ""`. Read stderr: a
+  `dropped` line never changes the exit code.
+- Copying `sdk/test/` into the plugin (more than 60 files nobody needs) and then running a bare `node --test`.
