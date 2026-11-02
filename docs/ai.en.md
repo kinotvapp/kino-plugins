@@ -136,7 +136,9 @@ Before writing anything:
    published yet) and copy the patterns of Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia, a
    consumer with the install gate) and TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, a provider). Start
    from the kit's scaffold: node sdk/init.mjs my-plugin --kind provider, or --kind consumer --repo owner/name
-   --host <the real host my screen loads from>.
+   --door <the real door> --call <a real call> --host <the real host my screen loads from>; its test/provider is a
+   stand-in to replace with a copy of the real provider. One-page summary:
+   https://kinotvapp.github.io/kino-plugins/en/protocol-quick/.
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -422,7 +424,9 @@ I may not know how to program: explain every step in plain English, run the comm
 which one and why first) and ask me before anything that cannot be undone.
 
 Read, in this order:
-1. https://kinotvapp.github.io/kino-plugins/AGENTS.md (your instructions; section 4,
+1. https://kinotvapp.github.io/kino-plugins/en/protocol-quick/ (the protocol on one page: shapes, a minimal
+   screen, the test commands, the five traps), then https://kinotvapp.github.io/kino-plugins/AGENTS.md (your
+   instructions; its contents table at the top gives the line where each part starts; section 4,
    "apiVersion 20: the plugin protocol", is the part that matters most here).
 2. https://kinotvapp.github.io/kino-plugins/en/protocol/ (provides, consumes, kino.plugins.call, the types,
    the seven error codes, the limits, streams, the install gate, and the TMDB + Cine Trivia example).
@@ -460,15 +464,18 @@ Rules:
   16 calls and 8 streams per door, 8 consumes entries, streams polled every 30 s at least.
 - Every text for the person in Spanish (neutral, tuteo, never voseo) and English (text + textEn).
 - A consumer's "hosts" cannot be []: put the one real host the screen loads from (the image host of the
-  posters it draws, e.g. image.tmdb.org), never example.com or an invented one. Only a provides-only plugin
+  posters it draws, e.g. image.tmdb.org), never example.com or an invented one (validate warns on a placeholder);
+  if the screen shows only text, follow https://kinotvapp.github.io/kino-plugins/en/protocol/#text-only-consumer.
+  An Image itself needs no host declaration. Only a provides-only plugin
   (apiVersion 20, provides, no capabilities, no settings) may have "hosts": []; there is no "providesOnly" field.
 - Screen trees: a Scaffold whose appBar is { "type": "AppBar", ... }; SingleChildScrollView takes "children"
   (a list), never "child"; buttons are ElevatedButton/TextButton with labelText + labelTextEn and onPressed
   (FilledButton does not exist). Copy the minimal consumer screen of AGENTS.md section 4.
 
 Start from the kit's scaffold, not from a blank file: `node sdk/init.mjs my-plugin --kind provider` or
-`node sdk/init.mjs my-plugin --kind consumer --repo owner/name --host <real host>` (`node sdk/init.mjs --help`),
-then copy `sdk/` without `sdk/test/` and `contract.json` next to it. Test it offline before anything else:
+`node sdk/init.mjs my-plugin --kind consumer --repo owner/name --door <door> --call <call> --host <real host>`
+(`node sdk/init.mjs --help`), replace its stand-in `test/provider` with a copy of the real provider, then copy `sdk/`
+without `sdk/test/` and `contract.json` next to it (`kino.d.ts` is optional, only editor typings). Test it offline before anything else:
 `node sdk/validate.mjs .` (no ✗, and read every ! line); for a provider
 `node sdk/run.mjs . proto <door>.<call> '<json>'` and `node sdk/run.mjs . proto <door>.<stream> ['<cursor>']`;
 for a consumer `node sdk/run.mjs --context '{"installed":{"owner/name":true}}' --provider <provider folder> . screen`

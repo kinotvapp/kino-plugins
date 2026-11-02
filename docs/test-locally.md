@@ -69,8 +69,8 @@ tu manifiesto declara.
 ## Copiar el kit a un plugin nuevo { #copy-the-kit }
 
 Un repositorio creado con **Use this template** ya trae el kit. Si en cambio empiezas con `node sdk/init.mjs`, copia el kit
-junto al `kino-plugin.json` del plugin nuevo: la carpeta `sdk/` y el archivo `contract.json` (el kit lo busca junto a `sdk/`;
-también `kino.d.ts`, si tu editor lo usa). Deja fuera `sdk/test/`: son las pruebas del propio kit (más de 60 archivos), no le
+junto al `kino-plugin.json` del plugin nuevo: la carpeta `sdk/` y el archivo `contract.json` (el kit lo busca junto a `sdk/`: los dos son obligatorios;
+`kino.d.ts` es opcional, solo para los tipos de tu editor, porque el kit nunca lo lee). Deja fuera `sdk/test/`: son las pruebas del propio kit (más de 60 archivos), no le
 sirven a un plugin, y un `node --test` sin nombre las ejecutaría. Cópialo sin esa carpeta, o bórrala después:
 
 ```sh
@@ -356,9 +356,11 @@ Llega con Kino 0.9.77. El kit ya revisa y corre todo con las reglas de la app:
 El flujo completo, con ejemplos, está en [el protocolo entre plugins](protocol.md#kit). En corto:
 
 - **Plantillas**: `node sdk/init.mjs mi-proveedor --kind provider` (solo provee, una puerta con una llamada y un flujo, su
-  prueba) y `node sdk/init.mjs mi-consumidor --kind consumer --repo dueño/nombre --host <host real>` (una pantalla con la puerta
-  de instalación, los códigos de error y un interruptor de flujo, probada contra un proveedor de prueba en `test/provider`).
-  `node sdk/init.mjs --help` lista las opciones; sin `--host` el consumidor recibe el relleno `example.com`: cámbialo.
+  prueba) y `node sdk/init.mjs mi-consumidor --kind consumer --repo tu-usuario/nombre --door <puerta> --call <llamada> --host <host real>`
+  (una pantalla con la puerta de instalación, una sola barra compacta, una ruta de detalle, los códigos de error y un
+  interruptor de flujo, probada contra `test/provider`: un **reemplazo** con los mismos nombres de puerta y llamada, para
+  cambiar por una copia del proveedor real). `node sdk/init.mjs --help` lista las opciones; sin `--host` el consumidor recibe
+  el relleno `example.com`, del que `validate.mjs` avisa: cámbialo ([un consumidor que solo muestra texto](protocol.md#text-only-consumer)).
 - **Un proveedor solo**: `node sdk/run.mjs <carpeta del proveedor> proto <puerta>.<llamada> '<json del argumento>'` y
   `proto <puerta>.<flujo> ['<json del cursor>']` pasan por las revisiones y los códigos de error de la app. Salida 0 con la
   respuesta, 1 con `✗ <código>: <mensaje>`, 2 para un comando mal escrito.
@@ -369,13 +371,21 @@ El flujo completo, con ejemplos, está en [el protocolo entre plugins](protocol.
   `provider_missing`. Sin `installed`, un consumidor con puerta de instalación no hace nada.
 - **Un flujo**: `... screenEvent protocol tmdb.trending` consulta el flujo una vez y manda el evento `protocol`
   `{ alias, stream, items }`; `--cursor '<json>'` consulta desde un cursor que el proveedor ya devolvió (prueba los repetidos).
+- **Una ruta y un valor escrito**: `--context '{"installed":{…},"route":{"name":"detail","params":{"id":1}}}'` dibuja una
+  ruta empujada; `screenEvent search "" '"tomate"' --trigger submit` manda el texto de un campo (el valor es la tercera
+  palabra, en JSON).
+- **Códigos de error**: el kit solo provoca `provider_missing` (sin `--provider`) y `provider_failed` (el proveedor lanza un
+  error); los demás se prueban dibujándolos, `--state '{"error":"timeout"}'` ([qué códigos](protocol.md#kit)).
+- **¿Se aceptó una propiedad?** El árbol que se imprime no repite cada bandera (`dense` no sale); un valor equivocado imprime
+  una línea `· dropped:` (`appBar dense "yes" is not true or false, ignored`), así que sin líneas `dropped` se aceptó, y
+  `--raw` muestra el árbol tal como lo devolvió tu plugin.
 - **La puerta de instalación**: `screen` recibe `installed` con cada entrada de `recommends` en `false`; `--context
   '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'` la dibuja como si el proveedor estuviera instalado.
 - **Los textos en inglés**: `--lang en` (lo mismo que `"lang": "en"` en `--context`). Si no, `run.mjs` imprime los de español.
 - **El manifiesto**: `node sdk/validate.mjs .` revisa `provides` y `consumes`, en el nivel principal y dentro de
   `enhancements["20"]`, igual que la app; falla si una llamada o un flujo declarado no tiene su exportación `proto_`, y avisa
-  si un repositorio consumido no está en `recommends`, si un `everySeconds` está fuera de 30..86.400 y si hay un campo
-  `providesOnly`.
+  si un repositorio consumido no está en `recommends`, si un `everySeconds` está fuera de 30..86.400, si hay un campo
+  `providesOnly` y si un host es de relleno (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`).
 - El kit atiende una entrada de `consumes` con el primer proveedor que tiene la puerta (no tiene repositorios, así que nunca
   revisa tu `repo`), y no aplica la regla 18+, ni la revisión de secretos sellados, ni el rechazo de llamarse a sí mismo: mira
   [el protocolo entre plugins](protocol.md#kit) y [Lo que el kit no puede copiar](engine-limits.md#kit-protocol).

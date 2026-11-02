@@ -140,7 +140,9 @@ Antes de escribir nada:
    todavía sin publicar) y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
    un consumidor con la puerta de instalación) y TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, un proveedor).
    Parte de la plantilla del kit: node sdk/init.mjs mi-plugin --kind provider, o --kind consumer --repo dueño/nombre
-   --host <el host real del que carga mi pantalla>.
+   --door <la puerta real> --call <una llamada real> --host <el host real del que carga mi pantalla>; su test/provider
+   es un reemplazo que hay que cambiar por una copia del proveedor real. Resumen en una página:
+   https://kinotvapp.github.io/kino-plugins/protocol-quick/.
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -432,7 +434,9 @@ Puede que yo no sepa programar: explícame cada paso en español sencillo, ejecu
 (antes dime cuál y para qué) y pregúntame antes de cualquier cosa que no se pueda deshacer.
 
 Lee, en este orden:
-1. https://kinotvapp.github.io/kino-plugins/AGENTS.md (tus instrucciones; la sección 4,
+1. https://kinotvapp.github.io/kino-plugins/protocol-quick/ (el protocolo en una página: formas, una pantalla
+   mínima, los comandos de prueba, las cinco trampas), y después https://kinotvapp.github.io/kino-plugins/AGENTS.md
+   (tus instrucciones; su tabla de contenido al principio dice en qué línea empieza cada parte; la sección 4,
    "apiVersion 20: the plugin protocol", es la que más importa aquí).
 2. https://kinotvapp.github.io/kino-plugins/protocol/ (provides, consumes, kino.plugins.call, los tipos,
    los siete códigos de error, los límites, los flujos, la puerta de instalación y el ejemplo de TMDB + Cine Trivia).
@@ -470,7 +474,9 @@ Reglas:
   4 puertas por plugin, 16 llamadas y 8 flujos por puerta, 8 entradas en consumes, flujos consultados cada 30 s como mínimo.
 - Todo texto para la persona en español (neutro, con tuteo, nunca voseo) y en inglés (text + textEn).
 - Los "hosts" de un consumidor no pueden ser []: pon el único host real del que carga la pantalla (el host de
-  imágenes de los pósters que dibuja, p. ej. image.tmdb.org), nunca example.com ni uno inventado. Solo un plugin
+  imágenes de los pósters que dibuja, p. ej. image.tmdb.org), nunca example.com ni uno inventado (validate avisa si
+  es de relleno); si la pantalla solo muestra texto, sigue
+  https://kinotvapp.github.io/kino-plugins/protocol/#text-only-consumer. Una Image no necesita declarar su host. Solo un plugin
   que solo provee (apiVersion 20, provides, sin capacidades ni ajustes) puede tener "hosts": []; no existe un
   campo "providesOnly".
 - Árboles de pantalla: un Scaffold cuyo appBar es { "type": "AppBar", ... }; SingleChildScrollView lleva
@@ -478,8 +484,9 @@ Reglas:
   onPressed (FilledButton no existe). Copia la pantalla mínima de consumidor de la sección 4 de AGENTS.md.
 
 Parte de la plantilla del kit, no de un archivo en blanco: `node sdk/init.mjs mi-plugin --kind provider` o
-`node sdk/init.mjs mi-plugin --kind consumer --repo dueño/nombre --host <host real>` (`node sdk/init.mjs --help`),
-y después copia junto a él `sdk/` sin `sdk/test/` y `contract.json`. Pruébalo sin conexión antes que nada:
+`node sdk/init.mjs mi-plugin --kind consumer --repo dueño/nombre --door <puerta> --call <llamada> --host <host real>`
+(`node sdk/init.mjs --help`), cambia su `test/provider` de reemplazo por una copia del proveedor real, y después copia
+junto a él `sdk/` sin `sdk/test/` y `contract.json` (`kino.d.ts` es opcional, solo para los tipos del editor). Pruébalo sin conexión antes que nada:
 `node sdk/validate.mjs .` (ningún ✗, y lee cada línea !); para un proveedor
 `node sdk/run.mjs . proto <puerta>.<llamada> '<json>'` y `node sdk/run.mjs . proto <puerta>.<flujo> ['<cursor>']`;
 para un consumidor `node sdk/run.mjs --context '{"installed":{"dueño/nombre":true}}' --provider <carpeta del proveedor> . screen`

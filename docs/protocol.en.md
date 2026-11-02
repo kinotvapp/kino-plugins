@@ -413,11 +413,33 @@ arrives through a door needs no host: `hosts` is for what **your** plugin loads 
 - Declare the real host your screen loads something from: the image host of the posters it draws (`image.tmdb.org` for TMDB's
   `posterUrl`, as Cine Trivia does), a site it reads with `kino.fetch`. The install sheet lists that host to the person, so it
   must be true.
-- A screen that shows only text from the provider still needs one host. Do not invent one: use the host the provider's
-  answers point to (draw the poster from `posterUrl` and declare its image host), and say in your README why it is there.
+- Good to know: drawing a picture needs **no** host declaration. An `Image` takes any public https address
+  ([Image](screen-components.md#image): "no host declaration needed, as for every image in Kino"). The host entry is there
+  because the manifest rule asks for at least one (and the kit's `validate.mjs` checks the same rule), not because the
+  picture needs it.
 - Never publish a placeholder. `node sdk/init.mjs … --kind consumer` writes `"hosts": ["example.com"]` unless you pass
   `--host <real host>`, and the kit's example consumer (`fixtures/protocol/consumer`) keeps `example.com` only because it is a
-  test fixture: replace it.
+  test fixture: replace it. `node sdk/validate.mjs .` warns (`!`, still accepted) on `example.com`, `*.example.com`,
+  `example.org`, `example.net` and anything under `.test`, `.invalid` or `.example`.
+
+### A consumer that shows only text { #text-only-consumer }
+
+Your provider answers only text (no picture, no link) and your screen loads nothing of its own, yet the manifest still needs one
+host. Honest ways out, in this order:
+
+1. **Give the door a picture.** Add an optional field to the provider's type (`"imageUrl": "string?"`: optional, so old
+   consumers keep working, see [Changing a door later](#evolving)), draw it with an `Image`, and declare the host those pictures
+   come from. The screen gets better and the host is true.
+2. **Declare where the provider's content really comes from**: the site or API the provider reads with `kino.fetch` (it is in
+   the provider's own `hosts`). Say in your README that your screen shows data that comes from there.
+3. If the data has no host anywhere (the provider has it built in), Kino accepts a name under the reserved `.invalid` domain:
+   it never resolves, so it reaches nothing, and Kino never lists it to the person ([The person's own
+   servers](manifest.md#own-servers)). `validate.mjs` still warns about it, so it is a choice you make on purpose and explain
+   in the README.
+
+Never invent a host (`images.my-recipes.test`, `example.com`, a domain nobody runs): the person would read a claim that is
+not true. `"hosts": []` stays refused for a screen plugin without a `url` setting; only a [provides-only](#provides-only)
+plugin may leave it empty.
 
 ### A minimal consumer screen that draws clean { #minimal-consumer }
 
@@ -528,6 +550,45 @@ const movie = await kino.plugins.call("tmdb", "byId", { id: 603 });
 - Each call is independent: a screen's state lives in Kino, so a handler calls, answers with new `state`, and nothing has to
   stay alive between events. Do not cache answers in global variables expecting them to survive; put what you need in
   `state`, `kino.storage` or [`kino.shared`](jobs-and-shared.md#shared).
+
+### Small recipes for a consumer { #consumer-recipes }
+
+**The reserved `open` event.** It is the first `screenEvent` of every opening. While `installed[repo]` is not `true`, answer
+`null`, like every other event: an `open` answer may not carry `go.installPlugin` (only the person's press or submit may), and
+`open` drops every `go` except `go.screen`. When the provider is installed, `open` may load the first data (call the door and
+answer a `state` patch) or answer `null` and wait for a press. After the person installs the provider, Kino calls `screen`
+again with the new `installed`; it does **not** send a new `open`, so the main view must work with an empty `state` (a button,
+or a `Skeleton` and a load on the first press).
+
+**A search box** (three lines): a `TextField` with `kind: "search"` and `onSubmitted`; the event carries the typed text as
+its `value` (not in `arg`).
+
+```js
+{ type: "TextField", key: "q", kind: "search", labelText: "Buscar", labelTextEn: "Search", onSubmitted: "search" }
+// screenEvent({ name: "search", value }) -> value is the typed text: kino.plugins.call("recipes", "search", { q: value })
+// kit: node sdk/run.mjs --context "$I" --provider <provider> . screenEvent search "" '"tomate"' --trigger submit
+```
+
+In `run.mjs` the value is the **third** word after `screenEvent` (`<name> [arg] [value]`, `""` for no `arg`) and it must be
+JSON: `'"tomate"'` with the inner quotes, never `tomate` (`the value must be JSON`). `state.inputs.q` also holds what the
+field shows; the full field is in [forms](screen-forms.md).
+
+**A detail route.** Answer `{ route: { push: "detail", params: { id } } }` from the press; `screen` then gets
+`route = { name: "detail", params: { id } }`; its `AppBar` `leading` is a back button whose event answers
+`{ route: { pop: true } }`. Test the detail screen in the kit by giving the route in `--context`:
+
+```sh
+node sdk/run.mjs --context '{"installed":{"owner/kino-plugin-recipes":true},"route":{"name":"detail","params":{"id":1}}}' --state '{"item":{"id":1,"text":"Hola"}}' . screen
+```
+
+**A code you did not expect.** Keep a default sentence for any `code` your `switch` does not name (`provider_failed`'s, for
+example): a newer Kino may add a code, and a missing case must not throw out of `screenEvent`.
+
+**`focus` on a key inside a `ListView` item.** An answer's `focus` moves focus to the node with that key **only if a focusable
+node with it is drawn at that moment**; otherwise it is ignored with no log. `ListView` draws its items lazily, so an item that
+is off screen is not drawn and the `focus` does nothing; an item on screen with an `onTap` takes it. The kit accepts any key
+and cannot tell: it is **not guaranteed**. Prefer `focus` on a key outside the list (a button) or on an item you know is
+visible.
 
 ## Streams { #streams }
 
@@ -703,13 +764,22 @@ There is **no `providesOnly` field**: Kino derives it from those conditions, and
 ```sh
 node sdk/init.mjs my-provider --kind provider
 #   provides-only (apiVersion 20, "hosts": [], no capabilities), door "quotes" with a call and a stream, test/plugin.test.mjs
-node sdk/init.mjs my-consumer --kind consumer --repo owner/kino-plugin-quotes --host <the host your screen loads from>
-#   a screen with the install gate, an error per code, a stream switch and TV focus; test/provider is a stand-in provider
+node sdk/init.mjs my-consumer --kind consumer --repo owner/kino-plugin-quotes --door quotes --call byId --host <the host your screen loads from>
+#   a screen with the install gate, one compact bar (mergeWithKinoBar + dense, a close leading), a detail route with a back,
+#   an error per code, a stream switch and TV focus; test/provider is a STAND-IN provider with the same door/call names
 node sdk/init.mjs --help
 ```
 
-Then copy the kit next to the new plugin: `sdk/` **without `sdk/test/`** and `contract.json` (see
-[Test it locally](test-locally.md#copy-the-kit)), and replace the scaffold's placeholders (`your-user/...`, `example.com`).
+`--door`, `--call` and `--stream` (default `quotes`, `byId`, `latest`) take the **real door's names**, for a provider too, so
+the consumer, its stand-in and the provider agree. `test/provider` is a **stand-in**, not the real provider (its
+`README.md` says so): replace it with a copy of the real provider (the same door, call and stream names and types), then adapt
+the argument and the fields your code reads, and the scaffold's test. The consumer's `description` comes out as a Spanish
+`TODO:` to rewrite, `screen.labelEn` as an English label (the door's name: check it).
+
+Then copy the kit next to the new plugin: `sdk/` **without `sdk/test/`** and `contract.json` (both required; `kino.d.ts` is
+optional, only for your editor's typings: the kit never reads it; see [Test it locally](test-locally.md#copy-the-kit)), and
+replace the scaffold's placeholders (`your-user/...`, `example.com`). Until you do, `validate.mjs` warns about the placeholder
+host and the consumer's test shows it as a `todo`.
 
 **A provider on its own**, with no consumer: `proto` sends one call or one poll through the app's checks (the argument strictly
 against `in`, the answer loosely against `out`) and its error codes:
@@ -745,6 +815,16 @@ node sdk/run.mjs --context "$I" --cursor '[603]' --provider ../kino-plugin-tmdb 
   clean run is one with no `dropped` line. `node sdk/run.mjs` with no arguments prints every command.
 - **`--cursor`** lets you send a cursor the provider already returned, to see what your `protocol` handler does with a batch
   it may have seen before (Kino can resend items after a return).
+- **Which error codes the kit can provoke.** With a real provider folder only two: `provider_missing` (run without
+  `--provider`) and `provider_failed` (a call the provider throws on, such as an id it does not have); `proto` also shows
+  `bad_input` for a wrong argument. `not_declared`, `bad_output`, `rate_limited` and `timeout` need a broken manifest, a broken
+  provider or real time, so test that your screen **draws** each one by putting the code in the state:
+  `node sdk/run.mjs --context "$I" --state '{"error":"rate_limited"}' . screen` (and a made-up code, for your default).
+- **Check that a prop is accepted.** The printed tree is the checked one and does not echo every flag (an `AppBar`'s
+  `dense: true`, for instance, is not printed). A wrong value is: `dense: "yes"` prints
+  `· dropped: screen: appBar dense "yes" is not true or false, ignored`. So a run with no `dropped` line means every prop was
+  accepted; `--raw` prints the tree exactly as your plugin returned it. The app draws `dense` on a phone (4 dp above and below
+  the bar's row) and ignores it on a TV and in a player panel ([One compact bar](screen-components.md#one-compact-bar)).
 - **The kit ignores `repo`.** It has no repositories, so it serves each `consumes` entry with the **first provider that has
   its door**; the app matches the entry's `repo`. Check by hand that `repo` is the provider's exact GitHub `owner/name`
   (open `https://github.com/<owner/name>`), the same string in `recommends` and in the key your code reads from `installed`.
@@ -754,7 +834,9 @@ node sdk/run.mjs --context "$I" --cursor '[603]' --provider ../kino-plugin-tmdb 
   It **fails** (`✗`, exit 1) when a declared call or stream has no `proto_<door>_<name>` export (Kino installs it, but every
   consumer's call to it answers `provider_failed`; the name is case-sensitive). It **warns** (`!`, exit 0: read each one) when a
   consumed repository is missing from `recommends` (the install gate would never open), when a stream's `everySeconds` is
-  outside 30..86,400 (it says the value Kino uses) and when the manifest has a `providesOnly` field (there is none).
+  outside 30..86,400 (it says the value Kino uses), when the manifest has a `providesOnly` field (there is none) and when a
+  `hosts` entry is a placeholder (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`; see
+  [a consumer that shows only text](#text-only-consumer)).
 - In your own tests, `createProtocolCaller` and `createKino(manifest, { protocol })` from `sdk/protocol.mjs` give you the same
   caller.
 - `--provider` and `sdk/protocol.mjs` belong to the kit of Kino 0.9.81, and `proto`, `--cursor`, `--lang` and

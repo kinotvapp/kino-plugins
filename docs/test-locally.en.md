@@ -69,7 +69,7 @@ throws and 2 when the command is wrong. The runner only runs functions your mani
 
 A repository made with **Use this template** already has the kit. When you start from `node sdk/init.mjs` instead, copy the
 kit next to the new plugin's `kino-plugin.json`: the folder `sdk/` and the file `contract.json` (the kit looks for it next to
-`sdk/`; `kino.d.ts` too, if your editor uses it). Leave out `sdk/test/`: those are the kit's own tests (more than 60 files),
+`sdk/`: both are required; `kino.d.ts` is optional, only for your editor's typings, since the kit never reads it). Leave out `sdk/test/`: those are the kit's own tests (more than 60 files),
 useless in a plugin, and a bare `node --test` would run them. Copy without it, or delete it afterwards:
 
 ```sh
@@ -348,9 +348,11 @@ Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app
 The whole workflow, with examples, is in [the plugin protocol](protocol.md#kit). In short:
 
 - **Scaffolds**: `node sdk/init.mjs my-provider --kind provider` (provides-only, a door with a call and a stream, its test) and
-  `node sdk/init.mjs my-consumer --kind consumer --repo owner/name --host <real host>` (a screen with the install gate, the
-  error codes and a stream switch, tested against a stand-in provider in `test/provider`). `node sdk/init.mjs --help` lists
-  the options; without `--host` the consumer gets the placeholder `example.com`: replace it.
+  `node sdk/init.mjs my-consumer --kind consumer --repo owner/name --door <door> --call <call> --host <real host>` (a screen
+  with the install gate, one compact bar, a detail route, the error codes and a stream switch, tested against
+  `test/provider`: a **stand-in** with the same door and call names, to replace with a copy of the real provider).
+  `node sdk/init.mjs --help` lists the options; without `--host` the consumer gets the placeholder `example.com`, which
+  `validate.mjs` warns about: replace it ([a consumer that shows only text](protocol.md#text-only-consumer)).
 - **A provider on its own**: `node sdk/run.mjs <provider folder> proto <door>.<call> '<arg json>'` and
   `proto <door>.<stream> ['<cursor json>']` go through the app's checks and error codes. Exit 0 with the answer, 1 with
   `✗ <code>: <message>`, 2 for a wrong command.
@@ -360,12 +362,20 @@ The whole workflow, with examples, is in [the plugin protocol](protocol.md#kit).
   without it every call rejects with `provider_missing`. Without `installed` a gated consumer does nothing.
 - **A stream**: `... screenEvent protocol tmdb.trending` polls the stream once and sends the `protocol` event
   `{ alias, stream, items }`; `--cursor '<json>'` polls from a cursor the provider already returned (try repeated items).
+- **A route and a typed value**: `--context '{"installed":{…},"route":{"name":"detail","params":{"id":1}}}'` draws a
+  pushed route; `screenEvent search "" '"tomate"' --trigger submit` sends a field's text (the value is the third word, JSON).
+- **Error codes**: the kit provokes only `provider_missing` (no `--provider`) and `provider_failed` (the provider throws); the
+  other codes are tested by drawing them, `--state '{"error":"timeout"}'` ([which codes](protocol.md#kit)).
+- **Was a prop accepted?** The printed tree does not echo every flag (`dense` is not printed); a wrong value prints a
+  `· dropped:` line (`appBar dense "yes" is not true or false, ignored`), so no `dropped` line means it was accepted, and
+  `--raw` shows the tree as your plugin returned it.
 - **The install gate**: `screen` gets `installed` with every `recommends` entry `false`; `--context
   '{"installed":{"kinotvapp/kino-plugin-tmdb":true}}'` draws it as if the provider were installed.
 - **The English texts**: `--lang en` (the same as `"lang": "en"` in `--context`). `run.mjs` prints the Spanish ones otherwise.
 - **The manifest**: `node sdk/validate.mjs .` checks `provides` and `consumes`, at the top level and inside
   `enhancements["20"]`, like the app; a declared call or stream without its `proto_` export fails it, and it warns about a
-  consumed repository missing from `recommends`, an `everySeconds` outside 30..86,400 and a `providesOnly` field.
+  consumed repository missing from `recommends`, an `everySeconds` outside 30..86,400, a `providesOnly` field and a
+  placeholder host (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`).
 - The kit serves a `consumes` entry with the first provider that has the door (it has no repositories, so it never checks your
   `repo`), and it does not apply the 18+ rule, the sealed-secret check nor the self-call refusal: see
   [the plugin protocol](protocol.md#kit) and [What the kit cannot copy](engine-limits.md#kit-protocol).
