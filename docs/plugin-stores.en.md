@@ -84,7 +84,7 @@ list (`full: true`) and not assume it has a saved cursor.
 | `id` | The plugin's `id` (its `kino-plugin.json`'s). Required. |
 | `name` | 1 to 60 characters. Required. |
 | `description`, `longDescription` | Up to 300 and up to 4000 characters. |
-| `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `themes`, `adult`. |
+| `categories` | `movies`, `series`, `anime`, `live`, `radio`, `subtitles`, `utilities`, `themes`, `adult`, or a new type (`manga`, `audio-books`: 2 to 24 lowercase letters, digits and hyphens, starting with a letter; its chip is the id with hyphens as spaces and a capital first letter). |
 | `tags`, `icon`, `screenshots` | Up to 10 tags of 30 characters; the icon and up to 8 screenshots, `https` only and from a public host (never an IP address, `localhost`, a name without a dot or a local-network name). |
 | `version`, `author` | Short text (40 and 60 characters). |
 | `popularity`, `updatedAt` | Numbers: for the «Populares» and «Recientes» sorts of "Community" (`updatedAt` in ms). |

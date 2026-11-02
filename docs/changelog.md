@@ -29,6 +29,11 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   [buscar dentro del campo](screen-reference.md#recipe-search-field) y
   [filtros en una hoja inferior](screen-reference.md#recipe-filter-sheet).
 
+- **Los tipos de plugin son dinámicos**: un tipo nuevo en una entrada del catálogo, de una tienda o en un manifiesto (`manga`,
+  `audio-books`: de 2 a 24 letras minúsculas, dígitos y guiones, empezando por una letra) aparece solo como chip de filtro,
+  con el nombre sacado de su id. Decláralo en la entrada del catálogo: un Kino anterior a la regla rechaza un manifiesto que
+  nombra un tipo nuevo. [`categories`](manifest.md).
+
 ## Kino 0.9.81: `apiVersion` 20, plugins que se usan entre sí { #v20 }
 
 !!! note "Todavía en ningún Kino publicado"

@@ -29,6 +29,11 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   [search inside the field](screen-reference.md#recipe-search-field) and
   [filters in a bottom sheet](screen-reference.md#recipe-filter-sheet).
 
+- **Plugin types are dynamic**: a new type in a catalog entry, a store entry or a manifest (`manga`, `audio-books`: 2 to 24
+  lowercase letters, digits and hyphens, starting with a letter) appears as a filter chip by itself, named from its id. Declare it
+  in the catalog entry: a Kino that predates the rule refuses a manifest that names a new type.
+  [`categories`](manifest.md).
+
 ## Kino 0.9.81: `apiVersion` 20, plugins that use each other { #v20 }
 
 !!! note "Not in any released Kino"
