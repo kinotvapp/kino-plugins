@@ -57,6 +57,15 @@ mismos archivos. Un fork también funcionaría como plugin, pero la búsqueda de
 los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`, `name`, `homepage`,
 `hosts` y `capabilities` en `kino-plugin.json`, reescribe `plugin.js` y conserva `sdk/`.
 
+!!! note "Plugins que se usan entre sí (apiVersion 20, Kino 0.9.81, todavía sin publicar): TMDB y Cine Trivia"
+    [**Cine Trivia**](https://github.com/kinotvapp/kino-plugin-cine-trivia) (`kinotvapp/kino-plugin-cine-trivia`) es el
+    **consumidor** de referencia del [protocolo entre plugins](protocol.md): un juego de cine de cinco preguntas (un plugin
+    con `screen`, para teléfono y TV) que saca cada película de la puerta `movies` de
+    [**TMDB**](https://github.com/kinotvapp/kino-plugin-tmdb), el **proveedor** de referencia (TMDB 1.3.0 y posteriores, con la
+    puerta en `enhancements["20"]`). Muestra el patrón completo: `consumes` + `recommends`, una pantalla de instalación con
+    `go.installPlugin` hasta que TMDB esté instalado, `kino.plugins.call` con cada código de error manejado y un flujo
+    `trending` en vivo. Los dos necesitan Kino 0.9.81 o más nuevo para la puerta.
+
 !!! note "Un ejemplo real: un plugin que usa el navegador oculto"
     **Maratón** (firmado, `apiVersion` 6, `"browser": "pages"`) es un plugin real, de otra persona, que
     encuentra su video con [`kino.browser.capture`](browser.md) y ofrece los otros servidores e idiomas

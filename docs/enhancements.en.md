@@ -44,6 +44,10 @@ Another example, with a background job:
   [`screen`](screens.md#manifest), [`jobs`](jobs-and-shared.md#jobs-manifest), [`panel`](player-panel.md#contributed-tab),
   the [capabilities](screens.md#consent).
 - **Your `apiVersion` never moves**, so nothing else changes behaviour.
+- **Key `"20"` (Kino 0.9.81): `provides` and `consumes`**, the [plugin protocol](protocol.md#versions). They replace the
+  manifest's and are checked with apiVersion 20's rules: `"apiVersion": 7, "enhancements": { "20": { "provides": { … } } }`
+  opens a door on Kino 0.9.81 and later while the plugin keeps installing as before on every older Kino (that is how TMDB
+  1.3.0 and later opens its `movies` door).
 
 ### When a block is dropped { #dropped }
 

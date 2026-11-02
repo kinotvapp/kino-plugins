@@ -182,6 +182,22 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   every profile) and, for each profile, «Incluir este perfil», on by default
   ([Background jobs](jobs-and-shared.md#per-profile)).
 
+## Kino 0.9.81 (apiVersion 20): plugins that use each other { #v20 }
+
+!!! note "Next Kino version, not published yet"
+    The [plugin protocol](protocol.md) is apiVersion 20, which arrives with Kino 0.9.81.
+
+- **One plain line per door** on the install sheet of a plugin that uses another one's doors: «Usa datos de TMDB (Movie
+  records from TMDB)», the provider's name and the door's summary (the repository, «Usa datos de
+  kinotvapp/kino-plugin-tmdb», while the provider is not installed). Not red, no switch, no approval of its own; on an update
+  that adds a door the line is marked new. There is never a question per call.
+- **An install button inside the plugin.** While the provider is missing, the consumer shows its own screen with a button;
+  the button opens Kino's normal install sheet for the provider, with the provider's own consent lines, and nothing is
+  installed until the person taps Instalar. If it is already installed Kino says «Ese plugin ya está instalado».
+- **Removing the provider** leaves the consumer installed; it simply shows its install screen again.
+- **A plugin that only provides** (no capability, no host) says on its card that it does not connect to the internet, and
+  does not show up as a source in search or Home.
+
 ## Kino 0.9.81 (apiVersion 18): app themes { #v18 }
 
 !!! note "Next Kino version, not published yet"

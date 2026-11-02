@@ -3,18 +3,47 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## La próxima versión de Kino: `apiVersion` 19, letras { #v19 }
+## Kino 0.9.81: `apiVersion` 20, plugins que se usan entre sí { #v20 }
 
 !!! note "Todavía en ningún Kino publicado"
-    El `apiVersion` 19 llega con la próxima versión de Kino (`contract.json` nombra la 0.9.81). Todo Kino anterior rechaza un
+    El `apiVersion` 20 llega con Kino 0.9.81, todavía sin publicar. Todo Kino anterior rechaza un manifiesto con
+    `"apiVersion": 20` con «Este plugin necesita una versión más nueva de Kino»; un `provides` o un `consumes` dentro de
+    `enhancements["20"]`, en cambio, ahí se ignora. `contract.json` dice `maxApiVersion` 20.
+
+| Novedad | Desde | Cómo saberlo |
+| --- | --- | --- |
+| `provides` en el manifiesto: hasta 4 **puertas** que otros plugins pueden usar, cada una con llamadas y flujos, que responden las exportaciones `proto_<puerta>_<nombre>` | `apiVersion` 20, o `enhancements["20"]` con cualquier `apiVersion` | un Kino anterior rechaza el `apiVersion` 20 e ignora el enhancement |
+| `consumes` en el manifiesto y `kino.plugins.call(alias, llamada, arg)`: usar la puerta de otro plugin a través de Kino, con siete códigos de error | lo mismo | `typeof kino.plugins === "object"` |
+| Flujos: `state.protocol.<alias>.<flujo> = true` en una pantalla y el evento `protocol` en `screenEvent` | `apiVersion` 20, con `screen` | lo mismo |
+| Un plugin que solo tiene `provides`: sin capacidades, `"hosts": []` | `apiVersion` 20 | un Kino anterior rechaza el `apiVersion` 20 |
+| La línea de consentimiento «Usa datos de &lt;proveedor&gt; (&lt;resumen de la puerta&gt;)» en la hoja de instalación de un consumidor | Kino 0.9.81 | — |
+
+- **El protocolo entre plugins**: un plugin abre puertas (TMDB 1.3.0 y posteriores abre `movies`), otro las usa (el juego
+  [Cine Trivia](https://github.com/kinotvapp/kino-plugin-cine-trivia)). Kino es el único intermediario: revisa cada petición con
+  rigor y cada respuesta con holgura contra los tipos que declaró el proveedor, máximo 64 KB en cada sentido, 10 s por llamada
+  y 30 llamadas en cualquier ventana de 10 s por puerta. El contenido 18+ nunca llega a un plugin que no es 18+, los secretos
+  sellados no pasan nunca y nada se instala solo: el consumidor ofrece al proveedor con `go.installPlugin`.
+  [Protocolo entre plugins](protocol.md).
+- **El kit**: `node sdk/run.mjs --provider <carpeta>` responde las llamadas de un consumidor desde un proveedor en tu
+  computador; `screenEvent protocol <alias>.<flujo>` consulta un flujo una vez. [Probar sin conexión](protocol.md#kit).
+
+## Kino 0.9.81: `apiVersion` 19, letras y `go.installPlugin` { #v19 }
+
+!!! note "Todavía en ningún Kino publicado"
+    El `apiVersion` 19 llega con Kino 0.9.81, todavía sin publicar. Todo Kino anterior rechaza un
     manifiesto con `"apiVersion": 19` con «Este plugin necesita una versión más nueva de Kino». `contract.json` dice `maxApiVersion` 19.
 
 | Novedad | Desde | Cómo saberlo |
 | --- | --- | --- |
 | La capacidad `lyrics` y la exportación `lyrics(query)`: la letra sincronizada o en texto plano de una canción, para la «Letra» del reproductor de música | `apiVersion` 19 | un Kino anterior rechaza el `apiVersion` 19 |
+| `go.installPlugin`: un botón en tu pantalla que abre la hoja de instalación propia de Kino para el repositorio de otro plugin | `apiVersion` 19, con `screen` | por debajo de 19 el `go` se descarta, con registro |
+| `recommends` en el manifiesto e `installed` en `screen` y `screenEvent`: si cada plugin recomendado está instalado ahora | Kino 0.9.81, con cualquier `apiVersion` | un Kino anterior ignora el campo; `installed` no llega |
 
 - **Letras**: un plugin responde `{ synced?, plain?, label?, instrumental?, matchDurationMs? }` para la canción que suena; la
   persona elige la fuente cuando varios plugins responden. [Letras para el reproductor de música](contract.md#lyrics).
+- **Instalar otro plugin desde el tuyo**: `go.installPlugin` abre la hoja de instalación de siempre de Kino encima de tu
+  pantalla, y solo el Instalar de la propia persona lo instala; con `recommends`, tu pantalla sabe cuáles de esos plugins
+  están instalados y Kino la vuelve a dibujar cuando eso cambia. [`go.installPlugin`](screen-forms.md#go-install-plugin).
 
 ## La próxima versión de Kino: `apiVersion` 18, temas de la app { #v18 }
 

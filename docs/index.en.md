@@ -60,7 +60,8 @@ README.md          for humans
 Kino runs your code in a sandbox: no filesystem, no timers, no other plugins, no access to the
 person's data. The only way out is `kino.fetch`, which can reach only the hosts your manifest
 declares and the person approved on screen, plus the servers the person typed in your plugin's
-settings (see [The manifest](manifest.md)).
+settings (see [The manifest](manifest.md)). Plugins never reach each other directly: from Kino 0.9.81 one can use the
+**doors** another one opens, always through Kino, which checks every request and answer ([The plugin protocol](protocol.md)).
 
 Kino loads exactly one JavaScript file, so there is nothing for an `import` to resolve to. If you
 use a build step or a library, bundle everything into that single file -- see
@@ -143,6 +144,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The manifest](manifest.md) | Every field and rule of `kino-plugin.json`, settings, `streamHosts`, sealed secrets, the person's own servers, `insecureHttp`, downloads |
 | [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
+| [The plugin protocol](protocol.md) | apiVersion 20, Kino 0.9.81: plugins that use each other through Kino. A provider opens doors (`provides`, `proto_<door>_<call>`), a consumer uses them (`consumes`, `kino.plugins.call`); types, errors, limits, streams, the install gate with `recommends` and `go.installPlugin`, what the person sees, and the TMDB + Cine Trivia example |
 | [External resolver apps](resolver.md) | `externalResolve` (apiVersion 11): hand a title to an independently-installed app that turns it into a playable URL; the flow, `media`, `portable`, errors, casting, building the other side |
 | [Sync providers](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): carry the person's cross-device sync through a service your plugin talks to; who can read what, the `sync` block, cadence, conflicts, the 4 MiB limit, sending the settings to another device, Sync-Gram and Sync Servidor |
 | [Sockets and plugin-served bytes](bytes.md) | apiVersion 13, in development: `kino.ws` WebSockets, streams your plugin serves through `read` (played and cast by Kino), `kino.crypto`'s byte operations, a complete WebSocket example with its test |

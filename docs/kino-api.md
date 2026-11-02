@@ -13,6 +13,7 @@ kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync prov
 kino.ws            // apiVersion 13 (in development), capability "socket": outbound WebSockets (see below); absent otherwise
 kino.catalog       // apiVersion 13 (in development), capability "catalog": a SQLite catalog of your items; absent otherwise
 kino.qr            // apiVersion 13 (in development), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
+kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 ```
 
 `kino.apiVersion` responde 13 en Kino 0.9.74 (la próxima versión, todavía sin publicar) y 11 en Kino 0.9.71 a 0.9.73.
@@ -765,6 +766,33 @@ la persona.
   resto de `kino.library`; responde también desde un trabajo.
 - Kit: el `stats` del fixture es `{ "2026-10": { seconds, secondsByKind, secondsByBand, titles, episodes, activeDays, longestStreakDays, top } }`.
 
+## `kino.plugins.call(alias, llamada, arg?)` (apiVersion 20, Kino 0.9.81) { #plugins }
+
+Le pregunta a una **puerta que abre otro plugin**, a través de Kino: el [protocolo entre plugins](protocol.md). `alias` es una
+clave del [`consumes`](manifest.md#consumes) de tu manifiesto, `llamada` un nombre declarado ahí, `arg` JSON (máximo 64 KB)
+que cumple el `in` de la llamada.
+
+```js
+if (typeof kino.plugins === "object") {                 // no existe en un Kino anterior a 0.9.81
+  try {
+    const movie = await kino.plugins.call("tmdb", "random", { fromYear: 1990 });   // la respuesta del proveedor, revisada contra "out"
+  } catch (e) {
+    // e.code: provider_missing, not_declared, bad_input, bad_output, rate_limited, timeout o provider_failed
+  }
+}
+```
+
+- Se resuelve con la respuesta del proveedor revisada contra el `out` de la llamada (los campos que la puerta no declara se
+  descartan).
+- Se rechaza con un `Error` cuyo `code` es `provider_missing`, `not_declared`, `bad_input`, `bad_output`, `rate_limited` (más
+  de 30 llamadas en cualquier ventana de 10 s a una puerta de un proveedor), `timeout` (10 s) o `provider_failed`; en un `job`
+  en segundo plano, `not_allowed`. Qué significa cada uno y qué hacer: [Errores](protocol.md#errors).
+- Se puede usar donde se usan los demás servicios de Kino (`screen`, `screenEvent`, las exportaciones de un panel...); nunca
+  en un `job` ni en `sign()`.
+- `arg` le llega al proveedor, que puede mandarlo a sus propios hosts: no pongas nada privado ahí.
+- Los **flujos** de un proveedor no se llaman con esta función: tu pantalla los enciende con
+  `state.protocol.<alias>.<flujo> = true` y recibe el evento `protocol` ([Flujos](protocol.md#streams)).
+
 ## `kino.sleep(ms)` y `kino.error(code, message?, { userMessage }?)` { #sleep-error }
 
 `await kino.sleep(1500)` espera de 0 a 5000 ms (para un sitio que te limita las peticiones); el tiempo
@@ -786,6 +814,7 @@ inglés desde Kino 0.9.54).
 | `kino.crypto` | `crypto_error` |
 | `kino.browser.capture` | `browser_unavailable`, `timeout`, `blocked`, `busy`, `not_allowed`, `invalid_request` |
 | `kino.browser.page` | los mismos, más `rate_limited` ([Navegador oculto](browser.md#page)) |
+| `kino.plugins.call` | `provider_missing`, `not_declared`, `bad_input`, `bad_output`, `rate_limited`, `timeout`, `provider_failed`; `not_allowed` en un `job` ([el protocolo entre plugins](protocol.md#errors)) |
 | dentro de [`sign()`](signed-streams.md#rules) | `host_not_allowed` desde `kino.fetch`; `not_allowed` desde `kino.storage`, `kino.cookies` y `kino.sleep` |
 | `kino.storage` por encima de 256 KB o con un `ttlMs` inválido, `kino.html.select` por encima de sus límites, `kino.secret` con un nombre no declarado | sin `code`: un `Error` simple con un mensaje (en español hasta Kino 0.9.53, en inglés desde Kino 0.9.54) |
 
