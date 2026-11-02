@@ -16,9 +16,12 @@ Kino's own store. apiVersion 16 (Kino 0.9.78) adds `coins` (`kino.coins`: the pe
 coin), and Kino 0.9.78 adds `kino.sync.setActive` for a sync provider. apiVersion 17 (the next Kino version, no number yet)
 adds `kino.library.stats`, `perProfile` jobs, `kino.tmdb` in jobs, the `pages` widget and `hero` style,
 the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. apiVersion 18 (the next Kino version too: the
-contract names Kino 0.9.81; **not in any released Kino**; the maximum today) adds **app themes**: `appThemes` in the manifest
+contract names Kino 0.9.81; **not in any released Kino**) adds **app themes**: `appThemes` in the manifest
 (whole-app looks as data, optionally sold for kinos), and the `go.useTheme` and `go.setExperience` screen actions with
-`activeTheme` (section 4, "apiVersion 18: app themes"). See
+`activeTheme` (section 4, "apiVersion 18: app themes"). apiVersion 19 (Kino 0.9.81 too) adds the `lyrics` capability and
+`go.installPlugin`; apiVersion 20 (Kino 0.9.81, **not in any released Kino**; the maximum today) adds the **plugin
+protocol**: a plugin opens named doors in `provides` and another uses them through Kino with `consumes` and
+`kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"). See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 
 Your job: produce a plugin that **Kino accepts and that actually plays**, verified with the Node kit
@@ -74,7 +77,9 @@ turns the theme on with `go.useTheme`. See section 4, "apiVersion 18: app themes
    [Screens](https://kinotvapp.github.io/kino-plugins/en/screens/), the component catalogue ([1](https://kinotvapp.github.io/kino-plugins/en/screen-components/), [2](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
    [3](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)), [Rooms, the library and player control](https://kinotvapp.github.io/kino-plugins/en/rooms/),
    [Background jobs, shared results and AI](https://kinotvapp.github.io/kino-plugins/en/jobs-and-shared/), [The player panel](https://kinotvapp.github.io/kino-plugins/en/player-panel/#screen-kit),
-   [Screens without raising your apiVersion](https://kinotvapp.github.io/kino-plugins/en/enhancements/) and [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/).
+   [Screens without raising your apiVersion](https://kinotvapp.github.io/kino-plugins/en/enhancements/) and [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/),
+   and, when the plugin uses another plugin's data or offers its own to other plugins (apiVersion 20, Kino 0.9.81, not
+   published yet), [The plugin protocol](https://kinotvapp.github.io/kino-plugins/en/protocol/).
    For a plugin that is a store of plugins, or that uses the person's identity or the Home bell (apiVersion 15, not
    published yet): [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/),
    [Example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/),
@@ -168,11 +173,19 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `coins` (Kino 0.9.78); `17` only for `kino.library.stats`, a `perProfile` job, `kino.tmdb` inside a job, the bigger AI job
   budget, the `pages` widget, the `hero` text style, the `share`/`enableJob` answers or `go.search` with `"scope": "all"` (the
   next Kino version, no number yet); `18` only for `appThemes`, `go.useTheme`, `go.setExperience`, `activeTheme` or
-  `"hosts": []` in a themes-only plugin (the next Kino version, which the contract numbers 0.9.81). **17 and 18 are in no
-  released Kino**: every older Kino refuses the whole plugin, so use them only when the person accepts the wait. `kino.crypto`'s byte
+  `"hosts": []` in a themes-only plugin (the next Kino version, which the contract numbers 0.9.81); `19` only for `lyrics` or
+  `go.installPlugin`; `20` only for a top-level `provides`/`consumes` (the plugin protocol) or a plugin that only provides
+  (both Kino 0.9.81). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
+  instead. **17 to 20 are in no released Kino**: every older Kino refuses the whole plugin, so use them only when the
+  person accepts the wait. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
   manifest (Kino 0.9.74 has all five, an older Kino none): feature-detect each one with
   `typeof kino.crypto.convert === "function"` and keep a fallback.
+- **Whether it builds on another plugin** (apiVersion 20, Kino 0.9.81): if the data it needs already comes from an
+  installed plugin that opens a door (for example TMDB 1.3.0 and later, door `movies`), the plugin can be a **consumer**
+  of that door instead of fetching the data itself; if the person wants other plugins to reuse what theirs knows, it can
+  be a **provider**. Read the provider's `provides` (its manifest is the door's documentation) before writing a line, and
+  follow "apiVersion 20: the plugin protocol" in section 4.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -1145,6 +1158,111 @@ no network, no capability, no consent line (turning a theme on is the person's c
   check the screen and say what Kino does with `go.useTheme` / `go.setExperience`. The kit draws no colours: look at the theme in
   Kino's preview.
 
+**apiVersion 20: the plugin protocol (Kino 0.9.81, not in any released Kino; `provides`/`consumes` also work inside
+`enhancements["20"]`).** One plugin (the **provider**) opens named **doors**; another (the **consumer**) uses them. Kino is
+the only middleman: plugins never call each other, share memory or see each other's storage, settings or secrets. Full
+page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: the provider TMDB
+(`kinotvapp/kino-plugin-tmdb`, TMDB 1.3.0 and later, door `movies` in `enhancements["20"]`) and the consumer Cine Trivia
+(`kinotvapp/kino-plugin-cine-trivia`, `apiVersion` 20, a `screen` game).
+
+- **Neither block is a capability.** A provider or a consumer keeps the capabilities of the kind of plugin it is (a catalog
+  keeps `search`/`home`/`resolve`, a game keeps `screen`). Never add a capability called `provides`, `consumes` or
+  `protocol`: there is none.
+- **Where to declare them.** `"apiVersion": 20` with `provides`/`consumes` at the top level, or a lower `apiVersion` with
+  `"enhancements": { "20": { "provides": { … }, "consumes": { … } } }` (the block replaces the manifest's and is checked as
+  apiVersion 20; an older Kino ignores it and keeps the plugin working). A top-level block below apiVersion 20 refuses the
+  manifest (`The "provides" block needs apiVersion 20`). A provider with existing users uses `enhancements["20"]`.
+- **Names.** Door, call, stream and alias names match `^[A-Za-z][A-Za-z0-9]{0,31}$` (no `_`, no `-`); type names
+  `^[A-Z][A-Za-z0-9]{0,31}$`, local to their door; a call and a stream of one door never share a name.
+- **The provider's manifest** (at most 4 doors; each at most 16 calls and 8 streams):
+
+  ```json
+  "provides": { "movies": {
+    "summary": "Movie records from TMDB",
+    "calls": {
+      "byId":   { "in": { "id": "number" }, "out": "Movie" },
+      "random": { "in": { "fromYear": "number?", "toYear": "number?" }, "out": "Movie" },
+      "search": { "in": { "q": "string" }, "out": "Movie[]" }
+    },
+    "streams": { "trending": { "out": "Movie", "everySeconds": 60 } },
+    "types": { "Movie": { "id": "number", "title": "string", "year": "number", "director": "string?", "overview": "string?", "posterUrl": "string?" } }
+  } }
+  ```
+
+  `summary` (optional, ≤ 120 characters, one text for both languages, no `summaryEn`) is what the person reads in the
+  consumer's consent line. `out` is required for every call and stream; `in` may be left out (no argument). A stream's `out`
+  is the type of ONE item. `everySeconds` is clamped to 30..86,400 (60 when omitted).
+- **The provider's exports, exact names**: `proto_<door>_<call>(arg)` for each call, `proto_<door>_<stream>(cursor)` for
+  each stream, spelled exactly as in the manifest, case included (`proto_movies_byId`, `proto_movies_trending`). A call
+  returns JSON matching `out` (or a promise of it); a stream returns `{ items: [...], cursor }`, where `items` are the new
+  ones since `cursor` (`null` the first time) and `cursor` is any small JSON you want back next poll. To fail, `throw`: the
+  consumer gets `provider_failed` and never your message (put nothing private in it). A missing export is also
+  `provider_failed`. Map your rows to the declared type yourself; Kino only drops extra fields as a safety net.
+- **The type language** (closed): `string`, `number` (finite), `boolean`, `T?` (absent or null), `T[]`, a door type name,
+  or an inline object `{ "field": "type" }`. Suffixes combine (`"string[]?"`). No `any`, union, enum or map. Requests are
+  checked **strictly** (an extra field, a missing required one or a wrong type is `bad_input`; nothing is coerced:
+  `"1990"` is not a number; no argument reads as `{}` only when every `in` field is optional). Answers are checked
+  **loosely** (undeclared fields dropped; a missing required field or a wrong type is `bad_output`). JSON, ≤ 64 KB
+  (65,536 UTF-8 bytes) each way.
+- **The consumer's manifest** (at most 8 entries; each lists at most 16 calls and 8 streams):
+
+  ```json
+  "consumes": { "tmdb": { "repo": "kinotvapp/kino-plugin-tmdb", "door": "movies", "calls": ["random", "byId"], "streams": ["trending"] } },
+  "recommends": ["kinotvapp/kino-plugin-tmdb"]
+  ```
+
+  The key (`tmdb`) is a local alias. `repo` is the provider's plain GitHub `owner/name` (no URL, sub-path or `@ref`; a fork
+  does not stand in). List only the calls and streams the code really uses: an unlisted one answers `not_declared`.
+  **Always put the same repository in `recommends`**: that is what gives `screen`/`screenEvent` the `installed` map.
+- **The call**: `await kino.plugins.call(alias, call, arg?)` resolves to the checked answer or rejects with an `Error`
+  whose `code` is exactly one of `provider_missing` (not installed, off, needs setup, or 18+ while the consumer is not),
+  `not_declared`, `bad_input`, `bad_output` (also: the answer held one of the provider's sealed secrets), `rate_limited`
+  (more than 30 calls in any 10 s to one provider door, whatever alias), `timeout` (10 s) or `provider_failed`; in a
+  background `job` it rejects with `not_allowed`. Usable in `screen`, `screenEvent` and the other exports that use Kino's
+  services; **never in `job` or `sign()`**. Feature-detect with `typeof kino.plugins === "object"` when the consumer is
+  below apiVersion 20. Always `try`/`catch` it and show a Spanish + English sentence per case; never retry in a loop;
+  never cache answers in module variables (keep them in `state`, `kino.storage` or `kino.shared`).
+- **The install gate (mandatory for a consumer that cannot work without its provider)**: Kino never installs anything on
+  its own. While `installed["<owner/name>"] !== true`, `screen` returns **only** an install view with one primary,
+  `autofocus` button whose action is `{ go: { installPlugin: { repo: "<owner/name>" } } }`, and `screenEvent` does nothing.
+  Kino opens its normal install sheet over the screen; when the person taps Instalar, `installed` flips and Kino calls
+  `screen` again, so the real UI appears in place. `go.installPlugin` is honoured from apiVersion 19, only from the person's
+  own press or submit (never `open`, a timer, a change, an `onClose`, a panel or a notice), one repository per button; its
+  only field is `repo`. Also handle `provider_missing` at call time (the provider can be switched off or removed later).
+- **Streams**: switch one on from a `screenEvent` answer with the state flag
+  `{ state: { protocol: { "<alias>": { "<stream>": true } } } }` (`false` switches it off; the `protocol` key is replaced
+  whole, so send every flag together). While that screen is open, shown and Kino in front, Kino polls the provider every
+  `everySeconds` and sends the new, checked items to `screenEvent` as the event **`protocol`** with
+  `arg = { alias, stream, items }` (an object, not a string). Its answer keeps only `state`, `toast`, `close` and `config`.
+  At most 4 live subscriptions per plugin and 16 flags read; polls are 8 in any 10 s per door (separate from the 30 calls);
+  three failures in a row switch it off for that opening; leaving the screen or Kino leaving the front ends it; after a
+  return the cursor restarts from `null`, so **items may repeat**: make the handler idempotent. Not for player-panel sessions.
+- **Provides-only plugin**: `"apiVersion": 20`, a non-empty `provides`, no `capabilities` at all (the field may be left out),
+  `"hosts": []`, no settings. It plays nothing, is no source, and reaches the world only through Kino's services such as
+  `kino.tmdb`. Any capability or setting brings the ordinary rules back (`resolve`, `search`/`home`, hosts).
+- **Security and privacy rules you must follow**: every argument reaches the provider, which may send it to its own hosts
+  (or any host with `"fetchHosts": "any"`): never pass tokens, passwords, the person's private input or anything from a
+  `password` setting. An 18+ provider answers only an 18+ consumer (`provider_missing` otherwise). An answer holding a
+  sealed secret (or a marker) is `bad_output`: never return `kino.secret()` values or anything derived from them. A plugin
+  cannot call its own door (`not_declared`); two plugins must not call each other back from inside an answer (it waits
+  until `timeout`). Receiving data never widens the consumer's own `hosts`.
+- **What the person sees**: one plain line per door on the consumer's install sheet, «Usa datos de <provider name>
+  (<door summary>)» («Usa datos de kinotvapp/kino-plugin-tmdb» while the provider is not installed), marked new on an
+  update that adds it; no prompt per call; removing the provider leaves the consumer installed and its calls answer
+  `provider_missing`. The protocol stores nothing, so nothing new is synced.
+- **Evolving a door**: Kino re-reads the provider's door at every call. Only add (new calls, optional fields). Removing or
+  renaming a call breaks every consumer with `not_declared`; a new required `in` field breaks old consumers with
+  `bad_input`. For a breaking change open a new door (`movies2`) and keep the old one.
+- **Kit**: `node sdk/run.mjs --provider <provider folder> <consumer folder> screenEvent <event>` answers calls from the
+  provider's exports with the app's checks and codes (`--provider` repeatable; without it every call is
+  `provider_missing`); `screenEvent protocol <alias>.<stream>` polls a stream once and sends the `protocol` event;
+  `--context '{"installed":{"<owner/name>":true}}' <consumer> screen` draws past the gate; `node sdk/validate.mjs .` checks
+  both blocks (top level and `enhancements`). The kit serves an entry with the first provider that has the door (no repo
+  match) and does **not** apply the 18+ rule, the sealed-secret check or the self-call refusal: test those in Kino 0.9.81+.
+  The provider's own services need their usual kit setup (`KINO_TMDB_KEY` or `KINO_TMDB_FIXTURE` for `kino.tmdb`).
+  `--provider` needs a kit with `sdk/protocol.mjs` (the kit of Kino 0.9.81): if `run.mjs`/`validate.mjs` do not know it,
+  tell the person their copy of `sdk/`, `contract.json` and `kino.d.ts` is old; never delete the blocks to silence it.
+
 What Kino 0.9.50 does for every plugin, with no field: plays a plugin title on the paired TV through
 the TV's own copy of the plugin (keep `id` and refs identical across devices), checks followed series
 for new chapters through `episodes(ref)` (keep series refs stable), saves "Para ti" picks by `ref`,
@@ -1247,6 +1365,14 @@ people. See
       offers swatches; a `price` carries the author's real `payTo` and the plugin does not declare `coins` just to sell; a
       themes-only plugin has `"categories": ["themes"]`, no capabilities (or only `screen`) and `"hosts": []`; a screen that
       turns the theme on reads `activeTheme` and sends `go.useTheme` only from a tap.
+- [ ] apiVersion 20 / provider: `provides` at the top level with `"apiVersion": 20` or in `enhancements["20"]`; one export
+      `proto_<door>_<name>` per call and stream, spelled exactly; every answer matches `out` (a stream answers
+      `{ items, cursor }`); nothing private in answers or thrown messages; a short `summary`; the door documented in the
+      README; a published door only grows (new calls, optional fields).
+- [ ] apiVersion 20 / consumer: `consumes` with the provider's exact `repo` and `door` and only the names used; the same
+      repo in `recommends`; an install view with `go.installPlugin` while `installed[repo] !== true`; every
+      `kino.plugins.call` in `try`/`catch` with ES + EN messages; no call from a `job`; a `protocol` handler that tolerates
+      repeated items; tried with `node sdk/run.mjs --provider …` and in Kino 0.9.81+ with the provider installed and removed.
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
 - [ ] `kino.meta`, `kino.tmdb` and the `captureAll` options are used only behind their feature checks
@@ -1366,7 +1492,7 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   `open` event, or naming a node's event `open`.
 - Free values in a screen tree (`"padding": 10`, `"color": "#FF0000"`, `"width": 300`): off-scale values are dropped; use the
   spacing and size scales and the colour roles. A node invalid in one size class is dropped whole.
-- Sending a person-only `go` (`url`, `copy`, `titleByIds`, `liveChannel`, `syncProvider`, `useTheme`, `setExperience`) or
+- Sending a person-only `go` (`url`, `copy`, `titleByIds`, `liveChannel`, `syncProvider`, `useTheme`, `setExperience`, `installPlugin`) or
   `share`/`enableJob` from `open`, a timer, a change or an `onClose`, or more than 5 s after the tap: dropped.
 - A TV screen where a status card cannot be reached with the remote (no `canRequestFocus`), or a `share` button shown on a TV.
 - A theme with a light background, grey text on a grey surface or an accent that does not stand out: Kino drops those tokens
@@ -1378,3 +1504,13 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - Changing the light/full experience or the theme without the person's tap (`go.useTheme` from `open`), or expecting
   `go.useTheme` to turn on another plugin's theme: refused.
 - Confusing the apiVersion 6 `theme` (your own pages' colours) with `appThemes` (the whole app).
+- Plugin protocol: calling another plugin's exports, `import`ing its code or fetching its hosts instead of using
+  `kino.plugins.call` through a declared `consumes` entry; declaring `provides`/`consumes` as capabilities; naming exports
+  `proto_movies_by_id` or `movies_byId` instead of exactly `proto_<door>_<name>`; an alias, door or call name with `_` or
+  `-`; a `repo` given as a URL or with `@ref`; forgetting `recommends`, so `installed` never arrives and the install gate
+  cannot work; drawing the game (or anything interactive) while the provider is missing, or sending `go.installPlugin` from
+  `open` or a timer; one button that "installs everything"; sending a number as a string (`"1990"`: `bad_input`, never
+  coerced); calling `kino.plugins.call` from a `job`; retrying `rate_limited` in a loop; assuming stream items never repeat;
+  passing a token or the person's private input as an argument; a provider that returns a sealed secret or throws messages
+  with private data; a top-level `provides` below apiVersion 20 (refused: use `enhancements["20"]`); removing or renaming a
+  published call.
