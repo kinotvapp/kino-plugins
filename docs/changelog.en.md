@@ -47,6 +47,7 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 | `consumes` in the manifest and `kino.plugins.call(alias, call, arg)`: use another plugin's door through Kino, with seven error codes | the same | `typeof kino.plugins === "object"` |
 | Streams: `state.protocol.<alias>.<stream> = true` on a screen and the `protocol` event in `screenEvent` | `apiVersion` 20, with `screen` | the same |
 | A plugin that only `provides`: no capability, `"hosts": []` | `apiVersion` 20 | an older Kino refuses `apiVersion` 20 |
+| A screen-only consumer (a non-empty `consumes`, `capabilities` exactly `["screen"]`): `"hosts": []` | `apiVersion` 20 | an older Kino refuses `apiVersion` 20 |
 | `visualBrowser` in the manifest and `kino.visualBrowser.open`: a web window the person sees and drives (to sign in, solve a challenge), with Kino's own consent sheet at every open | `apiVersion` 20, or `enhancements["20"]` at any `apiVersion` | `kino.visualBrowser` is `undefined` on an older Kino; `kino.visualBrowser.available` is `false` without a WebView |
 | `storeAs.spill`: a cookie list longer than 500 characters goes over up to 3 more `password` settings, in one save; and the window's own `timeoutMs` replaces the opening call's time bound while it is up | `apiVersion` 20, with `visualBrowser` | the same |
 | `storeAs.thenEvent`: after Kino writes the cookies into a `password` setting, it sends your open screen an event of your choice | `apiVersion` 20, with `screen` | the same |

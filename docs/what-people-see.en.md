@@ -197,6 +197,8 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
 - **Removing the provider** leaves the consumer installed; it simply shows its install screen again.
 - **A plugin that only provides** (no capability, no host) says on its card that it does not connect to the internet, and
   does not show up as a source in search or Home.
+- **A screen-only consumer** (only `screen`, `"hosts": []`) says on its card that it does not connect to the internet only
+  when it has no settings at all; its install sheet still shows the «Usa datos de …» line of each door it uses.
 
 ## Kino 0.9.81 (apiVersion 18): app themes { #v18 }
 

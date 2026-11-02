@@ -140,7 +140,7 @@ Antes de escribir nada:
    todavía sin publicar) y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
    un consumidor con la puerta de instalación) y TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, un proveedor).
    Parte de la plantilla del kit: node sdk/init.mjs mi-plugin --kind provider, o --kind consumer --repo dueño/nombre
-   --door <la puerta real> --call <una llamada real> --host <el host real del que carga mi pantalla>; su test/provider
+   --door <la puerta real> --call <una llamada real> (escribe "hosts": []); su test/provider
    es un reemplazo que hay que cambiar por una copia del proveedor real. Resumen en una página:
    https://kinotvapp.github.io/kino-plugins/protocol-quick/.
 
@@ -473,18 +473,19 @@ Reglas:
 - Límites: 64 KB por petición y por respuesta, 10 s por llamada, 30 llamadas en cualquier ventana de 10 s por puerta,
   4 puertas por plugin, 16 llamadas y 8 flujos por puerta, 8 entradas en consumes, flujos consultados cada 30 s como mínimo.
 - Todo texto para la persona en español (neutro, con tuteo, nunca voseo) y en inglés (text + textEn).
-- Los "hosts" de un consumidor no pueden ser []: pon el único host real del que carga la pantalla (el host de
-  imágenes de los pósters que dibuja, p. ej. image.tmdb.org), nunca example.com ni uno inventado (validate avisa si
-  es de relleno); si la pantalla solo muestra texto, sigue
-  https://kinotvapp.github.io/kino-plugins/protocol/#text-only-consumer. Una Image no necesita declarar su host. Solo un plugin
-  que solo provee (apiVersion 20, provides, sin capacidades ni ajustes) puede tener "hosts": []; no existe un
-  campo "providesOnly".
+- Un consumidor solo de pantalla (apiVersion 20, un "consumes" no vacío, "capabilities" exactamente ["screen"])
+  declara "hosts": [] (una Image no necesita declarar su host; sin host su propio kino.fetch se rechaza salvo que
+  declare fetchHosts "any" o un ajuste url). Cualquier otra capacidad trae de vuelta "al menos un host": entonces pon
+  solo los hosts reales a los que llega su kino.fetch. Nunca example.com ni uno inventado (validate avisa si es de
+  relleno). Mira https://kinotvapp.github.io/kino-plugins/protocol/#consumer-hosts. Un plugin que solo provee
+  (apiVersion 20, provides, sin capacidades ni ajustes) también puede tener "hosts": []; no existe un campo
+  "providesOnly".
 - Árboles de pantalla: un Scaffold cuyo appBar es { "type": "AppBar", ... }; SingleChildScrollView lleva
   "children" (una lista), nunca "child"; los botones son ElevatedButton/TextButton con labelText + labelTextEn y
   onPressed (FilledButton no existe). Copia la pantalla mínima de consumidor de la sección 4 de AGENTS.md.
 
 Parte de la plantilla del kit, no de un archivo en blanco: `node sdk/init.mjs mi-plugin --kind provider` o
-`node sdk/init.mjs mi-plugin --kind consumer --repo dueño/nombre --door <puerta> --call <llamada> --host <host real>`
+`node sdk/init.mjs mi-plugin --kind consumer --repo dueño/nombre --door <puerta> --call <llamada>` (`"hosts": []`)
 (`node sdk/init.mjs --help`), cambia su `test/provider` de reemplazo por una copia del proveedor real, y después copia
 junto a él `sdk/` sin `sdk/test/` y `contract.json` (`kino.d.ts` es opcional, solo para los tipos del editor). Pruébalo sin conexión antes que nada:
 `node sdk/validate.mjs .` (ningún ✗, y lee cada línea !); para un proveedor

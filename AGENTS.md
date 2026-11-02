@@ -30,13 +30,13 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 | 870 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
 | 1095 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
 | 1193 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1277 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts, a text-only consumer, open, recipes, kit)](#protocol) |
-| 1453 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1548 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1573 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1595 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1709 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1762 | [7. Common mistakes](#7-common-mistakes) |
+| 1277 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
+| 1456 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1551 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1580 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1603 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1717 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 1770 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -313,13 +313,13 @@ exact message Kino shows, never a summary.
     - **A plugin of the plugin protocol** (apiVersion 20) starts from the kit's scaffolds, the recommended starting point:
       `node kino-plugin-archive/sdk/init.mjs my-provider --kind provider --door <door> --call <call>` (provides-only: one
       door with a call and a stream, `"hosts": []`, a test that runs `proto`) or `node kino-plugin-archive/sdk/init.mjs
-      my-consumer --kind consumer --repo <provider owner/name> --door <the real door> --call <a real call> --host <the real
-      host the screen loads from>` (a screen with the install gate, one compact bar with a close leading, a detail route with
+      my-consumer --kind consumer --repo <provider owner/name> --door <the real door> --call <a real call>` (a screen-only
+      consumer with `"hosts": []`; `--host` only for a host its own `kino.fetch` really reaches: the install gate, one compact bar with a close leading, a detail route with
       a back, an error per code with a default, a stream switch and TV focus, tested against `test/provider`). `--door`,
       `--call` and `--stream` (default `quotes`, `byId`, `latest`) take the real door's names. **`test/provider` is a
       STAND-IN** (its README says so): replace it with a copy of the real provider (same door, call and stream names and
       types), then adapt the argument, the fields read and the test. Replace every placeholder they leave
-      (`your-user/kino-plugin-quotes`, `example.com`, the `TODO:` Spanish `description`; check `screen.labelEn`). Then copy
+      (`your-user/kino-plugin-quotes`, the `TODO:` Spanish `description`; check `screen.labelEn`). Then copy
       `sdk/` and `contract.json` in (both required; `kino.d.ts` is optional, only editor typings: the kit never reads it).
     - **Leave the kit's own tests out of the plugin.** `sdk/test/` (more than 60 files) is the kit's suite, not needed by a
       plugin. Copy `sdk/` without it, or delete it after copying (also in a repository made from a template):
@@ -419,7 +419,8 @@ exact message Kino shows, never a summary.
   setting), over `https`, checked on **every redirect hop**. `*.example.com` does **not** cover
   `example.com`: list both. No IPs, no `localhost`, no `.local`/`.lan`/`.internal`/`.localhost`/`.home.arpa`,
   no bare `*`, no scheme/port/path in `hosts`. At least 1 entry (`[]` only from apiVersion 2 with a
-  `url` setting) and **no maximum from Kino 0.9.45**; Kino 0.9.44 and older refuse more than 20 (the
+  `url` setting, from apiVersion 18 in a themes-only plugin, from apiVersion 20 in a provides-only plugin or a screen-only
+  consumer: [the consumer's hosts](#consumer-hosts)) and **no maximum from Kino 0.9.45**; Kino 0.9.44 and older refuse more than 20 (the
   kit warns "Más de 20 hosts: ..."), so with more than 20 hosts tell the person it needs 0.9.45+. During `resolve` and `episodes` only, a fetch to an undeclared `https` host asks the
   person (the call's clock stops meanwhile) -- at most 3 hosts per call, and none after the person
   rejects one; everywhere else it just fails as `host_not_allowed`. Declared names that resolve into
@@ -1333,22 +1334,24 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
   does not stand in). List only the calls and streams the code really uses: an unlisted one answers `not_declared`.
   **Always put the same repository in `recommends`**: that is what gives `screen`/`screenEvent` the `installed` map
   (`recommends` does nothing else: Kino shows the person no list for it).
-- **The consumer's `hosts`**: a consumer follows the ordinary rule, at least one host (`"hosts": []` is refused for a screen
-  plugin: `The "hosts" field can only be empty if the plugin has a setting of type "url"`). Data from a door needs no host;
-  declare the **real** host your screen loads something from, usually the image host of the pictures it draws
-  (`image.tmdb.org` for TMDB's `posterUrl`), and draw them. The install sheet lists that host to the person, so never invent
-  one and never publish the scaffold's placeholder `example.com` (`validate.mjs` warns, `!`, on `example.com`,
-  `*.example.com`, `example.org`, `example.net` and anything under `.test`, `.invalid`, `.example`). Note: an `Image` needs
-  **no** host declaration (any public https address, [Image](https://kinotvapp.github.io/kino-plugins/en/screen-components/#image));
-  the entry is there only because the manifest needs at least one.
-- <a id="text-only-consumer"></a>**A consumer that shows only text** (the provider returns no picture or link, the screen loads
-  nothing of its own), honest ways out in this order: (1) add an optional picture field to the provider's door
-  (`"imageUrl": "string?"`, optional so old consumers keep working), draw it, and declare its host; (2) declare the host the
-  provider's content really comes from (the site its `kino.fetch` reads, in the provider's own `hosts`) and say so in the
-  README; (3) if the data has no host anywhere, a name under the reserved `.invalid` domain: Kino accepts it, it reaches
-  nothing and Kino never lists it to the person (manifest page, "The person's own servers"); `validate.mjs` still warns, so it
-  is a deliberate choice explained in the README. Never a made-up host (`images.my-recipes.test`, a domain nobody runs). Full
-  text: <https://kinotvapp.github.io/kino-plugins/en/protocol/#text-only-consumer>.
+- <a id="consumer-hosts"></a>**The consumer's `hosts`: a screen-only consumer declares none.** Data from a door needs no host.
+  A **screen-only consumer** (`"apiVersion": 20` or later, a non-empty `consumes`, `capabilities` exactly `["screen"]`;
+  `contract.json` `protocol.screenOnlyConsumer`) declares **`"hosts": []`**, as Cine Trivia does. With no host its own
+  `kino.fetch` is refused unless it declares `"fetchHosts": "any"` or has a `url` setting (alone or in a `list`). An `Image`
+  needs **no** host declaration (any public https address,
+  [Image](https://kinotvapp.github.io/kino-plugins/en/screen-components/#image)): TMDB's `posterUrl` draws without
+  `image.tmdb.org`. With `"hosts": []` and **no setting at all** its card says it does not connect to the internet; any setting
+  rules that out. If the screen does fetch something itself, declare that real host (it stays screen-only). Any other
+  capability (`tracking`, a catalog, `playerPanelTab`...), an empty `consumes` or apiVersion 19 (`consumes` only in
+  `enhancements["20"]`) bring back the ordinary rule: at least one host unless a `url` setting exists
+  (`The "hosts" field can only be empty if the plugin has a setting of type "url"`). Never a placeholder: `validate.mjs` warns
+  (`!`) on `example.com`, `*.example.com`, `example.org`, `example.net` and anything under `.test`, `.invalid`, `.example`, and
+  tells a screen-only consumer `a screen-only consumer needs no host: declare none ("hosts": [])`; any other plugin is told
+  `declare a host the plugin really loads from`. Full text:
+  <https://kinotvapp.github.io/kino-plugins/en/protocol/#consumer-hosts>.
+- <a id="text-only-consumer"></a>**A consumer that shows only text** (or public pictures) and loads nothing of its own is a
+  screen-only consumer: `"hosts": []`, nothing to invent or replace. Never a made-up host (`images.my-recipes.test`, a domain
+  nobody runs) and no `.invalid` name. Full text: <https://kinotvapp.github.io/kino-plugins/en/protocol/#text-only-consumer>.
 - **The call**: `await kino.plugins.call(alias, call, arg?)` resolves to the checked answer or rejects with an `Error`
   whose `code` is exactly one of `provider_missing` (not installed, off, needs setup, or 18+ while the consumer is not),
   `not_declared`, `bad_input`, `bad_output` (also: the answer held one of the provider's sealed secrets), `rate_limited`
@@ -1393,7 +1396,8 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
   It may declare `"hosts": []`; then it plays nothing, is no source, and reaches the world only through Kino's services such
   as `kino.tmdb`. A provider that later needs `kino.fetch` adds those hosts to `hosts` and **stays** provides-only (no
   `resolve`/`search`/`home` to write); its consent sheet then lists the hosts. Any capability or setting brings the ordinary
-  rules back (`resolve`, `search`/`home`, at least one host).
+  rules back (`resolve`, `search`/`home`, at least one host). The consumer side has the same freedom: a screen-only consumer
+  may declare `"hosts": []` too ([above](#consumer-hosts)).
 - **Security and privacy rules you must follow**: every argument reaches the provider, which may send it to its own hosts
   (or any host with `"fetchHosts": "any"`): never pass tokens, passwords, the person's private input or anything from a
   `password` setting. An 18+ provider answers only an 18+ consumer (`provider_missing` otherwise). An answer holding a
@@ -1409,9 +1413,9 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
   `bad_input`. For a breaking change open a new door (`movies2`) and keep the old one.
 - **Kit** (full page: <https://kinotvapp.github.io/kino-plugins/en/protocol/#kit>):
   - **Scaffolds**: `node sdk/init.mjs my-provider --kind provider --door <door> --call <call>`, `node sdk/init.mjs
-    my-consumer --kind consumer --repo <owner/name> --door <door> --call <call> --host <real host>` (section 3, step 1). Each
-    comes with a test that passes as written; the consumer's test shows a placeholder host as a `todo`, and its
-    `test/provider` is a STAND-IN to replace with a copy of the real provider.
+    my-consumer --kind consumer --repo <owner/name> --door <door> --call <call>` (section 3, step 1; the consumer gets
+    `"hosts": []`, `--host` adds a real one). Each comes with a test that passes as written (the consumer's shows `todo 0`),
+    and the consumer's `test/provider` is a STAND-IN to replace with a copy of the real provider.
   - **A provider on its own**: `node sdk/run.mjs <provider folder> proto <door>.<call> '<arg json>'` (a call) and
     `node sdk/run.mjs <provider folder> proto <door>.<stream> ['<cursor json>']` (one poll; it prints `{ items, cursor }` and the
     command for the next poll). Same checks and codes as the app. Exit 0 with the answer on stdout; 1 with `✗ <code>: <message>`
@@ -1439,7 +1443,7 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
     exit 1) when a declared call or stream has no `proto_<door>_<name>` export (Kino would install it, but every call to it
     answers `provider_failed`). It **warns** (`!`, exit 0) when a consumed repo is missing from `recommends`, when
     `everySeconds` is outside 30..86,400 (it says the value Kino uses), when the manifest has a `providesOnly` field and when a
-    `hosts` entry is a placeholder (`example.com`, `.test`, `.invalid`...).
+    `hosts` entry is a placeholder (`example.com`, `.test`, `.invalid`...; a screen-only consumer is told to declare none).
   - **What the kit does not check**: it has no repositories, so it serves an entry with the **first provider that has the
     door and ignores `repo`**: check by hand that `repo` is the provider's exact GitHub `owner/name`, the same string in
     `recommends` and in your `installed[...]` key. It does **not** apply the 18+ rule, the sealed-secret check or the
@@ -1463,7 +1467,7 @@ no `dropped` line, with `installed` `true` and `false`, with `--lang en` and wit
   "apiVersion": 20,
   "entry": "plugin.js",
   "description": "Una pregunta de cine con las películas del plugin TMDB",
-  "hosts": ["image.tmdb.org"],
+  "hosts": [],
   "capabilities": ["screen"],
   "screen": { "label": "Trivia", "labelEn": "Trivia" },
   "recommends": ["kinotvapp/kino-plugin-tmdb"],
@@ -1679,8 +1683,8 @@ people. See
       `proto <door>.<stream>` and again from the cursor it printed. Provides-only: no capability, no setting, no
       `providesOnly` field, `everySeconds` within 30..86,400.
 - [ ] apiVersion 20 / consumer: `consumes` with the provider's exact `repo` and `door` and only the names used (checked by
-      hand: the kit ignores `repo`); the same repo in `recommends` (no `!` from validate about it); `hosts` a real host the
-      screen loads from, never `example.com` (no `!` about a placeholder host); `test/provider` replaced by a copy of the
+      hand: the kit ignores `repo`); the same repo in `recommends` (no `!` from validate about it); `hosts` `[]` for a
+      screen-only consumer (or only real hosts its own `kino.fetch` reaches), never `example.com` (no `!` about a placeholder host); `test/provider` replaced by a copy of the
       real provider; an install view with `go.installPlugin` while `installed[repo] !== true`, and a
       sentence for `provider_missing` while it is `true`; every `kino.plugins.call` in `try`/`catch` with ES + EN messages; no
       call from a `job`; a `protocol` handler that tolerates repeated items (tried with `--cursor`); the screen drawn with
@@ -1837,8 +1841,9 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   passing a token or the person's private input as an argument; a provider that returns a sealed secret or throws messages
   with private data; a top-level `provides` below apiVersion 20 (refused: use `enhancements["20"]`); removing or renaming a
   published call.
-- Plugin protocol, kit and manifest: a consumer with `"hosts": []` (refused) or with the scaffold's `example.com` left in
-  (a lie on the consent sheet), or an invented host for a text-only screen; trusting the scaffold's stand-in `test/provider`
+- Plugin protocol, kit and manifest: a screen-only consumer with a placeholder (`example.com`, a `.invalid` name) or an
+  invented host instead of `"hosts": []` (a lie on the consent sheet); `"hosts": []` in a consumer that also declares another
+  capability (refused: it needs a real host); declaring `image.tmdb.org` only to draw posters (not needed); trusting the scaffold's stand-in `test/provider`
   as if it were the real provider; writing `"providesOnly": true` (no such field: it is derived); a declared call whose
   `proto_` export is missing or misspelled (validate fails it; Kino would answer `provider_failed`); `everySeconds` below 30
   (clamped); a cursor that carries the items (the answer passes 64 KB: `bad_output`); running `screenEvent` in the kit

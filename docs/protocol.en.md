@@ -164,11 +164,11 @@ Cine Trivia is useless without TMDB, so it declares `apiVersion` 20 directly. It
 {
   "id": "cine-trivia",
   "name": "Cine Trivia",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "apiVersion": 20,
   "entry": "plugin.js",
   "description": "Cinco preguntas de cine, quince segundos cada una: las películas llegan del plugin TMDB",
-  "hosts": ["image.tmdb.org"],
+  "hosts": [],
   "capabilities": ["screen"],
   "screen": { "label": "Cine Trivia", "labelEn": "Cine Trivia", "icon": "movie", "menuOpens": "screen" },
   "recommends": ["kinotvapp/kino-plugin-tmdb"],
@@ -188,8 +188,9 @@ Cine Trivia is useless without TMDB, so it declares `apiVersion` 20 directly. It
   does not list it).
 - `recommends` names the same repository, so `screen` and `screenEvent` receive `installed["kinotvapp/kino-plugin-tmdb"]`
   (see [the install gate](#install-gate)).
-- `hosts` is only `image.tmdb.org`, for the posters it draws. The movie data does not come from the network: it comes
-  through Kino from the provider.
+- `hosts` is `[]`: Cine Trivia is a [screen-only consumer](#consumer-hosts). The movie data does not come from the network
+  (it comes through Kino from the provider), and the posters it draws (TMDB's `posterUrl`) are public images, which need no
+  host declaration.
 
 ### The install gate { #install-gate }
 
@@ -405,41 +406,45 @@ A provider installed after the consumer simply starts working: nothing is resolv
 
 ### The consumer's `hosts` { #consumer-hosts }
 
-A consumer is an ordinary plugin of its kind, so the ordinary `hosts` rule applies: **at least one host**, unless it has a `url`
-setting. `"hosts": []` is refused for a screen plugin that consumes (`The "hosts" field can only be empty if the plugin has a
-setting of type "url"`); only a [provides-only](#provides-only) plugin (or a themes-only one) may leave it empty. Data that
-arrives through a door needs no host: `hosts` is for what **your** plugin loads itself.
+Data that arrives through a door needs no host: `hosts` is only for what **your** plugin loads itself with `kino.fetch`. A
+consumer whose only purpose is a screen that shows what its providers give is a **screen-only consumer**: `apiVersion` 20 or
+later, a non-empty `consumes` and `capabilities` exactly `["screen"]`. It declares **`"hosts": []`** (`contract.json`,
+`protocol.screenOnlyConsumer`), as Cine Trivia does.
 
-- Declare the real host your screen loads something from: the image host of the posters it draws (`image.tmdb.org` for TMDB's
-  `posterUrl`, as Cine Trivia does), a site it reads with `kino.fetch`. The install sheet lists that host to the person, so it
-  must be true.
-- Good to know: drawing a picture needs **no** host declaration. An `Image` takes any public https address
-  ([Image](screen-components.md#image): "no host declaration needed, as for every image in Kino"). The host entry is there
-  because the manifest rule asks for at least one (and the kit's `validate.mjs` checks the same rule), not because the
-  picture needs it.
-- Never publish a placeholder. `node sdk/init.mjs … --kind consumer` writes `"hosts": ["example.com"]` unless you pass
-  `--host <real host>`, and the kit's example consumer (`fixtures/protocol/consumer`) keeps `example.com` only because it is a
-  test fixture: replace it. `node sdk/validate.mjs .` warns (`!`, still accepted) on `example.com`, `*.example.com`,
-  `example.org`, `example.net` and anything under `.test`, `.invalid` or `.example`.
+- With no host its own `kino.fetch` calls are refused, unless it declares `"fetchHosts": "any"` (then they may reach any public
+  https host, said in red on its install sheet) or has a `url` setting, alone or as a field of a `list` (the servers the person
+  types). With no source capability it is no source.
+- Drawing a picture needs **no** host declaration: an `Image` takes any public https address
+  ([Image](screen-components.md#image): "no host declaration needed, as for every image in Kino"). The posters a provider hands
+  you (TMDB's `posterUrl`) draw without `image.tmdb.org` in your manifest.
+- With `"hosts": []` **and no setting at all**, its card in Plugins says it does not connect to the internet. Any setting rules
+  that out (a typed address is a server, and what the person types could leave with a picture's address). It is still a
+  consumer: its install sheet carries the «Usa datos de …» line of each door it uses.
+- If your screen does fetch something of its own, declare that real host: the plugin keeps the screen-only status and the
+  install sheet lists the host, so it must be true.
+- Add any other capability (a catalog, `tracking`, a panel's `playerPanelTab`...), leave `consumes` empty, or stay below
+  `apiVersion` 20 (with `consumes` only in `enhancements["20"]`), and the ordinary rule comes back: **at least one host**,
+  unless it has a `url` setting (`The "hosts" field can only be empty if the plugin has a setting of type "url"`).
+- Never publish a placeholder (`example.com`, a `.test` or `.invalid` name, a domain nobody runs): the person would read a
+  host that is not true. `node sdk/init.mjs … --kind consumer` writes `"hosts": []` (or the host you pass with `--host`), and
+  `node sdk/validate.mjs .` warns (`!`, still accepted) on `example.com`, `*.example.com`, `example.org`, `example.net` and
+  anything under `.test`, `.invalid` or `.example`. For a screen-only consumer the warning reads `hosts: "example.com" is a
+  placeholder host; a screen-only consumer needs no host: declare none ("hosts": []); its pictures from public https addresses
+  need no declaration (see …)`; for any other plugin, `… is a placeholder host; declare a host the plugin really loads from`.
 
 ### A consumer that shows only text { #text-only-consumer }
 
-Your provider answers only text (no picture, no link) and your screen loads nothing of its own, yet the manifest still needs one
-host. Honest ways out, in this order:
+A screen that shows only text (or pictures from public https addresses) and loads nothing of its own is a screen-only
+consumer like any other: declare **`"hosts": []`**. There is nothing to invent and nothing to replace:
 
-1. **Give the door a picture.** Add an optional field to the provider's type (`"imageUrl": "string?"`: optional, so old
-   consumers keep working, see [Changing a door later](#evolving)), draw it with an `Image`, and declare the host those pictures
-   come from. The screen gets better and the host is true.
-2. **Declare where the provider's content really comes from**: the site or API the provider reads with `kino.fetch` (it is in
-   the provider's own `hosts`). Say in your README that your screen shows data that comes from there.
-3. If the data has no host anywhere (the provider has it built in), Kino accepts a name under the reserved `.invalid` domain:
-   it never resolves, so it reaches nothing, and Kino never lists it to the person ([The person's own
-   servers](manifest.md#own-servers)). `validate.mjs` still warns about it, so it is a choice you make on purpose and explain
-   in the README.
+```json
+{ "apiVersion": 20, "hosts": [], "capabilities": ["screen"], "consumes": { "recipes": { "repo": "owner/kino-plugin-recipes", "door": "recipes", "calls": ["byId"] } } }
+```
 
-Never invent a host (`images.my-recipes.test`, `example.com`, a domain nobody runs): the person would read a claim that is
-not true. `"hosts": []` stays refused for a screen plugin without a `url` setting; only a [provides-only](#provides-only)
-plugin may leave it empty.
+The manifest needs real hosts again as soon as the plugin declares **any capability other than `screen`** (then list each host
+its own `kino.fetch` really reaches). A `url` setting (alone or in a `list`) or `"fetchHosts": "any"` keeps `"hosts": []`
+valid but opens the network: the first reaches the servers the person types, the second any public https host (said in red
+on the sheet), and with any setting the card no longer says it connects to nothing. Images never need a host.
 
 ### A minimal consumer screen that draws clean { #minimal-consumer }
 
@@ -457,7 +462,7 @@ that calls the door, an error sentence per code and a stream switch. It is check
   "apiVersion": 20,
   "entry": "plugin.js",
   "description": "Una pregunta de cine con las películas del plugin TMDB",
-  "hosts": ["image.tmdb.org"],
+  "hosts": [],
   "capabilities": ["screen"],
   "screen": { "label": "Trivia", "labelEn": "Trivia" },
   "recommends": ["kinotvapp/kino-plugin-tmdb"],
@@ -704,6 +709,8 @@ There is **no `providesOnly` field**: Kino derives it from those conditions, and
   or `home` to write), but its consent sheet now lists those hosts.
 - Declare any capability or any setting, or put `provides` below `apiVersion` 20, and the ordinary rules come back (`resolve`
   and `search` or `home`, at least one host...).
+- The other side has the same freedom: a [screen-only consumer](#consumer-hosts) (a non-empty `consumes`, `capabilities`
+  exactly `["screen"]`) may declare `"hosts": []` too.
 
 ## Old Kinos: `apiVersion` 20 or `enhancements["20"]` { #versions }
 
@@ -732,6 +739,8 @@ There is **no `providesOnly` field**: Kino derives it from those conditions, and
 - **No prompt per call.** Having the provider installed is the consent.
 - **Nothing installs silently.** A consumer can only show a [`go.installPlugin`](screen-forms.md#go-install-plugin) button;
   Kino opens its own install sheet with the provider's own consent lines, and only the person's Instalar installs it.
+- **On its card in Plugins**, a screen-only consumer with `"hosts": []` and no setting says it does not connect to the
+  internet; with any setting it does not.
 - **Removing the provider** only makes its doors answer `provider_missing`; the consumers are not changed or uninstalled.
 - **Nothing new is synced**: the protocol stores nothing. Keep your own state in `kino.storage` or `kino.shared` as usual.
 
@@ -764,8 +773,8 @@ There is **no `providesOnly` field**: Kino derives it from those conditions, and
 ```sh
 node sdk/init.mjs my-provider --kind provider
 #   provides-only (apiVersion 20, "hosts": [], no capabilities), door "quotes" with a call and a stream, test/plugin.test.mjs
-node sdk/init.mjs my-consumer --kind consumer --repo owner/kino-plugin-quotes --door quotes --call byId --host <the host your screen loads from>
-#   a screen with the install gate, one compact bar (mergeWithKinoBar + dense, a close leading), a detail route with a back,
+node sdk/init.mjs my-consumer --kind consumer --repo owner/kino-plugin-quotes --door quotes --call byId
+#   a screen-only consumer with "hosts": [] (--host <a host it really fetches from> adds one), the install gate, one compact bar (mergeWithKinoBar + dense, a close leading), a detail route with a back,
 #   an error per code, a stream switch and TV focus; test/provider is a STAND-IN provider with the same door/call names
 node sdk/init.mjs --help
 ```
@@ -778,8 +787,8 @@ the argument and the fields your code reads, and the scaffold's test. The consum
 
 Then copy the kit next to the new plugin: `sdk/` **without `sdk/test/`** and `contract.json` (both required; `kino.d.ts` is
 optional, only for your editor's typings: the kit never reads it; see [Test it locally](test-locally.md#copy-the-kit)), and
-replace the scaffold's placeholders (`your-user/...`, `example.com`). Until you do, `validate.mjs` warns about the placeholder
-host and the consumer's test shows it as a `todo`.
+replace the scaffold's placeholder `your-user/...` with the provider's real repository. The consumer's `"hosts": []` is no
+placeholder: leave it empty unless the screen fetches something of its own.
 
 **A provider on its own**, with no consumer: `proto` sends one call or one poll through the app's checks (the argument strictly
 against `in`, the answer loosely against `out`) and its error codes:
@@ -835,8 +844,8 @@ node sdk/run.mjs --context "$I" --cursor '[603]' --provider ../kino-plugin-tmdb 
   consumer's call to it answers `provider_failed`; the name is case-sensitive). It **warns** (`!`, exit 0: read each one) when a
   consumed repository is missing from `recommends` (the install gate would never open), when a stream's `everySeconds` is
   outside 30..86,400 (it says the value Kino uses), when the manifest has a `providesOnly` field (there is none) and when a
-  `hosts` entry is a placeholder (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`; see
-  [a consumer that shows only text](#text-only-consumer)).
+  `hosts` entry is a placeholder (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`; a
+  screen-only consumer is told to declare none, see [the consumer's `hosts`](#consumer-hosts)).
 - In your own tests, `createProtocolCaller` and `createKino(manifest, { protocol })` from `sdk/protocol.mjs` give you the same
   caller.
 - `--provider` and `sdk/protocol.mjs` belong to the kit of Kino 0.9.81, and `proto`, `--cursor`, `--lang` and
@@ -875,7 +884,8 @@ node sdk/run.mjs --context "$I" --cursor '[603]' --provider ../kino-plugin-tmdb 
 - Arguments carry nothing the provider's author should not see.
 - No calls from a background `job`.
 - A `protocol` handler that tolerates repeated items (try it with `--cursor`).
-- `hosts` lists a real host your screen loads from, never `example.com` or another placeholder.
+- `hosts` is `[]` for a screen-only consumer (only `screen`, a non-empty `consumes`), or the real hosts its own `kino.fetch`
+  reaches; never `example.com` or another placeholder.
 - `node sdk/validate.mjs .` shows no `!` about `recommends`; your `repo` checked by hand (the kit ignores it).
 - The screen drawn with `installed` `true` and `false`, with `--lang en` and with `--device tv`, with no `dropped` line.
 - Tried with `--provider` in the kit, and in the app with the real provider installed, switched off and removed.

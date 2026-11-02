@@ -356,11 +356,11 @@ Llega con Kino 0.9.77. El kit ya revisa y corre todo con las reglas de la app:
 El flujo completo, con ejemplos, está en [el protocolo entre plugins](protocol.md#kit). En corto:
 
 - **Plantillas**: `node sdk/init.mjs mi-proveedor --kind provider` (solo provee, una puerta con una llamada y un flujo, su
-  prueba) y `node sdk/init.mjs mi-consumidor --kind consumer --repo tu-usuario/nombre --door <puerta> --call <llamada> --host <host real>`
-  (una pantalla con la puerta de instalación, una sola barra compacta, una ruta de detalle, los códigos de error y un
+  prueba) y `node sdk/init.mjs mi-consumidor --kind consumer --repo tu-usuario/nombre --door <puerta> --call <llamada>`
+  (un consumidor solo de pantalla, `"hosts": []`: una pantalla con la puerta de instalación, una sola barra compacta, una ruta de detalle, los códigos de error y un
   interruptor de flujo, probada contra `test/provider`: un **reemplazo** con los mismos nombres de puerta y llamada, para
-  cambiar por una copia del proveedor real). `node sdk/init.mjs --help` lista las opciones; sin `--host` el consumidor recibe
-  el relleno `example.com`, del que `validate.mjs` avisa: cámbialo ([un consumidor que solo muestra texto](protocol.md#text-only-consumer)).
+  cambiar por una copia del proveedor real). `node sdk/init.mjs --help` lista las opciones; `--host <un host del que la
+  pantalla de verdad descarga>` agrega uno, solo si descarga ([los `hosts` del consumidor](protocol.md#consumer-hosts)).
 - **Un proveedor solo**: `node sdk/run.mjs <carpeta del proveedor> proto <puerta>.<llamada> '<json del argumento>'` y
   `proto <puerta>.<flujo> ['<json del cursor>']` pasan por las revisiones y los códigos de error de la app. Salida 0 con la
   respuesta, 1 con `✗ <código>: <mensaje>`, 2 para un comando mal escrito.
@@ -385,7 +385,8 @@ El flujo completo, con ejemplos, está en [el protocolo entre plugins](protocol.
 - **El manifiesto**: `node sdk/validate.mjs .` revisa `provides` y `consumes`, en el nivel principal y dentro de
   `enhancements["20"]`, igual que la app; falla si una llamada o un flujo declarado no tiene su exportación `proto_`, y avisa
   si un repositorio consumido no está en `recommends`, si un `everySeconds` está fuera de 30..86.400, si hay un campo
-  `providesOnly` y si un host es de relleno (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`).
+  `providesOnly` y si un host es de relleno (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`; a un
+  consumidor solo de pantalla le dice que no declare ninguno, `"hosts": []`).
 - El kit atiende una entrada de `consumes` con el primer proveedor que tiene la puerta (no tiene repositorios, así que nunca
   revisa tu `repo`), y no aplica la regla 18+, ni la revisión de secretos sellados, ni el rechazo de llamarse a sí mismo: mira
   [el protocolo entre plugins](protocol.md#kit) y [Lo que el kit no puede copiar](engine-limits.md#kit-protocol).

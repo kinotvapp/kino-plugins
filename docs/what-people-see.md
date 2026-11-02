@@ -217,6 +217,8 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 - **Quitar al proveedor** deja instalado al consumidor; simplemente vuelve a mostrar su pantalla de instalación.
 - **Un plugin que solo provee** (sin capacidades, sin hosts) dice en su tarjeta que no se conecta a internet, y no aparece
   como fuente en la búsqueda ni en Inicio.
+- **Un consumidor solo de pantalla** (solo `screen`, `"hosts": []`) dice en su tarjeta que no se conecta a internet solo cuando
+  no tiene ningún ajuste; su hoja de instalación igual muestra la línea «Usa datos de …» de cada puerta que usa.
 
 ## Kino 0.9.81 (apiVersion 18): temas de la app { #v18 }
 

@@ -348,11 +348,11 @@ Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app
 The whole workflow, with examples, is in [the plugin protocol](protocol.md#kit). In short:
 
 - **Scaffolds**: `node sdk/init.mjs my-provider --kind provider` (provides-only, a door with a call and a stream, its test) and
-  `node sdk/init.mjs my-consumer --kind consumer --repo owner/name --door <door> --call <call> --host <real host>` (a screen
+  `node sdk/init.mjs my-consumer --kind consumer --repo owner/name --door <door> --call <call>` (a screen-only consumer, `"hosts": []`: a screen
   with the install gate, one compact bar, a detail route, the error codes and a stream switch, tested against
   `test/provider`: a **stand-in** with the same door and call names, to replace with a copy of the real provider).
-  `node sdk/init.mjs --help` lists the options; without `--host` the consumer gets the placeholder `example.com`, which
-  `validate.mjs` warns about: replace it ([a consumer that shows only text](protocol.md#text-only-consumer)).
+  `node sdk/init.mjs --help` lists the options; `--host <a host the screen really fetches from>` adds one, only if it fetches
+  ([the consumer's `hosts`](protocol.md#consumer-hosts)).
 - **A provider on its own**: `node sdk/run.mjs <provider folder> proto <door>.<call> '<arg json>'` and
   `proto <door>.<stream> ['<cursor json>']` go through the app's checks and error codes. Exit 0 with the answer, 1 with
   `✗ <code>: <message>`, 2 for a wrong command.
@@ -375,7 +375,8 @@ The whole workflow, with examples, is in [the plugin protocol](protocol.md#kit).
 - **The manifest**: `node sdk/validate.mjs .` checks `provides` and `consumes`, at the top level and inside
   `enhancements["20"]`, like the app; a declared call or stream without its `proto_` export fails it, and it warns about a
   consumed repository missing from `recommends`, an `everySeconds` outside 30..86,400, a `providesOnly` field and a
-  placeholder host (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`).
+  placeholder host (`example.com`, `*.example.com`, `example.org`, `.test`, `.invalid`, `.example`; a screen-only consumer is
+  told to declare none, `"hosts": []`).
 - The kit serves a `consumes` entry with the first provider that has the door (it has no repositories, so it never checks your
   `repo`), and it does not apply the 18+ rule, the sealed-secret check nor the self-call refusal: see
   [the plugin protocol](protocol.md#kit) and [What the kit cannot copy](engine-limits.md#kit-protocol).

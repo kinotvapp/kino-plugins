@@ -7,7 +7,7 @@ The minimum an AI (or a person) needs to write a **provider** and a **consumer**
 
 ```sh
 node sdk/init.mjs my-provider --kind provider --door recipes --call byId
-node sdk/init.mjs my-consumer --kind consumer --door recipes --call byId --repo owner/kino-plugin-recipes --host <a real host>
+node sdk/init.mjs my-consumer --kind consumer --door recipes --call byId --repo owner/kino-plugin-recipes   # writes "hosts": []
 ```
 
 Copy next to each plugin `sdk/` **without `sdk/test/`** and `contract.json` (both required; `kino.d.ts` is optional, only for
@@ -39,14 +39,15 @@ recipes.latest` (exit 0 answer, 1 `✗ <code>`, 2 bad command).
 
 ```json
 { "id": "recipe-picker", "name": "Recetario", "version": "0.1.0", "apiVersion": 20, "entry": "plugin.js",
-  "description": "Elige una receta del plugin Recetas", "hosts": ["<the host your screen really loads from>"],
+  "description": "Elige una receta del plugin Recetas", "hosts": [],
   "capabilities": ["screen"], "screen": { "label": "Recetario", "labelEn": "Recipes" },
   "recommends": ["owner/kino-plugin-recipes"],
   "consumes": { "recipes": { "repo": "owner/kino-plugin-recipes", "door": "recipes", "calls": ["byId"], "streams": ["latest"] } } }
 ```
 
-`hosts` needs one real entry even if you draw no picture (an `Image` itself needs no declaration); never `example.com` or a
-made-up name: if the screen shows only text read [a consumer that shows only text](protocol.md#text-only-consumer).
+`"hosts": []`: a **screen-only consumer** (a non-empty `consumes`, `capabilities` exactly `["screen"]`) declares no host, and an
+`Image` needs no declaration. Add a real host only if the screen's own `kino.fetch` reaches it (any other capability brings back
+"at least one host"); never `example.com` or a made-up name ([the consumer's `hosts`](protocol.md#consumer-hosts)).
 
 The minimal screen (install gate, one compact bar with a real exit, a call, an error sentence with a default):
 

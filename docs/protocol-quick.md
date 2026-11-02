@@ -8,7 +8,7 @@ plugins](protocol.md), para el resto.
 
 ```sh
 node sdk/init.mjs mi-proveedor --kind provider --door recipes --call byId
-node sdk/init.mjs mi-consumidor --kind consumer --door recipes --call byId --repo tu-usuario/kino-plugin-recipes --host <un host real>
+node sdk/init.mjs mi-consumidor --kind consumer --door recipes --call byId --repo tu-usuario/kino-plugin-recipes   # escribe "hosts": []
 ```
 
 Copia junto a cada plugin `sdk/` **sin `sdk/test/`** y `contract.json` (los dos obligatorios; `kino.d.ts` es opcional, solo para
@@ -40,14 +40,16 @@ recipes.latest` (salida 0 la respuesta, 1 `✗ <código>`, 2 comando mal escrito
 
 ```json
 { "id": "recipe-picker", "name": "Recetario", "version": "0.1.0", "apiVersion": 20, "entry": "plugin.js",
-  "description": "Elige una receta del plugin Recetas", "hosts": ["<el host del que tu pantalla carga algo de verdad>"],
+  "description": "Elige una receta del plugin Recetas", "hosts": [],
   "capabilities": ["screen"], "screen": { "label": "Recetario", "labelEn": "Recipes" },
   "recommends": ["tu-usuario/kino-plugin-recipes"],
   "consumes": { "recipes": { "repo": "tu-usuario/kino-plugin-recipes", "door": "recipes", "calls": ["byId"], "streams": ["latest"] } } }
 ```
 
-`hosts` necesita una entrada real aunque no dibujes imágenes (una `Image` no necesita declararse); nunca `example.com` ni un
-nombre inventado: si la pantalla solo muestra texto, lee [un consumidor que solo muestra texto](protocol.md#text-only-consumer).
+`"hosts": []`: un **consumidor solo de pantalla** (un `consumes` no vacío, `capabilities` exactamente `["screen"]`) no declara
+hosts, y una `Image` no necesita declararse. Agrega un host real solo si el `kino.fetch` propio de la pantalla llega a él
+(cualquier otra capacidad trae de vuelta "al menos un host"); nunca `example.com` ni un nombre inventado ([los `hosts` del
+consumidor](protocol.md#consumer-hosts)).
 
 La pantalla mínima (puerta de instalación, una sola barra compacta con una salida real, una llamada, una frase de error con una
 por defecto):
