@@ -73,6 +73,7 @@ plugins:
             Manifiesto: The manifest
             Contrato: The contract
             API kino: The kino API
+            Protocolo entre plugins: The plugin protocol
             Canales en vivo: Live channels
             Música y podcasts: Music and podcasts
             Límites y trampas del motor: Limits and engine quirks
@@ -143,6 +144,7 @@ nav:
       - Manifiesto: manifest.md
       - Contrato: contract.md
       - API kino: kino-api.md
+      - Protocolo entre plugins: protocol.md
       - Canales en vivo: live-channels.md
       - Música y podcasts: music.md
       - Personaliza tu plugin: customize.md
@@ -188,7 +190,11 @@ markdown_extensions:
   - md_in_html
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.highlight:
       anchor_linenums: false
   - pymdownx.inlinehilite

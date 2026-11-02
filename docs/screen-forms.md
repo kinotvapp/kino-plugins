@@ -828,11 +828,12 @@ reacción, una velocidad, un orden):
 
 ## Navegación { #navigation }
 
-La acción de un nodo o una respuesta pueden llevar `go`: una de quince formas, **siempre hacia el contenido propio de este
+La acción de un nodo o una respuesta pueden llevar `go`: una de dieciséis formas, **siempre hacia el contenido propio de este
 plugin o hacia una de las páginas propias de Kino**. La página de Kino se abre sobre tu pantalla; Atrás vuelve a ella con
 su estado. Como máximo un `go` que abre una página cada 500 ms. Ninguna forma nombra un intent ni una app, y solo
-`liveChannel` nombra a otro plugin (un proveedor de En vivo, a cuyo canal Kino sintoniza para un plugin cuya pestaña del
-reproductor se une a los canales en vivo). La guía trata `go` en [Navegar con `go`](screens.md#go).
+`liveChannel` e `installPlugin` nombran a otro plugin (`liveChannel`, un proveedor de En vivo, a cuyo canal Kino sintoniza
+para un plugin cuya pestaña del reproductor se une a los canales en vivo; `installPlugin`, un repositorio cuya hoja de
+instalación abre Kino). La guía trata `go` en [Navegar con `go`](screens.md#go).
 
 | Forma | Se escribe | Qué abre | Desde dónde se envía |
 | --- | --- | --- | --- |
@@ -851,6 +852,7 @@ reproductor se une a los canales en vivo). La guía trata `go` en [Navegar con `
 | [`syncProvider`](#go-sync-provider) | `{ syncProvider: true }` | los ajustes de proveedor de sincronización de Kino (Ajustes ▸ Conectar ▸ Proveedor), donde la persona elige este plugin (solo para un plugin con `syncProvider`) | solo la pulsación o el envío de la propia persona |
 | [`useTheme`](#go-use-theme) | `{ useTheme: { theme } }` | activa uno de los `appThemes` de este plugin como lo hace Apariencia, o vuelve al tema de Kino con `theme: null`; Kino muestra su propio aviso | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 18 |
 | [`setExperience`](#go-set-experience) | `{ setExperience: "light" \| "full" }` | pide la experiencia ligera o la completa de toda la app; Kino le pregunta antes a la persona y no cambia nada sin su sí | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 18 |
+| [`installPlugin`](#go-install-plugin) | `{ installPlugin: { repo } }` | la hoja de instalación propia de Kino para `repo` (un `owner/name` sin más); nada se instala sin el Instalar de la propia persona | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 19 |
 
 ![Navegación en el teléfono](assets/ui/navigation-phone.png)
 ![Navegación en el televisor](assets/ui/navigation-tv.png)
@@ -1081,6 +1083,76 @@ export async function screen() {
 - Solo desde la pulsación o el envío de la propia persona en tu pantalla (un toque, un envío, la respuesta a uno, el botón de una
   ventana): se descarta, con registro, desde `open`, un temporizador, un cambio, un «cargar más», el `onClose` de una ventana, un
   panel o un aviso. Por debajo de `apiVersion` 18 se descarta.
+
+### `go.installPlugin` { #go-install-plugin }
+
+Desde `apiVersion` 19 (Kino 0.9.81): un botón en tu propia pantalla que abre la hoja de instalación propia de Kino para el
+repositorio de otro plugin (la misma vista previa y hoja de consentimiento de **Agregar un plugin**: a qué se conecta el
+plugin, y después Instalar o Cancelar), para que la persona instale una dependencia tuya, o un hermano de tu catálogo, con un
+toque y una confirmación. La hoja se abre encima de tu pantalla: la persona no va a Plugins, y al cerrarla sigue en tu
+pantalla. **Nada se instala sin el Instalar de la propia persona** en esa hoja. Es la puerta de instalación del
+[protocolo entre plugins](protocol.md#install-gate): un consumidor la muestra mientras falta su proveedor.
+
+```js
+export async function screen() {
+  // Un botón por dependencia: la persona elige cuál instalar.
+  const needs = [
+    { repo: "kinotvapp/kino-plugin-archive", label: "Instalar Archive", labelEn: "Install Archive" },
+    { repo: "kinotvapp/kino-plugin-poster-pro", label: "Instalar Poster Pro", labelEn: "Install Poster Pro" },
+  ];
+  return { type: "Column", children: needs.map((n) => (
+    { type: "ElevatedButton", labelText: n.label, labelTextEn: n.labelEn, onPressed: { go: { installPlugin: { repo: n.repo } } } })) };
+}
+```
+
+- El único campo es `repo`, un `owner/name` de GitHub sin más, de máximo 100 caracteres, que se guarda tal como lo
+  escribiste (mayúsculas incluidas). Una URL (cualquier cosa con `://`), una subcarpeta (`owner/name/dir`), un `@ref` o
+  cualquier otro campo descartan el `go`, con registro.
+- Si ese plugin ya está instalado, Kino no abre nada y muestra su propio aviso («Ese plugin ya está instalado» / "That plugin
+  is already installed"). Para mostrar «Instalado» en lugar de un botón, declara los repositorios en el
+  [`recommends`](#recommends-installed) del manifiesto y lee `installed`.
+- Un `go` abre un repositorio. Para ofrecer varias dependencias, muestra **un botón para cada una** (la lista de arriba es la
+  forma recomendada), nunca un solo botón que intente instalarlas todas: la persona decide cada una.
+- Solo desde la pulsación o el envío de la propia persona en tu pantalla (un toque, un envío, la respuesta a uno, el botón de
+  una ventana): se descarta, con registro, desde `open`, un temporizador, un cambio, un «cargar más», el `onClose` de una
+  ventana, un panel o un aviso. Por debajo de `apiVersion` 19 se descarta.
+
+#### Plugins recomendados e `installed` (Kino 0.9.81) { #recommends-installed }
+
+Declara en `kino-plugin.json` los plugins con los que el tuyo funciona mejor, con cualquier `apiVersion` (un Kino anterior
+ignora el campo):
+
+```json
+{ "recommends": ["kinotvapp/kino-plugin-archive", "kinotvapp/kino-plugin-poster-pro"] }
+```
+
+Una lista de máximo 8 textos `owner/name` de GitHub sin más (sin URL, sin subcarpeta, sin `@ref`, de máximo 100 caracteres
+cada uno; se conservan las mayúsculas que escribiste y un repetido, sin importar mayúsculas, se junta con el primero).
+Cualquier otra cosa hace inválido el manifiesto: `The "recommends" field must be a list of at most 8 plain GitHub owner/name
+repositories`.
+
+Desde ahí, `screen` y `screenEvent` reciben `installed`, un objeto con **una clave por cada entrada de tu propio
+`recommends`, escrita exactamente como la escribiste**, `true` cuando ese plugin está instalado ahora en este aparato y
+`false` cuando no (`{}` si no declaras ninguno). Kino nunca te cuenta de ningún otro plugin que tenga la persona. Cuando
+cambia con tu pantalla abierta (la persona instala o quita uno), Kino vuelve a llamar a `screen`, así una fila puede pasar
+del botón a «Instalado». Una fila por plugin recomendado:
+
+```js
+const NEEDS = [
+  { repo: "kinotvapp/kino-plugin-archive", name: "Archive" },
+  { repo: "kinotvapp/kino-plugin-poster-pro", name: "Poster Pro" },
+];
+
+export async function screen({ installed }) {
+  return { type: "Column", children: NEEDS.map((n) => installed[n.repo]
+    ? { type: "ListTile", title: n.name, subtitle: "Instalado", subtitleEn: "Installed" }
+    : { type: "ListTile", title: n.name, subtitle: "Toca para instalar", subtitleEn: "Tap to install",
+        onTap: { go: { installPlugin: { repo: n.repo } } } }) };
+}
+```
+
+En el kit, `node sdk/run.mjs <carpeta del plugin> screen` pasa `installed` con cada entrada de `recommends` en `false`;
+marca algunas como instaladas con `--context '{"installed":{"kinotvapp/kino-plugin-archive":true}}'`.
 
 ### Rutas (`route`: push y pop) { #routes }
 
