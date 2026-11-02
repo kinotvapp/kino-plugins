@@ -3,6 +3,32 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## La próxima versión de Kino: una sola barra compacta y bloques de lector para las pantallas { #screens-reader }
+
+!!! note "Sin `apiVersion` nuevo"
+    Estas funciones de pantalla son aditivas: necesitan la versión de Kino que las trae y nada en el manifiesto. Un Kino
+    que no conoce una propiedad la ignora (un `AppBar` dibuja dos barras con su altura normal, una `Image` lee todo `fit`
+    como `cover`). `mergeWithKinoBar` y `onBack` son las funciones de `apiVersion` 19 que se documentan abajo.
+
+- **Recomendado para cada pantalla: una sola barra compacta.** Pon `mergeWithKinoBar: true` y `dense: true` en el `AppBar` de
+  cada pantalla, con un `leading` que sea una salida real (`{ close: true }` en la portada). En un celular es una barra de
+  56 dp en vez de unos 150 dp de encabezado; la TV ignora `dense` y un panel del reproductor ignora las dos.
+  [Una sola barra compacta](screen-components.md#one-compact-bar).
+- **`AppBar`**: `dense` (4 dp arriba y abajo de la fila en un celular) y `mergeWithKinoBar` (una barra: tu `leading` donde
+  estaba Cerrar, tu `title` donde estaba el nombre del plugin). **`Scaffold`**: `onBack` (Atrás te lo envía a ti en vez de
+  salir). [AppBar](screen-components.md#app-bar).
+- **Lectores (manga, cómics, documentos largos)**: `Image` `fit` (`cover`, `contain`, `width`), `focus` y cualquier `w:h` en
+  `aspect`; `SingleChildScrollView` `zoom` y `onScroll`; `pages` `reverse` (de derecha a izquierda) y `progress`
+  (`segments`, `bar`, `none`; hasta 250 páginas con `bar` o `none`). [Scroll](screen-components.md#scroll),
+  [Image](screen-components.md#image), [pages](screen-components.md#pages).
+- **Rutas**: `route.name` es `"main"` cuando la pantalla se abre sin una ruta (el Home de Kino, una tarjeta, el menú).
+  [Rutas](screen-forms.md#routes).
+- **Seis recetas nuevas**: [una vista de búsqueda que Atrás cierra primero](screen-reference.md#recipe-search-back),
+  [un lector](screen-reference.md#recipe-reader), [un carrusel](screen-reference.md#recipe-carousel),
+  [una tarjeta del Home de Kino que abre tu pantalla](screen-reference.md#recipe-home-opens-screen),
+  [buscar dentro del campo](screen-reference.md#recipe-search-field) y
+  [filtros en una hoja inferior](screen-reference.md#recipe-filter-sheet).
+
 ## Kino 0.9.81: `apiVersion` 20, plugins que se usan entre sí { #v20 }
 
 !!! note "Todavía en ningún Kino publicado"

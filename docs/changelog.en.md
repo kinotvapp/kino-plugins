@@ -3,6 +3,32 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## The next Kino version: one compact bar and reader blocks for screens { #screens-reader }
+
+!!! note "No new `apiVersion`"
+    These screen features are additive: they need the Kino version that ships them and nothing in the manifest. A Kino that
+    does not know a property ignores it (an `AppBar` draws two bars at the normal height, an `Image` reads every `fit` as
+    `cover`). `mergeWithKinoBar` and `onBack` are the `apiVersion` 19 features documented below.
+
+- **Recommended for every screen: one compact bar.** Set `mergeWithKinoBar: true` and `dense: true` on the `AppBar` of every
+  screen, with a `leading` that is a real exit (`{ close: true }` on the front page). On a phone that is one 56 dp bar instead
+  of about 150 dp of header; the TV ignores `dense` and a player panel ignores both.
+  [One compact bar](screen-components.md#one-compact-bar).
+- **`AppBar`**: `dense` (4 dp above and below the row on a phone) and `mergeWithKinoBar` (one bar: your `leading` where Close
+  was, your `title` where the plugin's name was). **`Scaffold`**: `onBack` (Back is sent to you instead of leaving).
+  [AppBar](screen-components.md#app-bar).
+- **Readers (manga, comics, long documents)**: `Image` `fit` (`cover`, `contain`, `width`), `focus` and any `w:h` for `aspect`;
+  `SingleChildScrollView` `zoom` and `onScroll`; `pages` `reverse` (right to left) and `progress` (`segments`, `bar`, `none`;
+  up to 250 pages with `bar` or `none`). [Scroll](screen-components.md#scroll), [Image](screen-components.md#image),
+  [pages](screen-components.md#pages).
+- **Routes**: `route.name` is `"main"` when the screen opens without a route (Kino's Home, a card, the menu).
+  [Routes](screen-forms.md#routes).
+- **Six new recipes**: [a search view that Back closes first](screen-reference.md#recipe-search-back),
+  [a reader](screen-reference.md#recipe-reader), [a carousel](screen-reference.md#recipe-carousel),
+  [a card in Kino's Home that opens your screen](screen-reference.md#recipe-home-opens-screen),
+  [search inside the field](screen-reference.md#recipe-search-field) and
+  [filters in a bottom sheet](screen-reference.md#recipe-filter-sheet).
+
 ## Kino 0.9.81: `apiVersion` 20, plugins that use each other { #v20 }
 
 !!! note "Not in any released Kino"
