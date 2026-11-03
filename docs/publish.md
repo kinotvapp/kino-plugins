@@ -350,7 +350,7 @@ La lista descarta, tenga las estrellas que tenga:
 
 ## Si tu repositorio desaparece: el archivo del plugin { #plugin-files }
 
-Desde Kino 0.9.74 (la próxima versión, aún no publicada) la persona puede exportar cualquier plugin instalado como un
+Desde Kino 0.9.74 la persona puede exportar cualquier plugin instalado como un
 archivo `.kinoplugin` e instalarlo en otro celular como plugin local; tu firma se conserva y, si vuelves a publicar en un
 repositorio nuevo firmado con la misma llave, se puede actualizar desde ahí. Todo en
 [Exportar e importar un plugin como archivo](plugin-files.md).

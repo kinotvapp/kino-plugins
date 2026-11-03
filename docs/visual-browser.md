@@ -6,8 +6,8 @@ en una página web: iniciar sesión, resolver una verificación, aceptar los té
 `kino.visualBrowser.open`, y recibir lo que la página dejó (cookies, el HTML de la página, su última dirección), o pedirle a Kino
 que escriba las cookies directo en uno de tus ajustes `password`.
 
-!!! note "Aún no está en ningún Kino publicado"
-    `apiVersion` 20 llega con Kino 0.9.81, que todavía no se publica. La ventana funciona en teléfono y tableta Android y,
+!!! note "Disponible desde Kino 0.9.81"
+    `apiVersion` 20 llega con Kino 0.9.81. La ventana funciona en teléfono y tableta Android y,
     **de forma experimental**, en Android TV. No existe en la app de escritorio ni en un aparato sin WebView.
 
 ## El manifest { #manifest }

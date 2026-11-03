@@ -1,10 +1,8 @@
 # Sockets y bytes que sirve el plugin (`socket` y `byteSource`, apiVersion 13) { #bytes }
 
-!!! note "apiVersion 13 está en desarrollo"
-    Nada de esta página está todavía en un Kino publicado. apiVersion 13 llega en Kino 0.9.74, la próxima versión, junto
-    con apiVersion 12; todavía no está publicada. Todo Kino anterior a 0.9.74 rechaza un manifiesto con `"apiVersion": 13`
-    ("Este plugin necesita una versión más nueva de Kino"). El contrato y el kit ya lo conocen, así que puedes escribir y
-    probar un plugin desde ya y publicarlo cuando salga Kino 0.9.74.
+!!! note "Disponible desde Kino 0.9.74"
+    apiVersion 13 llega en Kino 0.9.74, junto con apiVersion 12. Todo Kino anterior a 0.9.74 rechaza un manifiesto con
+    `"apiVersion": 13` ("Este plugin necesita una versión más nueva de Kino").
 
 Algunos servicios no son HTTP: un servicio de mensajería habla su propio protocolo sobre un WebSocket, y el video vive
 en mensajes, no detrás de una URL. Dos capacidades cubren ese caso. Declara una o las dos, con `"apiVersion": 13`:
@@ -154,7 +152,7 @@ aparato, más máximo 2 servidos a televisores. Lo que arma tu `read` (un texto 
 base64) cuenta en tus 64 MB: guarda pocos trozos propios y suelta lo que ya no necesitas. Todavía no se ha medido en
 cajas de TV de 1 GB.
 
-## Operaciones de bytes en `kino.crypto` (la próxima versión de Kino: revisa si están) { #crypto }
+## Operaciones de bytes en `kino.crypto` (Kino 0.9.74: revisa si están) { #crypto }
 
 Para protocolos binarios (MTProto y parecidos), sobre textos en cualquiera de las tres codificaciones (`utf8`, `hex`,
 `base64`):
@@ -187,7 +185,7 @@ kino.crypto.aesIgeVerify(keyHex, ivHex, dataHex, {   // AES-IGE decrypt + SHA-25
   `typeof kino.crypto.convert === "function"`. El kit hace lo mismo: ofrece lo que tiene su propio contrato. No
   necesitan capacidad. Cada llamada de `kino.crypto` recibe máximo 5 MB de datos.
 
-Los `atob` y `btoa` del motor también son más rápidos en la próxima versión de Kino (con tablas, mismas respuestas y
+Los `atob` y `btoa` del motor también son más rápidos desde Kino 0.9.74 (con tablas, mismas respuestas y
 mismos errores), pero un texto de 1 MiB por ellos sigue siendo una pasada a velocidad de JavaScript: para bytes en
 volumen usa `kino.crypto.convert`.
 

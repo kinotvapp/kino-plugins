@@ -1,7 +1,7 @@
 # Screens and newer features without raising your apiVersion { #enhancements-page }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). Only Kino 0.9.74 or later reads the
+    Available from Kino 0.9.74. Only Kino 0.9.74 or later reads the
     `enhancements` block; an older Kino **ignores it**, like any key it does not know, and keeps installing and running
     your plugin as always: it never refuses it because of this block.
 

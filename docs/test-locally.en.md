@@ -249,9 +249,9 @@ plugin once as each. [`kino.seed`](kino-api.md#seed) sends nothing anywhere: it 
 (the contract's `kinoSeed` keys and limits) and logs which keys Kino would keep, never their values, because they are
 tokens; with no `"telemetry"` in your manifest the line says the app would send nothing.
 
-## apiVersion 13 (in development) { #api13 }
+## apiVersion 13 (Kino 0.9.74) { #api13 }
 
-The kit already knows apiVersion 13, which no released Kino supports yet ([What's new](changelog.md#v13)):
+The kit knows apiVersion 13, which Kino supports from 0.9.74 ([What's new](changelog.md#v13)):
 `validate.mjs` checks the six new capabilities (each refused below 13, `read` required with `byteSource` and `image`
 with `imageSource`) and the settings form's `qr` type with its `refreshMs`. What each one does in the kit:
 
@@ -279,8 +279,7 @@ with `imageSource`) and the settings form's `qr` type with its `refreshMs`. What
 ## apiVersion 14: screens, panels, jobs and shared results { #api14 }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). The kit already knows all of it, so you can write
-    and test the plugin now.
+    Available from Kino 0.9.74. The kit knows all of it.
 
 [Screens](screens.md), panels in screen mode, tabs you contribute to another plugin's panel,
 [background jobs](jobs-and-shared.md#jobs) and `kino.shared` have their own commands:

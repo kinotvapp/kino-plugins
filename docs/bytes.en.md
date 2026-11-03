@@ -1,10 +1,8 @@
 # Sockets and plugin-served bytes (`socket` and `byteSource`, apiVersion 13) { #bytes }
 
-!!! note "apiVersion 13 is in development"
-    Nothing on this page is in a released Kino yet. apiVersion 13 arrives in Kino 0.9.74, the next release, together with
-    apiVersion 12; it is not published yet. Every Kino before 0.9.74 refuses a manifest with `"apiVersion": 13` ("Este
-    plugin necesita una versión más nueva de Kino"). The contract and the kit already know it, so you can write and test a
-    plugin now and publish it when Kino 0.9.74 is out.
+!!! note "Available from Kino 0.9.74"
+    apiVersion 13 arrives in Kino 0.9.74, together with apiVersion 12. Every Kino before 0.9.74 refuses a manifest with
+    `"apiVersion": 13` ("Este plugin necesita una versión más nueva de Kino").
 
 Some services are not HTTP at all: a messaging service speaks its own protocol over a WebSocket, and the video lives in
 messages, not behind a URL. Two capabilities cover that case. Declare either or both, with `"apiVersion": 13`:
@@ -149,7 +147,7 @@ one in flight), outside your 64 MB sandbox; at most 2 streams are open at once o
 TVs. What your `read` builds (a hex string is 2 bytes per byte, then the base64) counts in your 64 MB: keep few chunks
 of your own, and drop what you no longer need. Not measured yet on 1 GB TV boxes.
 
-## Byte operations in `kino.crypto` (the next Kino version: feature-detect) { #crypto }
+## Byte operations in `kino.crypto` (Kino 0.9.74: feature-detect) { #crypto }
 
 For binary protocols (MTProto and the like), on strings in any of the three encodings (`utf8`, `hex`, `base64`):
 
@@ -180,7 +178,7 @@ kino.crypto.aesIgeVerify(keyHex, ivHex, dataHex, {   // AES-IGE decrypt + SHA-25
   `typeof kino.crypto.convert === "function"`. The kit does the same: it offers what its own contract has. No capability
   is needed. Every `kino.crypto` call takes at most 5 MB of data.
 
-The engine's own `atob` and `btoa` are also faster in the next Kino version (table-driven, same answers and errors), but a
+The engine's own `atob` and `btoa` are also faster from Kino 0.9.74 (table-driven, same answers and errors), but a
 1 MiB string through them is still a JavaScript-speed pass: for bulk bytes use `kino.crypto.convert`.
 
 ## A complete example: a video library behind a WebSocket { #example }

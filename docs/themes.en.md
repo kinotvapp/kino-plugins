@@ -1,8 +1,8 @@
 # App themes (apiVersion 18) { #themes }
 
-!!! note "The next Kino version"
+!!! note "Available from Kino 0.9.81"
     `appThemes`, `go.useTheme`, `go.setExperience` and `activeTheme` arrive with `"apiVersion": 18`, which
-    `contract.json` ties to Kino 0.9.81: the next Kino version, **not in any released Kino**. Every older Kino refuses an
+    `contract.json` ties to Kino 0.9.81. Every older Kino refuses an
     apiVersion 18 manifest with «Este plugin necesita una versión más nueva de Kino», and `appThemes` is not offered
     through [`enhancements`](enhancements.md). Below apiVersion 18 the field is ignored.
 
@@ -178,8 +178,8 @@ A theme may cost **kinos**, Kino's free coin (the person earns them by watching:
 - The price and the account are in your public manifest: they are what Kino charges and pays, not a lock on your files.
 - **Your account.** A coins account is the same 64-hex identifier Kino Social calls the author's `user_key`: the coins service
   derives it from the person's Telegram identity with a secret, and never stores the Telegram id. It is the id of the person
-  who signed in to Kino with Telegram, so `payTo` must be the account of the person who is paid. In the next Kino version
-  (0.9.81, not published yet) you read and copy it in **Ajustes ▸ App ▸ Tu cuenta de kinos** (it needs the Kinos switch on and
+  who signed in to Kino with Telegram, so `payTo` must be the account of the person who is paid. From Kino
+  0.9.81 you read and copy it in **Ajustes ▸ App ▸ Tu cuenta de kinos** (it needs the Kinos switch on and
   your Telegram sign-in): tap the row to copy the whole 64 characters.
 - **Your own theme.** The service refuses a purchase whose buyer and `payTo` are the same account (`self_purchase`): nothing
   is charged. To test the purchase flow, use a second account, or the kit's mocks and a debug build.
@@ -274,7 +274,7 @@ none of yours active). The kit draws no colours: look at the theme in Kino (Ajus
 
 ## Checklist { #checklist }
 
-- [ ] `"apiVersion": 18` and the person knows it needs the next Kino version.
+- [ ] `"apiVersion": 18` and the person knows it needs Kino 0.9.81 or later.
 - [ ] `node sdk/validate.mjs .` passes and prints no warning you did not expect, for phone and TV.
 - [ ] Every theme `id` is final; `name` has `es` and `en`.
 - [ ] The background is dark and every pair in [the guardrails](#guardrails) reads.

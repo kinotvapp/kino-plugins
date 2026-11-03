@@ -369,7 +369,7 @@ diseño solo **coloca** ajustes que ya existen, por su clave.
 ## El panel con el kit de pantallas (apiVersion 14) { #screen-kit }
 
 !!! note "Disponible con Kino 0.9.74"
-    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Lo de esta sección necesita `"apiVersion": 14`;
+    Disponible desde Kino 0.9.74. Lo de esta sección necesita `"apiVersion": 14`;
     una versión anterior de Kino rechaza estos plugins con «Este plugin necesita una versión más nueva de Kino»; para
     seguir llegando a quien tiene una versión anterior usa `enhancements` (ver
     [Pantallas sin subir tu apiVersion](enhancements.md)). Todo lo de arriba sigue valiendo igual para apiVersion 9 a 13.

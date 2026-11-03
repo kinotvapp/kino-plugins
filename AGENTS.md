@@ -56,20 +56,20 @@ test commands and the five traps, under 110 lines), then the protocol part of se
 
 **apiVersions at a glance.** apiVersion 8 (Kino 0.9.54) adds music and podcasts; `"catalogOnly": true` (Kino 0.9.54, any
 apiVersion) makes a catalog that plays nothing (lists, ratings); the `syncProvider` capability (apiVersion 12, Kino 0.9.74)
-carries the person's own Kino sync between their devices. apiVersion 13 (in development for the next Kino version, **not in any released Kino**) adds
+carries the person's own Kino sync between their devices. apiVersion 13 (Kino 0.9.74) adds
 sockets, streams and images the plugin serves itself, a SQLite catalog, a larger storage and QR codes. apiVersion 14
-(with Kino 0.9.74 as well, the next version, **not published yet**) adds **screens**: a full-screen canvas the plugin
+(with Kino 0.9.74 as well) adds **screens**: a full-screen canvas the plugin
 describes as a JSON tree that Kino draws on the phone and the TV, plus player-panel tabs on any title, rooms over the
 Internet, background jobs, small results shared between the person's devices and Kino's text AI. apiVersion 15 (Kino 0.9.77) adds `identity` (who the person is, without a sign-up),
 `notifications` (notices in the Home bell) and `pluginStore`: a plugin that is a **store**, a source of plugins for
 Kino's own store. apiVersion 16 (Kino 0.9.78) adds `coins` (`kino.coins`: the person's Kino coin balance, and giving a
-coin), and Kino 0.9.78 adds `kino.sync.setActive` for a sync provider. apiVersion 17 (the next Kino version, no number yet)
+coin), and Kino 0.9.78 adds `kino.sync.setActive` for a sync provider. apiVersion 17 (Kino 0.9.81)
 adds `kino.library.stats`, `perProfile` jobs, `kino.tmdb` in jobs, the `pages` widget and `hero` style,
-the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. apiVersion 18 (the next Kino version too: the
-contract names Kino 0.9.81; **not in any released Kino**) adds **app themes**: `appThemes` in the manifest
+the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. apiVersion 18 (Kino 0.9.81
+as well) adds **app themes**: `appThemes` in the manifest
 (whole-app looks as data, optionally sold for kinos), and the `go.useTheme` and `go.setExperience` screen actions with
 `activeTheme` (section 4, "apiVersion 18: app themes"). apiVersion 19 (Kino 0.9.81 too) adds the `lyrics` capability and
-`go.installPlugin`; apiVersion 20 (Kino 0.9.81, **not in any released Kino**; the maximum today) adds the **plugin
+`go.installPlugin`; apiVersion 20 (Kino 0.9.81; the maximum today) adds the **plugin
 protocol**: a plugin opens named doors in `provides` and another uses them through Kino with `consumes` and
 `kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"), and `kino.visualBrowser`, **a web window the person
 drives** to sign in or finish a step (manifest `"visualBrowser": true`; section 4, "apiVersion 20: a browser window the person
@@ -82,7 +82,7 @@ For any plugin that needs its own screen, configuration, onboarding, dashboard o
 UI**: apiVersion 14, the `screen` capability with the `screen()` and `screenEvent()` exports, Flutter-style components
 (`Scaffold`, `AppBar`, `TabBar`, `ListTile`, `Card`, `Form`, `TextField`, the `settings` node...), per-size values,
 the phone and the TV drawn from the same tree. Keep the old settings form and the legacy panel format only for
-compatibility. apiVersion 14 arrives with Kino 0.9.74 (not published yet): to stay installable on older Kinos, keep your
+compatibility. apiVersion 14 arrives with Kino 0.9.74: to stay installable on older Kinos, keep your
 `apiVersion` and offer the screen through [`enhancements`](https://kinotvapp.github.io/kino-plugins/en/enhancements/). Put the code in `src/` and bundle it to
 `plugin.js` with esbuild (generated, committed, checked with `check:built`:
 [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/)). Validate with `node sdk/validate.mjs .` and `node sdk/run.mjs . screen`
@@ -128,27 +128,27 @@ turns the theme on with `go.useTheme`. See section 4, "apiVersion 18: app themes
    `externalResolve` capability),
    [External resolver apps](https://kinotvapp.github.io/kino-plugins/en/resolver/), and, when the plugin
    carries the person's Kino sync between their devices (apiVersion 12, Kino 0.9.74; the `syncProvider`
-   capability), [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/), and, only when the
-   person accepts that the plugin will not install on any released Kino yet (apiVersion 13, in development),
+   capability), [Sync providers](https://kinotvapp.github.io/kino-plugins/en/sync-providers/), and, when the
+   plugin needs sockets, bytes or images it serves, a catalog or QR codes (apiVersion 13, Kino 0.9.74),
    [Sockets and plugin-served bytes](https://kinotvapp.github.io/kino-plugins/en/bytes/),
    [Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/),
    [Images from the plugin](https://kinotvapp.github.io/kino-plugins/en/images/) and
    [QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/), and, for a plugin with its own screen, a player-panel tab,
-   rooms, background jobs or the text AI (apiVersion 14, Kino 0.9.74, not published yet):
+   rooms, background jobs or the text AI (apiVersion 14, Kino 0.9.74):
    [Screens](https://kinotvapp.github.io/kino-plugins/en/screens/), the component catalogue ([1](https://kinotvapp.github.io/kino-plugins/en/screen-components/), [2](https://kinotvapp.github.io/kino-plugins/en/screen-forms/),
    [3](https://kinotvapp.github.io/kino-plugins/en/screen-reference/)), [Rooms, the library and player control](https://kinotvapp.github.io/kino-plugins/en/rooms/),
    [Background jobs, shared results and AI](https://kinotvapp.github.io/kino-plugins/en/jobs-and-shared/), [The player panel](https://kinotvapp.github.io/kino-plugins/en/player-panel/#screen-kit),
    [Screens without raising your apiVersion](https://kinotvapp.github.io/kino-plugins/en/enhancements/) and [Structure a bigger plugin](https://kinotvapp.github.io/kino-plugins/en/structure/),
-   and, when the plugin uses another plugin's data or offers its own to other plugins (apiVersion 20, Kino 0.9.81, not
-   published yet), [The plugin protocol](https://kinotvapp.github.io/kino-plugins/en/protocol/).
-   For a plugin that is a store of plugins, or that uses the person's identity or the Home bell (apiVersion 15, not
-   published yet): [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/),
+   and, when the plugin uses another plugin's data or offers its own to other plugins (apiVersion 20, Kino 0.9.81),
+   [The plugin protocol](https://kinotvapp.github.io/kino-plugins/en/protocol/).
+   For a plugin that is a store of plugins, or that uses the person's identity or the Home bell (apiVersion 15, Kino
+   0.9.77): [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/),
    [Example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/),
    [Identity](https://kinotvapp.github.io/kino-plugins/en/identity/) and
    [Notices in the bell](https://kinotvapp.github.io/kino-plugins/en/notifications/). For Kino coins (apiVersion 16) and a
    month's habits (apiVersion 17): [`kino.coins`](https://kinotvapp.github.io/kino-plugins/en/kino-api/#coins) and
    [`kino.library.stats`](https://kinotvapp.github.io/kino-plugins/en/kino-api/#library-stats). For **app themes**
-   (apiVersion 18, the next Kino version, not released): [App themes](https://kinotvapp.github.io/kino-plugins/en/themes/),
+   (apiVersion 18, Kino 0.9.81): [App themes](https://kinotvapp.github.io/kino-plugins/en/themes/),
    then [`go.useTheme`](https://kinotvapp.github.io/kino-plugins/en/screen-forms/#go-use-theme) and
    [`go.setExperience`](https://kinotvapp.github.io/kino-plugins/en/screen-forms/#go-set-experience). For apiVersion 6
    features, the page of each one (and, for an overview of everything a plugin can change in how Kino
@@ -226,19 +226,19 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   ignores them). `13` only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a
   `qr` setting, `syncProvider` next to `socket`/`storageLarge`/`catalog`/`qrScan` without `resolve`/`search`/`home`,
   `setSettings` on a `password`, `sync.generateKey`, a `"sync": false` password in `sync.provision`, `settingsStatus`
-  `hide` or `"sync": false` on a `password`/`text`: **Kino 0.9.74, the next release, not published yet** (every Kino before 0.9.74 refuses an apiVersion
-  13 plugin, as it refuses 12), so use it only when the person agrees to wait for Kino 0.9.74, and say so plainly. `14` only for
+  `hide` or `"sync": false` on a `password`/`text`: **Kino 0.9.74** (every Kino before 0.9.74 refuses an apiVersion
+  13 plugin, as it refuses 12). `14` only for
   `screen`, `library`, `playerPanelTab`, `playerControl`, `room`, `schedule` (with `jobs`), `ai`, `shared`, a setting's
   `unlockWith` or `kino.fetch`'s `maxBytes`/`stopAt` (Kino 0.9.74; to stay installable on older Kino offer the first eight
   through `enhancements` instead); `15` only for `identity`, `notifications` or `pluginStore` (Kino 0.9.77); `16` only for
   `coins` (Kino 0.9.78); `17` only for `kino.library.stats`, a `perProfile` job, `kino.tmdb` inside a job, the bigger AI job
-  budget, the `pages` widget, the `hero` text style, the `share`/`enableJob` answers or `go.search` with `"scope": "all"` (the
-  next Kino version, no number yet); `18` only for `appThemes`, `go.useTheme`, `go.setExperience`, `activeTheme` or
-  `"hosts": []` in a themes-only plugin (the next Kino version, which the contract numbers 0.9.81); `19` only for `lyrics` or
+  budget, the `pages` widget, the `hero` text style, the `share`/`enableJob` answers or `go.search` with `"scope": "all"` (Kino
+  0.9.81); `18` only for `appThemes`, `go.useTheme`, `go.setExperience`, `activeTheme` or
+  `"hosts": []` in a themes-only plugin (Kino 0.9.81); `19` only for `lyrics` or
   `go.installPlugin`; `20` only for a top-level `provides`/`consumes` (the plugin protocol) or a plugin that only provides
   (both Kino 0.9.81). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
-  instead. **17 to 20 are in no released Kino**: every older Kino refuses the whole plugin, so use them only when the
-  person accepts the wait. `kino.crypto`'s byte
+  instead. **17 to 20 need Kino 0.9.81**: every older Kino refuses the whole plugin, so use them only when the
+  plugin needs them. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
   manifest (Kino 0.9.74 has all five, an older Kino none): feature-detect each one with
   `typeof kino.crypto.convert === "function"` and keep a fallback.
@@ -277,7 +277,7 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   data, shown in red; a service without such a token cannot be a provider), what a second device needs
   (`sync.provision`), and the hosts. It is not a way to add content.
   See "Sync providers" in section 4.
-- **A look for the whole app?** (apiVersion 18, the next Kino version.) Settle the colours (a dark background, readable
+- **A look for the whole app?** (apiVersion 18, Kino 0.9.81.) Settle the colours (a dark background, readable
   text: section 4 lists the pairs Kino checks), what the person may adjust (offer swatches: a TV remote cannot type a colour
   comfortably), whether the theme is free or costs kinos (then the author's 64-hex coins account for `payTo`), whether it
   looks best with the light or the full experience, and whether it needs its own logo or a presentation screen. A theme
@@ -495,13 +495,13 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.sleep` | 0..5,000 ms |
 | `kino.meta` (Kino 0.9.53) | 30 calls a minute per plugin; 8 s at most, inside your call's own limit; answers cached 30 minutes |
 | `kino.tmdb` (Kino 0.9.53) | 40 calls per 10 s per plugin; 15 s per call; body 2 MB; not counted in `kino.fetch`'s 60 requests |
-| `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024; `modPow` 4,096 bits (next Kino) |
-| `kino.ws` (apiVersion 13, in development) | `wss://` to a declared host, port 443; 4 sockets; 8 MiB queued unread per socket; 786,000 bytes per frame sent (decoded); `recv` ≤ 60 s |
-| `byteSource` (apiVersion 13, in development) | `read` 20 s, one at a time, ≤ 1 MiB at an offset multiple of 4,096; `handle` 1..512 chars; 2 streams open on the device (+2 served to TVs); 3 timed-out reads in a row stop the stream |
-| `kino.catalog` (apiVersion 13, in development) | 100,000 items and a 64 MiB file; `id` 1..128, `title` 300, `data` 4,096 bytes of JSON; 500 per `upsert`/`get`/`remove`; `search` `limit` ≤ 100, `offset` ≤ 1,000,000, `q` ≤ 256 |
-| `storageLarge` (apiVersion 13, in development) | 16 MB total, 2 MB per value, 1,000 keys of ≤ 256 chars; device-only, never synced, not in backups |
-| `kino.qr.scan` / `qr` setting (apiVersion 13, in development) | only from a settings `action` or `panelAction`, phone only; 120 s; `title` ≤ 80; scanned text ≤ 4,096; a `qr` setting's text ≤ 512, `refreshMs` 2,000..60,000 |
-| `image` (`imageSource`, apiVersion 13, in development) | 10 s; base64 JPEG/PNG/WebP ≤ 262,144 bytes decoded; `handle` 1..512; one call at a time per plugin, never while a byte stream of yours plays |
+| `kino.crypto` | 5 MB data; PBKDF2 100,000 iterations, 64-byte keys; `randomBytes` 1,024; `modPow` 4,096 bits (Kino 0.9.74) |
+| `kino.ws` (apiVersion 13, Kino 0.9.74) | `wss://` to a declared host, port 443; 4 sockets; 8 MiB queued unread per socket; 786,000 bytes per frame sent (decoded); `recv` ≤ 60 s |
+| `byteSource` (apiVersion 13, Kino 0.9.74) | `read` 20 s, one at a time, ≤ 1 MiB at an offset multiple of 4,096; `handle` 1..512 chars; 2 streams open on the device (+2 served to TVs); 3 timed-out reads in a row stop the stream |
+| `kino.catalog` (apiVersion 13, Kino 0.9.74) | 100,000 items and a 64 MiB file; `id` 1..128, `title` 300, `data` 4,096 bytes of JSON; 500 per `upsert`/`get`/`remove`; `search` `limit` ≤ 100, `offset` ≤ 1,000,000, `q` ≤ 256 |
+| `storageLarge` (apiVersion 13, Kino 0.9.74) | 16 MB total, 2 MB per value, 1,000 keys of ≤ 256 chars; device-only, never synced, not in backups |
+| `kino.qr.scan` / `qr` setting (apiVersion 13, Kino 0.9.74) | only from a settings `action` or `panelAction`, phone only; 120 s; `title` ≤ 80; scanned text ≤ 4,096; a `qr` setting's text ≤ 512, `refreshMs` 2,000..60,000 |
+| `image` (`imageSource`, apiVersion 13, Kino 0.9.74) | 10 s; base64 JPEG/PNG/WebP ≤ 262,144 bytes decoded; `handle` 1..512; one call at a time per plugin, never while a byte stream of yours plays |
 | Log message | 2,000 characters; for a plugin with `"telemetry"` (apiVersion 6; no other plugin sends lines), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
 | Results | `search` 100; `home` 20 rows × 60; `browse` 100/page; `episodes` 5,000 (+50 `seasons`); `ref` 4,096 chars; `next` 2,048 chars; `id` `^[A-Za-z0-9._~-]{1,128}$` |
@@ -537,7 +537,7 @@ Kino's categories. Put `genre` on each `home()` row (a type id sets the item's t
 `infantil`, `documentales`, `clasicos`, `deportes`, `noticias`, `entretenimiento`, `otros`; audio: `radio`,
 `podcasts`, `audiolibros`, `conciertos`, `musica`) and `genres` on each item (genre ids such as `accion`,
 `comedia`, `drama`, `terror`, `suspenso`, `ciencia-ficcion`, `romance`; or the source's own names, which Kino
-maps when they are known aliases). Invent a new category only when nothing fits: from the next Kino release a
+maps when they are known aliases). Invent a new category only when nothing fits: a Home
 row's `genre` accepts any category, canonicalised (a known id or alias maps to the base id; anything else is a
 slug, lowercase ASCII `[a-z0-9-]`, at most 40 characters, appended after the known ones merged with another plugin's row only when the spelling matches). Live categories and playlists keep the closed ten-id `genre`. Send `ids.tmdb` and `year` so one title
 is one card across sources (identity: TMDB id, else normalised title + year, else title); genre rows mix every type; thematic types (`anime`, `doramas`, `infantil`, `documentales`, `clasicos`, `deportes`,
@@ -650,7 +650,7 @@ Kino keeps all the logic (what syncs, merging, scheduling), compresses and encry
   of the service, with a 4 MiB blob both ways and a conflict.
 
 <a id="api14"></a>
-**apiVersion 14 (Kino 0.9.74, not published yet; every older Kino refuses it, so offer these through `enhancements`
+**apiVersion 14 (Kino 0.9.74; every older Kino refuses it, so offer these through `enhancements`
 when the plugin must keep installing there)**. Each has its own page, read it whole before using it:
 
 - `screen` → exports `screen(ctx)` (answers a tree of nodes) and `screenEvent(ev)` (answers `{ state, toast, go, ui,
@@ -805,8 +805,8 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   rooms and jobs.
 
 <a id="api13"></a>
-**apiVersion 13 (in development, the next Kino version; no released Kino accepts it)**: use these only when the
-person needs them and accepts the wait; never present them as already in the app. Each has its own page, read it whole
+**apiVersion 13 (Kino 0.9.74; every older Kino refuses it)**: use these only when the
+person needs them. Each has its own page, read it whole
 before using it:
 
 - `socket` → `kino.ws.open("wss://host/path")` to a host in `hosts` (port 443, never an IP or the LAN), at most 4 sockets.
@@ -1172,7 +1172,7 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
   asks nothing. Changes only from a tap (`action`, `panelAction`, `screenEvent`), never a job; up to 120 s; errors `busy`,
   `timeout`, `unavailable`, `invalid_request`, `not_allowed`. Feature-detect `typeof kino.sync.setActive === "function"`.
 
-**apiVersion 17 (the next Kino version, no number yet; not in any released Kino).**
+**apiVersion 17 (Kino 0.9.81).**
 
 - `kino.library.stats({ month? })` (with `library`; only a plugin declaring 17 has the function, and an update that raises a
   `library` plugin to 17 asks the person again): one month's aggregates of the active profile, every device summed:
@@ -1191,7 +1191,7 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
   lower apiVersion gets each of these dropped, logged.
 
 <a id="api18"></a>
-**apiVersion 18: app themes (the next Kino version, which the contract numbers 0.9.81; not in any released Kino; not offered
+**apiVersion 18: app themes (Kino 0.9.81; not offered
 through `enhancements`).** A plugin may restyle the **whole app** on the phone and the TV, as data in the manifest: no code,
 no network, no capability, no consent line (turning a theme on is the person's consent). Full page:
 <https://kinotvapp.github.io/kino-plugins/en/themes/>.
@@ -1239,7 +1239,7 @@ no network, no capability, no consent line (turning a theme on is the person's c
   plugin never sees the purchase and **needs no `coins` capability** to sell. The price lives in a public manifest: it is what
   Kino charges and pays, not DRM over your files.
   `payTo` is the 64-hex coins account of whoever is paid: the same id Kino Social calls the author's `user_key` (derived from
-  their Telegram identity; the Telegram id is never stored; in the next Kino version, 0.9.81, not published yet, the author reads
+  their Telegram identity; the Telegram id is never stored; from Kino 0.9.81 the author reads
   and copies it in Ajustes ▸ App ▸ Tu cuenta de kinos, which needs the Kinos switch on and a Telegram sign-in). Buyer and `payTo` being the same account is refused
   (`self_purchase`, nothing charged), so test the flow with a second account or the kit mocks. There are **no refunds**: a
   purchase is final; a failed one charges nothing and buying the same theme twice charges once.
@@ -1275,7 +1275,7 @@ no network, no capability, no consent line (turning a theme on is the person's c
   Kino's preview.
 
 <a id="protocol"></a>
-**apiVersion 20: the plugin protocol (Kino 0.9.81, not in any released Kino; `provides`/`consumes` also work inside
+**apiVersion 20: the plugin protocol (Kino 0.9.81; `provides`/`consumes` also work inside
 `enhancements["20"]`).** One plugin (the **provider**) opens named **doors**; another (the **consumer**) uses them. Kino is
 the only middleman: plugins never call each other, share memory or see each other's storage, settings or secrets. Full
 page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: the provider TMDB
@@ -1549,7 +1549,7 @@ and treats a **signed** plugin installed from two repos with the same `id` and a
 plugin across devices.
 
 <a id="visual-browser"></a>
-**apiVersion 20: a browser window the person drives (`visualBrowser`, Kino 0.9.81; not in any released Kino).** When the
+**apiVersion 20: a browser window the person drives (`visualBrowser`, Kino 0.9.81).** When the
 person has to sign in, solve a challenge or accept a site's terms, the hidden `kino.browser` cannot help: with
 `"apiVersion": 20` and `"visualBrowser": true` (also `"enhancements": { "20": { "visualBrowser": true } }` at an older
 `apiVersion`) the plugin calls `kino.visualBrowser.open({ url, title?, doneWhen?, collect?, userAgent?, timeoutMs? })` and
@@ -1623,7 +1623,7 @@ people. See
       13 only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a `qr` setting:
       Kino 0.9.74+; 14 only for screens and their capabilities (Kino 0.9.74+); 15 only for `identity`, `notifications`
       or `pluginStore` (Kino 0.9.77+); 16 only for `coins` (Kino 0.9.78+); 17 and 18 only for what section 2 lists for them:
-      the next Kino version, no released Kino accepts them yet, and the person was told).
+      Kino 0.9.81+).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
@@ -1645,7 +1645,7 @@ people. See
       `sync.maxBlobBytes` ≤ 4194304, `keySecret` (required) a long random token in a `password` setting with no
       `default`, `provision` lists what a second device needs, no token in any error/status/log, offline tests
       with a 4 MiB blob both ways, and the person was told in plain Spanish who can read the data.
-- [ ] apiVersion 13 (in development): `byteSource` exports `read` and answers exactly the range asked as base64,
+- [ ] apiVersion 13 (Kino 0.9.74): `byteSource` exports `read` and answers exactly the range asked as base64,
       with no JavaScript loop over the bytes; `imageSource` exports `image` and puts no secret in a handle;
       `kino.ws` only to declared hosts, every socket closed; `kino.qr.scan` only from an `action`/`panelAction`;
       `storageLarge` and `kino.catalog` hold nothing that must survive a restore; a `"sync": false` password is a
@@ -1736,8 +1736,8 @@ Every rule, as the app applies it (full detail:
    manifest `description`; the GitHub About description is optional and does not affect discovery.
 3. `kino-plugin.json` at the repository **root on the default branch**
    (`https://raw.githubusercontent.com/<owner>/<repo>/HEAD/kino-plugin.json`), at most 16 KB, valid
-   by the installer's rules, `apiVersion` not above the person's Kino (17 and 18 from the next Kino version, which the
-   contract numbers 0.9.81 for 18; 16 from Kino 0.9.78; 15 on 0.9.77; 14 on 0.9.74 to 0.9.76, 11 on 0.9.66 to 0.9.73, 10 on 0.9.65, 9 on 0.9.55 to 0.9.64, 8 on 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
+   by the installer's rules, `apiVersion` not above the person's Kino (17 to 20 from Kino 0.9.81;
+   16 from Kino 0.9.78; 15 on 0.9.77; 14 on 0.9.74 to 0.9.76, 11 on 0.9.66 to 0.9.73, 10 on 0.9.65, 9 on 0.9.55 to 0.9.64, 8 on 0.9.54, 7 on 0.9.51 to 0.9.53, 6 on 0.9.50, 5 on 0.9.45 to 0.9.49; a signed plugin needs Kino 0.9.45+), and not
    `"discoverable": false`.
 4. An `id` of your own: never a recommended plugin's id from another repo (today `internet-archive`,
    `own-server`), never the template's `archive-org`; the same id installed from

@@ -1,7 +1,7 @@
 # The plugin protocol on one page { #protocol-quick }
 
 The minimum an AI (or a person) needs to write a **provider** and a **consumer** of the plugin protocol (apiVersion 20, Kino
-0.9.81, not in any released Kino). Every line points to the long page, [The plugin protocol](protocol.md), for the rest.
+0.9.81). Every line points to the long page, [The plugin protocol](protocol.md), for the rest.
 
 ## Start from the scaffolds { #start }
 

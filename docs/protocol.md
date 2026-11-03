@@ -1,6 +1,6 @@
 # Protocolo entre plugins: plugins que se usan entre sí { #protocol }
 
-!!! note "Kino 0.9.81, todavía en ningún Kino publicado"
+!!! note "Disponible desde Kino 0.9.81"
     El protocolo entre plugins es el `apiVersion` 20 y llega con Kino 0.9.81. Todo Kino anterior rechaza un manifiesto con
     `"apiVersion": 20` («Este plugin necesita una versión más nueva de Kino»), pero un plugin que se queda en un `apiVersion`
     más bajo igual puede abrir sus puertas con [`enhancements["20"]`](#versions), que un Kino anterior ignora. Cada número de

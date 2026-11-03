@@ -1,7 +1,7 @@
 # Exporting and importing a plugin file { #plugin-files }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). No `apiVersion` change: any plugin can be
+    Available from Kino 0.9.74. No `apiVersion` change: any plugin can be
     exported, and a Kino that predates this simply does not open the file.
 
 A repository can disappear. So people can keep a plugin they use, Kino exports any installed plugin as one file:

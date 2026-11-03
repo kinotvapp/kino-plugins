@@ -7,7 +7,7 @@ campo](#types), los tres tipos sin valor, las [dos ayudas para configurar](#aids
 las funciones que los llenan y los revisan, y [un ejemplo completo](#example).
 
 !!! tip "Para una interfaz nueva, usa las pantallas"
-    Desde apiVersion 14 (Kino 0.9.74, aún no publicada) la forma preferida de construir la configuración, la bienvenida o
+    Desde apiVersion 14 (Kino 0.9.74) la forma preferida de construir la configuración, la bienvenida o
     un tablero de tu plugin son las [pantallas](screens.md), que también pueden mostrar este mismo formulario con el
     [nodo `settings`](screen-forms.md#settings-node). Este formulario sigue funcionando para compatibilidad.
 
@@ -22,7 +22,7 @@ ajustes.
 ## Todos los tipos de campo { #types }
 
 El formulario muestra tus ajustes **en el orden del manifiesto**, cada uno con su `label` y, debajo, su
-`hint`. Once tipos, y un duodécimo, `qr`, desde apiVersion 13 (en desarrollo):
+`hint`. Once tipos, y un duodécimo, `qr`, desde apiVersion 13 (Kino 0.9.74):
 
 | `type` | Lo que ve la persona | Lo que devuelve `kino.config.get(key)` | Desde |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ El formulario muestra tus ajustes **en el orden del manifiesto**, cada uno con s
 | `action` | un botón que corre tu `action(key)` | nada | apiVersion 6 |
 | `link` | un botón que abre una dirección `https` por el sistema, solo cuando la persona lo toca ([Ayudas para configurar](#aids)) | nada | apiVersion 12 |
 | `help` | un botón ("Ayuda") que abre tus instrucciones en una ventana ([Ayudas para configurar](#aids)) | nada | apiVersion 12 |
-| `qr` | un código QR dibujado en el aparato con un texto que devuelve tu `settingsStatus()` ([Un código QR](#qr)) | nada | apiVersion 13 (en desarrollo) |
+| `qr` | un código QR dibujado en el aparato con un texto que devuelve tu `settingsStatus()` ([Un código QR](#qr)) | nada | apiVersion 13 (Kino 0.9.74) |
 
 Lo que puede llevar cada entrada:
 
@@ -142,7 +142,7 @@ Desde apiVersion 6 hay tres tipos que no guardan ningún valor (nunca están en 
   describen lo que acaba de hacer; `refresh: true` se sigue aceptando y no cambia nada. `confirm` (de 1 a 120 caracteres) pregunta antes, con Cancelar enfocado. **Export
   obligatorio** cuando existe un ajuste `action`.
 
-## Un código QR: `qr` (apiVersion 13, en desarrollo) { #qr }
+## Un código QR: `qr` (apiVersion 13, Kino 0.9.74) { #qr }
 
 Un cuarto tipo sin valor, que cuenta entre los 16: un código QR dibujado en el formulario, en el aparato (nada sale a la
 red para dibujarlo). Es la forma de que una TV muestre un código de inicio de sesión para que lo escanee un teléfono.
@@ -250,7 +250,7 @@ solo revisa el campo.
 ## Un ajuste que guarda el código +18 (`unlockWith`, apiVersion 14, Kino 0.9.74) { #unlock-with }
 
 !!! note "Disponible con Kino 0.9.74"
-    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Por debajo de apiVersion 14 la clave se ignora.
+    Disponible desde Kino 0.9.74. Por debajo de apiVersion 14 la clave se ignora.
 
 Un `toggle` o un `select` puede decir `"unlockWith": "adultCode"`: antes de que la persona lo mueva **lejos de
 su `default`** (un toggle fuera de su valor por defecto, un select a cualquier otra opción), Kino pide el código +18

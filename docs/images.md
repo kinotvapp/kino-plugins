@@ -1,10 +1,8 @@
 # Imágenes del plugin (`imageSource`, apiVersion 13) { #images }
 
-!!! note "apiVersion 13 está en desarrollo"
-    Nada de esta página está todavía en un Kino publicado. apiVersion 13 llega en Kino 0.9.74, la próxima versión, junto
-    con apiVersion 12; todavía no está publicada. Todo Kino anterior a 0.9.74 rechaza un manifiesto con `"apiVersion": 13`
-    ("Este plugin necesita una versión más nueva de Kino"). El contrato y el kit ya lo conocen, así que puedes escribir y
-    probar un plugin desde ya y publicarlo cuando salga Kino 0.9.74.
+!!! note "Disponible desde Kino 0.9.74"
+    apiVersion 13 llega en Kino 0.9.74, junto con apiVersion 12. Todo Kino anterior a 0.9.74 rechaza un manifiesto con
+    `"apiVersion": 13` ("Este plugin necesita una versión más nueva de Kino").
 
 Kino dibuja un póster, un fondo o una imagen de episodio desde una URL pública. Algunas imágenes no tienen esa URL: la
 miniatura que un servicio de mensajería le pone a un archivo de video, la portada dentro de una biblioteca privada, una

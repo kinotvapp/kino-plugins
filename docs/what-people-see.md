@@ -143,7 +143,7 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 ## Pantallas y apiVersion 14 (Kino 0.9.74) { #v14 }
 
 !!! note "Disponible con Kino 0.9.74"
-    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Una versión anterior de Kino rechaza estos
+    Disponible desde Kino 0.9.74. Una versión anterior de Kino rechaza estos
     plugins con «Este plugin necesita una versión más nueva de Kino»; para seguir llegando a quien tiene una versión
     anterior usa `enhancements` (ver [Pantallas sin subir tu apiVersion](enhancements.md)).
 
@@ -185,7 +185,7 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 
 !!! note "Disponible desde Kino 0.9.78"
     `kino.coins` y `kino.sync.setActive` llegan con Kino 0.9.78; `kino.library.stats` y `"perProfile"` son de apiVersion 17, en
-    una versión de Kino que todavía no tiene número. Una versión anterior rechaza esos plugins con «Este plugin necesita una
+    Kino 0.9.81. Una versión anterior rechaza esos plugins con «Este plugin necesita una
     versión más nueva de Kino».
 
 - **Kinos.** `coins` muestra, en rojo, «Podrá ver tu saldo de kinos y regalar tus kinos». No tiene interruptor propio: la
@@ -203,7 +203,7 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 
 ## Kino 0.9.81 (apiVersion 20): plugins que se usan entre sí { #v20 }
 
-!!! note "Próxima versión de Kino, todavía sin publicar"
+!!! note "Disponible desde Kino 0.9.81"
     El [protocolo entre plugins](protocol.md) es el apiVersion 20, que llega con Kino 0.9.81.
 
 - **Una línea normal por puerta** en la hoja de instalación de un plugin que usa las puertas de otro: «Usa datos de TMDB
@@ -222,7 +222,7 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 
 ## Kino 0.9.81 (apiVersion 18): temas de la app { #v18 }
 
-!!! note "Próxima versión de Kino, aún sin publicar"
+!!! note "Disponible desde Kino 0.9.81"
     Los temas de la app son apiVersion 18, que llega con Kino 0.9.81. Una versión anterior rechaza un plugin que declare
     `appThemes` con «Este plugin necesita una versión más nueva de Kino».
 
@@ -245,9 +245,9 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   caracteres) y copia los 64 al tocarla: el `payTo` del `price` de un tema.
 - **Un regalo.** Kino anuncia «Te regalamos 100 kinos» en la campana de Inicio, una vez, como aviso propio (no de un plugin).
 
-## La próxima versión de Kino (apiVersion 13, en desarrollo) { #v13 }
+## Kino 0.9.74 (apiVersion 13) { #v13 }
 
-Todavía no está en un Kino publicado. Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):
+Con las capacidades de apiVersion 13 ([Novedades](changelog.md#v13)):
 
 - **Ninguna línea de consentimiento nueva**: `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan` e `imageSource`
   no le agregan nada a la hoja de consentimiento (un socket solo llega a los hosts que la hoja ya muestra).

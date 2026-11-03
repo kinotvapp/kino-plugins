@@ -363,7 +363,7 @@ that already exist, by key.
 ## The panel built with the screen kit (apiVersion 14) { #screen-kit }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). This section needs `"apiVersion": 14`; an older
+    Available from Kino 0.9.74. This section needs `"apiVersion": 14`; an older
     Kino refuses these plugins with «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an
     older version use `enhancements` (see [Screens without raising your apiVersion](enhancements.md)). Everything above
     stays valid as it is for apiVersion 9 to 13.

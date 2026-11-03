@@ -85,8 +85,7 @@ The plugin's UI (this rule comes first): for any plugin that needs its own scree
 onboarding, dashboard or panel, build it with Kino's screens UI: apiVersion 14, the "screen" capability with the
 screen() and screenEvent() exports, Flutter-style components (Scaffold, AppBar, TabBar, ListTile, Card, Form,
 TextField, the "settings" node...), per-size values, the phone and the TV drawn from the same tree. Keep the old
-settings form and the legacy panel format only for compatibility. apiVersion 14 arrives with Kino 0.9.74 (the next
-version, not published yet): to stay installable on older Kinos keep your apiVersion and offer the screen through
+settings form and the legacy panel format only for compatibility. apiVersion 14 arrives with Kino 0.9.74: to stay installable on older Kinos keep your apiVersion and offer the screen through
 "enhancements". Put the code in src/ and bundle it to plugin.js with esbuild (generated, committed, checked with
 check:built). Validate with node sdk/validate.mjs . and node sdk/run.mjs . screen (also with --device tv). Follow
 the component catalogue (https://kinotvapp.github.io/kino-plugins/en/screen-components/, https://kinotvapp.github.io/kino-plugins/en/screen-forms/, https://kinotvapp.github.io/kino-plugins/en/screen-reference/) and the TV focus rules
@@ -132,8 +131,8 @@ Before writing anything:
    /en/notifications/ first (apiVersion 15, Kino 0.9.77) and start from an example
    store with node sdk/init.mjs my-store --host <host> --store local|live.
 8. If my plugin uses another plugin's data, or opens a door for other plugins, read
-   https://kinotvapp.github.io/kino-plugins/en/protocol/ first (the plugin protocol: apiVersion 20, Kino 0.9.81, not
-   published yet) and copy the patterns of Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia, a
+   https://kinotvapp.github.io/kino-plugins/en/protocol/ first (the plugin protocol: apiVersion 20, Kino
+   0.9.81) and copy the patterns of Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia, a
    consumer with the install gate) and TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, a provider). Start
    from the kit's scaffold: node sdk/init.mjs my-plugin --kind provider, or --kind consumer --repo owner/name
    --door <the real door> --call <a real call> (it writes "hosts": []); its test/provider is a
@@ -237,8 +236,7 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "url"; a "password" only from apiVersion 13). The confirm action carries "linkOnly": true, so the person sees one button.
   Setup a TV cannot do (a token pasted on the phone) carries "devices": ["phone"]: the TV receives it with
   "Recibir configuración" ("Receive settings"), sent from the phone with "Enviar configuración".
-- apiVersion 13 (in development for the next Kino version: NO released Kino installs it yet; tell me before
-  using it), only if my source needs it: a service that speaks over a WebSocket ("socket", kino.ws, wss:// to
+- apiVersion 13 (Kino 0.9.74; older Kinos refuse it), only if my source needs it: a service that speaks over a WebSocket ("socket", kino.ws, wss:// to
   my declared hosts, frames as hex/base64 strings), video the plugin serves itself ("byteSource":
   resolve answers { source: "plugin", handle, size, mime } and read({ handle, offset, length }) answers
   { bytes: base64 } of exactly that range, built with kino.crypto.convert, never a JavaScript loop over
@@ -285,7 +283,7 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "any" (Kino 0.9.55); 10 only for "playlists" (Kino 0.9.65); 11 only for "externalResolve" (Kino 0.9.66);
   12 only for "syncProvider", the "sync" block or a "link"/"help" setting (Kino 0.9.74; Kino 0.9.73 and
   older refuse it); 13 only for "socket", "byteSource", "storageLarge", "catalog", "qrScan", "imageSource"
-  or a "qr" setting (in development: no released Kino accepts it yet)). A catalog that plays nothing declares "catalogOnly": true
+  or a "qr" setting (Kino 0.9.74)). A catalog that plays nothing declares "catalogOnly": true
   (Kino 0.9.54) and still exports a resolve that fails with not_found, for older Kino. A new id of my own (never
   "archive-org").
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
@@ -316,7 +314,7 @@ you hand the plugin over run this self-check and tell me the result of each line
   "sync.maxBlobBytes" at most 4194304, tests that push and pull a 4 MiB blob and throw "conflict",
   "sync.keySecret" and "sync.provision" declared, and you told me in plain words that the plugin and its
   service can read the data;
-- if it uses apiVersion 13: you told me no released Kino installs it yet, read is covered by a Node test
+- if it uses apiVersion 13: read is covered by a Node test
   that checks every range byte for byte, no handle holds a secret, and every socket is closed;
 - if it has a screen: every screen's AppBar has mergeWithKinoBar: true and dense: true with a real-exit leading,
   node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
@@ -413,7 +411,7 @@ the real scrapers by installing the plugin in Kino 0.9.71 or newer, with the exa
 ## Short prompt: plugins that use each other { #protocol-prompt }
 
 For a plugin that **uses** another plugin's door (a consumer) or **opens** one for other plugins (a provider). The
-[plugin protocol](protocol.md) arrives with Kino 0.9.81, which is not published yet: the plugin will only install, or only
+[plugin protocol](protocol.md) arrives with Kino 0.9.81: the plugin will only install, or only
 open its door, on Kino 0.9.81 or newer. Fill in the part that applies and delete the other:
 
 ```text

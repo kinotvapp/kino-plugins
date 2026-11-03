@@ -35,9 +35,9 @@ catálogo](#catalog-only)). Desde `"apiVersion": 12` (Kino 0.9.74) un plugin pue
 la sincronización entre los aparatos de la persona con `syncPull`, `syncPush` y el opcional `syncStatus`
 ([Ser el transporte de la sincronización](#sync-provider)). En cualquier `apiVersion`, desde Kino 0.9.74,
 un `action` también puede responder `setSettings` y `link` ([Formulario de
-ajustes](settings-form.md#set-settings)). Desde `"apiVersion": 13` (en desarrollo, la próxima versión de Kino): `read`
+ajustes](settings-form.md#set-settings)). Desde `"apiVersion": 13` (Kino 0.9.74): `read`
 para un stream que sirve tu plugin e `image` para una imagen que sirve ([Bytes e imágenes que sirve tu
-plugin](#apiversion-13)). Desde `"apiVersion": 14` (Kino 0.9.74, aún no publicada): `screen` y `screenEvent` para una
+plugin](#apiversion-13)). Desde `"apiVersion": 14` (Kino 0.9.74): `screen` y `screenEvent` para una
 [pantalla](screens.md#exports) y `job` para un [trabajo en segundo plano](jobs-and-shared.md#jobs); un plugin con
 `playerPanelTab` usa el export `panel` ([Panel del reproductor](player-panel.md#contributed-tab)).
 
@@ -141,7 +141,7 @@ Media      = { title?: string, sizeBytes?: number, container?: string,
                converted?: boolean, notes?: string[] }
 ```
 
-**Género (Categorías y el filtro de En vivo).** Una `Row` del Home, una `LiveCategory` de En vivo y una `playlist` pueden llevar un `genre` opcional. En una `LiveCategory` y en una `playlist` es una lista cerrada de diez ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino muestra sus nombres en español). En una `Row` del Home, desde la próxima versión de Kino, acepta **cualquier categoría**: un id o alias conocido (en español o inglés) se lleva al id base, y cualquier otra cosa se guarda como un slug (minúsculas ASCII `[a-z0-9-]`, hasta 40 caracteres) y se agrega después de las conocidas; ver [Home por categorías](categories.md). Sirve para que Kino alinee categorías de plugins distintos: la pestaña Categorías agrupa por género las filas del Home que se pueden explorar (las que tienen `ref`, si declaras `browse`) de todos los plugins, y En vivo puede acotar sus categorías por género. En una categoría en vivo o una lista, un valor fuera de la lista se ignora, nunca es un error, y sin `genre` Kino lo adivina por el título de la fila o del grupo ("Deportes", "Noticias Colombia", "Kids"…), así que ponlo cuando tus títulos no lo digan. En una `playlist` el género es el de partida para los grupos de la lista (antes se intenta adivinar por el título de cada grupo). La pestaña Categorías (la antigua) sigue usando solo los diez ids: una fila con `genre: "accion"` o un slug nuevo tiene su ficha adivinada por el título. Las versiones de Kino anteriores a este campo lo ignoran.
+**Género (Categorías y el filtro de En vivo).** Una `Row` del Home, una `LiveCategory` de En vivo y una `playlist` pueden llevar un `genre` opcional. En una `LiveCategory` y en una `playlist` es una lista cerrada de diez ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino muestra sus nombres en español). En una `Row` del Home acepta **cualquier categoría**: un id o alias conocido (en español o inglés) se lleva al id base, y cualquier otra cosa se guarda como un slug (minúsculas ASCII `[a-z0-9-]`, hasta 40 caracteres) y se agrega después de las conocidas; ver [Home por categorías](categories.md). Sirve para que Kino alinee categorías de plugins distintos: la pestaña Categorías agrupa por género las filas del Home que se pueden explorar (las que tienen `ref`, si declaras `browse`) de todos los plugins, y En vivo puede acotar sus categorías por género. En una categoría en vivo o una lista, un valor fuera de la lista se ignora, nunca es un error, y sin `genre` Kino lo adivina por el título de la fila o del grupo ("Deportes", "Noticias Colombia", "Kids"…), así que ponlo cuando tus títulos no lo digan. En una `playlist` el género es el de partida para los grupos de la lista (antes se intenta adivinar por el título de cada grupo). La pestaña Categorías (la antigua) sigue usando solo los diez ids: una fila con `genre: "accion"` o un slug nuevo tiene su ficha adivinada por el título. Las versiones de Kino anteriores a este campo lo ignoran.
 
 ### Cómo se conectan las piezas { #pieces }
 
@@ -293,7 +293,7 @@ el resto sobrevive; lo que pasa de un tope se corta. Un `Stream` es todo o nada.
 | Campos de texto | `title` es obligatorio y no vacío, hasta 200 caracteres. `overview` hasta 2000; `lang` y `quality` hasta 20 (por ejemplo `"es"`, `"1080p"`); `year` hasta 10 (se acepta un número y se convierte). El texto más largo se corta; el texto de `SeriesInfo` y `Episode` se corta igual (200 caracteres para títulos, 2000 para sinopsis). |
 | Campos extra del ítem | Todos opcionales; uno mal puesto se ignora, no el ítem. `genres` máximo 5, cada uno de máximo 30 caracteres; `badges` (se muestran como chips, p. ej. `"HD"`, `"Latino"`) máximo 3 de máximo 20; `rating` de 0 a 10; `runtimeMinutes` de 1 a 1000; `ids.tmdb` un entero positivo (Kino lo usa para emparejar tu título con TMDB, para volver a encontrarlo desde la búsqueda y para enriquecer su página de información -- mira abajo); `ids.imdb` cumple `^tt\d{5,10}$` (también enriquece la página de información de una película cuando no tienes `ids.tmdb`). El `airDate` de un capítulo es `YYYY-MM-DD`. |
 | `adult` | Desde apiVersion 6, `adult: true` marca una entrada +18: Kino la muestra solo mientras el código +18 de la persona está desbloqueado en ese aparato (Ajustes ▸ Control parental), y la vuelve a esconder cuando lo bloquea; por debajo de apiVersion 6 se descarta. Aplica en Inicio, en la búsqueda, en "Ver más", en tu sección y en Categorías. Mira [Contenido +18](#adult). |
-| Imágenes | `poster`, `backdrop` y `still` tienen que ser URL `http` o `https` de máximo 2048 caracteres, o se ignoran (las versiones de Kino anteriores a la que aceptó `http` en imágenes ignoran las `http`). Las imágenes las carga Kino directamente y **no** se revisan contra `hosts` (son solo para mostrar), y Kino no envía tus headers ni tus cookies con ellas. Es la única excepción a la regla de hosts, con un límite: una imagen en la red local, en una dirección IP privada o reservada, o en un nombre local (`localhost`, `.local`, `.lan`, …) también se ignora, y también un nombre sin punto por `http` (`router`, `nas`), salvo que esté en un servidor que la persona escribió en tus ajustes. Una dirección IPv4 pública sirve. Desde apiVersion 13 (en desarrollo) un plugin que declara `imageSource` puede responder, en lugar de una URL, una **referencia** de imagen `{ "source": "plugin", "handle": "…" }` en `poster`, `backdrop`, `still` y la `image` del encabezado de una sección: Kino le pide entonces los bytes a su export `image` ([Imágenes del plugin](images.md)); de cualquier otro plugin, o en cualquier otro lugar, una referencia se ignora. Sin URI `data:`: un texto siempre es una URL. |
+| Imágenes | `poster`, `backdrop` y `still` tienen que ser URL `http` o `https` de máximo 2048 caracteres, o se ignoran (las versiones de Kino anteriores a la que aceptó `http` en imágenes ignoran las `http`). Las imágenes las carga Kino directamente y **no** se revisan contra `hosts` (son solo para mostrar), y Kino no envía tus headers ni tus cookies con ellas. Es la única excepción a la regla de hosts, con un límite: una imagen en la red local, en una dirección IP privada o reservada, o en un nombre local (`localhost`, `.local`, `.lan`, …) también se ignora, y también un nombre sin punto por `http` (`router`, `nas`), salvo que esté en un servidor que la persona escribió en tus ajustes. Una dirección IPv4 pública sirve. Desde apiVersion 13 (Kino 0.9.74) un plugin que declara `imageSource` puede responder, en lugar de una URL, una **referencia** de imagen `{ "source": "plugin", "handle": "…" }` en `poster`, `backdrop`, `still` y la `image` del encabezado de una sección: Kino le pide entonces los bytes a su export `image` ([Imágenes del plugin](images.md)); de cualquier otro plugin, o en cualquier otro lugar, una referencia se ignora. Sin URI `data:`: un texto siempre es una URL. |
 
 ### `ids.tmdb` enriquece la página de información, no solo el emparejamiento { #tmdb }
 
@@ -322,7 +322,7 @@ Los títulos de música y podcast nunca se emparejan con TMDB.
 
 ### Las reglas del `Stream` { #stream }
 
-Desde apiVersion 13 (en desarrollo), un plugin que declara `byteSource` puede responder en su lugar un stream sin URL,
+Desde apiVersion 13 (Kino 0.9.74), un plugin que declara `byteSource` puede responder en su lugar un stream sin URL,
 `{ source: "plugin", handle, size, mime }`, cuyos bytes Kino le pide a tu export `read`; las reglas de abajo sobre `url`
 no aplican a él, y sus propias reglas están en [Sockets y bytes del plugin](bytes.md#byte-source).
 
@@ -1036,8 +1036,8 @@ que descartó y por qué, y el botón que arma con eso.
 
 ## Letras para el reproductor de música (`lyrics`, apiVersion 19) { #lyrics }
 
-!!! note "Todavía en ningún Kino publicado"
-    El `apiVersion` 19 llega con la próxima versión de Kino (`contract.json` nombra la 0.9.81). Los Kino anteriores rechazan un
+!!! note "Disponible desde Kino 0.9.81"
+    El `apiVersion` 19 llega con Kino 0.9.81. Los Kino anteriores rechazan un
     manifiesto con `"apiVersion": 19` con «Este plugin necesita una versión más nueva de Kino».
 
 Un plugin que encuentra la letra de una canción -- LRCLIB, un sitio de letras, la biblioteca de la persona -- declara
@@ -1113,9 +1113,9 @@ El bloque `sync` del manifiesto, quién puede leer qué, cada cuánto corre, el 
 paso de los ajustes a otro aparato, las líneas de consentimiento y los dos proveedores de ejemplo están
 en [Proveedores de sincronización](sync-providers.md).
 
-## Bytes e imágenes que sirve tu plugin (apiVersion 13, en desarrollo) { #apiversion-13 }
+## Bytes e imágenes que sirve tu plugin (apiVersion 13, Kino 0.9.74) { #apiversion-13 }
 
-apiVersion 13 llega en Kino 0.9.74 junto con apiVersion 12; esa versión todavía no está publicada. Agrega seis
+apiVersion 13 llega en Kino 0.9.74 junto con apiVersion 12. Agrega seis
 capacidades, ninguna con línea de consentimiento propia:
 
 | Capacidad | Export | Qué da | Página |

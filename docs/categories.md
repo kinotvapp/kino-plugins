@@ -6,8 +6,8 @@ opcional y viene apagado: la persona lo activa en Ajustes ▸ App ▸ «Home por
 (no busca nada por su cuenta ni llama a tu plugin), así que lo que declares en `home()` decide dónde cae tu contenido.
 Esta página explica cómo declararlo. Los ítems y las filas están en [el contrato](contract.md).
 
-!!! note "Desde la próxima versión de Kino"
-    Hasta ahora el `genre` de una fila de Inicio solo aceptaba diez ids cerrados. Desde la próxima versión acepta
+!!! note "Cualquier categoría en una fila de Inicio"
+    Antes el `genre` de una fila de Inicio solo aceptaba diez ids cerrados. Ahora acepta
     **cualquier categoría** (abajo). Las versiones anteriores siguen ignorando un valor que no estaba en la lista de diez.
 
 ## Qué hace el Inicio con tus categorías { #how }

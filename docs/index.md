@@ -124,7 +124,7 @@ la sincronización de plugins.
 campo una persona puede pegar la dirección del `manifest.json` de un addon de Stremio (o un enlace
 `stremio://`) y Kino genera un plugin para él. Nada de esta guía cambia para tu plugin.
 
-!!! tip "Nuevo: pantallas propias para tu plugin (apiVersion 14, con Kino 0.9.74, aún no publicada)"
+!!! tip "Nuevo: pantallas propias para tu plugin (apiVersion 14, con Kino 0.9.74)"
     Un plugin puede dibujar su propia pantalla completa dentro de Kino: columnas, tarjetas, listas, pestañas,
     formularios, ventanas emergentes y las filas de pósteres de Kino, con el aspecto de Kino, en el celular y en el TV
     desde el mismo árbol JSON. Empieza por [Pantallas](screens.md) y el catálogo de
@@ -156,10 +156,10 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Protocolo entre plugins](protocol.md) | apiVersion 20, Kino 0.9.81: plugins que se usan entre sí a través de Kino. Un proveedor abre puertas (`provides`, `proto_<puerta>_<llamada>`), un consumidor las usa (`consumes`, `kino.plugins.call`); tipos, errores, límites, flujos, la puerta de instalación con `recommends` y `go.installPlugin`, lo que ve la persona y el ejemplo de TMDB + Cine Trivia |
 | [Aplicaciones resolutoras externas](resolver.md) | `externalResolve` (apiVersion 11): pasarle un título a una app instalada por separado que lo convierte en una URL reproducible; el flujo, `media`, `portable`, errores, enviar a la TV, construir el otro lado |
 | [Proveedores de sincronización](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): llevar la sincronización entre los aparatos de la persona por un servicio con el que habla tu plugin; quién puede leer qué, el bloque `sync`, cada cuánto, conflictos, el límite de 4 MiB, pasar los ajustes a otro aparato, Sync-Gram y Sync Servidor |
-| [Sockets y bytes del plugin](bytes.md) | apiVersion 13, en desarrollo: WebSockets con `kino.ws`, streams que sirve tu plugin con `read` (Kino los reproduce y los envía al televisor), las operaciones de bytes de `kino.crypto`, un ejemplo completo sobre WebSocket con su prueba |
-| [Catálogo y almacenamiento grande](catalog.md) | apiVersion 13, en desarrollo: `kino.catalog`, un catálogo SQLite de hasta 100.000 ítems en el que busca Kino, y `storageLarge` |
-| [Imágenes del plugin](images.md) | apiVersion 13, en desarrollo: pósteres e imágenes de episodio que sirve tu plugin con `image` |
-| [Códigos QR](qr.md) | apiVersion 13, en desarrollo: el tipo de ajuste `qr` y `kino.qr.scan`, con una receta de inicio de sesión entre dos aparatos |
+| [Sockets y bytes del plugin](bytes.md) | apiVersion 13, Kino 0.9.74: WebSockets con `kino.ws`, streams que sirve tu plugin con `read` (Kino los reproduce y los envía al televisor), las operaciones de bytes de `kino.crypto`, un ejemplo completo sobre WebSocket con su prueba |
+| [Catálogo y almacenamiento grande](catalog.md) | apiVersion 13, Kino 0.9.74: `kino.catalog`, un catálogo SQLite de hasta 100.000 ítems en el que busca Kino, y `storageLarge` |
+| [Imágenes del plugin](images.md) | apiVersion 13, Kino 0.9.74: pósteres e imágenes de episodio que sirve tu plugin con `image` |
+| [Códigos QR](qr.md) | apiVersion 13, Kino 0.9.74: el tipo de ajuste `qr` y `kino.qr.scan`, con una receta de inicio de sesión entre dos aparatos |
 | [Pantallas](screens.md) | apiVersion 14, Kino 0.9.74: la pantalla completa de tu plugin, el bloque `screen`, `screen()` y `screenEvent()`, el estado, las respuestas, `go`, temporizadores, el foco en el TV, límites, probar con el kit |
 | [Componentes: diseño, contenido y acciones](screen-components.md) | Cada componente de una pantalla con sus propiedades: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, texto, imágenes, tablas, botones, toasts |
 | [Componentes: formularios, ventanas y navegación](screen-forms.md) | Campos, validación, el nodo `settings`, diálogos, hojas, menús, ventanas ancladas, cada forma de `go` |

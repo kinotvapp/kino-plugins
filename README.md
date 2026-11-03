@@ -18,12 +18,12 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   [Sync Servidor](https://github.com/kinotvapp/kino-plugin-sync-server), on a server they run (not listed), and
   [Sync-Gram Cuenta](https://github.com/kinotvapp/kino-plugin-sync-gram-account), on the person's own Telegram
   account (apiVersion 13, not listed).
-- **apiVersion 13** (in development for the next Kino version, not in any released Kino yet): sockets and
+- **apiVersion 13** (Kino 0.9.74): sockets and
   streams the plugin serves itself ([Sockets and plugin-served bytes](https://kinotvapp.github.io/kino-plugins/en/bytes/)),
   a SQLite catalog and a larger storage ([Catalog and large storage](https://kinotvapp.github.io/kino-plugins/en/catalog/)),
   images the plugin serves ([Images from the plugin](https://kinotvapp.github.io/kino-plugins/en/images/)) and QR codes
   ([QR codes](https://kinotvapp.github.io/kino-plugins/en/qr/)).
-- **Screens** (apiVersion 14, upcoming with Kino 0.9.74, not published yet): a plugin can draw its own full screen
+- **Screens** (apiVersion 14, Kino 0.9.74): a plugin can draw its own full screen
   inside Kino from a JSON tree of Flutter-style components, the same tree on the phone and the TV, and the preferred way
   to build a plugin's UI: [Screens](https://kinotvapp.github.io/kino-plugins/en/screens/) and the component catalogue
   ([layout, content and actions](https://kinotvapp.github.io/kino-plugins/en/screen-components/),
@@ -35,15 +35,15 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   [kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery),
   [kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news) and
   [kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party).
-- **Identity, notices and plugin stores** (apiVersion 15, arriving with Kino 0.9.77): a plugin can
+- **Identity, notices and plugin stores** (apiVersion 15, Kino 0.9.77): a plugin can
   know who the person is without a sign-up ([Identity](https://kinotvapp.github.io/kino-plugins/en/identity/)), leave notices in
   the Home bell ([Notices in the bell](https://kinotvapp.github.io/kino-plugins/en/notifications/)) and be a **store**, a source
   of plugins for Kino's store, local (a static list) or live (its own API); the store view has the tabs "De Kino", "De la comunidad" and "Instalados", one plugin per id across stores:
   [Plugin stores](https://kinotvapp.github.io/kino-plugins/en/plugin-stores/) and two copyable
   [example stores](https://kinotvapp.github.io/kino-plugins/en/store-examples/).
-- **Kino coins and apiVersion 17** (apiVersion 16 arrives with Kino 0.9.78; apiVersion 17 with the next Kino version): the `coins` capability (`kino.coins`), `kino.sync.setActive`, `kino.library.stats`, per-profile jobs, the
+- **Kino coins and apiVersion 17** (apiVersion 16 arrives with Kino 0.9.78; apiVersion 17 with Kino 0.9.81): the `coins` capability (`kino.coins`), `kino.sync.setActive`, `kino.library.stats`, per-profile jobs, the
   `pages` widget and more: [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
-- **Plugins that use each other** (apiVersion 20, arriving with Kino 0.9.81, not published yet): a plugin opens named
+- **Plugins that use each other** (apiVersion 20, Kino 0.9.81): a plugin opens named
   doors (`provides`) and another uses them through Kino (`consumes`, `kino.plugins.call`), validated both ways, with an
   install button instead of silent installs: [The plugin protocol](https://kinotvapp.github.io/kino-plugins/en/protocol/).
   Example pair: [kino-plugin-cine-trivia](https://github.com/kinotvapp/kino-plugin-cine-trivia) (consumer) and
@@ -51,7 +51,7 @@ test with the Node kit, and how to be found in the app's "De la comunidad" list.
   kit's scaffold, `node sdk/init.mjs my-plugin --kind provider` or `--kind consumer`, and try a provider on its own with
   `node sdk/run.mjs <provider folder> proto <door>.<call> '<json>'`
   ([Testing offline with the kit](https://kinotvapp.github.io/kino-plugins/en/protocol/#kit)).
-- **A browser window the person drives** (apiVersion 20, Kino 0.9.81, not published yet): `"visualBrowser": true` and
+- **A browser window the person drives** (apiVersion 20, Kino 0.9.81): `"visualBrowser": true` and
   `kino.visualBrowser.open` open a web window on your own hosts that the person uses to sign in or finish a step, and can
   store the cookies straight into one of your settings: [A browser window the person drives](https://kinotvapp.github.io/kino-plugins/en/visual-browser/).
 - **Signed plugins** (optional, Kino 0.9.45+): sign your plugin with your own key so people know every

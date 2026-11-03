@@ -10,13 +10,13 @@ kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach
 kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
 kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync provider (see below); absent before
-kino.ws            // apiVersion 13 (in development), capability "socket": outbound WebSockets (see below); absent otherwise
-kino.catalog       // apiVersion 13 (in development), capability "catalog": a SQLite catalog of your items; absent otherwise
-kino.qr            // apiVersion 13 (in development), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
+kino.ws            // apiVersion 13 (Kino 0.9.74), capability "socket": outbound WebSockets (see below); absent otherwise
+kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLite catalog of your items; absent otherwise
+kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 ```
 
-`kino.apiVersion` reports 13 on Kino 0.9.74 (the next release, not published yet) and 11 on Kino 0.9.71 to 0.9.73.
+`kino.apiVersion` reports 13 on Kino 0.9.74 and 11 on Kino 0.9.71 to 0.9.73.
 
 ### `kino.lang`: the person's language { #lang }
 
@@ -279,9 +279,9 @@ kino.crypto.uuid()
 | `importKey`, `deriveSharedSecret` (apiVersion 6) | public keys as `jwk`, `spki`, `raw`; ECDH (same curve) and X25519 |
 <!-- contract:crypto:end -->
 
-### Byte operations (the next Kino version, in development: feature-detect) { #crypto-bytes }
+### Byte operations (Kino 0.9.74: feature-detect) { #crypto-bytes }
 
-For binary protocols (MTProto and the like), the next Kino version (in development) has five more operations on
+For binary protocols (MTProto and the like), Kino 0.9.74 has five more operations on
 strings in any of the three encodings. They are gated on the Kino you run on, not on your manifest: every plugin gets the
 `kino.crypto` of that Kino's own version, whatever `apiVersion` it declares, and a Kino that predates one of them lacks it
 (Kino 0.9.74 has all five, an older Kino none; development builds before 0.9.74 lack `convert` and `aesIgeVerify`). Feature-detect each one and keep a fallback:
@@ -612,7 +612,7 @@ if (typeof kino.sync.setActive === "function") {
 
 See [Sync providers](sync-providers.md).
 
-## `kino.ws`: WebSockets (apiVersion 13, in development) { #ws }
+## `kino.ws`: WebSockets (apiVersion 13, Kino 0.9.74) { #ws }
 
 With the `socket` capability: `await kino.ws.open(url, { protocol? })` opens an outbound WebSocket and answers a socket
 with `send(data, { encoding? })`, `recv(timeoutMs?, { encoding? })` and `close()`. `wss://` on port 443 to a host your
@@ -622,14 +622,14 @@ manifest declares and the person approved, never the local network or an IP lite
 `host_not_allowed` (with `host`), `limit`, `closed`, `network`, `timeout`, `too_large`, `invalid_request`. The whole
 guide: [Sockets and plugin-served bytes](bytes.md#ws).
 
-## `kino.catalog` (apiVersion 13, in development) { #catalog }
+## `kino.catalog` (apiVersion 13, Kino 0.9.74) { #catalog }
 
 With the `catalog` capability: `upsert(items)`, `search({ q?, limit?, offset?, order? })`, `get(ids)`, `remove(ids)`,
 `clear()` and `count()` over a SQLite catalog of your own items (up to 100,000, in one 64 MiB file for your plugin alone,
 on the device only). Every call is `async`; there is no SQL. The whole guide, with every rule, limit and error:
 [Catalog and large storage](catalog.md).
 
-## `kino.qr.scan(options?)` (apiVersion 13, in development) { #qr }
+## `kino.qr.scan(options?)` (apiVersion 13, Kino 0.9.74) { #qr }
 
 With the `qrScan` capability: opens Kino's camera scanner full screen on the phone and resolves with the scanned text (1
 to 4,096 characters) or `null` when the person closes it. `{ title?, titleEn? }`, at most 80 characters each. Only from a
@@ -842,7 +842,7 @@ Synchronous, private to your plugin, and it survives restarts of the sandbox and
 `Error("plugin storage full (256 KB)")` (Kino 0.9.53 and older: `"almacenamiento del plugin lleno (256 KB)"`). It is deleted when the person uninstalls the
 plugin, and it is **not** cleared when they change your settings.
 
-**A bigger store (`storageLarge`, apiVersion 13, in development).** A plugin that declares `storageLarge` gets the same
+**A bigger store (`storageLarge`, apiVersion 13, Kino 0.9.74).** A plugin that declares `storageLarge` gets the same
 API with 16 MB in total, at most 2 MB per value and at most 1,000 keys of at most 256 characters, kept one file per value
 **on the device only: never synced and not in any backup** (declaring it moves your existing keys there too). Keep
 credentials in sealed secrets or settings, and shard big data into values of about 512 KB. To search thousands of

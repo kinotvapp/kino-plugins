@@ -89,7 +89,7 @@ configuración, bienvenida, tablero o panel, constrúyela con las pantallas de K
 "screen" con los exports screen() y screenEvent(), componentes al estilo Flutter (Scaffold, AppBar, TabBar,
 ListTile, Card, Form, TextField, el nodo "settings"...), valores por tamaño, el celular y el TV dibujados desde el
 mismo árbol. Deja el formulario de ajustes viejo y el formato de panel anterior solo por compatibilidad. apiVersion
-14 llega con Kino 0.9.74 (la próxima versión, aún no publicada): para seguir instalándose en un Kino anterior,
+14 llega con Kino 0.9.74: para seguir instalándose en un Kino anterior,
 conserva tu apiVersion y ofrece la pantalla con "enhancements". Pon el código en src/ y empaquétalo en plugin.js
 con esbuild (generado, guardado en git, revisado con check:built). Valida con node sdk/validate.mjs . y
 node sdk/run.mjs . screen (también con --device tv). Sigue el catálogo de componentes (https://kinotvapp.github.io/kino-plugins/en/screen-components/,
@@ -136,8 +136,8 @@ Antes de escribir nada:
    (apiVersion 15, Kino 0.9.77) y parte de una tienda de ejemplo con
    node sdk/init.mjs mi-tienda --host <host> --store local|live.
 8. Si mi plugin usa los datos de otro plugin, o abre una puerta para otros plugins, lee primero
-   https://kinotvapp.github.io/kino-plugins/protocol/ (el protocolo entre plugins: apiVersion 20, Kino 0.9.81,
-   todavía sin publicar) y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
+   https://kinotvapp.github.io/kino-plugins/protocol/ (el protocolo entre plugins: apiVersion 20, Kino 0.9.81)
+   y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
    un consumidor con la puerta de instalación) y TMDB (https://github.com/kinotvapp/kino-plugin-tmdb, un proveedor).
    Parte de la plantilla del kit: node sdk/init.mjs mi-plugin --kind provider, o --kind consumer --repo dueño/nombre
    --door <la puerta real> --call <una llamada real> (escribe "hosts": []); su test/provider
@@ -268,8 +268,7 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   que desinstalarlo y reinstalarlo). Luego `node sdk/seal.mjs --sign --repo USUARIO/REPO` DESPUÉS del
   último cambio en plugin.js o en "version" y otra vez después de cada cambio posterior; nunca subas
   el .pem. Nunca imprimas el contenido de la clave en el chat.
-- apiVersion 13 (en desarrollo para la próxima versión de Kino: NINGÚN Kino publicado lo instala todavía;
-  avísame antes de usarlo), solo si mi fuente lo necesita: un servicio que habla por WebSocket ("socket",
+- apiVersion 13 (Kino 0.9.74; los Kino anteriores lo rechazan), solo si mi fuente lo necesita: un servicio que habla por WebSocket ("socket",
   kino.ws, wss:// a mis hosts declarados, frames como textos hex/base64), video que sirve el propio plugin
   ("byteSource": resolve responde { source: "plugin", handle, size, mime } y read({ handle, offset, length })
   responde { bytes: base64 } de exactamente ese rango, armado con kino.crypto.convert, nunca con un ciclo de
@@ -293,8 +292,7 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   un "fetchHosts": "any" escrito a mano (Kino 0.9.55); 10 solo para "playlists" (Kino 0.9.65); 11 solo
   para "externalResolve" (Kino 0.9.66); 12 solo para "syncProvider", el bloque "sync" o un ajuste
   "link"/"help" (Kino 0.9.74; Kino 0.9.73 y anteriores lo rechazan); 13 solo para "socket", "byteSource",
-  "storageLarge", "catalog", "qrScan", "imageSource" o un ajuste "qr" (en desarrollo: ningún Kino publicado
-  lo acepta todavía)). Un catálogo que no reproduce
+  "storageLarge", "catalog", "qrScan", "imageSource" o un ajuste "qr" (Kino 0.9.74)). Un catálogo que no reproduce
   nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
   para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
@@ -326,7 +324,7 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   exportadas, "sync.maxBlobBytes" de máximo 4194304, pruebas que envían y traen un blob de 4 MiB y lanzan
   "conflict", con "sync.keySecret" y "sync.provision" declarados, y me dijiste con palabras sencillas que el
   plugin y su servicio pueden leer los datos;
-- si usa apiVersion 13: me dijiste que ningún Kino publicado lo instala todavía, read tiene una prueba de
+- si usa apiVersion 13: read tiene una prueba de
   Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra;
 - si tiene una pantalla: el AppBar de cada pantalla lleva mergeWithKinoBar: true y dense: true con un leading que es una
   salida real, node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
@@ -423,7 +421,7 @@ probar los scrapers de verdad instalando el plugin en Kino 0.9.71 o más nuevo, 
 ## Prompt corto: plugins que se usan entre sí { #protocol-prompt }
 
 Para un plugin que **usa** la puerta de otro plugin (un consumidor) o que **abre** una para otros plugins (un proveedor).
-El [protocolo entre plugins](protocol.md) llega con Kino 0.9.81, que todavía no está publicado: el plugin solo se instalará,
+El [protocolo entre plugins](protocol.md) llega con Kino 0.9.81: el plugin solo se instalará,
 o solo abrirá su puerta, en Kino 0.9.81 o más nuevo. Llena la parte que te toca y borra la otra:
 
 ```text

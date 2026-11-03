@@ -57,7 +57,7 @@ mismos archivos. Un fork también funcionaría como plugin, pero la búsqueda de
 los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`, `name`, `homepage`,
 `hosts` y `capabilities` en `kino-plugin.json`, reescribe `plugin.js` y conserva `sdk/`.
 
-!!! note "Plugins que se usan entre sí (apiVersion 20, Kino 0.9.81, todavía sin publicar): TMDB y Cine Trivia"
+!!! note "Plugins que se usan entre sí (apiVersion 20, Kino 0.9.81): TMDB y Cine Trivia"
     [**Cine Trivia**](https://github.com/kinotvapp/kino-plugin-cine-trivia) (`kinotvapp/kino-plugin-cine-trivia`) es el
     **consumidor** de referencia del [protocolo entre plugins](protocol.md): un juego de cine de cinco preguntas (un plugin
     con `screen`, para teléfono y TV) que saca cada película de la puerta `movies` de
@@ -95,7 +95,7 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
     incorporado como un secreto sellado, y como Drive no sabe escribir «solo si la versión es X», el plugin comprueba,
     escribe y vuelve a comprobar para detectar un `conflict`. Trae pruebas de Node sin red, con una imitación de Google.
 
-!!! note "Pantallas (apiVersion 14, con Kino 0.9.74, aún no publicada): tres ejemplos"
+!!! note "Pantallas (apiVersion 14, con Kino 0.9.74): tres ejemplos"
     - **Galería UI** ([kinotvapp/kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery)): cada
       componente de una [pantalla](screens.md) dibujado en el aparato, por siete pestañas (diseño, contenido, acciones,
       formularios, ventanas, navegación y datos), incluidas las últimas piezas: `pages` a pantalla completa, un carrusel
@@ -108,8 +108,8 @@ los forks por fuera ([Hazte encontrar](publish.md#get-found)). Luego cambia `id`
       pestaña del [panel del reproductor](player-panel.md#contributed-tab) para ver un título con amigos, con
       [salas](rooms.md#room), chat y el video sincronizado con [`playerControl`](rooms.md#player-control).
 
-!!! note "apiVersion 13 (en desarrollo): un ejemplo de stream de bytes"
-    Ningún plugin de ejemplo publicado usa apiVersion 13 todavía (ningún Kino publicado lo acepta). La guía tiene un
+!!! note "apiVersion 13 (Kino 0.9.74): un ejemplo de stream de bytes"
+    Ningún plugin de ejemplo publicado usa apiVersion 13 todavía. La guía tiene un
     plugin completo con `socket` y `byteSource`, una biblioteca de videos detrás de un WebSocket, con la prueba de Node
     que revisa cada rango que sirve: [Un ejemplo completo](bytes.md#example). Las páginas del catálogo, de las imágenes y
     de los QR también traen cada una un ejemplo completo.

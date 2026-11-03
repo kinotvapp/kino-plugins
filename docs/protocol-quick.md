@@ -1,7 +1,7 @@
 # El protocolo entre plugins en una página { #protocol-quick }
 
 Lo mínimo que una IA (o una persona) necesita para escribir un **proveedor** y un **consumidor** del protocolo entre plugins
-(apiVersion 20, Kino 0.9.81, aún no está en ningún Kino publicado). Cada línea apunta a la página larga, [El protocolo entre
+(apiVersion 20, Kino 0.9.81). Cada línea apunta a la página larga, [El protocolo entre
 plugins](protocol.md), para el resto.
 
 ## Empieza con las plantillas { #start }

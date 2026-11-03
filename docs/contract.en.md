@@ -34,9 +34,9 @@ none can say so with `"catalogOnly": true` ([Catalog-only plugins](#catalog-only
 `"apiVersion": 12` (Kino 0.9.74) a plugin can be the transport of the person's cross-device sync with
 `syncPull`, `syncPush` and the optional `syncStatus` ([Being the person's sync transport](#sync-provider)).
 At every `apiVersion`, from Kino 0.9.74, an `action` may also answer `setSettings` and `link`
-([The settings form](settings-form.md#set-settings)). From `"apiVersion": 13` (in development, the next Kino version):
+([The settings form](settings-form.md#set-settings)). From `"apiVersion": 13` (Kino 0.9.74):
 `read` for a stream your plugin serves and `image` for a picture it serves ([Bytes and images your plugin
-serves](#apiversion-13)). From `"apiVersion": 14` (Kino 0.9.74, not published yet): `screen` and `screenEvent` for a
+serves](#apiversion-13)). From `"apiVersion": 14` (Kino 0.9.74): `screen` and `screenEvent` for a
 [screen](screens.md#exports) and `job` for a [background job](jobs-and-shared.md#jobs); a plugin with
 `playerPanelTab` uses the `panel` export ([The player panel](player-panel.md#contributed-tab)).
 
@@ -139,7 +139,7 @@ Media      = { title?: string, sizeBytes?: number, container?: string,
                converted?: boolean, notes?: string[] }
 ```
 
-**Genre (Categorías and the En vivo filter).** A Home `Row`, a live `LiveCategory` and a `playlist` may carry an optional `genre`. On a `LiveCategory` and a `playlist` it is a closed list of ten ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino shows their Spanish names). On a Home `Row`, from the next Kino release, it accepts **any category**: a known id or alias (Spanish or English) maps to the base id, and anything else is kept as a slug (lowercase ASCII `[a-z0-9-]`, at most 40 characters) and appended after the known ones; see [Home categories](categories.md). It lets Kino line up categories from different plugins: the Categorías tab groups the browsable Home rows (those with a `ref`, when you declare `browse`) of every plugin by genre, and En vivo can narrow its categories by genre. On a live category or a playlist, a value outside the list is ignored, never an error, and without a `genre` Kino guesses from the title of the row or group ("Deportes", "Noticias Colombia", "Kids"…), so set it when your titles do not say it. On a `playlist` the genre is the default for the groups of the list (each group's own title is guessed first). The older Categorías tab still uses only the ten ids: a row with `genre: "accion"` or a new slug gets its tile guessed from its title. Kino versions before this field ignore it.
+**Genre (Categorías and the En vivo filter).** A Home `Row`, a live `LiveCategory` and a `playlist` may carry an optional `genre`. On a `LiveCategory` and a `playlist` it is a closed list of ten ids: `peliculas`, `series`, `anime`, `infantil`, `documentales`, `deportes`, `noticias`, `musica`, `entretenimiento`, `otros` (Kino shows their Spanish names). On a Home `Row` it accepts **any category**: a known id or alias (Spanish or English) maps to the base id, and anything else is kept as a slug (lowercase ASCII `[a-z0-9-]`, at most 40 characters) and appended after the known ones; see [Home categories](categories.md). It lets Kino line up categories from different plugins: the Categorías tab groups the browsable Home rows (those with a `ref`, when you declare `browse`) of every plugin by genre, and En vivo can narrow its categories by genre. On a live category or a playlist, a value outside the list is ignored, never an error, and without a `genre` Kino guesses from the title of the row or group ("Deportes", "Noticias Colombia", "Kids"…), so set it when your titles do not say it. On a `playlist` the genre is the default for the groups of the list (each group's own title is guessed first). The older Categorías tab still uses only the ten ids: a row with `genre: "accion"` or a new slug gets its tile guessed from its title. Kino versions before this field ignore it.
 
 ### How the pieces connect { #pieces }
 
@@ -285,7 +285,7 @@ all or nothing.
 | Text fields | `title` is required and non-blank, up to 200 characters. `overview` up to 2000; `lang` and `quality` up to 20 (for example `"es"`, `"1080p"`); `year` up to 10 (a number is accepted and converted). Longer text is cut; the text of `SeriesInfo` and `Episode` is cut the same way (200 characters for titles, 2000 for overviews). |
 | Extra item fields | All optional; a wrong one is ignored, not the item. `genres` at most 5, each at most 30 characters; `badges` (shown as chips, e.g. `"HD"`, `"Latino"`) at most 3 of at most 20; `rating` from 0 to 10; `runtimeMinutes` from 1 to 1000; `ids.tmdb` a positive integer (Kino uses it to match your title with TMDB, to find it again from search, and to enrich its info page -- see below); `ids.imdb` matches `^tt\d{5,10}$` (also enriches a movie's info page when you have no `ids.tmdb`). An episode's `airDate` is `YYYY-MM-DD`. |
 | `adult` | From apiVersion 6, `adult: true` marks an 18+ entry: Kino shows it only while the person's 18+ code is unlocked on that device (Ajustes ▸ Control parental), and hides it again when they lock it; below apiVersion 6 it is dropped. It applies on Home, in search, "Ver más", your section and Categorías. See [18+ content](#adult). |
-| Images | `poster`, `backdrop` and `still` must be `http` or `https` URLs of at most 2048 characters, or they are ignored (Kino versions before the one that accepted `http` for images ignore the `http` ones). Images are loaded by Kino directly and are **not** checked against `hosts` (they are display only), and Kino does not send your headers or cookies with them. This is the one exception to the host rule, with one limit: an image on the home network, a private or reserved IP address, or a local name (`localhost`, `.local`, `.lan`, …) is ignored too, and so is a name without a dot over `http` (`router`, `nas`), unless it is on a server the person typed in your settings. A public IPv4 address is fine. From apiVersion 13 (in development) a plugin that declares `imageSource` may answer, instead of a URL, an image **reference** `{ "source": "plugin", "handle": "…" }` in `poster`, `backdrop`, `still` and a section hero's `image`: Kino then asks its `image` export for the bytes ([Images from the plugin](images.md)); from any other plugin, or anywhere else, a reference is ignored. No data URIs: a string is always a URL. |
+| Images | `poster`, `backdrop` and `still` must be `http` or `https` URLs of at most 2048 characters, or they are ignored (Kino versions before the one that accepted `http` for images ignore the `http` ones). Images are loaded by Kino directly and are **not** checked against `hosts` (they are display only), and Kino does not send your headers or cookies with them. This is the one exception to the host rule, with one limit: an image on the home network, a private or reserved IP address, or a local name (`localhost`, `.local`, `.lan`, …) is ignored too, and so is a name without a dot over `http` (`router`, `nas`), unless it is on a server the person typed in your settings. A public IPv4 address is fine. From apiVersion 13 (Kino 0.9.74) a plugin that declares `imageSource` may answer, instead of a URL, an image **reference** `{ "source": "plugin", "handle": "…" }` in `poster`, `backdrop`, `still` and a section hero's `image`: Kino then asks its `image` export for the bytes ([Images from the plugin](images.md)); from any other plugin, or anywhere else, a reference is ignored. No data URIs: a string is always a URL. |
 
 ### `ids.tmdb` enriches the info page, not only matching { #tmdb }
 
@@ -314,7 +314,7 @@ TMDB.
 
 ### The `Stream` rules { #stream }
 
-From apiVersion 13 (in development), a plugin that declares `byteSource` may answer instead a stream with no URL,
+From apiVersion 13 (Kino 0.9.74), a plugin that declares `byteSource` may answer instead a stream with no URL,
 `{ source: "plugin", handle, size, mime }`, whose bytes Kino asks your `read` export for; the rules below about `url`
 do not apply to it, and its own rules are in [Sockets and plugin-served bytes](bytes.md#byte-source).
 
@@ -992,8 +992,8 @@ dropped and why, and the button it makes of it.
 
 ## Lyrics for the music player (`lyrics`, apiVersion 19) { #lyrics }
 
-!!! note "Not in any released Kino"
-    `apiVersion` 19 ships with the next Kino version (`contract.json` names Kino 0.9.81). Older Kinos refuse a manifest with
+!!! note "Available from Kino 0.9.81"
+    `apiVersion` 19 ships with Kino 0.9.81. Older Kinos refuse a manifest with
     `"apiVersion": 19` with «Este plugin necesita una versión más nueva de Kino».
 
 A plugin that finds a song's lyrics -- LRCLIB, a lyrics site, the person's own library -- declares
@@ -1065,9 +1065,9 @@ export async function syncStatus(_null) { /* optional -> { ready, message? } */ 
 The manifest's `sync` block, who can read what, the cadence, the realtime signal, the provisioning flow,
 the consent lines and the two example providers are on [Sync providers](sync-providers.md).
 
-## Bytes and images your plugin serves (apiVersion 13, in development) { #apiversion-13 }
+## Bytes and images your plugin serves (apiVersion 13, Kino 0.9.74) { #apiversion-13 }
 
-apiVersion 13 arrives in Kino 0.9.74 together with apiVersion 12; that release is not published yet. It adds six
+apiVersion 13 arrives in Kino 0.9.74 together with apiVersion 12. It adds six
 capabilities, none with a consent line of its own:
 
 | Capability | Export | What it gives | Page |

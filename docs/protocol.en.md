@@ -1,6 +1,6 @@
 # The plugin protocol: plugins that use each other { #protocol }
 
-!!! note "Kino 0.9.81, not in any released Kino yet"
+!!! note "Available from Kino 0.9.81"
     The plugin protocol is `apiVersion` 20 and ships with Kino 0.9.81. Every older Kino refuses a manifest with
     `"apiVersion": 20` («Este plugin necesita una versión más nueva de Kino»), but a plugin that stays on a lower
     `apiVersion` can still open its doors through [`enhancements["20"]`](#versions), which an older Kino ignores. Every number

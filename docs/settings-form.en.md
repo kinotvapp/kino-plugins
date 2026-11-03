@@ -7,7 +7,7 @@ a value, the [two configuration aids](#aids) of apiVersion 12, the exports that 
 [a complete example](#example).
 
 !!! tip "For a new UI, use screens"
-    From apiVersion 14 (Kino 0.9.74, not published yet) the preferred way to build your plugin's configuration, onboarding
+    From apiVersion 14 (Kino 0.9.74) the preferred way to build your plugin's configuration, onboarding
     or a dashboard is [screens](screens.md), which can also show this very form with the
     [`settings` node](screen-forms.md#settings-node). This form keeps working for compatibility.
 
@@ -22,7 +22,7 @@ settings.
 ## Every field type { #types }
 
 The form shows your settings **in the order of the manifest**, each with its `label` and, under it, its
-`hint`. Eleven types, and a twelfth, `qr`, from apiVersion 13 (in development):
+`hint`. Eleven types, and a twelfth, `qr`, from apiVersion 13 (Kino 0.9.74):
 
 | `type` | What the person sees | What `kino.config.get(key)` returns | Since |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ The form shows your settings **in the order of the manifest**, each with its `la
 | `action` | a button that runs your `action(key)` | nothing | apiVersion 6 |
 | `link` | a button that opens an `https` address through the system, only when the person taps it ([Configuration aids](#aids)) | nothing | apiVersion 12 |
 | `help` | a button ("Ayuda") that opens your instructions in a modal ([Configuration aids](#aids)) | nothing | apiVersion 12 |
-| `qr` | a QR code drawn on the device from a text your `settingsStatus()` returns ([A QR code](#qr)) | nothing | apiVersion 13 (in development) |
+| `qr` | a QR code drawn on the device from a text your `settingsStatus()` returns ([A QR code](#qr)) | nothing | apiVersion 13 (Kino 0.9.74) |
 
 What each entry may carry:
 
@@ -137,7 +137,7 @@ no `default`), at most 16 of them on top of the 12 valued settings:
   `confirm` (1 to 120 characters) asks first, with Cancelar focused. **Required export** when an
   `action` setting exists.
 
-## A QR code: `qr` (apiVersion 13, in development) { #qr }
+## A QR code: `qr` (apiVersion 13, Kino 0.9.74) { #qr }
 
 A fourth type that holds no value, counted among the 16: a QR code drawn on the form, on the device (nothing goes to a
 network to draw it). It is how a TV shows a login code for a phone to scan.
@@ -239,7 +239,7 @@ ignored. The Node kit renders no form: `validate.mjs` only checks the field.
 ## A setting the 18+ code guards (`unlockWith`, apiVersion 14, Kino 0.9.74) { #unlock-with }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). Below apiVersion 14 the key is ignored.
+    Available from Kino 0.9.74. Below apiVersion 14 the key is ignored.
 
 A `toggle` or a `select` may say `"unlockWith": "adultCode"`: before the person moves it **away from its
 `default`** (a toggle off its default, a select to any other option), Kino asks the device's 18+ code with its own

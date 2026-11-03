@@ -6,8 +6,8 @@ It is built **only from what your Home rows already left cached** (it does not s
 what you declare in `home()` decides where your content lands. This page explains how to declare it. Items and rows are
 in [the contract](contract.md).
 
-!!! note "From the next Kino release"
-    Until now a Home row's `genre` accepted only ten closed ids. From the next release it accepts **any category**
+!!! note "Any category on a Home row"
+    A Home row's `genre` used to accept only ten closed ids. Now it accepts **any category**
     (below). Earlier versions keep ignoring a value that was not in the list of ten.
 
 ## What the Home does with your categories { #how }

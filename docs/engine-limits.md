@@ -79,7 +79,7 @@ Desde Kino 0.9.74, además:
 | Ajustes `link` y `help` (apiVersion 12) | 4 de cada uno; la `url` de un link 2.048 caracteres, solo https; el `title` de un help 60 y su `body` 2.000 |
 | Respuestas `setSettings` y `link` de una acción (cualquier apiVersion) | `setSettings` 8 claves de ajustes `text`/`select`; el `candidate` de un link de 1 a 64 caracteres |
 
-Desde apiVersion 13 (en desarrollo, la próxima versión de Kino), además:
+Desde apiVersion 13 (Kino 0.9.74), además:
 
 | Qué | Límite |
 | --- | --- |
@@ -104,10 +104,10 @@ Desde apiVersion 13 (en desarrollo, la próxima versión de Kino), además:
 - **Los errores le llegan a la gente.** Si tu función lanza un error, esa llamada falla y la persona
   ve un error que nombra tu plugin, y el texto de tu `Error` puede ser parte de él. Escribe esos
   mensajes para una persona, en español, cortos.
-- **Memoria en una llamada larga (próxima versión de Kino, apiVersion 13 en desarrollo).** Cada plugin tiene 64 MB de
-  memoria del motor. Hasta Kino 0.9.74 la respuesta de cada llamada `kino.*` con `await` (el cuerpo de un `kino.fetch`,
+- **Memoria en una llamada larga (Kino 0.9.74).** Cada plugin tiene 64 MB de
+  memoria del motor. Antes de Kino 0.9.74 la respuesta de cada llamada `kino.*` con `await` (el cuerpo de un `kino.fetch`,
   un frame de socket) se quedaba en esa memoria hasta que se cerraba el sandbox, así que un plugin que movía muchos
-  megabytes en la vida de un sandbox podía quedarse sin memoria en su segundo video. Desde la próxima versión una
+  megabytes en la vida de un sandbox podía quedarse sin memoria en su segundo video. Desde Kino 0.9.74 una
   respuesta se libera cuando tu código ya la tiene, y después de una llamada que deja el motor por encima de la mitad de
   su límite Kino corre su recolector de basura, así que solo cuenta lo que tu código sigue teniendo. Aplica en cualquier
   `apiVersion`. Igual, ten pocos textos grandes vivos a la vez: un texto hex cuesta 2 bytes por byte, y después su base64.

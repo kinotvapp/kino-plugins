@@ -1,7 +1,7 @@
 # Rooms, the library and player control { #rooms }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). An older Kino refuses these plugins with
+    Available from Kino 0.9.74. An older Kino refuses these plugins with
     «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an older version use
     `enhancements` (see [Screens without raising your apiVersion](enhancements.md)).
 
@@ -73,7 +73,7 @@ interface KinoLibraryEntry {
 }
 ```
 
-- **`season` and `episode`** (arriving with Kino 0.9.77): on a **watched series**, the latest chapter played, only
+- **`season` and `episode`** (from Kino 0.9.77): on a **watched series**, the latest chapter played, only
   when its source numbered it. Never on a movie or on a series with no numbered chapter.
 
 - `kind` is `movie` or `series` and works as a filter; music and podcasts are left out.

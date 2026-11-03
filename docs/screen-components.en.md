@@ -1,7 +1,7 @@
 # Screen components: layout, content and actions { #screen-components }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). An older Kino refuses these plugins with
+    Available from Kino 0.9.74. An older Kino refuses these plugins with
     «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an older version use
     `enhancements` (see [Screens without raising your apiVersion](enhancements.md)).
 

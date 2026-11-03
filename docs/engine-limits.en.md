@@ -94,7 +94,7 @@ From Kino 0.9.74, also:
 | `link` and `help` settings (apiVersion 12) | 4 of each; a link's `url` 2,048 characters, https only; a help's `title` 60 and `body` 2,000 |
 | Action answers `setSettings` and `link` (any apiVersion) | `setSettings` 8 keys of `text`/`select` settings; a link's `candidate` 1 to 64 characters |
 
-From apiVersion 13 (in development, the next Kino version), also:
+From apiVersion 13 (Kino 0.9.74), also:
 
 | What | Limit |
 | --- | --- |
@@ -118,10 +118,10 @@ From apiVersion 13 (in development, the next Kino version), also:
 - **Errors reach people.** If your function throws, that call fails and the person sees an error that
   names your plugin, and the text of your `Error` can be part of it. Write those messages for a
   person, in Spanish, short.
-- **Memory over a long call (next Kino version, apiVersion 13 in development).** Each plugin has 64 MB of engine
-  memory. Until Kino 0.9.74 the answer of every awaited `kino.*` call (a `kino.fetch` body, a socket frame) stayed in
+- **Memory over a long call (Kino 0.9.74).** Each plugin has 64 MB of engine
+  memory. Before Kino 0.9.74 the answer of every awaited `kino.*` call (a `kino.fetch` body, a socket frame) stayed in
   that memory until the sandbox closed, so a plugin that moved many megabytes in one sandbox's life could run out of it
-  on its second video. From the next version an answer is freed once your code has it, and after a call that leaves the
+  on its second video. From Kino 0.9.74 an answer is freed once your code has it, and after a call that leaves the
   engine over half its limit Kino runs its garbage collector, so only what your code still holds counts. It applies at
   every `apiVersion`. Still keep few big strings alive at once: a hex string costs 2 bytes per byte, then its base64.
 - **Runaway code.** Running out of memory or stack fails the call. A synchronous infinite loop

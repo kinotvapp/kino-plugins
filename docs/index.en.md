@@ -125,10 +125,10 @@ a plugin for it. Nothing in this guide changes for your plugin.
 
 !!! tip "New: Kino coins (apiVersion 16, with Kino 0.9.78) and apiVersion 17"
     The `coins` capability lets a plugin show the person's Kino coin balance and give coins away (`kino.coins`), and
-    `kino.sync.setActive` lets a sync provider switch itself on or off. `apiVersion` 17 (with the next Kino version) brings
+    `kino.sync.setActive` lets a sync provider switch itself on or off. `apiVersion` 17 (with Kino 0.9.81) brings
     `kino.library.stats`, per-profile jobs, the `pages` widget and more. What changed: [What's new](changelog.md#v17).
 
-!!! tip "New: your plugin's own screens (apiVersion 14, with Kino 0.9.74, not published yet)"
+!!! tip "New: your plugin's own screens (apiVersion 14, with Kino 0.9.74)"
     A plugin can draw its own full screen inside Kino: columns, cards, lists, tabs, forms, pop-ups and Kino's own poster
     rows, with Kino's look, on the phone and on the TV from the same JSON tree. Start with [Screens](screens.md) and the
     [component catalogue](screen-components.md); rooms over the Internet, background jobs, results shared between
@@ -147,10 +147,10 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [The plugin protocol](protocol.md) | apiVersion 20, Kino 0.9.81: plugins that use each other through Kino. A provider opens doors (`provides`, `proto_<door>_<call>`), a consumer uses them (`consumes`, `kino.plugins.call`); types, errors, limits, streams, the install gate with `recommends` and `go.installPlugin`, what the person sees, and the TMDB + Cine Trivia example |
 | [External resolver apps](resolver.md) | `externalResolve` (apiVersion 11): hand a title to an independently-installed app that turns it into a playable URL; the flow, `media`, `portable`, errors, casting, building the other side |
 | [Sync providers](sync-providers.md) | `syncProvider` (apiVersion 12, Kino 0.9.74): carry the person's cross-device sync through a service your plugin talks to; who can read what, the `sync` block, cadence, conflicts, the 4 MiB limit, sending the settings to another device, Sync-Gram and Sync Servidor |
-| [Sockets and plugin-served bytes](bytes.md) | apiVersion 13, in development: `kino.ws` WebSockets, streams your plugin serves through `read` (played and cast by Kino), `kino.crypto`'s byte operations, a complete WebSocket example with its test |
-| [Catalog and large storage](catalog.md) | apiVersion 13, in development: `kino.catalog`, a SQLite catalog of up to 100,000 items searched by Kino, and `storageLarge` |
-| [Images from the plugin](images.md) | apiVersion 13, in development: posters and stills your plugin serves through `image` |
-| [QR codes](qr.md) | apiVersion 13, in development: the settings form's `qr` type and `kino.qr.scan`, with a two-device login recipe |
+| [Sockets and plugin-served bytes](bytes.md) | apiVersion 13, Kino 0.9.74: `kino.ws` WebSockets, streams your plugin serves through `read` (played and cast by Kino), `kino.crypto`'s byte operations, a complete WebSocket example with its test |
+| [Catalog and large storage](catalog.md) | apiVersion 13, Kino 0.9.74: `kino.catalog`, a SQLite catalog of up to 100,000 items searched by Kino, and `storageLarge` |
+| [Images from the plugin](images.md) | apiVersion 13, Kino 0.9.74: posters and stills your plugin serves through `image` |
+| [QR codes](qr.md) | apiVersion 13, Kino 0.9.74: the settings form's `qr` type and `kino.qr.scan`, with a two-device login recipe |
 | [Screens](screens.md) | apiVersion 14, Kino 0.9.74: your plugin's full screen, the `screen` block, `screen()` and `screenEvent()`, state, answers, `go`, timers, TV focus, limits, testing with the kit |
 | [Components: layout, content and actions](screen-components.md) | Every screen component with its properties: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, text, images, tables, buttons, toasts |
 | [Components: forms, overlays and navigation](screen-forms.md) | Fields, validation, the `settings` node, dialogs, sheets, menus, anchored pop-ups, every `go` shape |

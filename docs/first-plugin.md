@@ -54,7 +54,7 @@ node sdk/run.mjs ./plugin.js resolve TheGiantOfMetropolis1961
 O deja que el kit te escriba el esqueleto: `node sdk/init.mjs mi-plugin --host example.com` crea
 `mi-plugin/` con un manifiesto, un `plugin.js` con todas las funciones, un README y una prueba basada
 en respuestas grabadas. Agrega `--with byteSource,images,catalog,socket` (cualquiera de ellas) para un esqueleto de
-apiVersion 13 (en desarrollo: ningún Kino publicado lo acepta todavía) que declara esas capacidades y trae un ejemplo de
+apiVersion 13 (Kino 0.9.74 o posterior) que declara esas capacidades y trae un ejemplo de
 cada una que funciona y viene comentado.
 
 Este es ingenuo a propósito (una consulta con un `/` o un `AND` suelto hace que archive.org responda

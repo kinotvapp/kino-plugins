@@ -3,7 +3,7 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## The next Kino version: one compact bar and reader blocks for screens { #screens-reader }
+## Kino 0.9.81: one compact bar and reader blocks for screens { #screens-reader }
 
 !!! note "No new `apiVersion`"
     These screen features are additive: they need the Kino version that ships them and nothing in the manifest. A Kino that
@@ -36,8 +36,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 
 ## Kino 0.9.81: `apiVersion` 20, plugins that use each other and a browser window the person drives { #v20 }
 
-!!! note "Not in any released Kino"
-    `apiVersion` 20 ships with Kino 0.9.81, not published yet. Every older Kino refuses a manifest with `"apiVersion": 20`
+!!! note "Available from Kino 0.9.81"
+    `apiVersion` 20 ships with Kino 0.9.81. Every older Kino refuses a manifest with `"apiVersion": 20`
     with «Este plugin necesita una versión más nueva de Kino»; a `provides` or `consumes` inside `enhancements["20"]` is
     ignored there instead. `contract.json` says `maxApiVersion` 20.
 
@@ -69,8 +69,8 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 
 ## Kino 0.9.81: `apiVersion` 19, lyrics and `go.installPlugin` { #v19 }
 
-!!! note "Not in any released Kino"
-    `apiVersion` 19 ships with Kino 0.9.81, not published yet. Every older Kino refuses a manifest
+!!! note "Available from Kino 0.9.81"
+    `apiVersion` 19 ships with Kino 0.9.81. Every older Kino refuses a manifest
     with `"apiVersion": 19` with «Este plugin necesita una versión más nueva de Kino». `contract.json` says `maxApiVersion` 19.
 
 | Feature | Since | How to tell |
@@ -87,10 +87,10 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 - **Screens**: `Scaffold.onBack` and `AppBar.mergeWithKinoBar` are `apiVersion` 19 features ([one compact bar](screen-components.md#one-compact-bar)),
   and a `TextField` hides the keyboard when it is submitted.
 
-## The next Kino version: `apiVersion` 18, app themes { #v18 }
+## Kino 0.9.81: `apiVersion` 18, app themes { #v18 }
 
-!!! note "Not in any released Kino"
-    `apiVersion` 18 ships with the next Kino version (`contract.json` names Kino 0.9.81). Every older Kino refuses a manifest
+!!! note "Available from Kino 0.9.81"
+    `apiVersion` 18 ships with Kino 0.9.81. Every older Kino refuses a manifest
     with `"apiVersion": 18` with «Este plugin necesita una versión más nueva de Kino». `contract.json` says `maxApiVersion` 18.
 
 | Feature | Since | How to tell |
@@ -113,10 +113,10 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   aplicado») or asks for the light or full experience (`go.setExperience`, Kino asks first). `screen` and `screenEvent` get
   `activeTheme`. [`go.useTheme`](screen-forms.md#go-use-theme).
 
-## The next Kino version: `apiVersion` 17, your month in Kino, per-profile jobs and more screens { #v17 }
+## Kino 0.9.81: `apiVersion` 17, your month in Kino, per-profile jobs and more screens { #v17 }
 
-!!! note "No version number yet"
-    `apiVersion` 17 ships with the next Kino version (the contract does not number it yet). An older Kino refuses a manifest
+!!! note "Available from Kino 0.9.81"
+    `apiVersion` 17 ships with Kino 0.9.81. An older Kino refuses a manifest
     with `"apiVersion": 17` with «Este plugin necesita una versión más nueva de Kino». `contract.json` says `maxApiVersion`
     17.
 
@@ -195,15 +195,15 @@ Node kit already knows all of it ([Test it locally](test-locally.md#api15)).
   `node sdk/init.mjs my-store --store local|live`.
 - **The library**: a watched series carries `season` and `episode`. [Rooms, the library and player control](rooms.md#library).
 
-## Upcoming with Kino 0.9.74: `apiVersion` 14, plugin screens { #v14 }
+## Kino 0.9.74: `apiVersion` 14, plugin screens { #v14 }
 
 !!! note "Available with Kino 0.9.74"
-    Available with Kino 0.9.74 (the next version, not published yet). An older Kino refuses these plugins with
+    Available from Kino 0.9.74. An older Kino refuses these plugins with
     «Este plugin necesita una versión más nueva de Kino»; to keep reaching people on an older version use
     `enhancements` (see [Screens without raising your apiVersion](enhancements.md)).
 
-Documented on 2026-10-28. **`apiVersion` 12, 13 and 14 arrive together with Kino 0.9.74**, the next release (not
-published yet): `contract.json` says `maxApiVersion` 14 and `apiVersionFromApp` gives 0.9.74 for all three. The Node kit
+Documented on 2026-10-28. **`apiVersion` 12, 13 and 14 arrive together with Kino 0.9.74**:
+`contract.json` says `maxApiVersion` 14 and `apiVersionFromApp` gives 0.9.74 for all three. The Node kit
 already knows all of it ([Test it locally](test-locally.md#api14)).
 
 | Feature | Since | How to tell |
@@ -243,12 +243,12 @@ already knows all of it ([Test it locally](test-locally.md#api14)).
   [kino-plugin-news](https://github.com/kinotvapp/kino-plugin-news) (Solo noticias) and
   [kino-plugin-watch-party](https://github.com/kinotvapp/kino-plugin-watch-party) (Party Chat).
 
-## Kino 0.9.74 (not released yet): `apiVersion` 13, sockets, plugin-served bytes and images, a catalog, QR codes { #v13 }
+## Kino 0.9.74: `apiVersion` 13, sockets, plugin-served bytes and images, a catalog, QR codes { #v13 }
 
-(Not released yet.) **`apiVersion` 13 = Kino 0.9.74, the next release, together with `apiVersion` 12** ([below](#v0974));
-it is not published yet. The contract (`contract.json`) says `maxApiVersion` 13 and `apiVersionFromApp` gives 0.9.74 for
+(Released 2026-10-29.) **`apiVersion` 13 = Kino 0.9.74, together with `apiVersion` 12** ([below](#v0974)).
+The contract (`contract.json`) says `maxApiVersion` 13 and `apiVersionFromApp` gives 0.9.74 for
 both. Every Kino before 0.9.74 refuses a manifest with `"apiVersion": 13` ("Este plugin necesita una versión más nueva de
-Kino"), so declare 13 only if you use one of its features, and publish such a plugin once Kino 0.9.74 is out. The Node kit already knows all of it.
+Kino"), so declare 13 only if you use one of its features. The Node kit already knows all of it.
 
 | Feature | From | How to tell |
 | --- | --- | --- |
@@ -293,7 +293,7 @@ Kino"), so declare 13 only if you use one of its features, and publish such a pl
 
 ### Added to apiVersion 13 on 2026-10-25: sync providers and the settings form { #v13-2026-10-25 }
 
-Still `apiVersion` 13 and Kino 0.9.74 (not released yet), added for the account-based sync provider
+Still `apiVersion` 13 and Kino 0.9.74, added for the account-based sync provider
 [Sync-Gram Cuenta](sync-providers.md#examples). An older Kino refuses `apiVersion` 13, so there is nothing to check.
 
 | Feature | From |
@@ -331,7 +331,7 @@ Still `apiVersion` 13 and Kino 0.9.74 (not released yet), added for the account-
 
 ## Kino 0.9.74: `apiVersion` 12, sync providers, `link` and `help`, `setSettings` and "Is this you?" { #v0974 }
 
-(Not released yet.) **`apiVersion` 12 = Kino 0.9.74.** The contract (`contract.json`) now says
+(Released 2026-10-29.) **`apiVersion` 12 = Kino 0.9.74.** The contract (`contract.json`) now says
 `maxApiVersion` 13 and `kino.apiVersion` reports 13, because [apiVersion 13](#v13) ships in the same release. Kino 0.9.73 and older refuse a manifest with
 `"apiVersion": 12` ("Este plugin necesita una versión más nueva de Kino"), so declare 12 only if you use
 one of its features.
@@ -385,7 +385,7 @@ one of its features.
 
 - **A plugin can use the scrapers of a Nuvio repository.** You declare the `nuvio` capability and `nuvioRepos` (1 to 4 repositories) and, inside your functions, call `kino.nuvio.available`, `use`, `scrapers` and `streams`: Kino installs the scrapers as the import does, with no screens, asks them for a title, and you sort, merge and label the copies. The scrapers belong to your plugin and are removed with it; torrent-only ones are never installed. Experiment: detect it with `typeof kino.nuvio === "object"`. [Plugins that use Nuvio scrapers](nuvio-plugins.md).
 
-## Next Kino release: Home by categories, open `genre` on rows { #home-categories }
+## Home by categories, open `genre` on rows { #home-categories }
 
 - **`genre` on a Home row accepts any category.** It used to be ten closed ids. Now a known id or alias (Spanish or
   English: `"Action"`, `"Acción"`, `"Thriller"`, `"Sci-Fi & Fantasy"`...) maps to the base id, and anything else is kept
@@ -400,7 +400,7 @@ one of its features.
 
 ## Kino 0.9.66: `apiVersion` 11, external resolver apps, `media` and `portable` { #v0966 }
 
-(Not released yet.) **`apiVersion` 11 = Kino 0.9.66.** The contract (`contract.json`) now says `maxApiVersion` 11
+**`apiVersion` 11 = Kino 0.9.66.** The contract (`contract.json`) now says `maxApiVersion` 11
 and `kino.apiVersion` reports 11. Kino 0.9.65 and older refuse a manifest with `"apiVersion": 11` ("Este plugin
 necesita una versión más nueva de Kino"), so declare 11 only if you use `externalResolve`.
 
@@ -426,7 +426,7 @@ necesita una versión más nueva de Kino"), so declare 11 only if you use `exter
 
 ## Kino 0.9.65: `apiVersion` 10, the `playlists` capability { #v0965 }
 
-(Not released yet.) **`apiVersion` 10 = Kino 0.9.65.** The contract (`contract.json`) now says
+**`apiVersion` 10 = Kino 0.9.65.** The contract (`contract.json`) now says
 `maxApiVersion` 10 and `kino.apiVersion` reports 10. Kino 0.9.64 and older refuse a manifest with
 `"apiVersion": 10` ("Este plugin necesita una versión más nueva de Kino"), so declare 10 only if you
 use the `playlists` capability.

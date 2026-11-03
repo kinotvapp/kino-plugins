@@ -10,13 +10,13 @@ kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach
 kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
 kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync provider (see below); absent before
-kino.ws            // apiVersion 13 (in development), capability "socket": outbound WebSockets (see below); absent otherwise
-kino.catalog       // apiVersion 13 (in development), capability "catalog": a SQLite catalog of your items; absent otherwise
-kino.qr            // apiVersion 13 (in development), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
+kino.ws            // apiVersion 13 (Kino 0.9.74), capability "socket": outbound WebSockets (see below); absent otherwise
+kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLite catalog of your items; absent otherwise
+kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 ```
 
-`kino.apiVersion` responde 13 en Kino 0.9.74 (la próxima versión, todavía sin publicar) y 11 en Kino 0.9.71 a 0.9.73.
+`kino.apiVersion` responde 13 en Kino 0.9.74 y 11 en Kino 0.9.71 a 0.9.73.
 
 (`kino.apiVersion` es el `apiVersion` más alto que entiende esta versión de Kino, no el de tu
 manifiesto; `kino.appVersion` es la versión de Kino.)
@@ -302,9 +302,9 @@ kino.crypto.uuid()
 | `sign`, `verify` (apiVersion 6) | ECDSA con `SHA-256`, `SHA-384` como `der` o `ieee-p1363`; Ed25519; una firma de máximo 512 bytes |
 | `importKey`, `deriveSharedSecret` (apiVersion 6) | llaves públicas como `jwk`, `spki`, `raw`; ECDH (misma curva) y X25519 |
 
-### Operaciones de bytes (la próxima versión de Kino, en desarrollo: revisa si están) { #crypto-bytes }
+### Operaciones de bytes (Kino 0.9.74: revisa si están) { #crypto-bytes }
 
-Para protocolos binarios (MTProto y parecidos), la próxima versión de Kino (en desarrollo) tiene cinco operaciones más
+Para protocolos binarios (MTProto y parecidos), Kino 0.9.74 tiene cinco operaciones más
 sobre textos en cualquiera de las tres codificaciones. Dependen del Kino en el que corres, no de tu manifiesto: cada plugin
 recibe el `kino.crypto` de la versión de ese Kino, declare el `apiVersion` que declare, y un Kino anterior a una de ellas no
 la tiene (Kino 0.9.74 tiene las cinco, un Kino más viejo ninguna; las versiones de desarrollo anteriores a 0.9.74 no tienen `convert` ni `aesIgeVerify`). Revisa cada una y ten
@@ -656,7 +656,7 @@ if (typeof kino.sync.setActive === "function") {
 
 Mira [Proveedores de sincronización](sync-providers.md).
 
-## `kino.ws`: WebSockets (apiVersion 13, en desarrollo) { #ws }
+## `kino.ws`: WebSockets (apiVersion 13, Kino 0.9.74) { #ws }
 
 Con la capacidad `socket`: `await kino.ws.open(url, { protocol? })` abre un WebSocket de salida y responde un socket con
 `send(data, { encoding? })`, `recv(timeoutMs?, { encoding? })` y `close()`. `wss://` por el puerto 443 a un host que tu
@@ -666,14 +666,14 @@ textos `hex` / `base64` con `{ encoding }` (el camino rápido: ningún ciclo de 
 `not_https`, `host_not_allowed` (con `host`), `limit`, `closed`, `network`, `timeout`, `too_large`, `invalid_request`.
 La guía completa: [Sockets y bytes del plugin](bytes.md#ws).
 
-## `kino.catalog` (apiVersion 13, en desarrollo) { #catalog }
+## `kino.catalog` (apiVersion 13, Kino 0.9.74) { #catalog }
 
 Con la capacidad `catalog`: `upsert(items)`, `search({ q?, limit?, offset?, order? })`, `get(ids)`, `remove(ids)`,
 `clear()` y `count()` sobre un catálogo SQLite de tus propios ítems (hasta 100.000, en un solo archivo de 64 MiB solo
 para tu plugin, solo en el aparato). Cada llamada es `async`; no hay SQL. La guía completa, con cada regla, límite y
 error: [Catálogo y almacenamiento grande](catalog.md).
 
-## `kino.qr.scan(options?)` (apiVersion 13, en desarrollo) { #qr }
+## `kino.qr.scan(options?)` (apiVersion 13, Kino 0.9.74) { #qr }
 
 Con la capacidad `qrScan`: abre el lector de cámara de Kino en pantalla completa en el teléfono y resuelve con el texto
 leído (de 1 a 4.096 caracteres) o con `null` cuando la persona lo cierra. `{ title?, titleEn? }`, de máximo 80
@@ -901,7 +901,7 @@ valores); pasarse lanza `Error("plugin storage full (256 KB)")` (Kino 0.9.53 y a
 `"almacenamiento del plugin lleno (256 KB)"`). Se borra cuando la
 persona desinstala el plugin, y **no** se borra cuando cambia tus ajustes.
 
-**Un almacén más grande (`storageLarge`, apiVersion 13, en desarrollo).** Un plugin que declara `storageLarge` tiene la
+**Un almacén más grande (`storageLarge`, apiVersion 13, Kino 0.9.74).** Un plugin que declara `storageLarge` tiene la
 misma API con 16 MB en total, máximo 2 MB por valor y máximo 1.000 llaves de máximo 256 caracteres, guardado en un
 archivo por valor **solo en el aparato: nunca se sincroniza y no va en ninguna copia de seguridad** (declararlo también
 mueve ahí tus llaves existentes). Guarda las credenciales en secretos sellados o en los ajustes, y parte los datos grandes

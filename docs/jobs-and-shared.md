@@ -1,7 +1,7 @@
 # Trabajos en segundo plano, resultados compartidos e IA { #jobs-and-shared }
 
 !!! note "Disponible con Kino 0.9.74"
-    Disponible con Kino 0.9.74 (la próxima versión, aún no publicada). Una versión anterior de Kino rechaza estos
+    Disponible desde Kino 0.9.74. Una versión anterior de Kino rechaza estos
     plugins con «Este plugin necesita una versión más nueva de Kino»; para seguir llegando a quien tiene una versión
     anterior usa `enhancements` (ver [Pantallas sin subir tu apiVersion](enhancements.md)).
 

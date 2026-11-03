@@ -57,7 +57,7 @@ same files. A fork would work as a plugin too, but Kino's community search leave
 ([Get found](publish.md#get-found)). Then change `id`, `name`, `homepage`, `hosts` and
 `capabilities` in `kino-plugin.json`, rewrite `plugin.js`, and keep `sdk/`.
 
-!!! note "Plugins that use each other (apiVersion 20, Kino 0.9.81, not published yet): TMDB and Cine Trivia"
+!!! note "Plugins that use each other (apiVersion 20, Kino 0.9.81): TMDB and Cine Trivia"
     [**Cine Trivia**](https://github.com/kinotvapp/kino-plugin-cine-trivia) (`kinotvapp/kino-plugin-cine-trivia`) is the
     reference **consumer** of the [plugin protocol](protocol.md): a five-question movie game (a `screen` plugin, phone and TV)
     that takes every movie from the `movies` door of [**TMDB**](https://github.com/kinotvapp/kino-plugin-tmdb), the reference
@@ -92,7 +92,7 @@ same files. A fork would work as a plugin too, but Kino's community search leave
     as a sealed secret, and since Drive cannot write «only if the version is X», the plugin checks, writes and checks again
     to detect a `conflict`. It ships offline Node tests with an imitation of Google.
 
-!!! note "Screens (apiVersion 14, with Kino 0.9.74, not published yet): three examples"
+!!! note "Screens (apiVersion 14, with Kino 0.9.74): three examples"
     - **UI gallery** ([kinotvapp/kino-plugin-ui-gallery](https://github.com/kinotvapp/kino-plugin-ui-gallery)): every
       [screen](screens.md) component drawn on the device, in seven tabs (layout, content, actions, forms, overlays, navigation and data), including the
       latest pieces: full-screen `pages`, a `PageView` carousel, `ListTile`, `CircleAvatar`, the floating button, a `Scaffold`
@@ -105,8 +105,8 @@ same files. A fork would work as a plugin too, but Kino's community search leave
       [player-panel](player-panel.md#contributed-tab) tab to watch a title with friends, with [rooms](rooms.md#room),
       a chat and the video in sync through [`playerControl`](rooms.md#player-control).
 
-!!! note "apiVersion 13 (in development): a byte-stream example"
-    No published example plugin uses apiVersion 13 yet (no released Kino accepts it). The guide has a complete
+!!! note "apiVersion 13 (Kino 0.9.74): a byte-stream example"
+    No published example plugin uses apiVersion 13 yet. The guide has a complete
     `socket` + `byteSource` plugin, a video library behind a WebSocket, with the Node test that checks every range it
     serves: [A complete example](bytes.md#example). The catalog, image and QR pages each carry a complete example too.
 

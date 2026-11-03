@@ -6,8 +6,8 @@ web page: sign in, solve a challenge, accept a site's terms, pick something. Wit
 what the page left behind (cookies, the page's HTML, its last address), or have Kino write the cookies straight into one of
 your `password` settings.
 
-!!! note "Not in any released Kino"
-    `apiVersion` 20 ships with Kino 0.9.81, not published yet. The window works on an Android phone and tablet, and,
+!!! note "Available from Kino 0.9.81"
+    `apiVersion` 20 ships with Kino 0.9.81. The window works on an Android phone and tablet, and,
     **experimental**, on Android TV. It does not exist on the desktop app or on a device without a WebView.
 
 ## The manifest { #manifest }
