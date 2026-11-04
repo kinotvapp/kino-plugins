@@ -38,7 +38,7 @@
   /* ---------- texts ---------- */
   var T = {
     es: {
-      device: "Aparato", phone: "Celular", tv: "TV", reset: "Quitar (usa el valor de Kino)", kinoValue: "Valor de Kino",
+      device: "Aparato", phone: "Celular", tv: "TV", reset: "Quitar (usa el valor de Kino)", kinoValue: "Valor de Kino", dropped: "Kino lo descarta",
       colors: "Colores", background: "Fondo", shape: "Formas", borders: "Bordes", typography: "Tipografía", elevation: "Sombras",
       motion: "Movimiento", player: "Reproductor (no se ve en la vista previa)", solid: "Sólido", gradient: "Degradado", angle: "Ángulo",
       stops: "Colores del degradado", addStop: "Agregar color", removeStop: "Quitar", themeName: "Nombre del tema", themeId: "Identificador (id)",
@@ -68,7 +68,7 @@
       }
     },
     en: {
-      device: "Device", phone: "Phone", tv: "TV", reset: "Remove (use Kino's value)", kinoValue: "Kino's value",
+      device: "Device", phone: "Phone", tv: "TV", reset: "Remove (use Kino's value)", kinoValue: "Kino's value", dropped: "Kino drops it",
       colors: "Colors", background: "Background", shape: "Shapes", borders: "Borders", typography: "Typography", elevation: "Shadows",
       motion: "Motion", player: "Player (not drawn in the preview)", solid: "Solid", gradient: "Gradient", angle: "Angle",
       stops: "Gradient colors", addStop: "Add a color", removeStop: "Remove", themeName: "Theme name", themeId: "Identifier (id)",
@@ -355,6 +355,8 @@
 
     /* the control rows */
     var rows = {};
+    var topWarn = el("div", { "class": "ktc-topwarn", hidden: "" });
+    right.appendChild(topWarn);
     function section(title) { var d = el("details", { "class": "ktc-sec", open: "" }); d.appendChild(el("summary", null, esc(title))); right.appendChild(d); return d; }
     function labelFor(key) { return s.c[key] || key; }
     function kinoText(key) { var d = KINO[key]; return d === null ? "—" : String(d); }
@@ -465,12 +467,18 @@
       var res = lastRes, t = state.theme;
       Object.keys(rows).forEach(function (k) {
         var row = rows[k], input = row.querySelector("input,select"), code = row.querySelector("[data-v]"), isSet = k in t.values;
-        var shown = res.tokens[k] !== undefined ? res.tokens[k] : KINO[k];
-        if (k === "colors.border") shown = res.tokens[k] || lastRes.tokens["colors.outline"] || KINO["colors.outline"];
-        if (input.type === "color") input.value = HEX.test(shown) ? shown.toLowerCase() : "#000000";
-        else input.value = shown;
-        code.textContent = isSet ? String(t.values[k]) : s.kinoValue + ": " + kinoText(k);
+        var effective = res.tokens[k] !== undefined ? res.tokens[k] : KINO[k];
+        if (k === "colors.border") effective = res.tokens[k] || res.tokens["colors.outline"] || KINO["colors.outline"];
+        /* The control shows what the person chose, even when Kino would drop it (then the row says so); only an unset token shows Kino's. */
+        var raw = isSet ? t.values[k] : effective;
+        var dropped = isSet && String(res.tokens[k] === undefined ? "" : res.tokens[k]).toUpperCase() !== String(raw).toUpperCase();
+        if (document.activeElement !== input) {
+          if (input.type === "color") input.value = HEX.test(raw) ? String(raw).toLowerCase() : "#000000";
+          else input.value = raw;
+        }
+        code.textContent = isSet ? String(t.values[k]) + (dropped ? " · " + s.dropped : "") : s.kinoValue + ": " + kinoText(k);
         row.classList.toggle("set", isSet);
+        row.classList.toggle("dropped", dropped);
       });
       var b = bgState();
       bgBox.querySelectorAll("[data-bg]").forEach(function (x) { x.classList.toggle("on", !b._none && x.getAttribute("data-bg") === b.type); });
@@ -484,6 +492,8 @@
     function currentText() { return JSON.stringify(state.fullManifest ? manifest(state.theme) : themeJson(state.theme), null, 2); }
     function renderWarnings() {
       var w = lastRes.warnings;
+      topWarn.hidden = !w.length;
+      topWarn.innerHTML = w.length ? "<b>" + s.warnings + "</b><ul>" + w.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "";
       warnBox.innerHTML = "<h4>" + s.warnings + "</h4>" + (w.length ? "<ul>" + w.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : '<p class="ok">' + s.noWarnings + "</p>");
     }
     function changed(source) {
