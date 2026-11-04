@@ -168,10 +168,13 @@
     return out;
   }
 
-  function manifest(t) {
+  /* `about` ({ description, author }) fills the card Kino shows; without it the manifest keeps the placeholders. The description is at most 300 characters. */
+  function manifest(t, about) {
+    var description = about && about.description ? String(about.description).trim().slice(0, 300) : "";
+    var author = about && about.author ? String(about.author).trim() : "";
     return {
       id: t.id, name: t.nameEn || t.nameEs, version: "1.0.0", apiVersion: 18, entry: "plugin.js",
-      description: "An app theme", author: "your-name", hosts: [], categories: ["themes"], appThemes: [themeJson(t)]
+      description: description || "An app theme", author: author || "your-name", hosts: [], categories: ["themes"], appThemes: [themeJson(t)]
     };
   }
 
@@ -817,7 +820,7 @@
         return ghCall("/repos/" + owner + "/" + repo, { method: "PATCH", body: { description: desc } }, token).then(function (p) { if (!p.ok) noDesc = true; });
       }).then(function () {
         go(1);
-        return ghPut(owner, repo, "kino-plugin.json", JSON.stringify(manifest(state.theme), null, 2) + "\n", token);
+        return ghPut(owner, repo, "kino-plugin.json", JSON.stringify(manifest(state.theme, { description: desc, author: owner }), null, 2) + "\n", token);
       }).then(function () {
         go(2);
         return ghPut(owner, repo, "plugin.js", "export {};\n", token);

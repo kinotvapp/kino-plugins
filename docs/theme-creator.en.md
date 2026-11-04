@@ -32,7 +32,7 @@ The logo can also come in the JSON you paste, and it is included in the code and
 The **Publish to GitHub** panel uploads `kino-plugin.json`, `plugin.js` (with `export {};`) and a `.gitignore` to a repository of
 **yours that already exists**, without leaving this page. It also writes the repository's description and, if you leave the box
 ticked, adds the **`kino-plugin`** topic: the only way Kino discovers a plugin, and it must be a public, non-fork repository
-([Publishing your plugin](publish.md#appear-in-the-app)). When it finishes it tells you the `owner/repo` to type in Kino.
+([Publishing your plugin](publish.md#appear-in-the-app)). The description you type in the panel is also the text of your plugin's card in Kino (up to 300 characters), and your GitHub username becomes the author. When it finishes it tells you the `owner/repo` to type in Kino.
 
 It does not create repositories or ask you to sign in with your account. You set it up once:
 
