@@ -116,7 +116,8 @@
 .ktc-railnav { width: 150px; flex: none; background: var(--rail); border-right: var(--bPanel) solid var(--border); padding: 10px 6px; display: flex; flex-direction: column; gap: 2px; }
 .ktc-railnav .ktc-brand { margin: 4px 8px 10px; }
 .ktc-railnav .ktc-nav { margin: 0; padding: 7px 8px; gap: 9px; font-size: .95em; }
-.ktc-railnav .ktc-nav:first-of-type.on { outline: 2px solid var(--focus); }
+.ktc-railnav .ktc-nav:first-of-type.on { background: var(--focus); color: var(--onFocus) !important; }
+.ktc-railnav .ktc-nav:first-of-type.on svg { color: var(--onFocus); }
 .ktc-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .ktc-bar.tvbar { justify-content: flex-end; }
 
@@ -155,3 +156,9 @@
 .ktc-topwarn[hidden] { display: none; }
 .ktc-topwarn ul { margin: .2rem 0 0 1rem; padding: 0; }
 .ktc-right .dropped code { color: #d32f2f; opacity: 1; }
+
+.ktc-art.ph { background: linear-gradient(180deg, var(--phTop), var(--phBottom)); }
+.ktc-state { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: var(--rChip); background: var(--high); font-size: .9em; }
+.ktc-state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.ktc-topnote { background: var(--md-code-bg-color); border-left: 3px solid var(--md-accent-fg-color); padding: .35rem .6rem; margin: .5rem 0; font-size: .68rem; }
+.ktc-topnote[hidden] { display: none; }

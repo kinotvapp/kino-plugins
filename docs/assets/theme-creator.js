@@ -38,7 +38,7 @@
   /* ---------- texts ---------- */
   var T = {
     es: {
-      device: "Aparato", phone: "Celular", tv: "TV", reset: "Quitar (usa el valor de Kino)", kinoValue: "Valor de Kino", dropped: "Kino lo descarta",
+      device: "Aparato", phone: "Celular", tv: "TV", reset: "Quitar (usa el valor de Kino)", kinoValue: "Valor de Kino", dropped: "Kino lo descarta", autoOn: "Ajusté «Texto sobre el acento» a {c} para que se lea sobre el acento. Quítalo con la × si prefieres otro.", stOk: "Disponible", stWarn: "Subtítulos parciales", stErr: "No disponible", states: "Estados", noImg: "Sin imagen",
       colors: "Colores", background: "Fondo", shape: "Formas", borders: "Bordes", typography: "Tipografía", elevation: "Sombras",
       motion: "Movimiento", player: "Reproductor (no se ve en la vista previa)", solid: "Sólido", gradient: "Degradado", angle: "Ángulo",
       stops: "Colores del degradado", addStop: "Agregar color", removeStop: "Quitar", themeName: "Nombre del tema", themeId: "Identificador (id)",
@@ -68,7 +68,7 @@
       }
     },
     en: {
-      device: "Device", phone: "Phone", tv: "TV", reset: "Remove (use Kino's value)", kinoValue: "Kino's value", dropped: "Kino drops it",
+      device: "Device", phone: "Phone", tv: "TV", reset: "Remove (use Kino's value)", kinoValue: "Kino's value", dropped: "Kino drops it", autoOn: "I set \"Text on the accent\" to {c} so it reads on the accent. Remove it with the × if you prefer another.", stOk: "Available", stWarn: "Partial subtitles", stErr: "Unavailable", states: "States", noImg: "No picture",
       colors: "Colors", background: "Background", shape: "Shapes", borders: "Borders", typography: "Typography", elevation: "Shadows",
       motion: "Motion", player: "Player (not drawn in the preview)", solid: "Solid", gradient: "Gradient", angle: "Angle",
       stops: "Gradient colors", addStop: "Add a color", removeStop: "Remove", themeName: "Theme name", themeId: "Identifier (id)",
@@ -271,7 +271,7 @@
 
   function poster(i, wide) {
     var t = TITLES[i % TITLES.length];
-    return '<div class="ktc-card' + (wide ? " wide" : "") + '" data-i="' + i + '"><div class="ktc-art" style="--h1:' + t[1] + ';--h2:' + ((t[1] + 40) % 360) + '">' +
+    return '<div class="ktc-card' + (wide ? " wide" : "") + '" data-i="' + i + '"><div class="ktc-art' + (i === 3 || i === 7 ? " ph" : "") + '" style="--h1:' + t[1] + ';--h2:' + ((t[1] + 40) % 360) + '">' +
       '<span>' + t[0] + '</span>' + (i === 2 ? '<b class="ktc-tag"></b>' : "") + '</div><p>' + t[0] + '</p></div>';
   }
   function rail(title, from) {
@@ -295,7 +295,7 @@
   function screenSearch(s) {
     var chips = ["Acción", "Comedia", "Anime", "Series", "Documental"].map(function (c, i) { return '<span class="ktc-chip' + (i === 0 ? " on" : "") + '">' + c + "</span>"; }).join("");
     return '<div class="ktc-search"><div class="ktc-input">' + svg("search", 18) + "<span>" + s.searchHint + "</span></div><div class=\"ktc-chips\">" + chips + "</div>" +
-      '<h3>' + s.recent + '</h3><div class="ktc-grid">' + [3, 5, 6, 7, 8, 9].map(function (i) { return poster(i, false); }).join("") + "</div></div>";
+      '<h3>' + s.states + '</h3><div class="ktc-chips"><span class="ktc-state" style="--c:var(--success)">' + s.stOk + '</span><span class="ktc-state" style="--c:var(--warning)">' + s.stWarn + '</span><span class="ktc-state" style="--c:var(--error)">' + s.stErr + '</span></div><h3>' + s.recent + '</h3><div class="ktc-grid">' + [3, 5, 6, 7, 8, 9].map(function (i) { return poster(i, false); }).join("") + "</div></div>";
   }
   function screenOther(s, name) { return '<div class="ktc-other"><h2>' + name + "</h2><p>" + s.soon + "</p><p>" + s.clickHome + "</p></div>"; }
 
@@ -357,6 +357,8 @@
     var rows = {};
     var topWarn = el("div", { "class": "ktc-topwarn", hidden: "" });
     right.appendChild(topWarn);
+    var topNote = el("div", { "class": "ktc-topnote", hidden: "" });
+    right.appendChild(topNote);
     function section(title) { var d = el("details", { "class": "ktc-sec", open: "" }); d.appendChild(el("summary", null, esc(title))); right.appendChild(d); return d; }
     function labelFor(key) { return s.c[key] || key; }
     function kinoText(key) { var d = KINO[key]; return d === null ? "—" : String(d); }
@@ -365,8 +367,20 @@
       var row = el("div", { "class": "ktc-row-c" });
       row.innerHTML = '<span class="n">' + esc(labelFor(key)) + '</span><input type="color" data-k="' + key + '"><code data-v="' + key + '"></code><button class="x" title="' + esc(s.reset) + '" data-x="' + key + '">×</button>';
       sec.appendChild(row); rows[key] = row;
-      row.querySelector("input").addEventListener("input", function (e) { state.theme.values[key] = up(e.target.value); changed("controls"); });
-      row.querySelector(".x").addEventListener("click", function () { delete state.theme.values[key]; changed("controls"); });
+      row.querySelector("input").addEventListener("input", function (e) {
+        state.theme.values[key] = up(e.target.value);
+        topNote.hidden = true;
+        /* Kino drops an accent its text colour cannot be read on: pick black or white for it unless the theme chose one. */
+        if (key === "colors.accent" && !("colors.onAccent" in state.theme.values)) {
+          var hex = up(e.target.value), best = contrast("#000000", hex) >= contrast("#FFFFFF", hex) ? "#000000" : "#FFFFFF";
+          if (best !== KINO["colors.onAccent"]) {
+            state.theme.values["colors.onAccent"] = best; topNote.hidden = false;
+            topNote.textContent = s.autoOn.replace("{c}", best === "#000000" ? (lang === "en" ? "black" : "negro") : (lang === "en" ? "white" : "blanco"));
+          }
+        }
+        changed("controls");
+      });
+      row.querySelector(".x").addEventListener("click", function () { delete state.theme.values[key]; topNote.hidden = true; changed("controls"); });
     }
     function rangeRow(sec, key) {
       var r = RANGES[key], g = key.split(".")[0];
