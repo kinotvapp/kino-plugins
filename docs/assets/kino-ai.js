@@ -31,11 +31,13 @@
     var opts = { expectedInputs: [{ type: "text", languages: ["en"] }], expectedOutputs: [{ type: "text", languages: [lang] }] };
     return LanguageModel.availability(opts).then(function (a) {
       if (!a || a === "unavailable" || a === "no") return null;
-      if (a !== "available" && a !== "readily" && onStatus) onStatus();
+      var ready = a === "available" || a === "readily";
+      if (!ready && onStatus) onStatus();
       var rest = messages.slice(1), last = rest.pop();
       var create = Object.assign({
         initialPrompts: [messages[0]].concat(rest),
-        monitor: function (m) { m.addEventListener("downloadprogress", function (e) { if (onStatus) onStatus(Math.round((e.loaded || 0) * 100)); }); }
+        /* Chrome fires downloadprogress on every create(), even with the model already on disk: only show it when a download is real. */
+        monitor: function (m) { m.addEventListener("downloadprogress", function (e) { if (!ready && onStatus) onStatus(Math.round((e.loaded || 0) * 100)); }); }
       }, opts);
       return LanguageModel.create(create).then(function (session) {
         var done = function (t) { try { session.destroy(); } catch (e) { void e; } return t && t.trim() ? t.trim() : null; };
