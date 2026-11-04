@@ -180,6 +180,45 @@
 .ktc-aisend { background: var(--md-accent-fg-color); color: var(--md-accent-bg-color, #fff); border: 0; border-radius: .3rem; padding: 0 .8rem; font-size: .72rem; }
 .ktc-aisend:disabled { opacity: .5; cursor: wait; }
 
-.ktc-aimsg.loading span::after { content: ""; display: inline-block; width: .7em; height: .7em; margin-left: .45em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -.1em; animation: ktcspin .8s linear infinite; }
-@keyframes ktcspin { to { transform: rotate(360deg); } }
-.ktc-aiform textarea:disabled { opacity: .6; }
+/* ---------- the logo in the preview and in the controls ---------- */
+.ktc-leftcol { display: flex; flex-direction: column; align-items: center; gap: .8rem; width: 100%; min-width: 0; }
+.ktc-o { position: relative; display: inline-block; }
+.ktc-decor { position: absolute; left: 50%; top: 50%; width: .7em; height: .7em; transform: translate(-50%, -50%); overflow: visible; }
+.ktc-logosvg { display: block; max-width: 100%; }
+.ktc-logostrip { width: 100%; border-top: 1px solid var(--md-default-fg-color--lightest); padding-top: .6rem; font-size: .68rem; }
+.ktc-logostrip h4 { margin: 0 0 .45rem; font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; opacity: .7; }
+.ktc-logorow { display: flex; flex-wrap: wrap; gap: .6rem; }
+.ktc-logotile { display: flex; flex-direction: column; gap: .3rem; align-items: flex-start; }
+.ktc-logotile > span { opacity: .7; }
+.ktc-logobox { display: grid; place-items: center; min-width: 4.5rem; min-height: 2.6rem; padding: .35rem .6rem; border-radius: .4rem; background: var(--surface); border: 1px solid var(--outline); }
+.ktc-logobox.sq { min-width: 3.2rem; min-height: 3.2rem; padding: .3rem; border-radius: var(--rChannel); }
+.ktc-logobox .ktc-kw { margin: 0; }
+.ktc-logonone { font-size: .68rem; opacity: .7; margin: .2rem 0; }
+.ktc-row-l { display: grid; grid-template-columns: 1fr auto 1.1rem; gap: .4rem; align-items: center; font-size: .7rem; margin: .2rem 0; }
+.ktc-row-l .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ktc-ghform { display: flex; flex-direction: column; gap: .35rem; margin: .2rem 0 .5rem; }
+.ktc-ghform label { font-size: .68rem; gap: .15rem; }
+.ktc-ghcheck { flex-direction: row !important; align-items: center; gap: .35rem !important; }
+.ktc-ghnote { font-size: .62rem; opacity: .7; margin: 0 0 .45rem; }
+.ktc-ghtoken { display: flex; gap: .35rem; margin-top: .35rem; }
+.ktc-ghtoken input { flex: 1; min-width: 0; font: inherit; font-size: .68rem; padding: .3rem .45rem; border: 1px solid var(--md-default-fg-color--lighter); border-radius: .25rem; background: transparent; color: inherit; }
+.ktc-ghlogin { background: var(--md-accent-fg-color); color: var(--md-accent-bg-color, #fff); border: 0; border-radius: .3rem; padding: .35rem .8rem; font-size: .72rem; }
+.ktc-ghwho { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .7rem; background: var(--md-code-bg-color); border-radius: .3rem; padding: .35rem .5rem; }
+.ktc-ghcode { font-size: .68rem; }
+.ktc-ghdevice { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin: .4rem 0; padding: .4rem .55rem; border: 1px dashed var(--md-default-fg-color--lighter); border-radius: .35rem; }
+.ktc-ghdevice small { display: block; font-size: .6rem; opacity: .7; }
+.ktc-ghuser { font-size: 1rem; letter-spacing: .12em; font-family: var(--md-code-font-family, monospace); }
+.ktc-ghout { font-size: .68rem; }
+.ktc-ghok { margin-top: .4rem; font-size: .68rem; }
+
+/* ---------- the steps of the AI and of the publishing ---------- */
+.ktc-steps { list-style: none; margin: .15rem 0 .3rem; padding: 0; display: flex; flex-direction: column; gap: .12rem; }
+.ktc-steps li { display: flex; align-items: center; gap: .35rem; font-size: .63rem; opacity: .45; }
+.ktc-steps li i { width: .5rem; height: .5rem; border-radius: 50%; border: 1px solid currentColor; flex: none; }
+.ktc-steps li.done { opacity: .8; }
+.ktc-steps li.done i { background: currentColor; }
+.ktc-steps li.on { opacity: 1; font-weight: 700; }
+.ktc-steps li.on i { background: var(--md-accent-fg-color); border-color: var(--md-accent-fg-color); animation: ktcpulse 1s ease-in-out infinite; }
+.ktc-steps li.bad { opacity: 1; color: #d32f2f; font-weight: 700; }
+.ktc-steps li.bad i { background: #d32f2f; border-color: #d32f2f; }
+@keyframes ktcpulse { 50% { transform: scale(.7); opacity: .5; } }
