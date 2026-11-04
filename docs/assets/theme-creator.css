@@ -107,7 +107,7 @@
 .ktc-drawer { position: absolute; left: 6px; top: 6px; bottom: 6px; width: 250px; background: var(--surface); border-radius: var(--rDialog); border: var(--bMenu) solid var(--border); padding-bottom: 10px; overflow: hidden; box-shadow: 0 8px 28px rgba(0, 0, 0, calc(var(--shDialog) * 1.2)); display: flex; flex-direction: column; }
 .ktc-profile { display: flex; align-items: center; gap: 10px; padding: 8px 16px 12px; }
 .ktc-profile i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--onAccent); font-style: normal; font-weight: 700; }
-.ktc-profile b { font-size: 1.05em; }
+.ktc-profile b { font-size: 1.05em; color: var(--t1) !important; }
 .ktc-nav { display: flex; align-items: center; gap: 14px; margin: 1px 10px; padding: 9px 12px; border-radius: var(--rButton); color: var(--t1) !important; text-align: left; font-size: 1em; }
 .ktc-nav.on { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--accentText) !important; }
 .ktc-nav.on svg { color: var(--accent); }
@@ -160,5 +160,22 @@
 .ktc-art.ph { background: linear-gradient(180deg, var(--phTop), var(--phBottom)); }
 .ktc-state { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: var(--rChip); background: var(--high); font-size: .9em; }
 .ktc-state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.ktc-why { grid-column: 1 / -1; color: #d32f2f; font-size: .62rem; line-height: 1.3; margin: -.1rem 0 .2rem; }
+.ktc-right .dropped .n { color: #d32f2f; }
 .ktc-topnote { background: var(--md-code-bg-color); border-left: 3px solid var(--md-accent-fg-color); padding: .35rem .6rem; margin: .5rem 0; font-size: .68rem; }
 .ktc-topnote[hidden] { display: none; }
+
+/* the AI assistant */
+.ktc-aihint { font-size: .66rem; opacity: .75; margin: .1rem 0 .4rem; }
+.ktc-ailog { max-height: 15rem; overflow: auto; display: flex; flex-direction: column; gap: .35rem; }
+.ktc-aimsg { font-size: .72rem; line-height: 1.35; padding: .35rem .5rem; border-radius: .4rem; background: var(--md-code-bg-color); }
+.ktc-aimsg.me { background: var(--md-accent-fg-color--transparent, rgba(0, 0, 0, .08)); }
+.ktc-aimsg b { display: block; font-size: .6rem; opacity: .6; margin-bottom: .1rem; }
+.ktc-ainote { font-size: .64rem; margin-top: .3rem; opacity: .85; }
+.ktc-ainote.warn { color: #d32f2f; opacity: 1; }
+.ktc-aichips { display: flex; flex-wrap: wrap; gap: .3rem; margin: .45rem 0; }
+.ktc-aichips .ktc-chip { background: var(--md-code-bg-color); border: 1px solid var(--md-default-fg-color--lightest); border-radius: 1rem; padding: .2rem .55rem; font-size: .64rem; color: inherit; cursor: pointer; }
+.ktc-aiform { display: flex; gap: .4rem; align-items: stretch; }
+.ktc-aiform textarea { flex: 1; font: inherit; font-size: .72rem; padding: .35rem .5rem; border: 1px solid var(--md-default-fg-color--lighter); border-radius: .3rem; background: transparent; color: inherit; resize: vertical; min-height: 2.6rem; }
+.ktc-aisend { background: var(--md-accent-fg-color); color: var(--md-accent-bg-color, #fff); border: 0; border-radius: .3rem; padding: 0 .8rem; font-size: .72rem; }
+.ktc-aisend:disabled { opacity: .5; cursor: wait; }
