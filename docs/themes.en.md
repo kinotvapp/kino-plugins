@@ -69,11 +69,11 @@ player accent. Both may live in the same manifest.
 | `colors`, `shape`, `typography`, `elevation`, `motion`, `player` | The token groups below. Every token is optional: what you leave out stays Kino's. |
 | `background` | `{ "type": "solid", "colors": [one] }` or `{ "type": "gradient", "colors": [2 to 8], "angle": whole degrees }` (default angle 180). `image` is refused for now: "background.image arrives in a later version of Kino; remove it from this theme". |
 | `tv`, `phone` | The same groups and `background`, overriding the theme on that form only. |
-| `adjustable` | What the person may change in Ajustes ▸ Apariencia ▸ Personalizar (at most 40 tokens): `true`, `{ "swatches": ["#RRGGBB", …] }` (colours only) or `{ "min", "max" }` (numbers only). |
+| `adjustable` | What the person may change in Ajustes ▸ Apariencia ▸ Personalizar (at most 48 tokens): `true`, `{ "swatches": ["#RRGGBB", …] }` (colours only) or `{ "min", "max" }` (numbers only). |
 | `pluginColors` | `"respect"` (default) or `"override"`: what happens to other plugins' own apiVersion 6 `theme` colours. |
 | `price` | Optional `{ "kinos": 1 to 1000, "payTo": "<64 lowercase hex>" }`. No `price` is a free theme. See [Priced themes](#price). |
 | `experience` | Optional `"light"` or `"full"`: the whole-app experience the theme looks best with. See [The experience](#experience). |
-| `logo` | Optional `{ "wordmark"?, "mark"? }`, vector only. See [Your own logo](#logo). |
+| `logo` | Optional `{ "wordmark"?, "mark"?, "decor"? }` (at least one), vector only. See [Your own logo](#logo). |
 
 **A format error refuses the whole manifest**: an unknown field or token, a wrong type (a number where a colour goes), a bad
 `id`, two themes with the same `id`, more than 8 themes, a `name` over 40 characters, a malformed `price`, `experience` or
@@ -82,7 +82,7 @@ value, so the theme still works. `node sdk/validate.mjs .` prints those warnings
 
 ## Tokens and ranges { #tokens }
 
-The 39 tokens, with the ranges `contract.json` (`manifest.appThemes`) enforces:
+The 45 tokens, with the ranges `contract.json` (`manifest.appThemes`) enforces:
 
 | Group | Token | Type and range | Kino's own value |
 | --- | --- | --- | --- |
@@ -94,7 +94,9 @@ The 39 tokens, with the ranges `contract.json` (`manifest.appThemes`) enforces:
 | `colors` | `textPrimary`, `textSecondary` | `#RRGGBB` | `#F5F5F5`, `#B3B3B3` |
 | `colors` | `focus`, `onFocus` (the TV focus treatment) | `#RRGGBB` | `#FFFFFF`, `#000000` |
 | `colors` | `outline`, `railPanel`, `placeholderTop`, `placeholderBottom`, `success`, `warning`, `error`, `favorite`, `scrim` | `#RRGGBB` | Kino's |
+| `colors` | `border` (the colour of borders, see [Borders](#borders)) | `#RRGGBB` | none: `outline` is used without it |
 | `shape` | `cardRadius`, `channelRadius`, `buttonRadius`, `chipRadius`, `dialogRadius`, `inputRadius` | number, 0 to 32 | Kino's |
+| `shape` | `dialogBorder`, `menuBorder`, `headerBorder`, `cardBorder`, `panelBorder` (width in dp, see [Borders](#borders)) | number, 0 to 4 | 0: Kino draws no borders |
 | `typography` | `scale`, `titleScale`, `bodyScale` | number, 0.85 to 1.3 | 1 |
 | `elevation` | `cardShadow`, `dialogShadow` | number, 0 to 1 | Kino's |
 | `elevation` | `heroScrim` | number, 0.3 to 1 | Kino's |
@@ -132,7 +134,7 @@ set, with a warning:
 
 | Pair | Needs | When it fails |
 | --- | --- | --- |
-| The background (every gradient stop) | dark: relative luminance at most 0.05 | Kino's background (light themes arrive later) |
+| The background (every gradient stop) | dark (relative luminance at most 0.05) **or light, when the theme brings its own `textPrimary` and `textSecondary` that read on the background and on `surface`** (Kino 0.9.82; a light background used to be refused always) | Kino's background (and its `accent` if needed) |
 | `accent` on the background | 3:1 | Kino's `accent` and `onAccent`, as a pair |
 | `onAccent` on `accent` | 4.5:1 | Kino's `accent` and `onAccent`, as a pair |
 | Kino's accent on your background | 3:1 | Kino's background |
@@ -218,7 +220,30 @@ image file, no network):
 - 1 to 8 `paths`, each `d` up to 2,000 characters of SVG path data (`M L H V C S Q T A Z`, numbers, spaces, commas, signs);
   `fill` is `accent`, `onAccent`, `textPrimary`, `textSecondary` (they follow the theme and the person's adjustments) or a
   fixed `#RRGGBB`.
+- `decor` (Kino 0.9.82) does not replace Kino's logo: it is drawn **over** it, in the wordmark and in the mark, in the space of the "o". It is `{ "paths": [...] }` (1 to 8, the same format). Its centre is the origin (0, 0), y grows downwards, and the ring's outer radius is 100. A hat on the "o" sits at y < -100, something covering the whole "o" is a disc of radius 100, and the dot of the "i" is near (-353, -132). Use it to play with Kino's own logo (Luffy's straw hat, the arc reactor as the "o").
 - Kino keeps its own logo on the splash, the gate and every screen that asks for a decision.
+
+## Borders (`colors.border`, `shape.*Border`) { #borders }
+
+!!! note "Available from Kino 0.9.82"
+    No new `apiVersion`: an older Kino ignores these tokens and draws no borders.
+
+Kino has no borders. A theme may ask for them, as a width in dp (0 to 4; 0 or absent = none) per kind of element, plus a colour:
+
+| Token | Frames |
+| --- | --- |
+| `shape.dialogBorder` | dialogs and bottom sheets |
+| `shape.menuBorder` | dropdown menus |
+| `shape.headerBorder` | headers: a line along their lower edge |
+| `shape.cardBorder` | cards |
+| `shape.panelBorder` | panels |
+
+The colour is `colors.border`; when the theme gives none, `outline` is used. A border follows the element's corners (`dialogRadius`, `cardRadius`…). A theme that asks for no borders looks exactly as before.
+
+```json
+"colors": { "border": "#8624A0" },
+"shape": { "dialogBorder": 2, "cardBorder": 1, "headerBorder": 1 }
+```
 
 ## Turning a theme on from your screen (`go.useTheme`, `activeTheme`) { #use-theme }
 
@@ -277,7 +302,7 @@ none of yours active). The kit draws no colours: look at the theme in Kino (Ajus
 - [ ] `"apiVersion": 18` and the person knows it needs Kino 0.9.81 or later.
 - [ ] `node sdk/validate.mjs .` passes and prints no warning you did not expect, for phone and TV.
 - [ ] Every theme `id` is final; `name` has `es` and `en`.
-- [ ] The background is dark and every pair in [the guardrails](#guardrails) reads.
+- [ ] The background is dark, or light with your own readable text, and every pair in [the guardrails](#guardrails) reads.
 - [ ] `adjustable` offers swatches (not only free colours) so a TV remote can use it.
 - [ ] A `price` has your real `payTo`; you did not add `coins` just to sell.
 - [ ] A screen that turns the theme on reads `activeTheme` and uses `go.useTheme` only from a tap.

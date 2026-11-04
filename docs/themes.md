@@ -71,11 +71,11 @@ acento del reproductor. Los dos pueden estar en el mismo manifiesto.
 | `colors`, `shape`, `typography`, `elevation`, `motion`, `player` | Los grupos de tokens de abajo. Todos son opcionales: lo que no pongas sigue siendo de Kino. |
 | `background` | `{ "type": "solid", "colors": [uno] }` o `{ "type": "gradient", "colors": [2 a 8], "angle": grados enteros }` (ángulo por defecto 180). `image` se rechaza por ahora: "background.image arrives in a later version of Kino; remove it from this theme". |
 | `tv`, `phone` | Los mismos grupos y `background`, que reemplazan al tema solo en ese tipo de aparato. |
-| `adjustable` | Lo que la persona puede cambiar en Ajustes ▸ Apariencia ▸ Personalizar (como máximo 40 tokens): `true`, `{ "swatches": ["#RRGGBB", …] }` (solo colores) o `{ "min", "max" }` (solo números). |
+| `adjustable` | Lo que la persona puede cambiar en Ajustes ▸ Apariencia ▸ Personalizar (como máximo 48 tokens): `true`, `{ "swatches": ["#RRGGBB", …] }` (solo colores) o `{ "min", "max" }` (solo números). |
 | `pluginColors` | `"respect"` (por defecto) u `"override"`: qué pasa con los colores `theme` de apiVersion 6 de los otros plugins. |
 | `price` | Opcional `{ "kinos": 1 a 1000, "payTo": "<64 hex en minúscula>" }`. Sin `price`, el tema es gratis. Ver [Temas con precio](#price). |
 | `experience` | Opcional `"light"` o `"full"`: la experiencia de toda la app con la que el tema se ve mejor. Ver [La experiencia](#experience). |
-| `logo` | Opcional `{ "wordmark"?, "mark"? }`, solo vectores. Ver [Tu propio logo](#logo). |
+| `logo` | Opcional `{ "wordmark"?, "mark"?, "decor"? }` (al menos uno), solo vectores. Ver [Tu propio logo](#logo). |
 
 **Un error de formato rechaza todo el manifiesto**: un campo o token desconocido, un tipo equivocado (un número donde va un
 color), un `id` inválido, dos temas con el mismo `id`, más de 8 temas, un `name` de más de 40 caracteres, un `price`,
@@ -85,7 +85,7 @@ el TV.
 
 ## Tokens y rangos { #tokens }
 
-Los 39 tokens, con los rangos que aplica `contract.json` (`manifest.appThemes`):
+Los 45 tokens, con los rangos que aplica `contract.json` (`manifest.appThemes`):
 
 | Grupo | Token | Tipo y rango | Valor propio de Kino |
 | --- | --- | --- | --- |
@@ -97,7 +97,9 @@ Los 39 tokens, con los rangos que aplica `contract.json` (`manifest.appThemes`):
 | `colors` | `textPrimary`, `textSecondary` | `#RRGGBB` | `#F5F5F5`, `#B3B3B3` |
 | `colors` | `focus`, `onFocus` (el marcador de foco del TV) | `#RRGGBB` | `#FFFFFF`, `#000000` |
 | `colors` | `outline`, `railPanel`, `placeholderTop`, `placeholderBottom`, `success`, `warning`, `error`, `favorite`, `scrim` | `#RRGGBB` | los de Kino |
+| `colors` | `border` (el color de los bordes, ver [Bordes](#borders)) | `#RRGGBB` | ninguno: sin él se usa `outline` |
 | `shape` | `cardRadius`, `channelRadius`, `buttonRadius`, `chipRadius`, `dialogRadius`, `inputRadius` | número, de 0 a 32 | los de Kino |
+| `shape` | `dialogBorder`, `menuBorder`, `headerBorder`, `cardBorder`, `panelBorder` (grosor en dp, ver [Bordes](#borders)) | número, de 0 a 4 | 0: Kino no dibuja bordes |
 | `typography` | `scale`, `titleScale`, `bodyScale` | número, de 0,85 a 1,3 | 1 |
 | `elevation` | `cardShadow`, `dialogShadow` | número, de 0 a 1 | los de Kino |
 | `elevation` | `heroScrim` | número, de 0,3 a 1 | el de Kino |
@@ -136,7 +138,7 @@ tema puso, con una advertencia:
 
 | Par | Necesita | Si falla |
 | --- | --- | --- |
-| El fondo (cada color del degradado) | oscuro: luminancia relativa de 0,05 como máximo | el fondo de Kino (los temas claros llegan después) |
+| El fondo (cada color del degradado) | oscuro (luminancia relativa de 0,05 como máximo) **o claro, si el tema trae su propio `textPrimary` y `textSecondary` que se lean sobre el fondo y sobre `surface`** (Kino 0.9.82; antes un fondo claro se rechazaba siempre) | el fondo de Kino (y, si hace falta, su `accent`) |
 | `accent` sobre el fondo | 3:1 | `accent` y `onAccent` de Kino, como par |
 | `onAccent` sobre `accent` | 4,5:1 | `accent` y `onAccent` de Kino, como par |
 | El acento de Kino sobre tu fondo | 3:1 | el fondo de Kino |
@@ -225,7 +227,30 @@ vectores (ningún archivo de imagen, nada de red):
 - De 1 a 8 `paths`, cada `d` de hasta 2.000 caracteres de datos de trazo SVG (`M L H V C S Q T A Z`, números, espacios, comas,
   signos); `fill` es `accent`, `onAccent`, `textPrimary`, `textSecondary` (siguen al tema y a los ajustes de la persona) o un
   `#RRGGBB` fijo.
+- `decor` (Kino 0.9.82) no reemplaza el logo de Kino: se dibuja **encima** de él, en el wordmark y en la marca, en el espacio de la «o». Es `{ "paths": [...] }` (de 1 a 8, con el mismo formato). Su centro es el origen (0, 0), y crece hacia abajo; el radio exterior del aro de la «o» es 100. Un sombrero sobre la «o» queda en y < -100, algo que cubra toda la «o» es un disco de radio 100, y el punto de la «i» está cerca de (-353, -132). Úsalo para jugar con el logo de Kino (el sombrero de paja de Luffy, el reactor de Iron Man como «o»).
 - Kino conserva su propio logo en la pantalla de inicio, la puerta de entrada y toda pantalla que pide una decisión.
+
+## Bordes (`colors.border`, `shape.*Border`) { #borders }
+
+!!! note "Disponible con Kino 0.9.82"
+    Sin `apiVersion` nuevo: un Kino anterior ignora estos tokens y no dibuja bordes.
+
+Kino no tiene bordes. Un tema puede pedirlos con un grosor en dp (de 0 a 4; 0 o ausente = sin borde) por tipo de elemento, y un color:
+
+| Token | Enmarca |
+| --- | --- |
+| `shape.dialogBorder` | los diálogos y las hojas inferiores |
+| `shape.menuBorder` | los menús desplegables |
+| `shape.headerBorder` | las cabeceras: una línea a lo largo de su borde inferior |
+| `shape.cardBorder` | las tarjetas |
+| `shape.panelBorder` | los paneles |
+
+El color es `colors.border`; si el tema no lo da, se usa `outline`. El borde sigue las esquinas del elemento (`dialogRadius`, `cardRadius`…). Un tema que no pide bordes se ve exactamente como antes.
+
+```json
+"colors": { "border": "#8624A0" },
+"shape": { "dialogBorder": 2, "cardBorder": 1, "headerBorder": 1 }
+```
 
 ## Activar un tema desde tu pantalla (`go.useTheme`, `activeTheme`) { #use-theme }
 
@@ -288,7 +313,7 @@ previa).
 - [ ] `"apiVersion": 18`, y la persona sabe que necesita Kino 0.9.81 o posterior.
 - [ ] `node sdk/validate.mjs .` pasa y no muestra advertencias que no esperabas, ni en celular ni en TV.
 - [ ] Cada `id` de tema es definitivo; `name` tiene `es` y `en`.
-- [ ] El fondo es oscuro y cada par de [las protecciones](#guardrails) se lee.
+- [ ] El fondo es oscuro, o claro con tu propio texto legible, y cada par de [las protecciones](#guardrails) se lee.
 - [ ] `adjustable` ofrece muestras de color (no solo colores libres) para que se pueda usar con un control remoto.
 - [ ] Un `price` lleva tu `payTo` real; no agregaste `coins` solo para vender.
 - [ ] Una pantalla que activa el tema lee `activeTheme` y usa `go.useTheme` solo desde un toque.
