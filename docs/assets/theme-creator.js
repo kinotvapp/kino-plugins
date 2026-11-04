@@ -451,6 +451,24 @@
     return { done: done, skipped: skipped };
   }
 
+  /* Kino drops the text colours (and then the surfaces and the background) when the text cannot be read on them. After the AI changes a
+   * theme, pick the dark or the light text pair that reads on the background and both surfaces, and set it; null when it already reads. */
+  function aiReadableText(theme) {
+    var v = theme.values, b = theme.background;
+    var stops = b && b.colors && b.colors.length ? b.colors.filter(function (c) { return HEX.test(c); }) : [];
+    if (!stops.length) stops = [HEX.test(v["colors.background"]) ? v["colors.background"] : KINO_BG];
+    var surf = [HEX.test(v["colors.surface"]) ? v["colors.surface"] : KINO["colors.surface"], HEX.test(v["colors.surfaceHigh"]) ? v["colors.surfaceHigh"] : KINO["colors.surfaceHigh"]];
+    var all = stops.concat(surf);
+    function worst(c) { return Math.min.apply(null, all.map(function (x) { return contrast(c, x); })); }
+    function reads(p, q) { return HEX.test(p) && HEX.test(q) && worst(p) >= MIN_TEXT && worst(q) >= MIN_TEXT; }
+    var cur = [v["colors.textPrimary"] || KINO["colors.textPrimary"], v["colors.textSecondary"] || KINO["colors.textSecondary"]];
+    if (reads(cur[0], cur[1])) return null;
+    var sets = [["#111111", "#3F3F3F"], ["#F5F5F5", "#B3B3B3"], ["#000000", "#2B2B2B"], ["#FFFFFF", "#D0D0D0"]];
+    var best = null, bestScore = 0;
+    sets.forEach(function (c) { if (reads(c[0], c[1])) { var sc = worst(c[0]) + worst(c[1]); if (sc > bestScore) { bestScore = sc; best = c; } } });
+    return best;
+  }
+
   function attachAi(ctx) {
     var s = AIT[ctx.lang], state = ctx.state, history = [], busy = false;
     var box = el("details", { "class": "ktc-sec ktc-ai", open: "" });
@@ -490,6 +508,8 @@
             var best = contrast("#000000", acc) >= contrast("#FFFFFF", acc) ? "#000000" : "#FFFFFF";
             if (contrast(best, acc) >= MIN_TEXT) { state.theme.values["colors.onAccent"] = best; r.done.push("colors.onAccent"); ctx.changed("controls"); }
           }
+          var text = aiReadableText(state.theme);
+          if (text) { state.theme.values["colors.textPrimary"] = text[0]; state.theme.values["colors.textSecondary"] = text[1]; r.done.push("colors.textPrimary", "colors.textSecondary"); ctx.changed("controls"); }
           var note = el("div", { "class": "ktc-ainote" }, esc(s.changed + " " + r.done.map(function (k) { return k === "background" ? ctx.s.background : ctx.label(k); }).join(", ")));
           var undo = el("button", { type: "button", "class": "ktc-link" }, esc(s.undo));
           undo.addEventListener("click", function () { state.theme = before; ctx.changed("controls"); note.remove(); });
