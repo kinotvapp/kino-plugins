@@ -34,6 +34,10 @@
   var MIN_TEXT = 4.5, MIN_UI = 3, MAX_BG_LUM = 0.05;
   var HEX = /^#[0-9A-Fa-f]{6}$/;
   var KINO_BG = "#0E0E0E";
+  /* logo: Draft of the contract's appThemes.logo (contract.json): 1 to 8 paths of at most 2,000 characters on a canvas of at
+   * most 1,000 x 1,000, at most 8 times wider than tall, filled with a token or a #RRGGBB. */
+  var LOGO_FILLS = ["accent", "onAccent", "textPrimary", "textSecondary"], LOGO_MAX = { paths: 8, chars: 2000, canvas: 1000, aspect: 8 };
+  var LOGO_PATH = /^[MmLlHhVvCcSsQqTtAaZz0-9eE.,\s+-]+$/;
 
   /* ---------- texts ---------- */
   var T = {
@@ -50,6 +54,10 @@
       searchHint: "Prueba con un título", recent: "Recientes", openDialog: "Abrir un diálogo", dialogTitle: "¿Quitar de Continuar viendo?",
       dialogBody: "Dejará de aparecer en tu Inicio.", cancel: "Cancelar", remove: "Quitar", soon: "Esta pantalla no se dibuja en la vista previa.",
       watch: "Ver ahora", more: "Más información", clickHome: "Pulsa Inicio en el menú para volver al Inicio.",
+      logo: "Logo e icono", logoHint: "Pídele el logo a la IA («un icono de rayo neón») o pega el JSON del tema: son solo trazos SVG, sin imágenes. El wordmark va en la cabecera y el menú; la marca es el cuadrado del riel del TV; el decor se dibuja encima de la «o» de Kino.",
+      logoEmpty: "Sin logo propio: Kino dibuja el suyo. La IA puede crear uno en SVG.", logoWordmark: "Wordmark (logo largo)", logoMark: "Marca (cuadrado)", logoDecor: "Decor (sobre la «o»)", logoPaths: "trazos", logoBad: "El logo no se aplicó:",
+      previewLogo: "Tu logo en la app", previewLogoEmpty: "El logo que cree la IA aparece aquí y en la cabecera, el menú y el riel del TV.",
+      aiSteps: ["Preparando la petición", "Consultando a la IA", "Leyendo la respuesta", "Revisando los valores", "Actualizando la vista previa"],
       c: {
         "colors.accent": "Acento", "colors.onAccent": "Texto sobre el acento", "colors.background": "Fondo (color)", "colors.surface": "Superficie",
         "colors.surfaceHigh": "Superficie alta", "colors.textPrimary": "Texto principal", "colors.textSecondary": "Texto secundario",
@@ -64,7 +72,7 @@
         "elevation.cardShadow": "Sombra de tarjetas", "elevation.heroScrim": "Velo del destacado", "elevation.dialogShadow": "Sombra de diálogos",
         "motion.focusZoom": "Zoom del foco", "motion.crossfadeMs": "Fundido (ms)", "motion.heroDrift": "Deriva del destacado",
         "player.buttonScale": "Botones", "player.playButtonScale": "Botón de reproducir", "player.seekBarScale": "Barra de avance",
-        "player.labelScale": "Etiquetas", "player.buttonShape": "Forma de los botones"
+        "player.labelScale": "Etiquetas", "player.buttonShape": "Forma de los botones", "logo": "Logo"
       }
     },
     en: {
@@ -80,6 +88,10 @@
       searchHint: "Try a title", recent: "Recent", openDialog: "Open a dialog", dialogTitle: "Remove from Continue watching?",
       dialogBody: "It will stop showing on your Home.", cancel: "Cancel", remove: "Remove", soon: "This screen is not drawn in the preview.",
       watch: "Watch now", more: "More info", clickHome: "Press Home in the menu to go back to Home.",
+      logo: "Logo and icon", logoHint: "Ask the AI for the logo (\"a neon lightning icon\") or paste the theme's JSON: paths are plain SVG, no images. The wordmark goes in the header and the menu; the mark is the square in the TV rail; the decor is drawn over Kino's own \"o\".",
+      logoEmpty: "No logo of your own: Kino draws its own. The AI can draw one in SVG.", logoWordmark: "Wordmark (long logo)", logoMark: "Mark (square)", logoDecor: "Decor (over the \"o\")", logoPaths: "paths", logoBad: "The logo was not applied:",
+      previewLogo: "Your logo in the app", previewLogoEmpty: "The logo the AI draws shows here and in the header, the menu and the TV rail.",
+      aiSteps: ["Preparing the request", "Asking the AI", "Reading the answer", "Checking the values", "Updating the preview"],
       c: {
         "colors.accent": "Accent", "colors.onAccent": "Text on the accent", "colors.background": "Background (color)", "colors.surface": "Surface",
         "colors.surfaceHigh": "Raised surface", "colors.textPrimary": "Primary text", "colors.textSecondary": "Secondary text",
@@ -94,7 +106,7 @@
         "elevation.cardShadow": "Card shadow", "elevation.heroScrim": "Hero scrim", "elevation.dialogShadow": "Dialog shadow",
         "motion.focusZoom": "Focus zoom", "motion.crossfadeMs": "Crossfade (ms)", "motion.heroDrift": "Hero drift",
         "player.buttonScale": "Buttons", "player.playButtonScale": "Play button", "player.seekBarScale": "Seek bar",
-        "player.labelScale": "Labels", "player.buttonShape": "Button shape"
+        "player.labelScale": "Labels", "player.buttonShape": "Button shape", "logo": "Logo"
       }
     }
   };
@@ -107,7 +119,7 @@
   function up(h) { return h.toUpperCase(); }
 
   /* ---------- a theme: { id, nameEs, nameEn, values: { token: value }, background } ---------- */
-  function newTheme() { return { id: "mi-tema", nameEs: "Mi tema", nameEn: "My theme", values: {}, background: null }; }
+  function newTheme() { return { id: "mi-tema", nameEs: "Mi tema", nameEn: "My theme", values: {}, background: null, logo: null }; }
 
   /* Reads the theme's JSON (the appThemes entry, or a whole manifest). Returns { theme } or { error }. */
   function parseTheme(text) {
@@ -132,8 +144,13 @@
     });
     if (o.background && typeof o.background === "object") t.background = o.background;
     else if (typeof o.background === "string") t.background = { type: "solid", colors: [o.background] };
-    if (unknown.length) return { theme: t, unknown: unknown };
-    return { theme: t };
+    var problems = [];
+    if ("logo" in o) {
+      var lc = logoCheck(o.logo);
+      if (lc.logo) t.logo = lc.logo;
+      problems = lc.warnings;
+    }
+    return { theme: t, unknown: unknown, problems: problems };
   }
 
   /* The theme as the plugin's JSON. Only what the theme sets. */
@@ -147,6 +164,7 @@
     if (t.background) out.background = t.background.type === "gradient"
       ? { type: "gradient", colors: t.background.colors, angle: t.background.angle == null ? 180 : t.background.angle }
       : { type: "solid", colors: t.background.colors };
+    if (t.logo) out.logo = JSON.parse(JSON.stringify(t.logo));
     return out;
   }
 
@@ -222,6 +240,86 @@
       if (worst(eff("colors.accent")) < MIN_UI) { reset("colors.accent", "colors.onAccent"); accentKept = false; }
     }
     return { tokens: m, background: bg, warnings: warnings, accentText: accentKept ? m["colors.accent"] : "#FF6B6B" };
+  }
+
+  /* ---------- the logo (contract's appThemes.logo and its limits) ---------- */
+  function logoPaths(list, where) {
+    if (!Array.isArray(list) || list.length < 1 || list.length > LOGO_MAX.paths) return { error: where + ": needs 1 to " + LOGO_MAX.paths + " paths" };
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i];
+      if (!p || typeof p !== "object" || typeof p.d !== "string") return { error: where + ": every path needs a \"d\"" };
+      var d = p.d.trim();
+      if (!d || d.length > LOGO_MAX.chars) return { error: where + ": each \"d\" holds 1 to " + LOGO_MAX.chars + " characters" };
+      if (!LOGO_PATH.test(d)) return { error: where + ": \"d\" only takes SVG path commands (M L H V C S Q T A Z), numbers, spaces, commas and signs" };
+      var fill = p.fill === undefined || p.fill === null ? "accent" : p.fill;
+      if (LOGO_FILLS.indexOf(fill) < 0 && !(typeof fill === "string" && HEX.test(fill))) {
+        return { error: where + ": fill must be " + LOGO_FILLS.join(", ") + " or a #RRGGBB color" };
+      }
+      out.push({ d: d, fill: fill });
+    }
+    return { paths: out };
+  }
+
+  /* The logo as Kino would keep it, with what it would refuse: { logo, warnings }. */
+  function logoCheck(v) {
+    var warnings = [], out = {};
+    if (v === null) return { logo: null, warnings: warnings };
+    if (!v || typeof v !== "object" || Array.isArray(v)) return { logo: null, warnings: ["logo: expects { wordmark?, mark?, decor? }"] };
+    Object.keys(v).forEach(function (k) { if (["wordmark", "mark", "decor"].indexOf(k) < 0) warnings.push("logo." + k + ": unknown token"); });
+    ["wordmark", "mark"].forEach(function (k) {
+      var sh = v[k];
+      if (sh === undefined) return;
+      if (!sh || typeof sh !== "object" || Array.isArray(sh)) { warnings.push("logo." + k + ": expects { size, paths }"); return; }
+      var size = sh.size;
+      if (!Array.isArray(size) || size.length !== 2 || !size.every(function (n) { return typeof n === "number" && isFinite(n) && Math.round(n) === n && n >= 1 && n <= LOGO_MAX.canvas; })) {
+        warnings.push("logo." + k + ": size must be [width, height], whole numbers from 1 to " + LOGO_MAX.canvas); return;
+      }
+      if (Math.max(size[0], size[1]) / Math.min(size[0], size[1]) > LOGO_MAX.aspect) {
+        warnings.push("logo." + k + ": size can be at most " + LOGO_MAX.aspect + " times wider than tall (or the other way round)"); return;
+      }
+      var pc = logoPaths(sh.paths, "logo." + k);
+      if (pc.error) { warnings.push(pc.error); return; }
+      out[k] = { size: [size[0], size[1]], paths: pc.paths };
+    });
+    if (v.decor !== undefined) {
+      if (!v.decor || typeof v.decor !== "object" || Array.isArray(v.decor)) warnings.push("logo.decor: expects { paths }");
+      else {
+        var dc = logoPaths(v.decor.paths, "logo.decor");
+        if (dc.error) warnings.push(dc.error); else out.decor = { paths: dc.paths };
+      }
+    }
+    if (!out.wordmark && !out.mark) { warnings.push("logo: needs a wordmark or a mark"); return { logo: null, warnings: warnings }; }
+    return { logo: out, warnings: warnings };
+  }
+
+  /* A logo path's fill, in the preview's variables so it follows the theme and the person's settings. */
+  function fillCss(f) {
+    if (f === "accent") return "var(--accent)";
+    if (f === "onAccent") return "var(--onAccent)";
+    if (f === "textPrimary") return "var(--t1)";
+    if (f === "textSecondary") return "var(--t2)";
+    return f;
+  }
+  function logoSvg(shape, height, cls) {
+    var w = Math.round(height * shape.size[0] / shape.size[1] * 100) / 100;
+    return '<svg class="ktc-logosvg ' + (cls || "") + '" viewBox="0 0 ' + shape.size[0] + " " + shape.size[1] + '" width="' + w + '" height="' + height + '" aria-hidden="true" focusable="false">' +
+      shape.paths.map(function (p) { return '<path d="' + esc(p.d) + '" fill="' + fillCss(p.fill) + '"/>'; }).join("") + "</svg>";
+  }
+  /* The decor is drawn over Kino's own "o": its centre is the origin, y grows down, the ring's outer radius is 100. */
+  function decorSvg(decor) {
+    return '<svg class="ktc-decor" viewBox="-130 -130 260 260" aria-hidden="true" focusable="false">' +
+      decor.paths.map(function (p) { return '<path d="' + esc(p.d) + '" fill="' + fillCss(p.fill) + '"/>'; }).join("") + "</svg>";
+  }
+  /* Kino's own wordmark, with the theme's decor in the space of the "o" when there is one. */
+  function kinoWordHtml(theme) {
+    var decor = theme.logo && theme.logo.decor ? decorSvg(theme.logo.decor) : "";
+    return "kin<span class=\"ktc-o\">o" + decor + "</span><sup>TV</sup>";
+  }
+  function brandHtml(theme, big) {
+    var lg = theme.logo, cls = "ktc-brand" + (big ? " big" : "");
+    if (lg && lg.wordmark) return '<div class="' + cls + '">' + logoSvg(lg.wordmark, big ? 32 : 21, "ktc-lg") + "</div>";
+    return '<div class="' + cls + '">' + kinoWordHtml(theme) + "</div>";
   }
 
   /* ---------- the preview's CSS variables ---------- */
@@ -314,12 +412,12 @@
     var dialog = '<div class="ktc-scrimlayer ktc-dlg" hidden><div class="ktc-dialog"><h4>' + s.dialogTitle + "</h4><p>" + s.dialogBody + '</p><div class="ktc-btns"><button class="ktc-btn" data-act="closeDlg">' + s.cancel +
       '</button><button class="ktc-btn primary" data-act="closeDlg">' + s.remove + "</button></div></div></div>";
     if (tv) {
-      return '<div class="ktc-screen tv"><nav class="ktc-railnav">' + '<div class="ktc-brand">kino<sup>TV</sup></div>' + nav + '</nav><main class="ktc-main"><header class="ktc-bar tvbar"><span></span><button data-go="search" title="search">' + svg("search") +
+      return '<div class="ktc-screen tv"><nav class="ktc-railnav">' + brandHtml(state.theme) + nav + '</nav><main class="ktc-main"><header class="ktc-bar tvbar"><span></span><button data-go="search" title="search">' + svg("search") +
         '</button><button>' + svg("bell") + '</button><button data-act="openDlg" title="' + s.openDialog + '">' + svg("more") + '</button></header><div class="ktc-scroll">' + body + "</div>" + player + "</main>" + dialog + "</div>";
     }
-    return '<div class="ktc-screen phone"><header class="ktc-bar"><button data-act="openMenu">' + svg("menu") + '</button><div class="ktc-brand">kino<sup>TV</sup></div><span class="grow"></span><button data-go="search">' + svg("search") +
+    return '<div class="ktc-screen phone"><header class="ktc-bar"><button data-act="openMenu">' + svg("menu") + '</button>' + brandHtml(state.theme) + '<span class="grow"></span><button data-go="search">' + svg("search") +
       '</button><button>' + svg("bell") + '</button><button class="ktc-gridbtn">' + svg("grid", 20) + '</button><button data-act="openDlg" title="' + s.openDialog + '">' + svg("more") + '</button></header>' +
-      '<div class="ktc-scroll">' + body + "</div>" + player + '<div class="ktc-scrimlayer ktc-menuwrap" hidden data-act="closeMenu"><aside class="ktc-drawer" data-stop="1"><div class="ktc-brand big">kino<sup>TV</sup></div>' +
+      '<div class="ktc-scroll">' + body + "</div>" + player + '<div class="ktc-scrimlayer ktc-menuwrap" hidden data-act="closeMenu"><aside class="ktc-drawer" data-stop="1">' + brandHtml(state.theme, true) +
       '<div class="ktc-profile"><i>P</i><b>' + s.profile + "</b></div>" + nav + "</aside></div>" + dialog + "</div>";
   }
 
@@ -338,10 +436,10 @@
    * the page validates every value against the contract before it touches the theme. */
   var AI_URL = "https://text.pollinations.ai/openai", AI_MODEL = "openai-fast", AI_TIMEOUT = 60000, AI_TRIES = 3;
   var AIT = {
-    es: { title: "Asistente con IA", hint: "Dime cómo quieres tu tema y lo voy ajustando. Es gratis. Si tu Chrome trae IA integrada, corre en tu equipo; si no, lo que escribas se envía a Pollinations (servicio de IA de terceros).", ph: "Ej.: un tema azul oscuro con esquinas más redondas", send: "Enviar", thinking: "Pensando…", undo: "Deshacer", changed: "Cambié:", unable: "La IA no pudo responder ahora. Inténtalo de nuevo en un momento.", offtopic: "Solo puedo ayudarte con el tema de Kino: colores, formas, letra, sombras y movimiento.", noChange: "No cambié nada.", noApply: "No llegó ningún cambio que pudiera aplicar. Pídelo con otras palabras, por ejemplo «cambia el acento a azul».", skipped: "No apliqué (valor fuera de lo permitido):", you: "Tú", ai: "IA", aiLocal: "IA (Chrome, en tu equipo)", download: "Descargando el modelo de Chrome",
-      chips: ["Un tema azul oscuro elegante", "Esquinas más redondas y sombras suaves", "Un tema claro tipo papel"] },
-    en: { title: "AI assistant", hint: "Tell me how you want your theme and I'll adjust it. It's free. If your Chrome has built-in AI it runs on your device; otherwise what you type is sent to Pollinations (a third-party AI service).", ph: "E.g.: a dark blue theme with rounder corners", send: "Send", thinking: "Thinking…", undo: "Undo", changed: "Changed:", unable: "The AI couldn't answer right now. Try again in a moment.", offtopic: "I can only help with the Kino theme: colors, shapes, type, shadows and motion.", noChange: "I changed nothing.", noApply: "No change came through that I could apply. Ask in other words, for example \"make the accent blue\".", skipped: "Not applied (value outside what's allowed):", you: "You", ai: "AI", aiLocal: "AI (Chrome, on your device)", download: "Downloading Chrome's model",
-      chips: ["An elegant dark blue theme", "Rounder corners and soft shadows", "A light, paper-like theme"] }
+    es: { title: "Asistente con IA", hint: "Dime cómo quieres tu tema y lo voy ajustando, y pídele el logo en SVG. Es gratis. Si tu Chrome trae IA integrada, corre en tu equipo; si no, lo que escribas se envía a Pollinations (servicio de IA de terceros).", ph: "Ej.: un tema azul oscuro con un icono de rayo", send: "Enviar", thinking: "Pensando…", undo: "Deshacer", changed: "Cambié:", unable: "La IA no pudo responder ahora. Inténtalo de nuevo en un momento.", offtopic: "Solo puedo ayudarte con el tema de Kino: colores, formas, letra, sombras, movimiento y el logo.", noChange: "No cambié nada.", skipped: "No apliqué (valor fuera de lo permitido):", you: "Tú", ai: "IA", aiLocal: "IA (Chrome, en tu equipo)", download: "Descargando el modelo de Chrome",
+      chips: ["Un tema azul oscuro elegante", "Un icono de rayo neón para el logo", "Esquinas más redondas y sombras suaves", "Un tema claro tipo papel"] },
+    en: { title: "AI assistant", hint: "Tell me how you want your theme and I'll adjust it, and ask it for the logo in SVG. It's free. If your Chrome has built-in AI it runs on your device; otherwise what you type is sent to Pollinations (a third-party AI service).", ph: "E.g.: a dark blue theme with a lightning icon", send: "Send", thinking: "Thinking…", undo: "Undo", changed: "Changed:", unable: "The AI couldn't answer right now. Try again in a moment.", offtopic: "I can only help with the Kino theme: colors, shapes, type, shadows, motion and the logo.", noChange: "I changed nothing.", skipped: "Not applied (value outside what's allowed):", you: "You", ai: "AI", aiLocal: "AI (Chrome, on your device)", download: "Downloading Chrome's model",
+      chips: ["An elegant dark blue theme", "A neon lightning icon for the logo", "Rounder corners and soft shadows", "A light, paper-like theme"] }
   };
 
   function aiSystemPrompt(lang, theme) {
@@ -356,7 +454,8 @@
       "{\"set\":{\"colors.accent\":\"#2F6BFF\",\"shape.cardRadius\":14},\"remove\":[\"colors.focus\"],\"background\":{\"type\":\"gradient\",\"colors\":[\"#0A1020\",\"#101A33\"],\"angle\":160}}. " +
       "\"remove\" puts a token back to Kino's value; \"background\": null removes the custom background. Colors are #RRGGBB, numbers must stay inside their range. " +
       "Design with taste: for a whole-theme request (a mood, a style, a color scheme) set a full coherent palette in one go: accent, onAccent, background (or the background object), surface, surfaceHigh, outline, railPanel, textPrimary and textSecondary, plus shapes when it fits; for a small request change only that. Never repeat a default value: invent new ones that give the theme its own character. The app is dark by default. " +
-      "Keep text readable: textPrimary and textSecondary need strong contrast on the background and surface, and onAccent must be readable on the accent (at least 4.5:1: use #000000 or #FFFFFF, whichever contrasts more with the accent). A light theme must also set textPrimary and textSecondary to dark colors.\n" +
+      "Keep text readable: textPrimary and textSecondary need strong contrast on the background and surface, and onAccent must be readable on the accent. A light theme must also set textPrimary and textSecondary to dark colors.\n" +
+      "LOGO: the theme has its own vector logo, and that is its icon. The shape is \"logo\":{\"wordmark\":{\"size\":[120,30],\"paths\":[{\"d\":\"M0 0L26 15L0 30Z\",\"fill\":\"accent\"}]},\"mark\":{\"size\":[30,30],\"paths\":[{\"d\":\"M15 0L30 15L15 30L0 15Z\",\"fill\":\"accent\"}]},\"decor\":{\"paths\":[{\"d\":\"M-100 -100h200v40h-200Z\",\"fill\":\"accent\"}]}}; \"logo\": null removes it. \"wordmark\" is the long logo (phone header and menu, the TV's open rail); \"mark\" is the square one (the TV's collapsed rail). Draw both when asked for a logo. \"size\" is [width, height]: whole numbers 1 to 1000, at most 8 times wider than tall, and the art lives inside 0..width and 0..height. 1 to 8 paths per shape, each \"d\" of at most 2000 characters with only SVG path commands (M L H V C S Q T A Z, upper or lower case), numbers, commas, spaces and signs, closed with Z: no transforms, no <svg>, no CSS, no <text>, NO strokes (there is no stroke property, fill only). \"fill\" is accent, onAccent, textPrimary, textSecondary or #RRGGBB. \"decor\" is drawn OVER Kino's own logo in the space of its \"o\": origin at its centre, y grows down, the ring's outer radius is 100 (a hat above the \"o\" is y < -100). Draw simple, bold, geometric art that still reads at 24 px; the mark must be square and centred. When the user asks for an icon, a logo or a mark, answer with logo in the JSON; otherwise leave logo out.\n" +
       "The tokens:\n" + lines + "\nbackground is separate from colors.background: type solid (1 color) or gradient (2 to 8 colors, angle 0 to 360).\n" +
       "The theme right now (only what is set; empty means Kino's defaults):\n" + JSON.stringify(themeJson(theme));
   }
@@ -379,12 +478,6 @@
     return once(0);
   }
 
-  /* The small on-device model does not reliably write a fenced block after its words, so it is made to answer with one JSON object
-   * (the Prompt API's responseConstraint) that carries the words too. */
-  var AI_SCHEMA = { type: "object", properties: { say: { type: "string" }, set: { type: "object" }, remove: { type: "array", items: { type: "string" } }, background: { type: "object" }, clearBackground: { type: "boolean" } }, required: ["say", "set"] };
-  var AI_LOCAL_FORMAT = "\nOUTPUT FORMAT (overrides the format above): answer with ONLY one JSON object, no code fences: {\"say\": \"one short sentence\", \"set\": {token: value, ...}, \"remove\": [tokens], \"background\": {type, colors, angle}, \"clearBackground\": false}. " +
-    "\"set\" must hold every change (for a whole-theme request, at least 8 colors); \"say\" is only words and never claims a change that \"set\" does not contain.";
-
   /* Chrome's built-in model (Gemini Nano, the Prompt API): free, runs on the visitor's computer, no allowance to run out. Used first when
    * this browser has it; null when it doesn't (or it fails), and then the online service answers. */
   function aiAskLocal(messages, lang, onStatus) {
@@ -393,10 +486,10 @@
     return LanguageModel.availability(opts).then(function (a) {
       if (!a || a === "unavailable" || a === "no") return null;
       if (a !== "available" && a !== "readily") onStatus();
-      var sys = { role: "system", content: messages[0].content + AI_LOCAL_FORMAT }, rest = messages.slice(1), last = rest.pop();
+      var sys = messages[0], rest = messages.slice(1), last = rest.pop();
       var create = Object.assign({ initialPrompts: [sys].concat(rest), monitor: function (m) { m.addEventListener("downloadprogress", function (e) { onStatus(Math.round((e.loaded || 0) * 100)); }); } }, opts);
       return LanguageModel.create(create).then(function (session) {
-        return session.prompt(last.content, { responseConstraint: AI_SCHEMA }).then(function (t) { try { session.destroy(); } catch (e) { void e; } return t && t.trim() ? t.trim() : null; }, function () { try { session.destroy(); } catch (e) { void e; } return null; });
+        return session.prompt(last.content).then(function (t) { try { session.destroy(); } catch (e) { void e; } return t && t.trim() ? t.trim() : null; }, function () { try { session.destroy(); } catch (e) { void e; } return null; });
       });
     }).catch(function () { return null; });
   }
@@ -411,9 +504,6 @@
 
   /* Splits the model's answer into the words to show and the changes to apply. */
   function aiParse(text) {
-    var whole = null;
-    try { whole = JSON.parse(text); } catch (e) { whole = null; }
-    if (whole && typeof whole === "object" && !Array.isArray(whole) && ("set" in whole || "say" in whole)) return { say: typeof whole.say === "string" ? whole.say : "", changes: whole };
     var m = /```(?:json)?\s*([\s\S]*?)```/i.exec(text), changes = null, say = text;
     if (m) { say = text.replace(m[0], "").trim(); try { changes = JSON.parse(m[1]); } catch (e) { changes = null; } }
     return { say: say, changes: changes };
@@ -426,8 +516,9 @@
     var set = ch.set && typeof ch.set === "object" ? ch.set : {};
     /* A model sometimes puts the background object inside "set": take it from there. */
     if ("background" in set && !("background" in ch)) ch = Object.assign({}, ch, { background: set.background });
+    if ("logo" in set && !("logo" in ch)) ch = Object.assign({}, ch, { logo: set.logo });
     Object.keys(set).forEach(function (k) {
-      if (k === "background") return;
+      if (k === "background" || k === "logo") return;
       var v = set[k];
       if (!(k in KINO)) { skipped.push(k); return; }
       if (k in RANGES) { if (typeof v !== "number" || !isFinite(v) || v < RANGES[k][0] || v > RANGES[k][1]) { skipped.push(k); return; } v = Math.round(v * 1000) / 1000; }
@@ -437,9 +528,7 @@
       theme.values[k] = v; done.push(k);
     });
     (Array.isArray(ch.remove) ? ch.remove : []).forEach(function (k) { if (k in theme.values) { delete theme.values[k]; done.push(k); } });
-    if (ch.clearBackground === true && !("background" in ch && ch.background && typeof ch.background === "object" && Object.keys(ch.background).length)) {
-      if (theme.background) { theme.background = null; done.push("background"); }
-    } else if ("background" in ch && !(ch.background && typeof ch.background === "object" && !Object.keys(ch.background).length)) {
+    if ("background" in ch) {
       var b = ch.background;
       if (b === null) { if (theme.background) { theme.background = null; done.push("background"); } }
       else if (b && typeof b === "object" && Array.isArray(b.colors) && b.colors.length >= 1 && b.colors.length <= 8 && b.colors.every(function (c) { return typeof c === "string" && HEX.test(c); })) {
@@ -448,26 +537,36 @@
         done.push("background");
       } else skipped.push("background");
     }
+    /* The theme's own vector logo: the AI draws the wordmark, the mark and, if it wants, the decor over Kino's "o". */
+    if ("logo" in ch) {
+      if (ch.logo === null) { if (theme.logo) { theme.logo = null; done.push("logo"); } }
+      else {
+        var lc = logoCheck(ch.logo);
+        if (lc.logo) { theme.logo = lc.logo; done.push("logo"); if (lc.warnings.length) skipped.push(lc.warnings[0]); }
+        else skipped.push(lc.warnings[0] || "logo");
+      }
+    }
     return { done: done, skipped: skipped };
   }
 
-  /* Kino drops the text colours (and then the surfaces and the background) when the text cannot be read on them. After the AI changes a
-   * theme, pick the dark or the light text pair that reads on the background and both surfaces, and set it; null when it already reads. */
-  function aiReadableText(theme) {
-    var v = theme.values, b = theme.background;
-    var stops = b && b.colors && b.colors.length ? b.colors.filter(function (c) { return HEX.test(c); }) : [];
-    if (!stops.length) stops = [HEX.test(v["colors.background"]) ? v["colors.background"] : KINO_BG];
-    var surf = [HEX.test(v["colors.surface"]) ? v["colors.surface"] : KINO["colors.surface"], HEX.test(v["colors.surfaceHigh"]) ? v["colors.surfaceHigh"] : KINO["colors.surfaceHigh"]];
-    var all = stops.concat(surf);
-    function worst(c) { return Math.min.apply(null, all.map(function (x) { return contrast(c, x); })); }
-    function reads(p, q) { return HEX.test(p) && HEX.test(q) && worst(p) >= MIN_TEXT && worst(q) >= MIN_TEXT; }
-    var cur = [v["colors.textPrimary"] || KINO["colors.textPrimary"], v["colors.textSecondary"] || KINO["colors.textSecondary"]];
-    if (reads(cur[0], cur[1])) return null;
-    var sets = [["#111111", "#3F3F3F"], ["#F5F5F5", "#B3B3B3"], ["#000000", "#2B2B2B"], ["#FFFFFF", "#D0D0D0"]];
-    var best = null, bestScore = 0;
-    sets.forEach(function (c) { if (reads(c[0], c[1])) { var sc = worst(c[0]) + worst(c[1]); if (sc > bestScore) { bestScore = sc; best = c; } } });
-    return best;
+  /* The steps under the AI's answer: the one it is on right now, the ones it already did. */
+  function aiSteps(names) {
+    var box = el("ol", { "class": "ktc-steps" });
+    box.innerHTML = names.map(function (n) { return "<li><i></i><span>" + esc(n) + "</span></li>"; }).join("");
+    var items = Array.prototype.slice.call(box.querySelectorAll("li"));
+    function paint(index, flag) {
+      items.forEach(function (li, j) { li.className = j < index ? "done" : j === index ? (flag || "on") : ""; });
+    }
+    return {
+      box: box,
+      at: function (i) { paint(i, "on"); },
+      done: function () { paint(items.length, "on"); },
+      fail: function (i) { paint(i, "bad"); },
+      note: function (i, text) { var sp = items[i].querySelector("span"); if (sp && text) sp.textContent = names[i] + " · " + text; }
+    };
   }
+  /* Lets the browser paint a step before the next one starts: without it the four last steps happen in the same frame. */
+  function breathe(ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); }
 
   function attachAi(ctx) {
     var s = AIT[ctx.lang], state = ctx.state, history = [], busy = false;
@@ -480,49 +579,284 @@
 
     function bubble(who, text) {
       var d = el("div", { "class": "ktc-aimsg " + who }); d.appendChild(el("b", null, esc(who === "me" ? s.you : s.ai))); d.appendChild(el("span", null, esc(text)));
-      if (text === s.thinking) d.classList.add("loading");
       log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
     }
+    function end() { busy = false; sendBtn.disabled = false; log.scrollTop = log.scrollHeight; }
     function send(text) {
       text = (text || "").trim();
       if (!text || busy) return;
-      busy = true; sendBtn.disabled = true; input.disabled = true; input.value = "";
+      busy = true; sendBtn.disabled = true; input.value = "";
       bubble("me", text);
-      var wait = bubble("ai", s.thinking), before = JSON.parse(JSON.stringify(state.theme));
+      var before = JSON.parse(JSON.stringify(state.theme));
+      var wait = bubble("ai", ""), span = wait.querySelector("span");
+      var steps = aiSteps(ctx.s.aiSteps);
+      wait.insertBefore(steps.box, span);
       history.push({ role: "user", content: text });
       var messages = [{ role: "system", content: aiSystemPrompt(ctx.lang, state.theme) }].concat(history.slice(-8));
-      aiAsk(messages, ctx.lang, function (pct) { wait.querySelector("span").textContent = pct == null ? s.thinking : s.download + " " + pct + "%"; }).then(function (res) {
-        var raw = res && res.text;
-        busy = false; sendBtn.disabled = false; input.disabled = false; wait.classList.remove("loading");
-        if (!raw) { history.pop(); wait.querySelector("span").textContent = s.unable; return; }
-        if (raw.replace(/^\s+/, "").indexOf("[[OFFTOPIC]]") === 0) { history.pop(); wait.querySelector("span").textContent = s.offtopic; return; }
-        var p = aiParse(raw), r = aiApply(state.theme, p.changes), span = wait.querySelector("span");
-        history.push({ role: "assistant", content: raw });
-        wait.querySelector("b").textContent = res.local ? s.aiLocal : s.ai;
+      steps.at(0);
+      breathe(80).then(function () {
+        steps.at(1);
+        return aiAsk(messages, ctx.lang, function (pct) { if (pct != null) steps.note(1, s.download + " " + pct + "%"); });
+      }).then(function (res) {
+        if (res && res.local) steps.note(1, s.aiLocal);
+        steps.at(2);
+        return breathe(80).then(function () { return { res: res, raw: res && res.text }; });
+      }).then(function (r) {
+        if (!r.raw) { history.pop(); steps.fail(1); span.textContent = s.unable; end(); return null; }
+        if (String(r.raw).replace(/^\s+/, "").indexOf("[[OFFTOPIC]]") === 0) { history.pop(); steps.fail(1); span.textContent = s.offtopic; end(); return null; }
+        steps.at(3);
+        return breathe(80).then(function () {
+          var p = aiParse(r.raw), applied = aiApply(state.theme, p.changes);
+          steps.at(4);
+          return breathe(80).then(function () { return { p: p, a: applied, res: r.res, raw: r.raw }; });
+        });
+      }).then(function (x) {
+        if (!x) return;
+        var p = x.p, r = x.a;
+        history.push({ role: "assistant", content: x.raw });
+        wait.querySelector("b").textContent = x.res.local ? s.aiLocal : s.ai;
         span.textContent = p.say || (r.done.length ? "" : s.noChange);
         if (r.done.length) {
           ctx.changed("controls");
-          /* Kino drops an accent whose text colour cannot be read on it: pick black or white, whichever reads better. */
-          var acc = state.theme.values["colors.accent"];
-          if (acc && ctx.warnings().some(function (w) { return w.indexOf("colors.onAccent") === 0; })) {
-            var best = contrast("#000000", acc) >= contrast("#FFFFFF", acc) ? "#000000" : "#FFFFFF";
-            if (contrast(best, acc) >= MIN_TEXT) { state.theme.values["colors.onAccent"] = best; r.done.push("colors.onAccent"); ctx.changed("controls"); }
-          }
-          var text = aiReadableText(state.theme);
-          if (text) { state.theme.values["colors.textPrimary"] = text[0]; state.theme.values["colors.textSecondary"] = text[1]; r.done.push("colors.textPrimary", "colors.textSecondary"); ctx.changed("controls"); }
           var note = el("div", { "class": "ktc-ainote" }, esc(s.changed + " " + r.done.map(function (k) { return k === "background" ? ctx.s.background : ctx.label(k); }).join(", ")));
           var undo = el("button", { type: "button", "class": "ktc-link" }, esc(s.undo));
           undo.addEventListener("click", function () { state.theme = before; ctx.changed("controls"); note.remove(); });
           note.appendChild(undo); wait.appendChild(note);
         }
-        if (!r.done.length && !r.skipped.length) wait.appendChild(el("div", { "class": "ktc-ainote warn" }, esc(s.noApply)));
         if (r.skipped.length) wait.appendChild(el("div", { "class": "ktc-ainote warn" }, esc(s.skipped + " " + r.skipped.join(", "))));
-        log.scrollTop = log.scrollHeight;
-      });
+        steps.done();
+        end();
+      }).catch(function () { steps.fail(1); span.textContent = s.unable; end(); });
     }
     sendBtn.addEventListener("click", function () { send(input.value); });
     input.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input.value); } });
     box.addEventListener("click", function (e) { var c = e.target.closest("[data-chip]"); if (c) send(c.textContent); });
+    return box;
+  }
+
+  /* ---------- publishing to GitHub ----------
+   * The browser talks straight to api.github.com (it sends CORS headers): it creates the plugin's repository, writes
+   * kino-plugin.json, plugin.js and the .gitignore, and puts the `kino-plugin` topic Kino's "De la comunidad" list looks
+   * for. Signing in uses GitHub's device flow through a small proxy (the page below explains how to set it up): the person
+   * types a code on github.com, so no client secret lives in this page and no token passes through a server of ours. */
+  var GH_API = "https://api.github.com", GH_SESSION = "ktc-gh-token";
+
+  var GHT = {
+    es: {
+      title: "Publicar en GitHub",
+      hint: "Crea el repositorio del plugin y sube kino-plugin.json, plugin.js y el .gitignore sin salir de esta página. Tu cuenta y tu token no pasan por ningún servidor nuestro: el navegador habla directo con GitHub.",
+      login: "Entrar con GitHub", loginOff: "La entrada con GitHub no está configurada en esta página. Pega un token con el permiso public_repo, o configura el OAuth como explica «Publicar desde el creador», más abajo.",
+      token: "…o pega un token de GitHub", tokenPh: "ghp_… o github_pat_…", tokenGo: "Usar el token", tokenNote: "Se guarda solo en esta pestaña y se borra al cerrarla.",
+      connected: "Conectado como", out: "Salir", code: "Código", open: "Abrir github.com/login/device", waiting: "Esperando que lo autorices…",
+      authErr: "No se pudo entrar con GitHub", expired: "El código caducó: vuelve a intentarlo.",
+      repo: "Repositorio", desc: "Descripción (la tarjeta en Kino)", descPh: "Una línea que diga qué es tu tema",
+      topic: "Poner el topic kino-plugin (aparecer en Kino)", topicNote: "Kino solo encuentra plugins en repositorios públicos, sin fork y con el topic kino-plugin.",
+      publish: "Crear el repositorio y publicar", again: "Publicar otra vez (actualiza los archivos)",
+      steps: ["Crear el repositorio", "Subir kino-plugin.json", "Subir plugin.js", "Subir .gitignore", "Poner el topic kino-plugin"],
+      needAuth: "Primero entra con GitHub.", needName: "Ponle un nombre al repositorio.", bad: "GitHub respondió",
+      existed: "El repositorio ya existía: actualicé sus archivos.", ready: "Listo. En Kino: Ajustes ▸ Plugins ▸ + y escribe",
+      openRepo: "Abrir el repositorio", noTopic: "Sin el topic solo se puede instalar escribiendo usuario/repositorio."
+    },
+    en: {
+      title: "Publish to GitHub",
+      hint: "Creates the plugin's repository and uploads kino-plugin.json, plugin.js and the .gitignore without leaving this page. Your account and your token never pass through a server of ours: the browser talks straight to GitHub.",
+      login: "Sign in with GitHub", loginOff: "Signing in with GitHub is not configured on this page. Paste a token with the public_repo scope, or set the OAuth up the way \"Publishing from the creator\" explains below.",
+      token: "…or paste a GitHub token", tokenPh: "ghp_… or github_pat_…", tokenGo: "Use the token", tokenNote: "It is kept in this tab only and wiped when you close it.",
+      connected: "Signed in as", out: "Sign out", code: "Code", open: "Open github.com/login/device", waiting: "Waiting for you to authorize it…",
+      authErr: "Could not sign in with GitHub", expired: "The code expired: try again.",
+      repo: "Repository", desc: "Description (the card in Kino)", descPh: "One line saying what your theme is",
+      topic: "Add the kino-plugin topic (show up in Kino)", topicNote: "Kino only finds plugins in public, non-fork repositories with the kino-plugin topic.",
+      publish: "Create the repository and publish", again: "Publish again (updates the files)",
+      steps: ["Create the repository", "Upload kino-plugin.json", "Upload plugin.js", "Upload .gitignore", "Add the kino-plugin topic"],
+      needAuth: "Sign in with GitHub first.", needName: "Give the repository a name.", bad: "GitHub answered",
+      existed: "The repository already existed: I updated its files.", ready: "Done. In Kino: Settings ▸ Plugins ▸ + and type",
+      openRepo: "Open the repository", noTopic: "Without the topic it can only be installed by typing owner/repo."
+    }
+  };
+
+  function ghStored(value) {
+    try {
+      if (value === undefined) return sessionStorage.getItem(GH_SESSION) || "";
+      if (value === null) sessionStorage.removeItem(GH_SESSION); else sessionStorage.setItem(GH_SESSION, value);
+    } catch (e) { void e; }
+    return value || "";
+  }
+  /* The Contents API takes the file as base64 of its UTF-8 bytes. */
+  function b64(text) {
+    var bytes = new TextEncoder().encode(text), bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  /* One GitHub REST call. Returns { ok, status, body }. */
+  function ghCall(path, opts, token) {
+    var headers = { "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    if (token) headers.Authorization = "Bearer " + token;
+    var init = { method: (opts && opts.method) || "GET", headers: headers };
+    if (opts && opts.body !== undefined) { headers["Content-Type"] = "application/json"; init.body = JSON.stringify(opts.body); }
+    return fetch(GH_API + path, init).then(function (res) {
+      return res.text().then(function (text) {
+        var body = null;
+        try { body = text ? JSON.parse(text) : null; } catch (e) { body = null; }
+        return { ok: res.ok, status: res.status, body: body };
+      });
+    });
+  }
+
+  function attachGithub(ctx) {
+    var s = ctx.ght, state = ctx.state, cfg = ctx.cfg || {}, token = "", login = "", busy = false;
+    var box = el("details", { "class": "ktc-sec ktc-gh" });
+    box.innerHTML = "<summary>" + esc(s.title) + '</summary><p class="ktc-aihint">' + esc(s.hint) + '</p><div class="ktc-ghauth"></div>' +
+      '<div class="ktc-ghbody" hidden><div class="ktc-ghform"><label>' + esc(s.repo) + ' <input data-repo type="text" maxlength="100" spellcheck="false"></label>' +
+      '<label>' + esc(s.desc) + ' <input data-desc type="text" maxlength="300" placeholder="' + esc(s.descPh) + '"></label>' +
+      '<label class="ktc-ghcheck"><input type="checkbox" data-topic checked> ' + esc(s.topic) + "</label></div>" +
+      '<p class="ktc-ghnote">' + esc(s.topicNote) + "</p>" +
+      '<button type="button" class="ktc-aisend" data-publish disabled>' + esc(s.publish) + '</button><div class="ktc-ghout"></div></div>';
+    if (ctx.after && ctx.after.parentNode === ctx.right) ctx.right.insertBefore(box, ctx.after.nextSibling);
+    else ctx.right.insertBefore(box, ctx.right.firstChild);
+
+    var authBox = box.querySelector(".ktc-ghauth"), bodyBox = box.querySelector(".ktc-ghbody"),
+      repoIn = box.querySelector("[data-repo]"), descIn = box.querySelector("[data-desc]"),
+      topicIn = box.querySelector("[data-topic]"), publishBtn = box.querySelector("[data-publish]"),
+      out = box.querySelector(".ktc-ghout");
+
+    function errText(res) { return s.bad + " " + res.status + (res.body && res.body.message ? ": " + res.body.message : ""); }
+    function themeDesc() {
+      var name = ctx.lang === "en" ? (state.theme.nameEn || state.theme.nameEs) : (state.theme.nameEs || state.theme.nameEn);
+      return name + (ctx.lang === "en" ? " — an app theme for Kino" : " — un tema para Kino");
+    }
+    function tokenInput() {
+      return '<div class="ktc-ghtoken"><input type="password" data-token placeholder="' + esc(s.tokenPh) + '" autocomplete="off"><button type="button" class="ktc-link" data-usetoken>' + esc(s.tokenGo) + "</button></div>" +
+        '<p class="ktc-aihint">' + esc(s.token) + ". " + esc(s.tokenNote) + "</p>";
+    }
+    function renderAuth() {
+      authBox.innerHTML = (cfg.proxy ? '<button type="button" class="ktc-ghlogin">' + esc(s.login) + '</button><div class="ktc-ghcode"></div>'
+        : '<p class="ktc-ainote">' + esc(s.loginOff) + "</p>") + tokenInput();
+    }
+    function applyLogin() {
+      authBox.innerHTML = '<div class="ktc-ghwho"><span>' + esc(s.connected) + " <b>@" + esc(login) + '</b></span><button type="button" class="ktc-link" data-out>' + esc(s.out) + "</button></div>";
+      bodyBox.hidden = false;
+      publishBtn.disabled = false;
+      if (!repoIn.value) repoIn.value = "kino-theme-" + (state.theme.id || "mi-tema");
+      if (!descIn.value) descIn.value = themeDesc();
+    }
+    function signOut() { token = ""; login = ""; ghStored(null); bodyBox.hidden = true; renderAuth(); }
+
+    function signIn(value) {
+      value = (value || "").trim();
+      if (!value) return;
+      token = value; ghStored(value);
+      ghCall("/user", null, token).then(function (res) {
+        if (!res.ok) { var why = errText(res); signOut(); authBox.insertAdjacentHTML("beforeend", '<p class="ktc-ainote warn">' + esc(s.authErr + ": " + why) + "</p>"); return; }
+        login = res.body.login; applyLogin();
+      }).catch(function () { signOut(); authBox.insertAdjacentHTML("beforeend", '<p class="ktc-ainote warn">' + esc(s.authErr) + "</p>"); });
+    }
+
+    /* GitHub's device flow: the proxy asks GitHub for a code (github.com's own endpoints send no CORS headers, so the
+     * browser cannot call them), the person types it on github.com, and the proxy trades it for a token. */
+    function deviceStart() {
+      var codeBox = authBox.querySelector(".ktc-ghcode");
+      codeBox.innerHTML = '<p class="ktc-ainote">' + esc(s.waiting) + "</p>";
+      fetch(String(cfg.proxy).replace(/\/+$/, "") + "/device", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j || !j.device_code) throw new Error((j && (j.error_description || j.error)) || "device");
+          codeBox.innerHTML = '<div class="ktc-ghdevice"><div><small>' + esc(s.code) + '</small><b class="ktc-ghuser">' + esc(j.user_code) + "</b></div><a href=\"" +
+            esc(j.verification_uri || "https://github.com/login/device") + '" target="_blank" rel="noopener">' + esc(s.open) + '</a></div><p class="ktc-ainote">' + esc(s.waiting) + "</p>";
+          poll(j, codeBox);
+        }).catch(function (e) { codeBox.innerHTML = '<p class="ktc-ainote warn">' + esc(s.authErr + ": " + e.message) + "</p>"; });
+    }
+    function poll(j, codeBox) {
+      var every = Math.max(5, j.interval || 5), tries = Math.ceil((j.expires_in || 900) / every), n = 0;
+      function next() {
+        if (n++ > tries) { codeBox.innerHTML = '<p class="ktc-ainote warn">' + esc(s.expired) + "</p>"; return; }
+        setTimeout(function () {
+          fetch(String(cfg.proxy).replace(/\/+$/, "") + "/token", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ device_code: j.device_code }) })
+            .then(function (r) { return r.json(); })
+            .then(function (t) {
+              if (t && t.access_token) { codeBox.innerHTML = ""; signIn(t.access_token); return; }
+              if (t && (t.error === "authorization_pending" || t.error === "slow_down")) { if (t.error === "slow_down") every += 5; next(); return; }
+              codeBox.innerHTML = '<p class="ktc-ainote warn">' + esc(s.authErr + ": " + ((t && (t.error_description || t.error)) || "")) + "</p>";
+            }).catch(function () { next(); });
+        }, every * 1000);
+      }
+      next();
+    }
+
+    /* Writes one file, updating it (with its sha) when the repository already has it. */
+    function ghPut(owner, repo, path, text) {
+      return ghCall("/repos/" + owner + "/" + repo + "/contents/" + path, null, token).then(function (g) {
+        var body = { message: "Update " + path + " from the Kino theme creator", content: b64(text) };
+        if (g.ok && g.body && g.body.sha) body.sha = g.body.sha;
+        return ghCall("/repos/" + owner + "/" + repo + "/contents/" + path, { method: "PUT", body: body }, token);
+      }).then(function (p) { if (!p.ok) throw new Error(errText(p)); return p; });
+    }
+
+    function publish() {
+      if (!token) { out.textContent = s.needAuth; return; }
+      if (busy) return;
+      var repo = repoIn.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "-").replace(/^[-.]+/, "");
+      if (!repo) { out.textContent = s.needName; return; }
+      busy = true; publishBtn.disabled = true;
+      out.innerHTML = "";
+      var steps = aiSteps(s.steps), cur = 0, owner = login, existed = false, desc = descIn.value.trim() || themeDesc();
+      out.appendChild(steps.box);
+      function go(i) { cur = i; steps.at(i); }
+      go(0);
+      ghCall("/repos/" + owner + "/" + repo, null, token).then(function (res) {
+        if (res.ok) { existed = true; return ghCall("/repos/" + owner + "/" + repo, { method: "PATCH", body: { description: desc } }, token); }
+        if (res.status !== 404) throw new Error(errText(res));
+        return ghCall("/user/repos", { method: "POST", body: { name: repo, description: desc, private: false, auto_init: true, has_issues: true } }, token).then(function (c) {
+          if (!c.ok) throw new Error(errText(c));
+        });
+      }).then(function () {
+        go(1);
+        return ghPut(owner, repo, "kino-plugin.json", JSON.stringify(manifest(state.theme), null, 2) + "\n");
+      }).then(function () {
+        go(2);
+        return ghPut(owner, repo, "plugin.js", "export {};\n");
+      }).then(function () {
+        go(3);
+        return ghPut(owner, repo, ".gitignore", ".kino-storage.json\n.kino-cookies.json\n.kino-secrets.json\nsdk/config.json\n");
+      }).then(function () {
+        if (!topicIn.checked) return null;
+        go(4);
+        return ghCall("/repos/" + owner + "/" + repo + "/topics", null, token).then(function (t) {
+          var names = t.ok && t.body && Array.isArray(t.body.names) ? t.body.names.slice() : [];
+          if (names.indexOf("kino-plugin") < 0) names.push("kino-plugin");
+          return ghCall("/repos/" + owner + "/" + repo + "/topics", { method: "PUT", body: { names: names } }, token).then(function (p) {
+            if (!p.ok) throw new Error(errText(p));
+          });
+        });
+      }).then(function () {
+        steps.done();
+        var full = owner + "/" + repo;
+        /* The steps stay above the result, as the trace of what happened. */
+        out.insertAdjacentHTML("beforeend", '<div class="ktc-ghok">' + esc(s.ready) + " <code>" + esc(full) + '</code>. <a href="https://github.com/' + esc(full) + '" target="_blank" rel="noopener">' + esc(s.openRepo) + "</a></div>" +
+          (existed ? '<div class="ktc-ainote">' + esc(s.existed) + "</div>" : "") +
+          (topicIn.checked ? "" : '<div class="ktc-ainote warn">' + esc(s.noTopic) + "</div>"));
+        publishBtn.textContent = s.again;
+      }).catch(function (e) {
+        steps.fail(cur);
+        out.appendChild(el("div", { "class": "ktc-ainote warn" }, esc(e && e.message ? e.message : String(e))));
+      }).then(function () { busy = false; publishBtn.disabled = false; });
+    }
+
+    authBox.addEventListener("click", function (e) {
+      var go_ = e.target.closest("[data-usetoken]"), gh = e.target.closest(".ktc-ghlogin"), outBtn = e.target.closest("[data-out]");
+      if (go_) { var input = authBox.querySelector("[data-token]"); signIn(input && input.value); }
+      else if (gh) deviceStart();
+      else if (outBtn) signOut();
+    });
+    authBox.addEventListener("keydown", function (e) {
+      var input = e.target.closest("[data-token]");
+      if (input && e.key === "Enter") { e.preventDefault(); signIn(input.value); }
+    });
+    publishBtn.addEventListener("click", publish);
+
+    renderAuth();
+    var saved = ghStored();
+    if (saved) signIn(saved);
+    return box;
   }
 
   function mount(root) {
@@ -546,7 +880,9 @@
     var nameIn = top.querySelector("[data-name]"), idIn = top.querySelector("[data-id]");
 
     var frame = el("div", { "class": "ktc-frame phone" });
-    left.appendChild(frame);
+    var leftCol = el("div", { "class": "ktc-leftcol" });
+    var strip = el("div", { "class": "ktc-logostrip" });
+    leftCol.appendChild(frame); leftCol.appendChild(strip); left.appendChild(leftCol);
 
     /* the control rows */
     var rows = {};
@@ -566,7 +902,7 @@
       }
       if (w.indexOf("colors.onAccent: isn't readable") === 0) {
         var a = v["colors.accent"] || KINO["colors.accent"], o = v["colors.onAccent"] || KINO["colors.onAccent"];
-        return "Texto sobre el acento: " + up(o) + " sobre " + up(a) + " contrasta " + contrast(o, a).toFixed(1) + ":1 y Kino pide al menos 4.5:1. " + (contrast("#000000", a) >= contrast("#FFFFFF", a) ? "Con negro daría " + contrast("#000000", a).toFixed(1) : "Con blanco daría " + contrast("#FFFFFF", a).toFixed(1)) + ":1. Hoy la app usaría su acento y su texto en su lugar (la vista previa sí muestra el tuyo).";
+        return "Texto sobre el acento: " + up(o) + " sobre " + up(a) + " contrasta " + contrast(o, a).toFixed(1) + ":1 y Kino pide al menos 4.5:1. Prueba blanco o negro; hoy la app usaría su acento y su texto en su lugar (la vista previa sí muestra el tuyo).";
       }
       return w;
     }
@@ -622,6 +958,31 @@
       '<label class="ktc-angle">' + s.angle + ' <input type="range" min="0" max="360" step="5" data-angle><code data-angv></code></label>';
     secBg.appendChild(bgBox);
     var stopsBox = bgBox.querySelector(".ktc-stops");
+
+    /* the logo: it is drawn by the AI or pasted in the JSON, and here it can be removed */
+    var secLogo = section(s.logo);
+    var logoBox = el("div", { "class": "ktc-logoedit" });
+    logoBox.innerHTML = '<p class="ktc-aihint">' + esc(s.logoHint) + '</p><div class="ktc-logorows"></div>';
+    secLogo.appendChild(logoBox);
+    var logoRows = logoBox.querySelector(".ktc-logorows");
+    function renderLogoRows() {
+      var lg = state.theme.logo;
+      logoRows.innerHTML = "";
+      if (!lg) { logoRows.appendChild(el("p", { "class": "ktc-logonone" }, esc(s.logoEmpty))); return; }
+      [["wordmark", s.logoWordmark], ["mark", s.logoMark], ["decor", s.logoDecor]].forEach(function (it) {
+        var sh = lg[it[0]];
+        if (!sh) return;
+        var row = el("div", { "class": "ktc-row-l" });
+        var info = it[0] === "decor" ? sh.paths.length + " " + s.logoPaths : sh.size[0] + "×" + sh.size[1] + " · " + sh.paths.length + " " + s.logoPaths;
+        row.innerHTML = '<span class="n">' + esc(it[1]) + "</span><code>" + esc(info) + '</code><button type="button" class="x" title="' + esc(s.reset) + '">×</button>';
+        row.querySelector(".x").addEventListener("click", function () {
+          delete lg[it[0]];
+          if (!lg.wordmark && !lg.mark) state.theme.logo = null;
+          changed("controls");
+        });
+        logoRows.appendChild(row);
+      });
+    }
 
     var secShape = section(s.shape);
     ["shape.cardRadius", "shape.channelRadius", "shape.buttonRadius", "shape.chipRadius", "shape.dialogRadius", "shape.inputRadius"].forEach(function (k) { rangeRow(secShape, k); });
@@ -685,7 +1046,26 @@
     function applyVars() {
       lastRes = resolve(state.theme);
       var vars = cssVars(resolve(state.theme, true));
-      Object.keys(vars).forEach(function (k) { frame.style.setProperty(k, vars[k]); });
+      /* On the whole creator, so the frame and the logo strip under it share the theme's colours. */
+      Object.keys(vars).forEach(function (k) { root.style.setProperty(k, vars[k]); });
+    }
+    /* The logo and the icon, the way Kino would draw them: the wordmark in the header and the menu, the mark in the TV's
+     * square, and the decor over Kino's own "o". */
+    /* The frame is a full mock: rebuilding it on every colour would lose the menu and the scroll, so only the logo
+     * (the header, the side menu and the TV rail) is swapped when the theme gets one. */
+    function updateBrands() {
+      frame.querySelectorAll(".ktc-brand").forEach(function (b) {
+        b.outerHTML = brandHtml(state.theme, b.classList.contains("big"));
+      });
+    }
+    function renderLogoStrip() {
+      var lg = state.theme.logo;
+      if (!lg) { strip.innerHTML = '<p class="ktc-logonone">' + esc(s.previewLogoEmpty) + "</p>"; return; }
+      var tiles = [];
+      if (lg.wordmark) tiles.push('<div class="ktc-logotile"><div class="ktc-logobox">' + logoSvg(lg.wordmark, 24) + "</div><span>" + esc(s.logoWordmark) + "</span></div>");
+      if (lg.mark) tiles.push('<div class="ktc-logotile"><div class="ktc-logobox sq">' + logoSvg(lg.mark, 32) + "</div><span>" + esc(s.logoMark) + "</span></div>");
+      if (lg.decor) tiles.push('<div class="ktc-logotile"><div class="ktc-logobox"><span class="ktc-brand ktc-kw">' + kinoWordHtml(state.theme) + "</span></div><span>" + esc(s.logoDecor) + "</span></div>");
+      strip.innerHTML = "<h4>" + esc(s.previewLogo) + '</h4><div class="ktc-logorow">' + tiles.join("") + "</div>";
     }
     function syncControls() {
       var res = lastRes, t = state.theme;
@@ -721,6 +1101,7 @@
       bgBox.querySelector("[data-angv]").textContent = (b.angle == null ? 180 : b.angle) + "°";
       bgBox.querySelector(".ktc-angle").hidden = b.type !== "gradient";
       renderStops();
+      renderLogoRows();
       nameIn.value = lang === "en" ? t.nameEn : t.nameEs;
       idIn.value = t.id;
     }
@@ -736,6 +1117,8 @@
       if (source !== "json") { area.value = currentText(); errBox.hidden = true; }
       syncControls();
       renderWarnings();
+      renderLogoStrip();
+      updateBrands();
     }
 
     /* ---------- events ---------- */
@@ -744,7 +1127,8 @@
       if (r.error) { errBox.hidden = false; errBox.textContent = s.jsonError + " " + r.error; return; }
       var keepName = state.theme;
       state.theme = r.theme;
-      if (r.unknown && r.unknown.length) { errBox.hidden = false; errBox.textContent = r.unknown.map(function (u) { return u + ": " + s.unknownToken; }).join("; "); }
+      var notes = (r.unknown || []).map(function (u) { return u + ": " + s.unknownToken; }).concat(r.problems || []);
+      if (notes.length) { errBox.hidden = false; errBox.textContent = notes.join("; "); }
       else errBox.hidden = true;
       void keepName;
       changed("json");
@@ -786,7 +1170,9 @@
 
     renderFrame();
     changed("controls");
-    attachAi({ right: right, state: state, changed: changed, lang: lang, s: s, label: labelFor, warnings: function () { return lastRes.warnings; } });
+    var aiBox = attachAi({ right: right, state: state, changed: changed, lang: lang, s: s, label: labelFor });
+    /* The OAuth proxy (github-oauth-worker/): without it configured the panel still takes a personal token. */
+    attachGithub({ right: right, after: aiBox, state: state, lang: lang, ght: GHT[lang], cfg: { proxy: (root.getAttribute("data-gh-proxy") || "").trim() } });
     void jsonEditing;
   }
 
