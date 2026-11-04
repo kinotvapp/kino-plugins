@@ -158,6 +158,7 @@ Lo que quiero:
 - Una tienda (una fuente de plugins para la tienda de Kino, apiVersion 15): <<< no / sí: local (una lista que entrega en segundo plano, desde GitHub, mi servidor o un archivo JSON estático) o en vivo (también responde mientras la persona navega: storeList y storeSearch, así que lo que busque llega a mi servidor), los hosts que usa y los plugins que lista >>>
 - Identidad o avisos (apiVersion 15): <<< no / sí: quién necesita el seudónimo de Telegram de la persona (solo responde a plugins firmados con la llave de autor de Kino) y qué avisos dejar en la campanita de Inicio >>>
 - Otros plugins (el protocolo entre plugins, apiVersion 20, Kino 0.9.81): <<< no / usa la puerta de otro plugin: su repositorio y su puerta (p. ej. kinotvapp/kino-plugin-tmdb, "movies") / abre una puerta: qué podrían pedirle otros plugins >>>
+- Archivos del aparato de la persona (apiVersion 21, Kino 0.9.82): <<< no / sí: de qué tipo (libros, música, videos, imágenes, subtítulos), un archivo o una carpeta entera, y si solo los lee o los reproduce >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 

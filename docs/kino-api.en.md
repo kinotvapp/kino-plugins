@@ -14,6 +14,7 @@ kino.ws            // apiVersion 13 (Kino 0.9.74), capability "socket": outbound
 kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLite catalog of your items; absent otherwise
 kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
+kino.files         // apiVersion 21 (Kino 0.9.82), capability "files": files on the person's device (pick, read, url); absent otherwise
 ```
 
 `kino.apiVersion` reports 13 on Kino 0.9.74 and 11 on Kino 0.9.71 to 0.9.73.
@@ -636,6 +637,15 @@ to 4,096 characters) or `null` when the person closes it. `{ title?, titleEn? }`
 settings `action`, a `panelAction` or a `screenEvent` that follows the person's tap or submit (apiVersion 14; `not_allowed` from anything else); `unavailable` on a TV or without a camera;
 `busy`, `timeout` (120 s), `permission_denied`, `invalid_request`. Showing a QR needs no capability: the settings form's
 `qr` type. See [QR codes](qr.md) for the rules, the errors and a two-device login recipe.
+
+## `kino.files` (apiVersion 21, Kino 0.9.82) { #files }
+
+With the `files` capability: files that are on the person's device. `pick({ kinds?, multiple?, copy? })` and
+`pickFolder({ kinds? })` open the picker (only from a press of the person's; `not_allowed` from anything else) and answer opaque
+handles, never an address; `list`, `folders`, `info`, `read`, `readText` (at most 2,000,000 bytes a call), `forget` and `url`
+(`kino-file:<id>`, for a stream's or an audio track's `url`) need no press. Errors: `unavailable`, `not_allowed`, `busy`,
+`timeout`, `invalid_request`, `gone`, `too_large`, `denied`, `quota`. Nothing is uploaded or sent. The full guide, with every rule
+and limit: [Files on the device](files.md).
 
 ## `kino.screen` (apiVersion 14, Kino 0.9.74) { #screen }
 

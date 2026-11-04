@@ -14,6 +14,7 @@ kino.ws            // apiVersion 13 (Kino 0.9.74), capability "socket": outbound
 kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLite catalog of your items; absent otherwise
 kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
+kino.files         // apiVersion 21 (Kino 0.9.82), capability "files": files on the person's device (pick, read, url); absent otherwise
 ```
 
 `kino.apiVersion` responde 13 en Kino 0.9.74 y 11 en Kino 0.9.71 a 0.9.73.
@@ -681,6 +682,15 @@ caracteres cada uno. Solo desde un ajuste `action`, un `panelAction` o un `scree
 `unavailable` en una TV o sin cámara; `busy`, `timeout` (120 s), `permission_denied`, `invalid_request`. Mostrar un QR no
 necesita capacidad: el tipo `qr` del formulario de ajustes. Mira [Códigos QR](qr.md) para las reglas, los errores y una
 receta de inicio de sesión entre dos aparatos.
+
+## `kino.files` (apiVersion 21, Kino 0.9.82) { #files }
+
+Con la capacidad `files`: archivos que están en el aparato de la persona. `pick({ kinds?, multiple?, copy? })` y
+`pickFolder({ kinds? })` abren el selector (solo desde una pulsación de la persona; `not_allowed` desde cualquier otra cosa) y
+responden handles opacos, nunca una dirección; `list`, `folders`, `info`, `read`, `readText` (como máximo 2.000.000 bytes por
+llamada), `forget` y `url` (`kino-file:<id>`, para el `url` de un stream o de una pista de audio) no necesitan pulsación.
+Errores: `unavailable`, `not_allowed`, `busy`, `timeout`, `invalid_request`, `gone`, `too_large`, `denied`, `quota`. Nada se
+sube ni se envía. La guía completa, con cada regla y límite: [Archivos del aparato](files.md).
 
 ## `kino.screen` (apiVersion 14, Kino 0.9.74) { #screen }
 

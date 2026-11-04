@@ -153,6 +153,7 @@ What I want:
 - A store (a source of plugins for Kino's store, apiVersion 15): <<< no / yes: local (a list it hands over in the background, from GitHub, my server or a static JSON file) or live (also answers while the person browses: storeList and storeSearch, so what they search reaches my server), the hosts it uses, and the plugins it lists >>>
 - Identity or notices (apiVersion 15): <<< no / yes: who needs the person's Telegram pseudonym (only plugins signed with Kino's author key get an answer) and what notices to leave in the Home bell >>>
 - Other plugins (the plugin protocol, apiVersion 20, Kino 0.9.81): <<< no / it uses the door of another plugin: its repository and door (e.g. kinotvapp/kino-plugin-tmdb, "movies") / it opens a door: what other plugins could ask it >>>
+- Files on the person's device (apiVersion 21, Kino 0.9.82): <<< no / yes: what kinds (books, music, videos, pictures, subtitles), one file or a whole folder, and whether it only reads them or plays them >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 

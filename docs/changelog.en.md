@@ -3,6 +3,19 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.82: files on the device, swipe and theme borders { #v0982 }
+
+- **Files on the device (`apiVersion` 21).** The `files` capability and `kino.files`: the person picks files or a folder, the
+  plugin gets opaque handles, reads them by ranges or plays them with `kino-file:<id>`. It uploads nothing. [Files on the device](files.md).
+- **Swipe.** `onSwipeLeft` and `onSwipeRight` on any node (no new `apiVersion`; an older Kino ignores them); on the TV they answer
+  Right and Left once focus has nowhere further to go. [Swipe](screen-components.md#swipe-actions).
+- **`data:` images.** An `Image` accepts `data:image/png|jpeg|webp|gif;base64,…` of up to 200,000 characters (a book's cover read
+  from its file). An older Kino draws the `fallback`. [Image](screen-components.md#image).
+- **Bars and heroes.** `AppBar` and `TabBar` take `divider: false`; `heroCard` takes `logo` (https) and `h` (height); `dense`
+  tightens the bar on a TV too (8 dp); the TV's tabs are text with a line under the picked one.
+- **App themes.** Optional borders (`colors.border` and `shape.dialogBorder`, `menuBorder`, `headerBorder`, `cardBorder`,
+  `panelBorder`), `logo.decor` and light backgrounds when the theme brings its own readable text. [App themes](themes.md).
+
 ## Kino 0.9.81: one compact bar and reader blocks for screens { #screens-reader }
 
 !!! note "No new `apiVersion`"

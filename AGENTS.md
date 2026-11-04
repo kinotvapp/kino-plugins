@@ -17,26 +17,27 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 
 | Line | Section |
 | --- | --- |
-| 79 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
-| 112 | [1. Read first, in this order](#1-read-first-in-this-order) |
-| 197 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
-| 300 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
-| 413 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
-| 416 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
-| 481 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
-| 652 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
-| 688 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
-| 807 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
-| 870 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
-| 1095 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
-| 1193 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1277 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
-| 1456 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1551 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1580 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1603 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1717 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1770 | [7. Common mistakes](#7-common-mistakes) |
+| 83 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
+| 116 | [1. Read first, in this order](#1-read-first-in-this-order) |
+| 201 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
+| 304 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
+| 417 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
+| 419 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
+| 485 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
+| 657 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
+| 693 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
+| 815 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
+| 878 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
+| 1103 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
+| 1201 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
+| 1286 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
+| 1465 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1560 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1589 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
+| 1614 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1637 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1751 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 1804 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -69,11 +70,14 @@ the `share` and `enableJob` answers and `go.search` with `"scope": "all"`. apiVe
 as well) adds **app themes**: `appThemes` in the manifest
 (whole-app looks as data, optionally sold for kinos), and the `go.useTheme` and `go.setExperience` screen actions with
 `activeTheme` (section 4, "apiVersion 18: app themes"). apiVersion 19 (Kino 0.9.81 too) adds the `lyrics` capability and
-`go.installPlugin`; apiVersion 20 (Kino 0.9.81; the maximum today) adds the **plugin
+`go.installPlugin`; apiVersion 20 (Kino 0.9.81) adds the **plugin
 protocol**: a plugin opens named doors in `provides` and another uses them through Kino with `consumes` and
 `kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"), and `kino.visualBrowser`, **a web window the person
 drives** to sign in or finish a step (manifest `"visualBrowser": true`; section 4, "apiVersion 20: a browser window the person
-drives"). See
+drives"). apiVersion 21 (Kino 0.9.82; the maximum today) adds the `files` capability: **files on the
+person's device**, picked by the person (`kino.files`; section 4, "apiVersion 21: files on the device"). Kino 0.9.82 also adds,
+with no new apiVersion, `onSwipeLeft`/`onSwipeRight`, `data:` images, `divider: false` on `AppBar`/`TabBar`, `logo`/`h` on
+`heroCard` and optional borders in app themes. See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
 
 ## 0. The plugin's UI: screens first
@@ -337,7 +341,7 @@ exact message Kino shows, never a summary.
    with `signing: "request"`), `panel` (by `"panel"`, apiVersion 9; `panelAction` and `playerEvent` are optional); `categories` (needs `browse`) and `validateSettings` are optional.
    `syncProvider` (apiVersion 12) requires `syncPull` and `syncPush` (`syncStatus` optional), each taking one
    object argument (`null` for `syncStatus`). `byteSource` (apiVersion 13) requires `read` and `imageSource`
-   (apiVersion 13) requires `image`; `socket`, `storageLarge`, `catalog` and `qrScan` are declarative.
+   (apiVersion 13) requires `image`; `socket`, `storageLarge`, `catalog`, `qrScan` and `files` (apiVersion 21) are declarative.
    Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
@@ -501,6 +505,7 @@ offline). Never write a synchronous infinite loop: it cannot be interrupted.
 | `kino.catalog` (apiVersion 13, Kino 0.9.74) | 100,000 items and a 64 MiB file; `id` 1..128, `title` 300, `data` 4,096 bytes of JSON; 500 per `upsert`/`get`/`remove`; `search` `limit` ≤ 100, `offset` ≤ 1,000,000, `q` ≤ 256 |
 | `storageLarge` (apiVersion 13, Kino 0.9.74) | 16 MB total, 2 MB per value, 1,000 keys of ≤ 256 chars; device-only, never synced, not in backups |
 | `kino.qr.scan` / `qr` setting (apiVersion 13, Kino 0.9.74) | only from a settings `action` or `panelAction`, phone only; 120 s; `title` ≤ 80; scanned text ≤ 4,096; a `qr` setting's text ≤ 512, `refreshMs` 2,000..60,000 |
+| `kino.files` (apiVersion 21, Kino 0.9.82) | `pick`/`pickFolder` only from a settings `action`, `panelAction` or a `screenEvent` that follows a tap or submit (else `not_allowed`); 180 s; `read`/`readText` ≤ 2,000,000 bytes a call; 500 handles, 20 folders, 5,000 files read from a folder, 50 in one pick; `copy: true` ≤ 64 MB a file and 1 GB in all |
 | `image` (`imageSource`, apiVersion 13, Kino 0.9.74) | 10 s; base64 JPEG/PNG/WebP ≤ 262,144 bytes decoded; `handle` 1..512; one call at a time per plugin, never while a byte stream of yours plays |
 | Log message | 2,000 characters; for a plugin with `"telemetry"` (apiVersion 6; no other plugin sends lines), a failed call's last 30 lines (300 chars each, scrubbed, 2 KB) go with the error report: log steps and statuses, never what the person typed, a secret or a setting value |
 | Return value | 2,000,000 characters of JSON |
@@ -723,6 +728,9 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
 - **A search box** in three lines: `{ type: "TextField", key: "q", kind: "search", labelText: "Buscar", labelTextEn: "Search",
   onSubmitted: "search" }`; `screenEvent({ name: "search", value })` gets the typed text in `value`; in the kit
   `node sdk/run.mjs . screenEvent search "" '"tomate"' --trigger submit` (the value is JSON).
+- **Swipe** (Kino 0.9.82, no new apiVersion; an older Kino ignores it): any node takes `onSwipeLeft` (the next page) and
+  `onSwipeRight` (the previous one), one action each, like `onTap`; at least 64 dp of drag. On a TV they answer Right and Left only
+  once focus has nowhere further to go that way, so keep buttons for the same step (<https://kinotvapp.github.io/kino-plugins/en/screen-components/#swipe-actions>).
 - **State lives in Kino**, not in your variables (the runtime closes when idle): an answer's `state` patch merges key by key
   (`null` removes), then `screen()` runs again. `state.inputs.<key>` holds every input's value; answer
   `{ state: { inputs: { key: value } } }` to set a field (no event fires). 64 KB, this opening only: keep what must survive in
@@ -730,18 +738,18 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
 - **Widgets** (Flutter-style names are the documented spelling; the older lowercase names in brackets are still accepted):
   layout `Column` (col), `Row` (row; `wrap: true` makes a 12-column row with `span`/`offset`), `Stack` (box; children may be
   `positioned`), `Card`, `Spacer`/`SizedBox`, `Divider`, `SingleChildScrollView` (scroll; `zoom: true` and `onScroll` for a reader), `GridView` (grid, ≤ 8 `columns`),
-  `ListView` (list), `TabBar` (tabs), `ExpansionTile` (accordion), `steps` (≤ 12 steps), `Scaffold` (`appBar`, `body`,
+  `ListView` (list), `TabBar` (tabs; `divider: false` drops the line under them), `ExpansionTile` (accordion), `steps` (≤ 12 steps), `Scaffold` (`appBar`, `body`,
   `floatingActionButton`, `bottomNavigationBar`, `onBack` (apiVersion 19: Back is sent to you instead of leaving); ≤ 4 app-bar
-  actions, 2..5 nav items), `AppBar` (`mergeWithKinoBar: true` + `dense: true` on every screen, see the next bullet), `NavigationBar`, `PageView`
+  actions, 2..5 nav items), `AppBar` (`mergeWithKinoBar: true` + `dense: true` on every screen, see the next bullet; `divider: false` drops the hairline at its lower edge), `NavigationBar`, `PageView`
   (pageView, ≤ 24 pages, a carousel with dots, `autoPlayMs` 3,000..60,000), `pages` (apiVersion 17: 2..8 full-screen pages under
   Kino's progress bar, `key` required, the index in `state.inputs.<key>`; `reverse: true` for right to left, `progress`
   `segments`/`bar`/`none`, up to 250 pages with `bar` or `none`), `ListTile` (listTile); content `Text` (styles
   `hero` (apiVersion 17, 72 sp), `h1`..`h5`, `p`, `caption`, `label`; `time` + `timeFormat` `relative`/`clock`/`countdown`),
-  `Image` (`aspect` `16:9`/`2:3`/`1:1`/`banner` or any `w:h`; `fit` `cover`/`contain`/`width`; `focus` `top`/`center`/`bottom`), `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
+  `Image` (`aspect` `16:9`/`2:3`/`1:1`/`banner` or any `w:h`; `fit` `cover`/`contain`/`width`; `focus` `top`/`center`/`bottom`; the `url` may be `data:image/png|jpeg|webp|gif;base64,…` of ≤ 200,000 characters, never svg, an older Kino draws the `fallback`), `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
   radius 12..64), `MaterialBanner` (banner), `LinearProgressIndicator` (progress), `CircularProgressIndicator` (loading),
   `Skeleton` (`line`, `block`, `circle`, `card`; ≤ 6 lines), `QrImage` (qr, ≤ 1,000 characters), `DataTable` (table, `TableRow`
   /`TableCell`: ≤ 20 columns, 200 rows, `colSpan` ≤ 8), `emptyState`, `errorState`; Kino's own title cards `titleCard`,
-  `titleRail`, `titleGrid`, `heroCard` (≤ 2 buttons); actions `ElevatedButton`/`TextButton`/`IconButton`/`Button`,
+  `titleRail`, `titleGrid`, `heroCard` (≤ 2 buttons; `logo` an https picture drawn where the title is; `h` its height); actions `ElevatedButton`/`TextButton`/`IconButton`/`Button`,
   `FloatingActionButton` (fab, 1 per screen), `Chips`; forms `Form`, `TextField` (textInput; `multiline`/`maxLines` > 1 makes a
   textArea; `obscureText` for a secret; `kind` `text`/`number`/`email`/`url`/`search`), `DropdownButton`, `RadioGroup`,
   `Checkbox`, `Switch`, `Slider`, `NumberStepper` (≤ 6 decimals), and the `settings` node (your manifest settings drawn and
@@ -1206,12 +1214,13 @@ no network, no capability, no consent line (turning a theme on is the person's c
   release; `name` `{ es, en }` (one missing takes the other) or one string, ≤ 40 characters. Every token is optional: what is
   missing stays Kino's. A format error (an unknown field or token, a wrong type, a bad or repeated id, more than 8 themes,
   `background.image`) **refuses the manifest**; a value out of range **only drops that token**, with a warning.
-- **Tokens (39)** and ranges (`contract.json` `manifest.appThemes`):
+- **Tokens (45)** and ranges (`contract.json` `manifest.appThemes`):
   `colors.` `accent` (Kino's `#E50914`), `onAccent` (`#FFFFFF`), `background` (`#0E0E0E`), `surface` (`#181818`),
   `surfaceHigh` (`#242424`), `textPrimary` (`#F5F5F5`), `textSecondary` (`#B3B3B3`), `focus` (`#FFFFFF`), `onFocus`
   (`#000000`), `outline`, `railPanel`, `placeholderTop`, `placeholderBottom`, `success`, `warning`, `error`, `favorite`,
-  `scrim`, all `#RRGGBB`; `shape.` `cardRadius`, `channelRadius`, `buttonRadius`, `chipRadius`, `dialogRadius`, `inputRadius`
-  0..32; `typography.` `scale`, `titleScale`, `bodyScale` 0.85..1.3; `elevation.` `cardShadow` 0..1, `heroScrim` 0.3..1,
+  `scrim` and (Kino 0.9.82) `border`, all `#RRGGBB`; `shape.` `cardRadius`, `channelRadius`, `buttonRadius`, `chipRadius`, `dialogRadius`, `inputRadius`
+  0..32; (Kino 0.9.82) `dialogBorder`, `menuBorder`, `headerBorder`, `cardBorder`, `panelBorder` 0..4 dp, drawn in `colors.border`
+  (`outline` when absent; Kino has no borders by default: dialogs and sheets, menus, headers' lower edge, cards, panels); `typography.` `scale`, `titleScale`, `bodyScale` 0.85..1.3; `elevation.` `cardShadow` 0..1, `heroScrim` 0.3..1,
   `dialogShadow` 0..1; `motion.` `focusZoom` 1..1.15, `crossfadeMs` 0..800, `heroDrift` `"on"`/`"off"`; `player.` `buttonScale`
   0.8..1.4, `playButtonScale` 0.8..1.6, `seekBarScale` 0.8..2, `labelScale` 0.85..1.3, `buttonShape`
   `"circle"`/`"rounded"`/`"square"`. `background` is `{ type: "solid", colors: [one] }` or `{ type: "gradient", colors: [2..8],
@@ -1577,6 +1586,31 @@ the "Vincular cuenta" recipe: <https://kinotvapp.github.io/kino-plugins/en/visua
 - **Test**: the Node kit has no window; `validate.mjs` checks the key and prints a note, and `kino.visualBrowser.open` answers
   `unavailable` unless a test of yours gives `createKino` a `visualBrowser` option. Try the real window on a phone or a TV.
 
+<a id="files"></a>
+**apiVersion 21: files on the device (`files`, Kino 0.9.82).** A plugin that reads books, plays music or shows videos the
+person already keeps on the device declares `"apiVersion": 21` and `"capabilities": [..., "files"]` (declarative: nothing to
+export; a plain consent line; it may stand alone, and an enhancement may add it). The person picks a file or a folder with the
+system picker; the plugin gets an opaque **handle** (`{ id, name, size, mime, kind, copied, addedAt, folder? }`), never an
+address. Nothing is uploaded or sent by this capability. Full page: <https://kinotvapp.github.io/kino-plugins/en/files/>.
+
+- **Calls.** `kino.files.pick({ kinds?, multiple?, copy? })` (handles, `[]` on cancel; `kinds` from `video`, `audio`, `book`,
+  `image`, `subtitle`, `other`), `pickFolder({ kinds? })`, `list({ folder?, kinds? })`, `folders()`, `info(id)`,
+  `read(id, { start?, end? })` (a `Uint8Array`, ≤ 2,000,000 bytes a call: read a big file by parts), `readText(id, range)`,
+  `forget(id)` and `url(id)`, which returns `kino-file:<id>` for a stream's or an audio track's `url` (the player plays the file;
+  the host rules do not apply; it cannot be cast to a Chromecast or DLNA by address).
+- **A press.** `pick` and `pickFolder` only run from a settings `action`, a `panelAction` or a `screenEvent` that follows the
+  person's own tap or submit (the rule of `kino.qr.scan`); anywhere else (`open`, a timer, Home, `playerEvent`) they reject with
+  `not_allowed`. Everything else needs no press.
+- **`copy: true`** copies the bytes into the plugin's own store (≤ 64 MB a file, 1 GB in all); the default keeps a reference that
+  stops working when the person moves or deletes the file.
+- **Errors** (`err.code`): `unavailable`, `not_allowed`, `busy`, `timeout` (the picker closes at 3 minutes), `invalid_request`,
+  `gone` (moved, deleted or the grant lost: say so in a line and offer to pick again, no error screen), `too_large`, `denied`
+  (not your handle), `quota`. Limits: 500 handles, 20 folders, 5,000 files from a folder, 50 in one pick.
+- **Not synced.** A handle means nothing on another device: sync what you save *about* a file (reading place, play position)
+  under its name and size, not under the handle. To draw a cover, read the bytes and give an `Image` a `data:image/png;base64,…`.
+- **Kit.** `kino.files` in `sdk/run.mjs` answers from the folder named by `KINO_FILES_DIR` (default `./.kino-files`): `pick`
+  hands out the files that are there, in name order.
+
 <a id="player-panel"></a>
 **The player panel (apiVersion 9, Kino 0.9.55).** `"panel": { "label", "labelEn?", "icon" | "iconFile" }` adds a
 button in the player, only while a title of the plugin plays, and requires exporting `panel(context)`; optional
@@ -1623,7 +1657,7 @@ people. See
       13 only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a `qr` setting:
       Kino 0.9.74+; 14 only for screens and their capabilities (Kino 0.9.74+); 15 only for `identity`, `notifications`
       or `pluginStore` (Kino 0.9.77+); 16 only for `coins` (Kino 0.9.78+); 17 and 18 only for what section 2 lists for them:
-      Kino 0.9.81+).
+      Kino 0.9.81+; 21 only for `files`: Kino 0.9.82+).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`

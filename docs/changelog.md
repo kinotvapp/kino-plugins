@@ -3,6 +3,19 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Kino 0.9.82: archivos del aparato, deslizar y bordes de temas { #v0982 }
+
+- **Archivos del aparato (`apiVersion` 21).** La capacidad `files` y `kino.files`: la persona elige archivos o una carpeta, el
+  plugin recibe handles opacos, los lee por rangos o los reproduce con `kino-file:<id>`. No sube nada. [Archivos del aparato](files.md).
+- **Deslizar.** `onSwipeLeft` y `onSwipeRight` en cualquier nodo (sin `apiVersion` nuevo; un Kino anterior los ignora); en la TV
+  responden a Derecha e Izquierda cuando el foco no tiene más a dónde ir. [Deslizar](screen-components.md#swipe-actions).
+- **Imágenes `data:`.** Una `Image` acepta `data:image/png|jpeg|webp|gif;base64,…` de hasta 200.000 caracteres (la portada de un
+  libro leída de su archivo). Un Kino anterior dibuja el `fallback`. [Image](screen-components.md#image).
+- **Barras y héroes.** `AppBar` y `TabBar` aceptan `divider: false`; `heroCard` acepta `logo` (https) y `h` (alto); `dense` también
+  aprieta la barra en la TV (8 dp); las pestañas de la TV son texto con una línea bajo la elegida.
+- **Temas de la app.** Bordes opcionales (`colors.border` y `shape.dialogBorder`, `menuBorder`, `headerBorder`, `cardBorder`,
+  `panelBorder`), `logo.decor` y fondos claros cuando el tema trae su propio texto legible. [Temas de la app](themes.md).
+
 ## Kino 0.9.81: una sola barra compacta y bloques de lector para las pantallas { #screens-reader }
 
 !!! note "Sin `apiVersion` nuevo"
