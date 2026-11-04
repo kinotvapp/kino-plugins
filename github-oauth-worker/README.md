@@ -57,6 +57,9 @@ Put that URL in the `data-gh-proxy` attribute of the creator's container, in bot
 - `docs/theme-creator.md`
 - `docs/theme-creator.en.md`
 
+The pages in this repository already use the deployed Worker:
+`https://kino-theme-creator-oauth.juanpry2345tjlfm.workers.dev`.
+
 Until that attribute is set, the panel hides “Sign in with GitHub” and explains how to configure it. It always
 accepts a personal access token with the `public_repo` scope as a fallback, so publishing works with no proxy at
 all.

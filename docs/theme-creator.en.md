@@ -9,7 +9,7 @@ underneath, in the kit's own words.
 Press the three-line menu to open the side menu and **Home** to go back to Home. With **TV** you see the side rail and the focus.
 You can also type or paste the JSON below: the controls follow what you write.
 
-<div id="kino-theme-creator" data-lang="en" data-gh-proxy=""><noscript>The creator needs JavaScript.</noscript></div>
+<div id="kino-theme-creator" data-lang="en" data-gh-proxy="https://kino-theme-creator-oauth.juanpry2345tjlfm.workers.dev"><noscript>The creator needs JavaScript.</noscript></div>
 
 ## The logo and the AI assistant { #logo-ai }
 
@@ -42,11 +42,18 @@ through a server of this site):
 - **A token**: a personal access token with the `public_repo` scope, pasted into the field. It is kept in that tab only and wiped
   when you close it. It always works, even with nothing configured.
 
-### Setting it up in your copy of the site { #github-setup }
+### How it is set up { #github-setup }
 
 Signing in with GitHub needs a small proxy, because `github.com/login/*` sends no CORS headers and a static page cannot keep a
-client secret. It lives in
-[`github-oauth-worker/`](https://github.com/kinotvapp/kino-plugins/tree/main/github-oauth-worker) and deploys to Cloudflare Workers:
+client secret. It is a single-file Cloudflare Worker in
+[`github-oauth-worker/`](https://github.com/kinotvapp/kino-plugins/tree/main/github-oauth-worker), already deployed and used by this
+page: `https://kino-theme-creator-oauth.juanpry2345tjlfm.workers.dev`.
+
+It carries the Client ID, the `public_repo` scope and `https://kinotvapp.github.io` as its only allowed origin, so it has no
+variables or secrets to configure. Open its URL and it answers `{"ok":true}`; it takes `POST /device` and `POST /token`, and it
+answers 403 to any other origin.
+
+**If you make your own copy of the site**, you need your own OAuth App and your own Worker:
 
 1. GitHub → **Settings** → **Developer settings** → **OAuth Apps** → **New OAuth App**:
     - **Homepage URL**: `https://kinotvapp.github.io/kino-plugins/`
@@ -54,11 +61,12 @@ client secret. It lives in
       so it is unused; the form asks for it anyway).
     - On the app's page, tick **Enable device flow**. Without it GitHub answers `device_flow_disabled`.
     - Copy the **Client ID**. This flow needs no secret.
-2. Deploy `github-oauth-worker/`. The Client ID, the scope and the allowed origin are already inside `worker.mjs`, so there is
-   nothing to configure: paste the file into a Worker in the Cloudflare dashboard (Workers & Pages → **Create** → **Worker**
-   → **Edit code** → **Deploy**), or deploy the folder with `npx wrangler deploy`. Open the Worker's URL in another tab: if it
-   answers `{"ok":true}` it is alive. To test on your local preview, add its origin to `ALLOWED_ORIGINS` in that same file.
-3. Paste the Worker's URL into the creator container's `data-gh-proxy` attribute, in this page and in the Spanish one:
+2. Deploy `github-oauth-worker/`. Your Client ID, the scope and the allowed origin go inside `worker.mjs`, so there is nothing to
+   configure: paste the file into a Worker in the Cloudflare dashboard (Workers & Pages → **Create** → **Worker** → **Edit
+   code** → **Deploy**), or deploy the folder with `npx wrangler deploy`. Open the Worker's URL in another tab: if it answers
+   `{"ok":true}` it is alive.
+3. Paste your Worker's URL into the creator container's `data-gh-proxy` attribute, in this page and in the Spanish one, and add
+   your site's origin to `ALLOWED_ORIGINS` in `worker.mjs`:
 
     ```html
     <div id="kino-theme-creator" data-lang="en" data-gh-proxy="https://kino-theme-creator-oauth.YOUR-ACCOUNT.workers.dev">…</div>
