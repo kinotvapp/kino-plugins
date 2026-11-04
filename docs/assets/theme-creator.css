@@ -179,3 +179,7 @@
 .ktc-aiform textarea { flex: 1; font: inherit; font-size: .72rem; padding: .35rem .5rem; border: 1px solid var(--md-default-fg-color--lighter); border-radius: .3rem; background: transparent; color: inherit; resize: vertical; min-height: 2.6rem; }
 .ktc-aisend { background: var(--md-accent-fg-color); color: var(--md-accent-bg-color, #fff); border: 0; border-radius: .3rem; padding: 0 .8rem; font-size: .72rem; }
 .ktc-aisend:disabled { opacity: .5; cursor: wait; }
+
+.ktc-aimsg.loading span::after { content: ""; display: inline-block; width: .7em; height: .7em; margin-left: .45em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -.1em; animation: ktcspin .8s linear infinite; }
+@keyframes ktcspin { to { transform: rotate(360deg); } }
+.ktc-aiform textarea:disabled { opacity: .6; }

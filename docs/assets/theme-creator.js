@@ -356,7 +356,7 @@
       "{\"set\":{\"colors.accent\":\"#2F6BFF\",\"shape.cardRadius\":14},\"remove\":[\"colors.focus\"],\"background\":{\"type\":\"gradient\",\"colors\":[\"#0A1020\",\"#101A33\"],\"angle\":160}}. " +
       "\"remove\" puts a token back to Kino's value; \"background\": null removes the custom background. Colors are #RRGGBB, numbers must stay inside their range. " +
       "Design with taste: for a whole-theme request (a mood, a style, a color scheme) set a full coherent palette in one go: accent, onAccent, background (or the background object), surface, surfaceHigh, outline, railPanel, textPrimary and textSecondary, plus shapes when it fits; for a small request change only that. Never repeat a default value: invent new ones that give the theme its own character. The app is dark by default. " +
-      "Keep text readable: textPrimary and textSecondary need strong contrast on the background and surface, and onAccent must be readable on the accent. A light theme must also set textPrimary and textSecondary to dark colors.\n" +
+      "Keep text readable: textPrimary and textSecondary need strong contrast on the background and surface, and onAccent must be readable on the accent (at least 4.5:1: use #000000 or #FFFFFF, whichever contrasts more with the accent). A light theme must also set textPrimary and textSecondary to dark colors.\n" +
       "The tokens:\n" + lines + "\nbackground is separate from colors.background: type solid (1 color) or gradient (2 to 8 colors, angle 0 to 360).\n" +
       "The theme right now (only what is set; empty means Kino's defaults):\n" + JSON.stringify(themeJson(theme));
   }
@@ -462,19 +462,20 @@
 
     function bubble(who, text) {
       var d = el("div", { "class": "ktc-aimsg " + who }); d.appendChild(el("b", null, esc(who === "me" ? s.you : s.ai))); d.appendChild(el("span", null, esc(text)));
+      if (text === s.thinking) d.classList.add("loading");
       log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
     }
     function send(text) {
       text = (text || "").trim();
       if (!text || busy) return;
-      busy = true; sendBtn.disabled = true; input.value = "";
+      busy = true; sendBtn.disabled = true; input.disabled = true; input.value = "";
       bubble("me", text);
       var wait = bubble("ai", s.thinking), before = JSON.parse(JSON.stringify(state.theme));
       history.push({ role: "user", content: text });
       var messages = [{ role: "system", content: aiSystemPrompt(ctx.lang, state.theme) }].concat(history.slice(-8));
       aiAsk(messages, ctx.lang, function (pct) { wait.querySelector("span").textContent = pct == null ? s.thinking : s.download + " " + pct + "%"; }).then(function (res) {
         var raw = res && res.text;
-        busy = false; sendBtn.disabled = false;
+        busy = false; sendBtn.disabled = false; input.disabled = false; wait.classList.remove("loading");
         if (!raw) { history.pop(); wait.querySelector("span").textContent = s.unable; return; }
         if (raw.replace(/^\s+/, "").indexOf("[[OFFTOPIC]]") === 0) { history.pop(); wait.querySelector("span").textContent = s.offtopic; return; }
         var p = aiParse(raw), r = aiApply(state.theme, p.changes), span = wait.querySelector("span");
@@ -483,6 +484,12 @@
         span.textContent = p.say || (r.done.length ? "" : s.noChange);
         if (r.done.length) {
           ctx.changed("controls");
+          /* Kino drops an accent whose text colour cannot be read on it: pick black or white, whichever reads better. */
+          var acc = state.theme.values["colors.accent"];
+          if (acc && ctx.warnings().some(function (w) { return w.indexOf("colors.onAccent") === 0; })) {
+            var best = contrast("#000000", acc) >= contrast("#FFFFFF", acc) ? "#000000" : "#FFFFFF";
+            if (contrast(best, acc) >= MIN_TEXT) { state.theme.values["colors.onAccent"] = best; r.done.push("colors.onAccent"); ctx.changed("controls"); }
+          }
           var note = el("div", { "class": "ktc-ainote" }, esc(s.changed + " " + r.done.map(function (k) { return k === "background" ? ctx.s.background : ctx.label(k); }).join(", ")));
           var undo = el("button", { type: "button", "class": "ktc-link" }, esc(s.undo));
           undo.addEventListener("click", function () { state.theme = before; ctx.changed("controls"); note.remove(); });
@@ -539,7 +546,7 @@
       }
       if (w.indexOf("colors.onAccent: isn't readable") === 0) {
         var a = v["colors.accent"] || KINO["colors.accent"], o = v["colors.onAccent"] || KINO["colors.onAccent"];
-        return "Texto sobre el acento: " + up(o) + " sobre " + up(a) + " contrasta " + contrast(o, a).toFixed(1) + ":1 y Kino pide al menos 4.5:1. Prueba blanco o negro; hoy la app usaría su acento y su texto en su lugar (la vista previa sí muestra el tuyo).";
+        return "Texto sobre el acento: " + up(o) + " sobre " + up(a) + " contrasta " + contrast(o, a).toFixed(1) + ":1 y Kino pide al menos 4.5:1. " + (contrast("#000000", a) >= contrast("#FFFFFF", a) ? "Con negro daría " + contrast("#000000", a).toFixed(1) : "Con blanco daría " + contrast("#FFFFFF", a).toFixed(1)) + ":1. Hoy la app usaría su acento y su texto en su lugar (la vista previa sí muestra el tuyo).";
       }
       return w;
     }
@@ -759,7 +766,7 @@
 
     renderFrame();
     changed("controls");
-    attachAi({ right: right, state: state, changed: changed, lang: lang, s: s, label: labelFor });
+    attachAi({ right: right, state: state, changed: changed, lang: lang, s: s, label: labelFor, warnings: function () { return lastRes.warnings; } });
     void jsonEditing;
   }
 
