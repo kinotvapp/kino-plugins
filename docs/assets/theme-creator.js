@@ -338,9 +338,9 @@
    * the page validates every value against the contract before it touches the theme. */
   var AI_URL = "https://text.pollinations.ai/openai", AI_MODEL = "openai-fast", AI_TIMEOUT = 60000, AI_TRIES = 3;
   var AIT = {
-    es: { title: "Asistente con IA", hint: "Dime cómo quieres tu tema y lo voy ajustando. Es gratis. Si tu Chrome trae IA integrada, corre en tu equipo; si no, lo que escribas se envía a Pollinations (servicio de IA de terceros).", ph: "Ej.: un tema azul oscuro con esquinas más redondas", send: "Enviar", thinking: "Pensando…", undo: "Deshacer", changed: "Cambié:", unable: "La IA no pudo responder ahora. Inténtalo de nuevo en un momento.", offtopic: "Solo puedo ayudarte con el tema de Kino: colores, formas, letra, sombras y movimiento.", noChange: "No cambié nada.", skipped: "No apliqué (valor fuera de lo permitido):", you: "Tú", ai: "IA", aiLocal: "IA (Chrome, en tu equipo)", download: "Descargando el modelo de Chrome",
+    es: { title: "Asistente con IA", hint: "Dime cómo quieres tu tema y lo voy ajustando. Es gratis. Si tu Chrome trae IA integrada, corre en tu equipo; si no, lo que escribas se envía a Pollinations (servicio de IA de terceros).", ph: "Ej.: un tema azul oscuro con esquinas más redondas", send: "Enviar", thinking: "Pensando…", undo: "Deshacer", changed: "Cambié:", unable: "La IA no pudo responder ahora. Inténtalo de nuevo en un momento.", offtopic: "Solo puedo ayudarte con el tema de Kino: colores, formas, letra, sombras y movimiento.", noChange: "No cambié nada.", noApply: "No llegó ningún cambio que pudiera aplicar. Pídelo con otras palabras, por ejemplo «cambia el acento a azul».", skipped: "No apliqué (valor fuera de lo permitido):", you: "Tú", ai: "IA", aiLocal: "IA (Chrome, en tu equipo)", download: "Descargando el modelo de Chrome",
       chips: ["Un tema azul oscuro elegante", "Esquinas más redondas y sombras suaves", "Un tema claro tipo papel"] },
-    en: { title: "AI assistant", hint: "Tell me how you want your theme and I'll adjust it. It's free. If your Chrome has built-in AI it runs on your device; otherwise what you type is sent to Pollinations (a third-party AI service).", ph: "E.g.: a dark blue theme with rounder corners", send: "Send", thinking: "Thinking…", undo: "Undo", changed: "Changed:", unable: "The AI couldn't answer right now. Try again in a moment.", offtopic: "I can only help with the Kino theme: colors, shapes, type, shadows and motion.", noChange: "I changed nothing.", skipped: "Not applied (value outside what's allowed):", you: "You", ai: "AI", aiLocal: "AI (Chrome, on your device)", download: "Downloading Chrome's model",
+    en: { title: "AI assistant", hint: "Tell me how you want your theme and I'll adjust it. It's free. If your Chrome has built-in AI it runs on your device; otherwise what you type is sent to Pollinations (a third-party AI service).", ph: "E.g.: a dark blue theme with rounder corners", send: "Send", thinking: "Thinking…", undo: "Undo", changed: "Changed:", unable: "The AI couldn't answer right now. Try again in a moment.", offtopic: "I can only help with the Kino theme: colors, shapes, type, shadows and motion.", noChange: "I changed nothing.", noApply: "No change came through that I could apply. Ask in other words, for example \"make the accent blue\".", skipped: "Not applied (value outside what's allowed):", you: "You", ai: "AI", aiLocal: "AI (Chrome, on your device)", download: "Downloading Chrome's model",
       chips: ["An elegant dark blue theme", "Rounder corners and soft shadows", "A light, paper-like theme"] }
   };
 
@@ -379,6 +379,12 @@
     return once(0);
   }
 
+  /* The small on-device model does not reliably write a fenced block after its words, so it is made to answer with one JSON object
+   * (the Prompt API's responseConstraint) that carries the words too. */
+  var AI_SCHEMA = { type: "object", properties: { say: { type: "string" }, set: { type: "object" }, remove: { type: "array", items: { type: "string" } }, background: { type: "object" }, clearBackground: { type: "boolean" } }, required: ["say", "set"] };
+  var AI_LOCAL_FORMAT = "\nOUTPUT FORMAT (overrides the format above): answer with ONLY one JSON object, no code fences: {\"say\": \"one short sentence\", \"set\": {token: value, ...}, \"remove\": [tokens], \"background\": {type, colors, angle}, \"clearBackground\": false}. " +
+    "\"set\" must hold every change (for a whole-theme request, at least 8 colors); \"say\" is only words and never claims a change that \"set\" does not contain.";
+
   /* Chrome's built-in model (Gemini Nano, the Prompt API): free, runs on the visitor's computer, no allowance to run out. Used first when
    * this browser has it; null when it doesn't (or it fails), and then the online service answers. */
   function aiAskLocal(messages, lang, onStatus) {
@@ -387,10 +393,10 @@
     return LanguageModel.availability(opts).then(function (a) {
       if (!a || a === "unavailable" || a === "no") return null;
       if (a !== "available" && a !== "readily") onStatus();
-      var sys = messages[0], rest = messages.slice(1), last = rest.pop();
+      var sys = { role: "system", content: messages[0].content + AI_LOCAL_FORMAT }, rest = messages.slice(1), last = rest.pop();
       var create = Object.assign({ initialPrompts: [sys].concat(rest), monitor: function (m) { m.addEventListener("downloadprogress", function (e) { onStatus(Math.round((e.loaded || 0) * 100)); }); } }, opts);
       return LanguageModel.create(create).then(function (session) {
-        return session.prompt(last.content).then(function (t) { try { session.destroy(); } catch (e) { void e; } return t && t.trim() ? t.trim() : null; }, function () { try { session.destroy(); } catch (e) { void e; } return null; });
+        return session.prompt(last.content, { responseConstraint: AI_SCHEMA }).then(function (t) { try { session.destroy(); } catch (e) { void e; } return t && t.trim() ? t.trim() : null; }, function () { try { session.destroy(); } catch (e) { void e; } return null; });
       });
     }).catch(function () { return null; });
   }
@@ -405,6 +411,9 @@
 
   /* Splits the model's answer into the words to show and the changes to apply. */
   function aiParse(text) {
+    var whole = null;
+    try { whole = JSON.parse(text); } catch (e) { whole = null; }
+    if (whole && typeof whole === "object" && !Array.isArray(whole) && ("set" in whole || "say" in whole)) return { say: typeof whole.say === "string" ? whole.say : "", changes: whole };
     var m = /```(?:json)?\s*([\s\S]*?)```/i.exec(text), changes = null, say = text;
     if (m) { say = text.replace(m[0], "").trim(); try { changes = JSON.parse(m[1]); } catch (e) { changes = null; } }
     return { say: say, changes: changes };
@@ -428,7 +437,9 @@
       theme.values[k] = v; done.push(k);
     });
     (Array.isArray(ch.remove) ? ch.remove : []).forEach(function (k) { if (k in theme.values) { delete theme.values[k]; done.push(k); } });
-    if ("background" in ch) {
+    if (ch.clearBackground === true && !("background" in ch && ch.background && typeof ch.background === "object" && Object.keys(ch.background).length)) {
+      if (theme.background) { theme.background = null; done.push("background"); }
+    } else if ("background" in ch && !(ch.background && typeof ch.background === "object" && !Object.keys(ch.background).length)) {
       var b = ch.background;
       if (b === null) { if (theme.background) { theme.background = null; done.push("background"); } }
       else if (b && typeof b === "object" && Array.isArray(b.colors) && b.colors.length >= 1 && b.colors.length <= 8 && b.colors.every(function (c) { return typeof c === "string" && HEX.test(c); })) {
@@ -477,6 +488,7 @@
           undo.addEventListener("click", function () { state.theme = before; ctx.changed("controls"); note.remove(); });
           note.appendChild(undo); wait.appendChild(note);
         }
+        if (!r.done.length && !r.skipped.length) wait.appendChild(el("div", { "class": "ktc-ainote warn" }, esc(s.noApply)));
         if (r.skipped.length) wait.appendChild(el("div", { "class": "ktc-ainote warn" }, esc(s.skipped + " " + r.skipped.join(", "))));
         log.scrollTop = log.scrollHeight;
       });
