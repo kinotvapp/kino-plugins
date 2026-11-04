@@ -281,6 +281,22 @@ export async function screen() {
 - **Phone and TV:** the same; prefer `gap` on the parent over spacers between every child.
 - **Limits and mistakes:** `width` and `height` only take the size scale (16 to 640); a value off it drops the node.
 
+### Swipe: `onSwipeLeft` and `onSwipeRight` { #swipe-actions }
+
+Any node can answer a sideways swipe, with one action each (the same shapes as `onTap`). The direction is the finger's: a swipe to the left is "the next page", to the right "the previous one" (the `pages` node's own turn follows the same rule). A drag of at least 64 dp counts; a vertical scroll is never read as one, and a node that scrolls sideways keeps its own scroll.
+
+On the TV there is no finger: `onSwipeLeft` answers Right and `onSwipeRight` answers Left, but only once focus has nowhere further to go that way, so a remote still moves between buttons first. Keep a button for the same step (swipe is a shortcut, not the only way: an older Kino ignores both properties, and a screen reader uses the buttons).
+
+```js
+export async function screen({ state }) {
+  const page = state.page ?? 0;
+  return { type: "Column", key: "reader", flex: 1, onSwipeLeft: "next", onSwipeRight: "prev",
+    children: [{ type: "Text", text: state.pages[page] }, { type: "Row", children: [
+      { type: "IconButton", icon: "arrow_back", labelText: "Anterior", onPressed: "prev" },
+      { type: "IconButton", icon: "arrow_forward", labelText: "Siguiente", onPressed: "next" } ] }] };
+}
+```
+
 ### Divider { #divider }
 
 A thin rule across its parent: between groups of a column, under a heading.
@@ -478,6 +494,9 @@ Keep the chosen tab in your own state from its `onChanged` event, and draw the m
 | `tabs` | `{ value, label, labelEn?, badge? }[]` | required | no | 1 to 500; a tab's `badge` sits beside its label ([shared properties](screen-reference.md#shared-properties)) |
 | `value` | string | the first tab | no | the selected tab; NOT in `state.inputs`: keep it in your state from `onChanged` |
 | `onChanged` | action | none | no | its event's `value` is the tab's value |
+| `divider` | boolean | `true` | no | additive, no new apiVersion: `false` takes away the line under the tabs |
+
+On a TV the tabs are text with a line under the picked one (not pills).
 
 ```json
 { "type": "TabBar", "key": "section", "value": "news", "onChanged": "tab", "tabs": [
@@ -681,6 +700,8 @@ when it overflows, and on the TV its tabs and the actions are one row for the D-
 first action, Up from the body lands on the selected tab). `bottom` stays for the classic second row. See
 [Tabs in the app bar](screen-reference.md#recipe-app-bar-tabs).
 
+**A logo instead of the name**: with `mergeWithKinoBar` the bar is the plugin's, so an `Image` as the `title` (a `data:image/png;base64,…` of your logo, `fit: "contain"`, `h: 32`, an `aspect` of the picture's own, and a `Text` as its `fallback` for a Kino that cannot read it) puts your logo where the name was. Paint the picture on the bar's own colour (an opaque PNG): a transparent one shows the app theme's fill behind it.
+
 | Property | Type | Default | Per size | Notes |
 | --- | --- | --- | --- | --- |
 | `title` | string or a node | none | no | a string (`titleEn` its twin) is read as a heading; or, Flutter's way, any node (a `TabBar`, a `Row` of buttons...; at most 40 nodes) in the room left of the actions |
@@ -688,7 +709,8 @@ first action, Up from the body lands on the selected tab). `bottom` stays for th
 | `actions` | `IconButton[]` | none | no | at most 4, each with a `labelText`; a `badge` allowed |
 | `bottom` | a `TabBar` | none | no | under the row |
 | `centerTitle` | boolean | `false` | no | the title centred |
-| `dense` | boolean | `false` | no | additive, no new apiVersion: on a phone the bar has 4 dp above and below its row instead of 16 (a TV and a player panel keep theirs); also the one bar of `mergeWithKinoBar` |
+| `dense` | boolean | `false` | no | additive, no new apiVersion: on a phone the bar has 4 dp above and below its row instead of 16 (a TV has 8 dp instead of 24; a player panel keeps its own); also the one bar of `mergeWithKinoBar` |
+| `divider` | boolean | `true` | no | additive, no new apiVersion: `false` takes away the hairline at the bar's lower edge |
 | `backgroundColor` | a colour role | Kino's surface | no | its text and icons in the role's readable colour |
 | `mergeWithKinoBar` | boolean | `false` | no | apiVersion 19, the root Scaffold's only: with a `leading`, Kino draws one bar, your `leading` in Close's place and your `title` in your plugin's name's |
 
@@ -971,7 +993,7 @@ shows a hole.
 
 | Property | Type | Default | Per size | Notes |
 | --- | --- | --- | --- | --- |
-| `url` | https URL | required without `fallback` | no | a public https host (no declaration needed); with a `fallback`, no `url` draws the fallback (an empty or refused one too, logged) |
+| `url` | https URL | required without `fallback` | no | a public https host (no declaration needed), or `data:image/png\|jpeg\|webp\|gif;base64,…` of at most 200,000 characters (a picture you hold yourself, such as a book's cover; never svg; an older Kino draws the `fallback`); with a `fallback`, no `url` draws the fallback (an empty or refused one too, logged) |
 | `alt` | string | none | no | what a screen reader says (`altEn` the English one) |
 | `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` \| `w:h` | the picture's own | yes | the box's shape; `w:h` is any width over height from 0.2 to 5, like `1.4:1` or `900:1300` |
 | `fit` | `cover` \| `contain` \| `width` | `cover` | yes | how the picture sits in its box: `cover` fills and crops, `contain` shows all of it, `width` takes the width and the picture's own height (the `aspect`, or 2:3, holds its place until it loads) |
@@ -1572,6 +1594,8 @@ A section's banner: a big picture, a title, a line and at most two buttons. The 
 | `title` | string | required | no | `titleEn` the English one |
 | `text` | string | none | no | `textEn` |
 | `image` | https URL | none | no | a public https picture |
+| `logo` | https URL | none | no | additive, no new apiVersion: a title's logo (a public https picture) drawn where the title's text is, when it loads; the text still names it for a screen reader and shows when the logo cannot |
+| `h` | a size of the scale | Kino's (240 dp, 320 on a TV) | yes | additive, no new apiVersion: the banner's height; a per-size map works (`{ "compact": 200, "expanded": 240 }`) |
 | `buttons` | button nodes | none | no | at most 2 |
 
 ```json

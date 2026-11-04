@@ -279,6 +279,7 @@ Todos los nodos aceptan estas, además de las suyas y las de estilo.
 | `key` | texto | `auto-<n>` | no | única en la pantalla; obligatoria en entradas, ventanas emergentes, un `ExpansionTile` y un aviso que se puede descartar; el prefijo `auto-` es de Kino |
 | `onTap` | acción | ninguna | no | una pulsación (la de un botón es `onPressed`) |
 | `onLongPress` | acción | ninguna | no | una pulsación larga; úsala para extras a los que se llega de otra forma |
+| `onSwipeLeft`, `onSwipeRight` | acción | ninguna | no | aditivo, sin apiVersion nuevo: un deslizamiento lateral (a la izquierda = la página siguiente); en la TV, Derecha / Izquierda cuando el foco ya no tiene a dónde ir ([Deslizar](screen-components.md#swipe-actions)) |
 | `arg` | texto | ninguno | no | el `arg` del evento cuando la acción es solo el nombre de un evento (como máximo 4.096 caracteres) |
 | `enabled` | booleano | `true` | no | `false` lo dibuja desactivado; `ui` `enable`/`disable` lo cambian |
 | `hidden` | booleano | `false` | no | `true` lo empieza oculto; `ui` `show`/`hide`/`toggle` lo cambian |

@@ -266,6 +266,7 @@ Every node takes these besides its own and the style.
 | `key` | string | `auto-<n>` | no | unique on the screen; required on inputs, pop-ups, an `ExpansionTile` and a dismissible banner; the `auto-` prefix is Kino's |
 | `onTap` | action | none | no | a press (a button's is `onPressed`) |
 | `onLongPress` | action | none | no | a long press; keep it for extras reachable another way |
+| `onSwipeLeft`, `onSwipeRight` | action | none | no | additive, no new apiVersion: a sideways swipe (left = the next page); on the TV, Right / Left once focus has nowhere further ([Swipe](screen-components.en.md#swipe-actions)) |
 | `arg` | string | none | no | the event's `arg` when the action is a bare event name (at most 4,096 characters) |
 | `enabled` | boolean | `true` | no | `false` draws it off; `ui` `enable`/`disable` change it |
 | `hidden` | boolean | `false` | no | `true` starts it hidden; `ui` `show`/`hide`/`toggle` change it |

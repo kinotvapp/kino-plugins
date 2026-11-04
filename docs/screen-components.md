@@ -288,6 +288,22 @@ export async function screen() {
 - **Límites y errores:** `width` y `height` solo aceptan la escala de tamaños (de 16 a 640); un valor fuera de ella
   descarta el nodo.
 
+### Deslizar: `onSwipeLeft` y `onSwipeRight` { #swipe-actions }
+
+Cualquier nodo puede responder a un deslizamiento lateral con una acción cada uno (las mismas formas que `onTap`). La dirección es la del dedo: deslizar a la izquierda es «la página siguiente» y a la derecha «la anterior» (el giro propio del nodo `pages` sigue la misma regla). Cuenta un arrastre de al menos 64 dp; un desplazamiento vertical nunca se lee como deslizamiento, y un nodo que se desplaza de lado conserva su propio desplazamiento.
+
+En la TV no hay dedo: `onSwipeLeft` responde a Derecha y `onSwipeRight` a Izquierda, pero solo cuando el foco ya no tiene a dónde ir en esa dirección, así que el control remoto sigue moviéndose primero entre botones. Deja un botón para el mismo paso (el deslizamiento es un atajo, no la única vía: un Kino anterior ignora ambas propiedades y un lector de pantalla usa los botones).
+
+```js
+export async function screen({ state }) {
+  const page = state.page ?? 0;
+  return { type: "Column", key: "reader", flex: 1, onSwipeLeft: "next", onSwipeRight: "prev",
+    children: [{ type: "Text", text: state.pages[page] }, { type: "Row", children: [
+      { type: "IconButton", icon: "arrow_back", labelText: "Anterior", onPressed: "prev" },
+      { type: "IconButton", icon: "arrow_forward", labelText: "Siguiente", onPressed: "next" } ] }] };
+}
+```
+
 ### Divider { #divider }
 
 Una raya fina a lo ancho de su padre: entre grupos de una columna, bajo un encabezado.
@@ -493,6 +509,9 @@ corresponde.
 | `tabs` | `{ value, label, labelEn?, badge? }[]` | obligatorio | no | de 1 a 500; el `badge` de una pestaña va junto a su etiqueta ([propiedades compartidas](screen-reference.md#shared-properties)) |
 | `value` | string | la primera pestaña | no | la pestaña elegida; NO está en `state.inputs`: guárdala en tu estado desde `onChanged` |
 | `onChanged` | acción | ninguno | no | el `value` de su evento es el valor de la pestaña |
+| `divider` | boolean | `true` | no | aditivo, sin apiVersion nuevo: `false` quita la línea bajo las pestañas |
+
+En la TV las pestañas son texto con una línea bajo la elegida (no píldoras).
 
 ```json
 { "type": "TabBar", "key": "section", "value": "news", "onChanged": "tab", "tabs": [
@@ -710,6 +729,8 @@ son una sola fila para el D-pad (Derecha después de la última pestaña llega a
 cae en la pestaña elegida). `bottom` se queda para la clásica segunda fila. Ver
 [Pestañas en la barra de app](screen-reference.md#recipe-app-bar-tabs).
 
+**Un logo en lugar del nombre**: con `mergeWithKinoBar` la barra es del plugin, así que una `Image` como `title` (un `data:image/png;base64,…` de tu logo, `fit: "contain"`, `h: 32`, un `aspect` el propio de la imagen y un `Text` como `fallback` para un Kino que no la pueda leer) pone tu logo donde iba el nombre. Pinta la imagen sobre el color propio de la barra (un PNG opaco): uno transparente deja ver el relleno del tema de la app detrás.
+
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
 | `title` | string o un nodo | ninguno | no | un string (`titleEn` su gemelo) se lee como encabezado; o, a la manera de Flutter, cualquier nodo (un `TabBar`, una `Row` de botones...; como mucho 40 nodos) en el espacio a la izquierda de las acciones |
@@ -717,7 +738,8 @@ cae en la pestaña elegida). `bottom` se queda para la clásica segunda fila. Ve
 | `actions` | `IconButton[]` | ninguno | no | como mucho 4, cada uno con un `labelText`; se permite un `badge` |
 | `bottom` | un `TabBar` | ninguno | no | bajo la fila |
 | `centerTitle` | boolean | `false` | no | el título centrado |
-| `dense` | boolean | `false` | no | aditivo, sin apiVersion nuevo: en un celular la barra tiene 4 dp arriba y abajo de su fila en vez de 16 (una TV y un panel del reproductor conservan los suyos); también es la barra única de `mergeWithKinoBar` |
+| `dense` | boolean | `false` | no | aditivo, sin apiVersion nuevo: en un celular la barra tiene 4 dp arriba y abajo de su fila en vez de 16 (una TV tiene 8 dp en vez de 24; un panel del reproductor conserva el suyo); también es la barra única de `mergeWithKinoBar` |
+| `divider` | boolean | `true` | no | aditivo, sin apiVersion nuevo: `false` quita la línea fina del borde inferior de la barra |
 | `backgroundColor` | un rol de color | la superficie de Kino | no | su texto y sus iconos en el color legible del rol |
 | `mergeWithKinoBar` | boolean | `false` | no | apiVersion 19, solo el del Scaffold raíz: con un `leading`, Kino dibuja una sola barra, tu `leading` en el lugar de Cerrar y tu `title` en el del nombre de tu plugin |
 
@@ -1010,7 +1032,7 @@ feed roto nunca muestra un hueco.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
-| `url` | URL https | obligatorio sin `fallback` | no | un host https público (no hace falta declararlo); con un `fallback`, sin `url` se dibuja el fallback (también con una vacía o rechazada, con registro) |
+| `url` | URL https | obligatorio sin `fallback` | no | un host https público (no hace falta declararlo), o `data:image/png\|jpeg\|webp\|gif;base64,…` de 200.000 caracteres como máximo (una imagen que tú tienes, como la portada de un libro; nunca svg; un Kino anterior dibuja el `fallback`); con un `fallback`, sin `url` se dibuja el fallback (también con una vacía o rechazada, con registro) |
 | `alt` | string | ninguno | no | lo que dice un lector de pantalla (`altEn` el de inglés) |
 | `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` \| `w:h` | el de la imagen | sí | la forma de la caja; `w:h` es cualquier ancho sobre alto de 0,2 a 5, como `1.4:1` o `900:1300` |
 | `fit` | `cover` \| `contain` \| `width` | `cover` | sí | cómo se acomoda la imagen en su caja: `cover` llena y recorta, `contain` la muestra entera, `width` toma el ancho y el alto propio de la imagen (el `aspect`, o 2:3, guarda su lugar hasta que carga) |
@@ -1626,6 +1648,8 @@ página de inicio.
 | `title` | string | obligatorio | no | `titleEn` el de inglés |
 | `text` | string | ninguno | no | `textEn` |
 | `image` | URL https | ninguno | no | una imagen https pública |
+| `logo` | URL https | ninguno | no | aditivo, sin apiVersion nuevo: el logo del título (una imagen https pública) dibujado donde va el texto del título cuando carga; el texto sigue nombrándolo para un lector de pantalla y se ve si el logo no carga |
+| `h` | un tamaño de la escala | el de Kino (240 dp, 320 en TV) | sí | aditivo, sin apiVersion nuevo: la altura del banner; sirve un mapa por tamaño (`{ "compact": 200, "expanded": 240 }`) |
 | `buttons` | nodos de botón | ninguno | no | como mucho 2 |
 
 ```json
