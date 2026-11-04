@@ -133,7 +133,8 @@
         body.textContent = t.thinking;
         var system = t.system + "\n\nDOCUMENTATION:\n" + found.map(function (f, i) { return "[" + (i + 1) + "] " + f.title + " (" + BASE + f.loc + ")\n" + f.text; }).join("\n\n");
         var messages = [{ role: "system", content: system }].concat(history.slice(-6), [{ role: "user", content: text }]);
-        return window.KinoAi.ask(messages, { lang: language, onStatus: function (pct) { body.textContent = pct == null ? t.thinking : t.download + " " + pct + "%"; } }).then(function (res) {
+        return window.KinoAi.ask(messages, { lang: language, onStatus: function (pct) { body.textContent = pct == null ? t.thinking : t.download + " " + pct + "%"; },
+          onChunk: function (text) { body.innerHTML = render(text); log.scrollTop = log.scrollHeight; } }).then(function (res) {
           if (!res) { body.textContent = t.unable; done(wait); return; }
           history.push({ role: "user", content: text }, { role: "assistant", content: res.text });
           var seen = {}, links = found.filter(function (f) { var k = f.loc.split("#")[0]; if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, 3);
