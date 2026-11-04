@@ -128,6 +128,12 @@ plugins:
             Tiendas de plugins: Plugin stores
             Tiendas de ejemplo: Example stores
             Plugins que vienen instalados: Plugins that come installed
+            Fundamentos: Fundamentals
+            Interfaz (UI): Interface (UI)
+            Contenido y reproducción: Content and playback
+            Protocolo y datos: Protocol and data
+            Compatibilidad: Compatibility
+            Probar y publicar: Test and publish
 
 hooks:
   - hooks/llms.py
@@ -138,62 +144,67 @@ nav:
       - Primer plugin: first-plugin.md
       - Plugins de ejemplo: examples.md
       - Crear un plugin con IA: ai.md
-      - Aparecer en Kino: listed.md
-  - Plugins firmados: signed.md
-  - Firma tu plugin, paso a paso: sign-tutorial.md
-  - Novedades: changelog.md
-  - Pantallas:
-      - Pantallas del plugin: screens.md
-      - "Componentes: diseño, contenido y acciones": screen-components.md
-      - "Componentes: formularios, ventanas y navegación": screen-forms.md
-      - "Componentes: estado, estilo y recetas": screen-reference.md
-      - "Salas, biblioteca y control del reproductor": rooms.md
-      - "Trabajos, resultados compartidos e IA": jobs-and-shared.md
-      - Pantallas sin subir tu apiVersion: enhancements.md
-  - Guía:
+  - Fundamentos:
       - Manifiesto: manifest.md
       - Contrato: contract.md
       - API kino: kino-api.md
-      - Protocolo entre plugins: protocol.md
-      - El protocolo en una página: protocol-quick.md
-      - Canales en vivo: live-channels.md
-      - Música y podcasts: music.md
+      - Límites y trampas del motor: engine-limits.md
+      - Estructurar un plugin grande: structure.md
+      - Recetario: cookbook.md
+  - Interfaz (UI):
+      - Pantallas:
+          - Pantallas del plugin: screens.md
+          - "Componentes: diseño, contenido y acciones": screen-components.md
+          - "Componentes: formularios, ventanas y navegación": screen-forms.md
+          - "Componentes: estado, estilo y recetas": screen-reference.md
+          - "Salas, biblioteca y control del reproductor": rooms.md
+          - "Trabajos, resultados compartidos e IA": jobs-and-shared.md
+          - Pantallas sin subir tu apiVersion: enhancements.md
+      - Temas de la app: themes.md
+      - Creador de temas: theme-creator.md
+      - "Sección, categorías y colores": section-theme.md
+      - Home por categorías: categories.md
+      - Panel del reproductor: player-panel.md
       - Personaliza tu plugin: customize.md
       - Formulario de ajustes: settings-form.md
-      - Firma por petición: signed-streams.md
-      - Resolutores externos: resolver.md
-      - Proveedores de sincronización: sync-providers.md
-      - Sockets y bytes del plugin: bytes.md
-      - Catálogo y almacenamiento grande: catalog.md
       - Imágenes del plugin: images.md
       - Códigos QR: qr.md
-      - Archivos del aparato: files.md
-      - Identidad: identity.md
       - Avisos en la campanita: notifications.md
+      - Lo que ve la persona: what-people-see.md
+  - Contenido y reproducción:
+      - Canales en vivo: live-channels.md
+      - Música y podcasts: music.md
+      - Catálogo y almacenamiento grande: catalog.md
+      - Firma por petición: signed-streams.md
+      - Resolutores externos: resolver.md
+  - Protocolo y datos:
+      - Protocolo entre plugins: protocol.md
+      - El protocolo en una página: protocol-quick.md
+      - Identidad: identity.md
+      - Proveedores de sincronización: sync-providers.md
       - Tiendas de plugins: plugin-stores.md
       - Tiendas de ejemplo: store-examples.md
-      - Plugins que vienen instalados: default-plugins.md
+      - Sockets y bytes del plugin: bytes.md
+      - Archivos del aparato: files.md
       - Navegador oculto: browser.md
       - Ventana de navegador visible: visual-browser.md
       - Pasar lo guardado: migrate.md
-      - "Sección, categorías y colores": section-theme.md
-      - Temas de la app: themes.md
-      - Creador de temas: theme-creator.md
-      - Panel del reproductor: player-panel.md
-      - Home por categorías: categories.md
-      - Registro y telemetría: diagnostics.md
-      - Límites y trampas del motor: engine-limits.md
-      - Estructurar un plugin grande: structure.md
-      - Probar en local: test-locally.md
-      - Publicar: publish.md
-      - Exportar e importar un plugin: plugin-files.md
-      - Lo que ve la persona: what-people-see.md
-      - Recetario: cookbook.md
+  - Compatibilidad:
       - Scrapers de Nuvio: nuvio.md
       - Plugins con scrapers de Nuvio: nuvio-plugins.md
       - Addons de Stremio: stremio.md
       - Plugins de CloudStream: cloudstream.md
-  - Reclamos y retiro de plugins: claims.md
+  - Probar y publicar:
+      - Probar en local: test-locally.md
+      - Publicar: publish.md
+      - Aparecer en Kino: listed.md
+      - Plugins firmados: signed.md
+      - Firma tu plugin, paso a paso: sign-tutorial.md
+      - Exportar e importar un plugin: plugin-files.md
+      - Plugins que vienen instalados: default-plugins.md
+      - Registro y telemetría: diagnostics.md
+      - Reclamos y retiro de plugins: claims.md
+  - Novedades: changelog.md
   - Referencia: reference/index.md
 
 markdown_extensions:
