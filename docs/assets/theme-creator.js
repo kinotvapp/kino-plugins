@@ -689,6 +689,7 @@
         "En github.com/settings/personal-access-tokens crea un token <b>fine-grained</b>: en «Repository access» elige <b>Only select repositories</b> y marca solo ese repositorio; en permisos pon <b>Contents: Read and write</b> y <b>Administration: Read and write</b> (este último sirve para el topic).",
         "Escribe aquí el repositorio y pega el token."],
       repo: "Repositorio (usuario/repositorio)", repoPh: "tu-usuario/kino-theme-mi-tema", desc: "Descripción (la tarjeta en Kino)", descPh: "Una línea que diga qué es tu tema",
+      login: "Entrar con GitHub", loginNote: "Pasa por un proxy de Kino que no guarda nada; el permiso es public_repo (más amplio que un token de un solo repositorio).", code: "Código", open: "Abrir github.com/login/device", waiting: "Esperando que lo autorices…", expired: "El código caducó: vuelve a intentarlo.", authErr: "No se pudo entrar con GitHub",
       token: "Token del repositorio", tokenPh: "github_pat_…", tokenNote: "Se guarda solo en esta pestaña y se borra al cerrarla.", forget: "Borrar el token",
       topic: "Poner el topic kino-plugin (aparecer en Kino)", topicNote: "Kino solo encuentra plugins en repositorios públicos, sin fork y con el topic kino-plugin.",
       publish: "Publicar en ese repositorio", again: "Publicar otra vez (actualiza los archivos)",
@@ -708,6 +709,7 @@
         "At github.com/settings/personal-access-tokens create a <b>fine-grained</b> token: under \"Repository access\" pick <b>Only select repositories</b> and tick just that repository; under permissions set <b>Contents: Read and write</b> and <b>Administration: Read and write</b> (the latter is for the topic).",
         "Type the repository here and paste the token."],
       repo: "Repository (owner/repository)", repoPh: "your-user/kino-theme-my-theme", desc: "Description (the card in Kino)", descPh: "One line saying what your theme is",
+      login: "Sign in with GitHub", loginNote: "It goes through a Kino proxy that stores nothing; the scope is public_repo (broader than a one-repository token).", code: "Code", open: "Open github.com/login/device", waiting: "Waiting for you to authorize it…", expired: "The code expired: try again.", authErr: "Could not sign in with GitHub",
       token: "The repository's token", tokenPh: "github_pat_…", tokenNote: "It is kept in this tab only and wiped when you close it.", forget: "Forget the token",
       topic: "Add the kino-plugin topic (show up in Kino)", topicNote: "Kino only finds plugins in public, non-fork repositories with the kino-plugin topic.",
       publish: "Publish to that repository", again: "Publish again (updates the files)",
@@ -760,6 +762,7 @@
     var s = ctx.ght, state = ctx.state, busy = false;
     var box = el("details", { "class": "ktc-sec ktc-gh" });
     box.innerHTML = "<summary>" + esc(s.title) + '</summary><p class="ktc-aihint">' + esc(s.hint) + "</p>" +
+      (ctx.proxy ? '<div class="ktc-ghauth"><button type="button" class="ktc-ghlogin">' + esc(s.login) + '</button><p class="ktc-ghnote">' + esc(s.loginNote) + '</p><div class="ktc-ghcode"></div></div>' : "") +
       '<details class="ktc-ghhow"><summary>' + esc(s.howTitle) + "</summary><ol>" + s.how.map(function (h) { return "<li>" + h + "</li>"; }).join("") + "</ol></details>" +
       '<div class="ktc-ghform"><label>' + esc(s.repo) + ' <input data-repo type="text" maxlength="160" spellcheck="false" autocomplete="off" placeholder="' + esc(s.repoPh) + '"></label>' +
       '<label>' + esc(s.desc) + ' <input data-desc type="text" maxlength="300" placeholder="' + esc(s.descPh) + '"></label>' +
@@ -845,6 +848,40 @@
         out.appendChild(el("div", { "class": "ktc-ainote warn" }, esc(e && e.message ? e.message : String(e))));
       }).then(function () { busy = false; publishBtn.disabled = false; });
     }
+
+    /* GitHub's device flow through the Kino proxy: github.com's own endpoints send no CORS headers, so the proxy asks for the code and
+     * trades it for a token; the person types the code on github.com. The token lands in the token field like a pasted one. */
+    function deviceStart() {
+      var codeBox = box.querySelector(".ktc-ghcode"), base = String(ctx.proxy).replace(/\/+$/, "");
+      function fail(msg) { codeBox.innerHTML = '<p class="ktc-ainote warn">' + esc(s.authErr + (msg ? ": " + msg : "")) + "</p>"; }
+      codeBox.innerHTML = '<p class="ktc-ainote">' + esc(s.waiting) + "</p>";
+      fetch(base + "/device", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j || !j.device_code || !j.user_code) throw new Error((j && (j.error_description || j.error)) || "device");
+          /* The link always goes to github.com, whatever the proxy answers. */
+          codeBox.innerHTML = '<div class="ktc-ghdevice"><div><small>' + esc(s.code) + '</small><b class="ktc-ghuser">' + esc(j.user_code) + '</b></div><a href="https://github.com/login/device" target="_blank" rel="noopener">' + esc(s.open) + '</a></div><p class="ktc-ainote">' + esc(s.waiting) + "</p>";
+          poll(j);
+        }).catch(function (e) { fail(e && e.message); });
+      function poll(j) {
+        var every = Math.max(5, j.interval || 5), tries = Math.ceil((j.expires_in || 900) / every), n = 0;
+        function next() {
+          if (n++ > tries) { codeBox.innerHTML = '<p class="ktc-ainote warn">' + esc(s.expired) + "</p>"; return; }
+          setTimeout(function () {
+            fetch(base + "/token", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ device_code: j.device_code }) })
+              .then(function (r) { return r.json(); })
+              .then(function (t) {
+                if (t && t.access_token) { codeBox.innerHTML = ""; tokenIn.value = t.access_token; return; }
+                if (t && (t.error === "authorization_pending" || t.error === "slow_down")) { if (t.error === "slow_down") every += 5; next(); return; }
+                fail((t && (t.error_description || t.error)) || "");
+              }).catch(function () { next(); });
+          }, every * 1000);
+        }
+        next();
+      }
+    }
+    var loginBtn = box.querySelector(".ktc-ghlogin");
+    if (loginBtn) loginBtn.addEventListener("click", deviceStart);
 
     box.querySelector("[data-forget]").addEventListener("click", function () { tokenIn.value = ""; ghStored(null); });
     publishBtn.addEventListener("click", publish);
@@ -1163,7 +1200,7 @@
     renderFrame();
     changed("controls");
     var aiBox = attachAi({ right: right, state: state, changed: changed, lang: lang, s: s, label: labelFor, warnings: function () { return lastRes.warnings; } });
-        attachGithub({ right: right, after: aiBox, state: state, lang: lang, ght: GHT[lang] });
+        attachGithub({ right: right, after: aiBox, state: state, lang: lang, ght: GHT[lang], proxy: (root.getAttribute("data-gh-proxy") || "").trim() });
     void jsonEditing;
   }
 

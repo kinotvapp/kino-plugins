@@ -9,7 +9,7 @@ explica debajo, con las mismas palabras del kit.
 Pulsa el menú de tres rayas para abrir el menú lateral y **Inicio** para volver al Inicio. Con **TV** ves el riel lateral y el foco.
 También puedes escribir o pegar el JSON abajo: los controles se ponen al día con lo que escribas.
 
-<div id="kino-theme-creator" data-lang="es"><noscript>El creador necesita JavaScript.</noscript></div>
+<div id="kino-theme-creator" data-lang="es" data-gh-proxy="https://kino-theme-creator-oauth.kinotv.workers.dev"><noscript>El creador necesita JavaScript.</noscript></div>
 
 ## El logo y el asistente de IA { #logo-ai }
 
@@ -45,6 +45,12 @@ No crea repositorios ni pide entrar con tu cuenta. Se prepara una sola vez:
 El token solo alcanza a ese repositorio: si se filtrara, nada más de tu cuenta queda expuesto. Se guarda en esa pestaña, se borra
 al cerrarla (o con **Borrar el token**) y el navegador lo envía únicamente a `api.github.com`: no pasa por ningún servidor de este
 sitio ni de terceros. Si prefieres no usar un token, descarga `kino-plugin.json` y súbelo tú mismo.
+
+**Entrar con GitHub** (opcional) evita crear el token: la página muestra un código, lo escribes en `https://github.com/login/device` y
+autorizas. Es más cómodo pero **menos estricto**: el permiso es `public_repo`, que alcanza a todos tus repositorios públicos, y el
+token **pasa por un proxy de Kino** (un Worker de Cloudflare, código en
+[`github-oauth-worker/`](https://github.com/kinotvapp/kino-plugins/tree/main/github-oauth-worker)) que no guarda ni registra nada,
+no reenvía el refresh token y solo atiende a esta página. Si prefieres que nada pase por ahí, usa el token de un solo repositorio.
 
 ## Cómo usar el resultado { #use }
 

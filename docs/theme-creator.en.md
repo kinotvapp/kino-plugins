@@ -9,7 +9,7 @@ underneath, in the kit's own words.
 Press the three-line menu to open the side menu and **Home** to go back to Home. With **TV** you see the side rail and the focus.
 You can also type or paste the JSON below: the controls follow what you write.
 
-<div id="kino-theme-creator" data-lang="en"><noscript>The creator needs JavaScript.</noscript></div>
+<div id="kino-theme-creator" data-lang="en" data-gh-proxy="https://kino-theme-creator-oauth.kinotv.workers.dev"><noscript>The creator needs JavaScript.</noscript></div>
 
 ## The logo and the AI assistant { #logo-ai }
 
@@ -45,6 +45,13 @@ It does not create repositories or ask you to sign in with your account. You set
 The token only reaches that repository: if it leaked, nothing else in your account is exposed. It is kept in that tab, wiped when you
 close it (or with **Forget the token**), and the browser sends it only to `api.github.com`: it does not pass through any server of
 this site or of a third party. If you would rather not use a token, download `kino-plugin.json` and upload it yourself.
+
+**Sign in with GitHub** (optional) saves you creating the token: the page shows a code, you type it at
+`https://github.com/login/device` and approve. It is more convenient but **less strict**: the scope is `public_repo`, which reaches all
+your public repositories, and the token **passes through a Kino proxy** (a Cloudflare Worker, code in
+[`github-oauth-worker/`](https://github.com/kinotvapp/kino-plugins/tree/main/github-oauth-worker)) that stores and logs nothing,
+does not forward the refresh token and only answers this page. If you would rather nothing passes through it, use the
+one-repository token.
 
 ## Using the result { #use }
 
