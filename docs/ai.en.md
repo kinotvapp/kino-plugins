@@ -99,6 +99,11 @@ If the site's pictures answer only to its own page, each Image takes headers { R
 in the manifest's hosts. To remember where the person stopped, use kino.progress (apiVersion 22, next Kino release): the
 exact place goes in resume (opaque to Kino, at most 1024 bytes), get(id) answers null when there is none, and Kino draws
 no row: the plugin builds its own "keep reading" row from list() (https://kinotvapp.github.io/kino-plugins/en/progress/).
+For something small that stays on the TV player (a clock, a score, a button that opens my panel), use the player slot
+(apiVersion 23, next Kino release): the "playerSlot" capability, a "slot" block of 1 to 3 elements (text, icon, image,
+button; "overlay" with the controls or "fixed", which asks me in red), and both exports playerSlot(context) and
+playerSlotAction({ id, context }); context may lack kind, and refreshMs is 2000 to 60000
+(https://kinotvapp.github.io/kino-plugins/en/player-slot/).
 Prefer a Skeleton to a spinner and a bottom sheet with a search field to many chips; a screen has a 600-node budget.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
@@ -160,6 +165,7 @@ What I want:
 - Files on the person's device (apiVersion 21, Kino 0.9.82): <<< no / yes: what kinds (books, music, videos, pictures, subtitles), one file or a whole folder, and whether it only reads them or plays them >>>
 - Remember where the person stopped (apiVersion 22, next Kino release, not published yet): <<< no / yes: what the person goes through page by page or chapter by chapter (a manga, a book, a podcast it plays itself), the unit to remember (chapter and page, a position in the book) and what to keep in resume to come back to the exact place (e.g. { cap: 87, pag: 12 }), and whether my plugin shows its own "keep reading" row (Kino draws none) >>>
 - Pictures from a site that only answers to its own page (an Image's headers, next Kino release): <<< no / yes: the site, the Referer it wants (e.g. https://mangasite.example/) and whether it needs a browser User-Agent; its picture hosts go in hosts >>>
+- Something always on the TV player (the player slot, apiVersion 23, next Kino release, not published yet): <<< no / yes: what it shows (a clock, a score, a logo, a button that opens my panel), whether it stays the whole time (fixed: Kino asks me in red) or only with the controls (overlay), and how often it changes >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 
@@ -290,7 +296,10 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   "any" (Kino 0.9.55); 10 only for "playlists" (Kino 0.9.65); 11 only for "externalResolve" (Kino 0.9.66);
   12 only for "syncProvider", the "sync" block or a "link"/"help" setting (Kino 0.9.74; Kino 0.9.73 and
   older refuse it); 13 only for "socket", "byteSource", "storageLarge", "catalog", "qrScan", "imageSource"
-  or a "qr" setting (Kino 0.9.74)). A catalog that plays nothing declares "catalogOnly": true
+  or a "qr" setting (Kino 0.9.74); 14 for screens and their capabilities (Kino 0.9.74); 15 for "identity",
+  "notifications" or "pluginStore" (Kino 0.9.77); 16 for "coins" (Kino 0.9.78); 17 to 20 only for what AGENTS.md
+  section 2 lists for them (Kino 0.9.81); 21 for "files" (Kino 0.9.82); 22 for "progress" and 23 for "playerSlot"
+  (the next Kino release, not published yet; to keep older Kinos, the feature goes in "enhancements")). A catalog that plays nothing declares "catalogOnly": true
   (Kino 0.9.54) and still exports a resolve that fails with not_found, for older Kino. A new id of my own (never
   "archive-org").
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
@@ -323,6 +332,8 @@ you hand the plugin over run this self-check and tell me the result of each line
   service can read the data;
 - if it uses apiVersion 13: read is covered by a Node test
   that checks every range byte for byte, no handle holds a secret, and every socket is closed;
+- if it has a player slot: "playerSlot" and the "slot" block together, both exports present, node sdk/run.mjs . playerSlot
+  prints the frame with nothing dropped (also with --bare), and node sdk/validate.mjs . passes;
 - if it has a screen: every screen's AppBar has mergeWithKinoBar: true and dense: true with a real-exit leading,
   node sdk/run.mjs . screen and --device tv . screen print the tree with nothing dropped, every
   event name you use answers in screenEvent, and, if its apiVersion is below 14, the screen comes through

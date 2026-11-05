@@ -104,7 +104,12 @@ y onScroll, y pages con reverse y progress. Si las imágenes del sitio solo resp
 headers { Referer, User-Agent }, que se envían solo a hosts que están en los hosts del manifiesto. Para recordar dónde se
 quedó la persona, usa kino.progress (apiVersion 22, próxima versión de Kino): el lugar exacto va en resume (opaco para
 Kino, máximo 1024 bytes), get(id) responde null cuando no hay nada, y Kino no dibuja ninguna fila: el plugin arma su propia
-fila "Seguir leyendo" con list() (https://kinotvapp.github.io/kino-plugins/progress/). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
+fila "Seguir leyendo" con list() (https://kinotvapp.github.io/kino-plugins/progress/). Para algo pequeño que se queda
+en el reproductor de la TV (un reloj, un marcador, un botón que abre mi panel), usa el hueco del reproductor (apiVersion 23,
+próxima versión de Kino): la capacidad "playerSlot", un bloque "slot" de 1 a 3 elementos (text, icon, image, button;
+"overlay" con los controles o "fixed", que me pregunta en rojo) y los dos exports playerSlot(context) y
+playerSlotAction({ id, context }); el context puede venir sin kind, y refreshMs va de 2000 a 60000
+(https://kinotvapp.github.io/kino-plugins/player-slot/). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
 búsqueda a muchos chips; una pantalla tiene un presupuesto de 600 nodos.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
@@ -165,6 +170,7 @@ Lo que quiero:
 - Archivos del aparato de la persona (apiVersion 21, Kino 0.9.82): <<< no / sí: de qué tipo (libros, música, videos, imágenes, subtítulos), un archivo o una carpeta entera, y si solo los lee o los reproduce >>>
 - Recordar dónde se quedó la persona (apiVersion 22, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué recorre la persona página a página o capítulo a capítulo (un manga, un libro, un podcast que reproduce el plugin), la unidad que hay que recordar (capítulo y página, una posición en el libro) y qué guardar en resume para volver al lugar exacto (p. ej. { cap: 87, pag: 12 }), y si mi plugin muestra su propia fila "Seguir leyendo" (Kino no dibuja ninguna) >>>
 - Imágenes de un sitio que solo responde a su propia página (los headers de una Image, próxima versión de Kino): <<< no / sí: el sitio, el Referer que pide (p. ej. https://mangasite.example/) y si necesita un User-Agent de navegador; sus hosts de imágenes van en hosts >>>
+- Algo siempre a la vista en el reproductor de la TV (el hueco del reproductor, apiVersion 23, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué muestra (un reloj, un marcador, un logo, un botón que abre mi panel), si se queda todo el tiempo (fixed: Kino me pregunta en rojo) o solo con los controles (overlay), y cada cuánto cambia >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
@@ -299,7 +305,11 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   un "fetchHosts": "any" escrito a mano (Kino 0.9.55); 10 solo para "playlists" (Kino 0.9.65); 11 solo
   para "externalResolve" (Kino 0.9.66); 12 solo para "syncProvider", el bloque "sync" o un ajuste
   "link"/"help" (Kino 0.9.74; Kino 0.9.73 y anteriores lo rechazan); 13 solo para "socket", "byteSource",
-  "storageLarge", "catalog", "qrScan", "imageSource" o un ajuste "qr" (Kino 0.9.74)). Un catálogo que no reproduce
+  "storageLarge", "catalog", "qrScan", "imageSource" o un ajuste "qr" (Kino 0.9.74); 14 para las pantallas y sus capacidades (Kino 0.9.74); 15 para
+  "identity", "notifications" o "pluginStore" (Kino 0.9.77); 16 para "coins" (Kino 0.9.78); 17 a 20 solo para lo que
+  la sección 2 de AGENTS.md lista para ellos (Kino 0.9.81); 21 para "files" (Kino 0.9.82); 22 para "progress" y 23 para
+  "playerSlot" (la próxima versión de Kino, todavía sin publicar; para seguir en Kinos anteriores, la función va en
+  "enhancements")). Un catálogo que no reproduce
   nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
   para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
@@ -333,6 +343,8 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   plugin y su servicio pueden leer los datos;
 - si usa apiVersion 13: read tiene una prueba de
   Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra;
+- si tiene un hueco del reproductor: "playerSlot" y el bloque "slot" juntos, los dos exports presentes, node sdk/run.mjs .
+  playerSlot imprime el cuadro sin nada descartado (también con --bare), y node sdk/validate.mjs . pasa;
 - si tiene una pantalla: el AppBar de cada pantalla lleva mergeWithKinoBar: true y dense: true con un leading que es una
   salida real, node sdk/run.mjs . screen y --device tv . screen imprimen el árbol sin nada descartado,
   cada nombre de evento que usas tiene respuesta en screenEvent y, si su apiVersion es menor que 14, la pantalla

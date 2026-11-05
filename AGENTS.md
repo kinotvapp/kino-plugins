@@ -17,28 +17,29 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 
 | Line | Section |
 | --- | --- |
-| 87 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
-| 120 | [1. Read first, in this order](#1-read-first-in-this-order) |
-| 205 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
-| 309 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
-| 422 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
-| 424 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
-| 490 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
-| 662 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
-| 698 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
-| 831 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
-| 894 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
-| 1119 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
-| 1217 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1302 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
-| 1481 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1576 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1605 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
-| 1630 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
-| 1683 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1706 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1824 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1877 | [7. Common mistakes](#7-common-mistakes) |
+| 90 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
+| 123 | [1. Read first, in this order](#1-read-first-in-this-order) |
+| 208 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
+| 313 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
+| 427 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
+| 429 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
+| 495 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
+| 667 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
+| 703 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
+| 836 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
+| 899 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
+| 1124 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
+| 1222 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
+| 1307 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
+| 1486 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1581 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1610 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
+| 1635 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
+| 1688 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
+| 1747 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1770 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1893 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 1946 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -77,9 +78,11 @@ protocol**: a plugin opens named doors in `provides` and another uses them throu
 drives** to sign in or finish a step (manifest `"visualBrowser": true`; section 4, "apiVersion 20: a browser window the person
 drives"). apiVersion 21 (Kino 0.9.82) adds the `files` capability: **files on the
 person's device**, picked by the person (`kino.files`; section 4, "apiVersion 21: files on the device"). apiVersion 22 (the
-maximum today; the next Kino release, not published yet) adds the `progress` capability: **where the person is** in a chapter
-or a book, kept by Kino for the plugin to read back (`kino.progress`; section 4, "apiVersion 22: progress"); the same release
-adds, with no new apiVersion, an `Image`'s `headers` (`Referer`, `User-Agent`) for sites that need their own Referer. Kino 0.9.82 also adds,
+next Kino release, not published yet) adds the `progress` capability: **where the person is** in a chapter
+or a book, kept by Kino for the plugin to read back (`kino.progress`; section 4, "apiVersion 22: progress"). apiVersion 23 (the
+maximum today; the same next release, provisionally Kino 0.9.83) adds the `playerSlot` capability: **up to three small elements
+in the top-right corner of the TV player** (a clock, a score, a logo, a button; section 4, "apiVersion 23: the player slot").
+The same release adds, with no new apiVersion, an `Image`'s `headers` (`Referer`, `User-Agent`) for sites that need their own Referer. Kino 0.9.82 also adds,
 with no new apiVersion, `onSwipeLeft`/`onSwipeRight`, `data:` images, `divider: false` on `AppBar`/`TabBar`, `logo`/`h` on
 `heroCard` and optional borders in app themes. See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
@@ -245,7 +248,8 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `"hosts": []` in a themes-only plugin (Kino 0.9.81); `19` only for `lyrics` or
   `go.installPlugin`; `20` only for a top-level `provides`/`consumes` (the plugin protocol) or a plugin that only provides
   (both Kino 0.9.81); `21` only for `files` (Kino 0.9.82); `22` only for `progress` (the next Kino release, not published yet;
-  a plugin that already has users puts it in `enhancements["22"]`). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
+  a plugin that already has users puts it in `enhancements["22"]`); `23` only for `playerSlot` and its `slot` block (the same
+  release, provisionally Kino 0.9.83; or `enhancements["23"]` with both). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
   instead. **17 to 20 need Kino 0.9.81**: every older Kino refuses the whole plugin, so use them only when the
   plugin needs them. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
@@ -347,6 +351,7 @@ exact message Kino shows, never a summary.
    `syncProvider` (apiVersion 12) requires `syncPull` and `syncPush` (`syncStatus` optional), each taking one
    object argument (`null` for `syncStatus`). `byteSource` (apiVersion 13) requires `read` and `imageSource`
    (apiVersion 13) requires `image`; `socket`, `storageLarge`, `catalog`, `qrScan`, `files` (apiVersion 21) and `progress` (apiVersion 22) are declarative.
+   `playerSlot` (apiVersion 23) requires both `playerSlot` and `playerSlotAction` (even with no button) and the `slot` block.
    Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
@@ -1680,6 +1685,65 @@ async function home() {
 - **Kit.** `kino.progress` in the Node kit keeps the elements in memory for the run, with Kino's checks and error codes
   (`node --test sdk/test/progress.test.mjs`).
 
+<a id="player-slot"></a>
+**apiVersion 23: the player slot (`playerSlot`, next Kino release, provisionally 0.9.83, not published yet).** Up to three
+small elements in the **top-right corner of the TV player** (never on a phone), on movies, series and En vivo channels; three
+on screen in all across every plugin (`fixed` first, then the person's plugin order). Declare `"apiVersion": 23`,
+`"capabilities": [..., "playerSlot"]` and a `slot` block (each needs the other; `playerSlot` may be the plugin's only
+capability: it plays nothing, so no `resolve`/`search`; an older Kino gets it through `enhancements["23"]` with both). No new
+host: an `image` is loaded by Kino from any public https address. Full page:
+<https://kinotvapp.github.io/kino-plugins/en/player-slot/>.
+
+- **`slot.elements`**: 1 to 3 `{ id, kind, mode }`; `id` matches `^[a-z][a-z0-9_-]{0,23}$`, unique; `kind` `text` | `icon` |
+  `image` | `button`; `mode` `overlay` (shows with the controls; on a channel, with the channel card) or `fixed` (always
+  there). The count, kinds and modes are fixed in the manifest: answers change content only.
+- **`playerSlot(context)`** answers `{ items: [{ id, text } | { id, icon } | { id, image } | { id, label?, icon? }], refreshMs? }`.
+  `text`: at most 2 lines (newlines split), 2,000 characters; `icon`: one of Kino's 50 icon names; `image`: https on a public
+  host (no IP, `localhost` or local name); `button`: `label` ≤ 40 characters and/or `icon`. Nothing is repaired: an undeclared
+  id, a wrong kind, an unknown icon or a bad image drops that item; a repeated id keeps the first valid one; items come out in
+  declared order; an answer without an `items` list keeps the last good frame. `refreshMs` is clamped to 2,000..60,000 and
+  counted from the end of the last call; absent = never called again.
+- **Timing.** 5 s a call, one at a time per plugin; until the first good answer a failed call is retried every 5 s, 4 more
+  times; calls never count toward "No responde" (a press does); no call while Kino is in the background.
+- **`playerSlotAction({ id, context })`** runs on OK on a declared button on screen; answer `null`/`{}` or
+  `{ openPanel?: true, player?: KinoPlayerAction }`. `openPanel` opens your player panel (needs a `panel` or a contributed tab;
+  ignored and logged otherwise). `player` follows a panel press's rules: the plugin of the title playing keeps its fields, any
+  other plugin only `seekToMs` (with approved `playerControl`: also `pause` and `speed`), through Kino's gate. A slot-only
+  plugin cannot declare `playerControl` (it needs a `panel`).
+- **`context`** = the panel's context plus `live`: full for your own title; the contributed one (`foreign: true`, opaque
+  `ref`, `source`) for another plugin's; the **bare** one (`live`, `foreign`, `device`, `lang`, `features`, **no `kind`**)
+  for an 18+ title, one no plugin owns or one Kino cannot confirm, and for an unconfirmed channel; the live panel's
+  (`kind: "live"`, `channel`) for a confirmed channel. Read `live` and `lang`; treat the rest as possibly missing.
+- **Live.** Up/Down still zap, so the **Menu** key reaches the buttons (a remote without Menu cannot: never make a live-only
+  function depend on a button). `seekToMs`, `seekStepMs`, `speed`, `skip`, `markers`, `autoNext` are dropped; only `pause`
+  survives, and only with approved `playerControl`. On a movie, Up from the progress bar reaches the first button.
+- **Consent.** Only a `fixed` element asks: a red line ("Mostrará algo suyo de forma permanente en el reproductor mientras ves
+  un video"), asked again by an update that adds one, never auto-approved, approved again on each device (never carried by
+  sync or a backup). Overlay-only asks nothing. The person's switch "Dejar que muestre algo en el reproductor" stops the calls.
+- **Look.** Kino draws everything (no `padding`, `color`, `style`, `ring`): a text on a translucent dark pill, white with a
+  shadow, the first line Medium and the second Regular, tabular figures; buttons round (icon) or a pill (label). Kino's own
+  type gets lighter in this release; plugin screens keep their old scale (headings still bold).
+- **Kit.** `node sdk/run.mjs <folder> playerSlot [ref]`, `node sdk/run.mjs <folder> playerSlotAction <ref> <button id>`,
+  with `--context '<json>'`, `--foreign <id>[:<name>]`, `--live-channel <provider>:<code>[:<name>]` and `--bare` (ref `-`
+  with the last two); `node sdk/validate.mjs <folder>` checks the block and both exports and prints the red line
+  (`--run playerSlot` calls it). A minimal clock (one `fixed` text, no network):
+
+```json
+{ "id": "player-clock", "name": "Reloj del reproductor", "version": "1.0.0", "apiVersion": 23, "entry": "plugin.js",
+  "hosts": ["kinotvapp.github.io"], "capabilities": ["playerSlot"],
+  "slot": { "elements": [{ "id": "clock", "kind": "text", "mode": "fixed" }] } }
+```
+
+```js
+export async function playerSlot(context) {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return { items: [{ id: "clock", text: pad(now.getHours()) + ":" + pad(now.getMinutes()) + "\n" + now.toDateString() }],
+    refreshMs: 60000 };
+}
+export async function playerSlotAction() { return null; } // no button, but the capability requires the export
+```
+
 <a id="player-panel"></a>
 **The player panel (apiVersion 9, Kino 0.9.55).** `"panel": { "label", "labelEn?", "icon" | "iconFile" }` adds a
 button in the player, only while a title of the plugin plays, and requires exporting `panel(context)`; optional
@@ -1726,7 +1790,8 @@ people. See
       13 only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a `qr` setting:
       Kino 0.9.74+; 14 only for screens and their capabilities (Kino 0.9.74+); 15 only for `identity`, `notifications`
       or `pluginStore` (Kino 0.9.77+); 16 only for `coins` (Kino 0.9.78+); 17 and 18 only for what section 2 lists for them:
-      Kino 0.9.81+; 21 only for `files`: Kino 0.9.82+; 22 only for `progress`: the next Kino release, or `enhancements["22"]`).
+      Kino 0.9.81+; 21 only for `files`: Kino 0.9.82+; 22 only for `progress`: the next Kino release, or `enhancements["22"]`;
+      23 only for `playerSlot`: the same release, or `enhancements["23"]`).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
@@ -1797,6 +1862,10 @@ people. See
       the exact place in `resume` (well under 1024 bytes); `get` answering `null` handled; the plugin's own "keep reading" row
       built from `list()` (Kino draws none) inside a `home()` that returns an array of rows with `id`s and items with `id`s;
       every call in `try`/`catch`. `Image` `headers` only on pictures whose hosts (and the Referer's) are in `hosts`.
+- [ ] apiVersion 23 / `playerSlot`: the capability and the `slot` block together; both `playerSlot` and `playerSlotAction`
+      exported; answers use declared ids and their kinds; `refreshMs` 2,000..60,000 (60,000 for a clock in minutes); code copes
+      with a context without `kind`; no live-only function behind a button; `node sdk/run.mjs . playerSlot` and
+      `node sdk/validate.mjs .` pass.
 - [ ] `sdk/test/` is not in the plugin's repository (the kit's own suite).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
@@ -1888,6 +1957,11 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
   `here.resume` without checking that `get` did not answer `null`; putting the page's content in `resume` (≤ 1024 bytes, else
   `too_large`); expecting it to work in a `perProfile` job run for another profile (`not_allowed`); a `home()` that returns one
   row object instead of an array, a row or an item without `id`.
+- `playerSlot`: a `slot` block without the capability (or the reverse); leaving out `playerSlotAction` because there is no
+  button; answering an id that is not declared, or a kind other than the element's (dropped, never repaired); a fourth
+  element; reading `context.kind` without checking it (the bare context has none); a `refreshMs` below 2,000 expecting faster
+  updates; expecting it on a phone; relying on a live button reachable only with Menu; expecting `seekToMs` to work on a
+  channel.
 - `Image` `headers` on a picture whose host is not in `hosts` (they are not sent, the site answers 403), a `Referer` on an
   undeclared host (left out), or other header names (dropped).
 
