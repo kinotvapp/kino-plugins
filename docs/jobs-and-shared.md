@@ -134,6 +134,7 @@ Una lista permitida:
 - [`kino.ai`](#ai), con su propia aprobación; cada pregunta es una de las peticiones de la ejecución (10, o 20 con `ai`).
 - `kino.tmdb` (apiVersion 17): cada llamada, también una que sale del caché, es una de las peticiones de la ejecución.
 - [`kino.shared`](#shared).
+- [`kino.progress`](progress.md) (apiVersion 22), pero no en un trabajo que corre para un perfil distinto del activo.
 - [`kino.notifications`](notifications.md) (apiVersion 15), con su propia aprobación: lo habitual es que el trabajo publique aquí lo nuevo.
 - [`kino.seed`](kino-api.md#seed), con las mismas reglas de siempre: el mismo consentimiento de telemetría, el mismo
   filtro y los mismos topes. Así una contribución puede pasar de después de Inicio a un trabajo (con
@@ -200,7 +201,7 @@ plugin activado, de a uno y empezando por el resultado más viejo, cada una como
 - `kino.library`, `kino.shared`, `kino.storage`, `kino.config` y `kino.cookies` (con el jar de `kino.fetch`) responden solo por
   ese perfil. Para un perfil que no es el que está en uso, el runtime se abre solo para esa ejecución, así que nada en memoria
   pasa de una a otra: no cuentes con una variable de módulo de una ejecución a la siguiente.
-- Allí, `kino.notifications`, `kino.coins` y `kino.seed` no tienen un lugar por perfil y responden `not_allowed`: atrápalo.
+- Allí, `kino.notifications`, `kino.coins`, `kino.seed` y `kino.progress` no tienen un lugar por perfil y responden `not_allowed`: atrápalo.
   `kino.log` queda fuera del Registro y de los reportes, `kino.tmdb` usa solo la llave de Kino, y los hosts, `kino.lang` y los
   servidores escritos por la persona son los de ese perfil; el código de nivel de módulo ahí solo lee.
 - **El consentimiento es la fila propia de Kino.** Un trabajo `perProfile` no puede declarar `enabledBy`: su consentimiento es

@@ -35,8 +35,8 @@ Another example, with a background job:
 
 - **The keys** are the `apiVersion` that brought the feature: today, `"14"`. A Kino that knows the key merges its block
   over the manifest, keys in numeric order. A key above that Kino's apiVersion is ignored.
-- **`capabilities` are added.** Only `screen`, `library`, `playerPanelTab`, `playerControl`, `room`, `schedule`, `shared`
-  and `ai` can be added this way.
+- **`capabilities` are added.** Only `screen`, `library`, `playerPanelTab`, `playerControl`, `room`, `schedule`, `shared`,
+  `ai`, [`files`](files.md) (key `"21"`) and [`progress`](progress.md) (key `"22"`) can be added this way.
 - **`screen`, `settings` (the whole list), `panel` and `jobs` replace** the manifest's. `playerPanelTab` and a `panel` with
   `"contributes": true` come together in one block, and so do `schedule` and its `jobs` (each needs the other). Only a
   block brings `jobs`: a top-level `jobs` below apiVersion 14 is never read.

@@ -775,3 +775,21 @@ Lo que hace la bandera, y lo que no:
   persona sepa que ese tráfico se puede leer en el camino; una actualización que marque por primera
   vez como `insecureHttp` un host ya aprobado espera aprobación ([Publicar](publish.md#updates)).
   Prefiere `https` siempre que el servidor pueda: la bandera es para el host que no puede.
+
+## Un lector de manga que recuerda la página (apiVersion 22) { #manga-reader }
+
+Dos novedades de la próxima versión de Kino (todavía sin publicar) cubren lo que necesita un lector:
+
+1. **Páginas que cargan.** Muchos sitios de manga le responden 403 a una imagen que se pide sin su propia página como
+   `Referer`. Declara sus hosts en `hosts` y dale a la `Image` de cada página los
+   [`headers`](screen-components.md#image-headers) que pide el sitio:
+
+    ```json
+    { "type": "Image", "url": "https://img.mangasite.example/p/12/001.jpg", "fit": "width",
+      "headers": { "Referer": "https://mangasite.example/" } }
+    ```
+
+2. **El lugar, guardado.** Declara [`progress`](progress.md) y llama a `kino.progress.set` en cada vuelta de página con el lugar
+   exacto en `resume` (`{ cap: 87, pag: 12 }`); vuelve a leerlo con `get(id)` (`null` cuando la persona nunca lo abrió) al abrir
+   un manga, y arma tu propia fila "Seguir leyendo" con `list()` en `home()`: Kino no dibuja ninguna. El ejemplo completo está
+   en [Guardar dónde va la persona](progress.md#example).

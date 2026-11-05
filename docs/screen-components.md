@@ -1037,6 +1037,7 @@ feed roto nunca muestra un hueco.
 | `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` \| `w:h` | el de la imagen | sí | la forma de la caja; `w:h` es cualquier ancho sobre alto de 0,2 a 5, como `1.4:1` o `900:1300` |
 | `fit` | `cover` \| `contain` \| `width` | `cover` | sí | cómo se acomoda la imagen en su caja: `cover` llena y recorta, `contain` la muestra entera, `width` toma el ancho y el alto propio de la imagen (el `aspect`, o 2:3, guarda su lugar hasta que carga) |
 | `focus` | `top` \| `center` \| `bottom` | `center` | sí | la parte de la imagen que se conserva cuando `cover` la recorta |
+| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | los encabezados con los que se pide la imagen, para un sitio que solo responde a su propia página: solo `Referer` (una dirección https) y `User-Agent`, cada uno un texto de hasta 512 caracteres; se envían solo cuando el host de la imagen está en los `hosts` de tu manifiesto (y también el del Referer); un Kino anterior la pide sin ellos ([Imágenes que necesitan un Referer](#image-headers)) |
 | `fallback` | nodo | ninguno | no | se dibuja en la caja de la imagen cuando la imagen falla o no hay `url`: solo `Column`, `Row`, `Stack`, `Card`, `Spacer`, `Divider`, `Text`, `Icon`, `Badge`, `Skeleton`, `Image`, a cualquier profundidad, nunca se pulsa |
 
 ```json
@@ -1058,6 +1059,36 @@ export async function screen({ state }) {
 la imagen, así una página o una tira larga nunca se corta. Con `width`, el `aspect` (cualquier `w:h`, como `"1.4:1"`) solo
 guarda el lugar hasta que la imagen carga. `focus` (`top`, `center`, `bottom`) elige la parte que se conserva cuando `cover`
 recorta.
+
+#### Imágenes que necesitan un Referer { #image-headers }
+
+!!! note "Próxima versión de Kino, todavía sin publicar"
+    `headers` es aditivo (sin `apiVersion` nuevo) y llega con la próxima versión de Kino. Un Kino anterior pide la imagen sin
+    ellos, así que con él un sitio que los necesita sigue respondiendo 403 y se dibuja el `fallback`.
+
+Algunos sitios (sobre todo los lectores de manga) solo entregan sus imágenes a una petición que viene de su propia página, con
+un `User-Agent` de navegador, y a todo lo demás le responden 403: la portada y las páginas se quedan grises. Dale a la `Image`
+los encabezados que pide el sitio:
+
+```json
+{ "type": "Image", "url": "https://img.mangasite.example/p/12/001.jpg", "fit": "width", "aspect": "2:3",
+  "headers": { "Referer": "https://mangasite.example/", "User-Agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36" } }
+```
+
+```json
+{ "hosts": ["mangasite.example", "*.mangasite.example"] }
+```
+
+- **Solo dos nombres.** `Referer` (una dirección https) y `User-Agent` (con cualquier combinación de mayúsculas), cada uno un
+  texto de 1 a 512 caracteres sin caracteres de control. Todo lo demás se descarta y queda en el registro.
+- **Solo a tus hosts declarados.** Se envían **solo cuando el host de la imagen es uno de los `hosts` de tu manifiesto** (un
+  patrón `*.example.com` cuenta), y el `Referer` solo cuando su propio host también está declarado (si no, se omite solo el
+  `Referer`): un plugin no puede hacer que Kino presente una página falsa a un sitio que nunca nombró. Una imagen de un host
+  público no declarado igual carga, sin tus encabezados.
+- **Una `url` https.** Una imagen `data:` no lleva encabezados. Sin `User-Agent`, Kino envía `Kino/<versión>`.
+- **La descarga Kino.** La imagen se sigue descargando en Kino (en caché, cuatro a la vez), no a través de tu código, así que
+  no tiene más límite de tamaño que el de la caché de imágenes.
+- **No va por tamaño.** Un solo objeto `headers` para todos los tamaños.
 
 - **TV:** una imagen no recibe el foco salvo que ella (o lo que la contiene) tenga una acción.
 - **Celular y TV:** igual.

@@ -133,6 +133,7 @@ An allow-list:
 - [`kino.ai`](#ai), with its own approval; each ask is one of the run's requests (10, or 20 with `ai`).
 - `kino.tmdb` (apiVersion 17): each call, a cached one too, is one of the run's requests.
 - [`kino.shared`](#shared).
+- [`kino.progress`](progress.md) (apiVersion 22), but not in a job that runs for a profile other than the active one.
 - [`kino.notifications`](notifications.md) (apiVersion 15), with its own approval: typically the job posts what is new here.
 - [`kino.seed`](kino-api.md#seed), under exactly its usual rules: the same telemetry consent, filter and caps. So a
   contribution may move from after Home into a job (with [`enabledBy`](#enabled-by) on your contribution setting, it runs
@@ -197,7 +198,7 @@ one at a time, oldest result first, each as its own run: its own caps, `lastRunM
 - `kino.library`, `kino.shared`, `kino.storage`, `kino.config` and `kino.cookies` (with `kino.fetch`'s jar) answer for that
   profile only. For a profile that is not the one in use the runtime is opened for that run alone, so nothing in memory crosses:
   never count on a module variable from one run to the next.
-- There, `kino.notifications`, `kino.coins` and `kino.seed` have no per-profile home and answer `not_allowed`: catch it.
+- There, `kino.notifications`, `kino.coins`, `kino.seed` and `kino.progress` have no per-profile home and answer `not_allowed`: catch it.
   `kino.log` stays out of the Registro and of reports, `kino.tmdb` uses Kino's key only, and hosts, `kino.lang` and typed
   servers are that profile's; code at module level there only reads.
 - **Consent is Kino's own row.** A `perProfile` job may not declare `enabledBy`: consent is Kino's own job row in Ajustes, off by

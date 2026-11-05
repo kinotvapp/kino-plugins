@@ -764,3 +764,20 @@ What the flag does, and what it does not:
   that traffic can be read on the way; an update that newly marks an already-approved host
   `insecureHttp` waits for approval ([Publishing](publish.md#updates)). Prefer `https` whenever
   the server can: the flag is for the host that cannot.
+
+## A manga reader that remembers the page (apiVersion 22) { #manga-reader }
+
+Two additions of the next Kino release (not published yet) cover what a reader needs:
+
+1. **Pages that load.** Many manga sites answer 403 to a picture asked without their own page as `Referer`. Declare their hosts
+   in `hosts` and give each page's `Image` the [`headers`](screen-components.md#image-headers) the site wants:
+
+    ```json
+    { "type": "Image", "url": "https://img.mangasite.example/p/12/001.jpg", "fit": "width",
+      "headers": { "Referer": "https://mangasite.example/" } }
+    ```
+
+2. **The place, kept.** Declare [`progress`](progress.md) and call `kino.progress.set` on each page turn with the exact place
+   in `resume` (`{ cap: 87, pag: 12 }`); read it back with `get(id)` (`null` when the person never opened it) when a manga
+   opens, and build your own "keep reading" row from `list()` in `home()`: Kino draws none. The complete example is on
+   [Saving where the person is](progress.md#example).

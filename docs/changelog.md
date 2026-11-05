@@ -3,6 +3,21 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Próxima versión de Kino: guardar dónde va la persona, e imágenes que necesitan un Referer { #next }
+
+!!! note "Todavía sin publicar"
+    Esto llega con la próxima versión de Kino, que todavía no está publicada. Un Kino anterior rechaza `"apiVersion": 22` e
+    ignora los `headers` de una `Image`.
+
+- **Guardar dónde va la persona (`apiVersion` 22).** La capacidad `progress` y `kino.progress` (`set`, `get`, `list`, `clear`):
+  Kino guarda hasta dónde va la persona en un capítulo o un libro, por perfil, sincronizado entre sus aparatos y en las copias
+  de seguridad; `resume` son hasta 1024 bytes de tu propio JSON que Kino nunca lee. **Kino no dibuja nada**: tu plugin arma su
+  propio estante "Seguir leyendo" con `list`. Sin línea de consentimiento; se rechaza en un trabajo que corre para otro perfil;
+  se puede declarar en `enhancements["22"]`. [Guardar dónde va la persona](progress.md).
+- **Imágenes que necesitan un Referer.** Una `Image` acepta `headers: { Referer?, User-Agent? }` (sin `apiVersion` nuevo), que
+  se envían solo cuando el host de la imagen, y el del Referer, están en los `hosts` de tu manifiesto: lectores de manga cuyas
+  imágenes le responden 403 a cualquier otro. [Imágenes que necesitan un Referer](screen-components.md#image-headers).
+
 ## Kino 0.9.82: archivos del aparato, deslizar y bordes de temas { #v0982 }
 
 - **Archivos del aparato (`apiVersion` 21).** La capacidad `files` y `kino.files`: la persona elige archivos o una carpeta, el

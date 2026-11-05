@@ -37,7 +37,7 @@ Otro ejemplo, con un trabajo en segundo plano:
 - **Las claves** son el `apiVersion` que trajo la función: hoy, `"14"`. Un Kino que conoce la clave mezcla su bloque sobre
   el manifiesto, en orden numérico de claves. Una clave por encima del apiVersion de ese Kino se ignora.
 - **`capabilities` se suman.** Solo se pueden agregar así `screen`, `library`, `playerPanelTab`, `playerControl`, `room`,
-  `schedule`, `shared` y `ai`.
+  `schedule`, `shared`, `ai`, [`files`](files.md) (clave `"21"`) y [`progress`](progress.md) (clave `"22"`).
 - **`screen`, `settings` (la lista entera), `panel` y `jobs` reemplazan** los del manifiesto. `playerPanelTab` y un `panel`
   con `"contributes": true` van juntos en el mismo bloque, y también `schedule` y sus `jobs` (cada uno necesita al otro).
   Los `jobs` solo los trae un bloque: un `jobs` en el nivel de arriba por debajo de apiVersion 14 nunca se lee.

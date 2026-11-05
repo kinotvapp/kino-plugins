@@ -15,6 +15,7 @@ kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLit
 kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 kino.files         // apiVersion 21 (Kino 0.9.82), capability "files": files on the person's device (pick, read, url); absent otherwise
+kino.progress      // apiVersion 22 (next Kino release), capability "progress": where the person is in an element of yours (set, get, list, clear); absent otherwise
 ```
 
 `kino.apiVersion` responde 13 en Kino 0.9.74 y 11 en Kino 0.9.71 a 0.9.73.
@@ -691,6 +692,17 @@ responden handles opacos, nunca una dirección; `list`, `folders`, `info`, `read
 llamada), `forget` y `url` (`kino-file:<id>`, para el `url` de un stream o de una pista de audio) no necesitan pulsación.
 Errores: `unavailable`, `not_allowed`, `busy`, `timeout`, `invalid_request`, `gone`, `too_large`, `denied`, `quota`. Nada se
 sube ni se envía. La guía completa, con cada regla y límite: [Archivos del aparato](files.md).
+
+## `kino.progress` (apiVersion 22, próxima versión de Kino) { #progress }
+
+Con la capacidad `progress` (sin línea de consentimiento): dónde va la persona en un elemento de tu plugin (un capítulo y una
+página de manga, una posición en un libro). `set({ id, fraction, title?, poster?, label?, labelEn?, resume?, done?, doneAt? })`,
+`get(id)` (la entrada o `null`), `list({ limit?, sinceMs? })` (el último que se guardó primero, cada entrada con su `id`; `limit`
+de 1 a 100, 50 por defecto) y `clear(id)`. `resume` es cualquier valor JSON de hasta 1024 bytes serializado que Kino nunca lee.
+Un elemento está terminado con `done: true` o cuando `fraction >= doneAt` (0,9 por defecto). Se guarda por perfil, se sincroniza
+entre los aparatos de la persona y va en las copias de seguridad; **Kino no dibuja nada con esto**, tu plugin arma su propio
+estante con `list`. Se rechaza (`not_allowed`) en un trabajo que corre para un perfil distinto del activo. Errores:
+`not_allowed`, `bad_request`, `too_large`. La guía completa: [Guardar dónde va la persona](progress.md).
 
 ## `kino.screen` (apiVersion 14, Kino 0.9.74) { #screen }
 

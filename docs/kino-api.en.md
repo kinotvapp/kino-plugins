@@ -15,6 +15,7 @@ kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLit
 kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 kino.files         // apiVersion 21 (Kino 0.9.82), capability "files": files on the person's device (pick, read, url); absent otherwise
+kino.progress      // apiVersion 22 (next Kino release), capability "progress": where the person is in an element of yours (set, get, list, clear); absent otherwise
 ```
 
 `kino.apiVersion` reports 13 on Kino 0.9.74 and 11 on Kino 0.9.71 to 0.9.73.
@@ -646,6 +647,17 @@ handles, never an address; `list`, `folders`, `info`, `read`, `readText` (at mos
 (`kino-file:<id>`, for a stream's or an audio track's `url`) need no press. Errors: `unavailable`, `not_allowed`, `busy`,
 `timeout`, `invalid_request`, `gone`, `too_large`, `denied`, `quota`. Nothing is uploaded or sent. The full guide, with every rule
 and limit: [Files on the device](files.md).
+
+## `kino.progress` (apiVersion 22, next Kino release) { #progress }
+
+With the `progress` capability (no consent line): where the person is in an element your plugin owns (a manga chapter and
+page, a book position). `set({ id, fraction, title?, poster?, label?, labelEn?, resume?, done?, doneAt? })`, `get(id)` (the
+entry or `null`), `list({ limit?, sinceMs? })` (most recently set first, each entry with its `id`; `limit` 1 to 100, default 50)
+and `clear(id)`. `resume` is any JSON value up to 1024 bytes serialized that Kino never reads. An element is finished at
+`done: true` or when `fraction >= doneAt` (default 0.9). Kept per profile, synced between the person's devices and in backups;
+**Kino draws nothing from it**, your plugin builds its own shelf from `list`. Refused (`not_allowed`) in a job that runs for a
+profile other than the active one. Errors: `not_allowed`, `bad_request`, `too_large`. The full guide:
+[Saving where the person is](progress.md).
 
 ## `kino.screen` (apiVersion 14, Kino 0.9.74) { #screen }
 
