@@ -95,6 +95,10 @@ Every screen of the plugin uses one compact bar: its AppBar sets mergeWithKinoBa
 that is a real exit ({ close: true } on the front page, a back elsewhere). The unnamed route is "main", the front page. A Home
 row item that opens a screen uses open: { screen: { args } } and the detail is pushed from the open answer, so Back returns
 to the front page. A reader uses Image fit: "width", a scroll with zoom and onScroll, and pages with reverse and progress.
+If the site's pictures answer only to its own page, each Image takes headers { Referer, User-Agent }, sent only to hosts
+in the manifest's hosts. To remember where the person stopped, use kino.progress (apiVersion 22, next Kino release): the
+exact place goes in resume (opaque to Kino, at most 1024 bytes), get(id) answers null when there is none, and Kino draws
+no row: the plugin builds its own "keep reading" row from list() (https://kinotvapp.github.io/kino-plugins/en/progress/).
 Prefer a Skeleton to a spinner and a bottom sheet with a search field to many chips; a screen has a 600-node budget.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
@@ -154,6 +158,8 @@ What I want:
 - Identity or notices (apiVersion 15): <<< no / yes: who needs the person's Telegram pseudonym (only plugins signed with Kino's author key get an answer) and what notices to leave in the Home bell >>>
 - Other plugins (the plugin protocol, apiVersion 20, Kino 0.9.81): <<< no / it uses the door of another plugin: its repository and door (e.g. kinotvapp/kino-plugin-tmdb, "movies") / it opens a door: what other plugins could ask it >>>
 - Files on the person's device (apiVersion 21, Kino 0.9.82): <<< no / yes: what kinds (books, music, videos, pictures, subtitles), one file or a whole folder, and whether it only reads them or plays them >>>
+- Remember where the person stopped (apiVersion 22, next Kino release, not published yet): <<< no / yes: what the person goes through page by page or chapter by chapter (a manga, a book, a podcast it plays itself), the unit to remember (chapter and page, a position in the book) and what to keep in resume to come back to the exact place (e.g. { cap: 87, pag: 12 }), and whether my plugin shows its own "keep reading" row (Kino draws none) >>>
+- Pictures from a site that only answers to its own page (an Image's headers, next Kino release): <<< no / yes: the site, the Referer it wants (e.g. https://mangasite.example/) and whether it needs a browser User-Agent; its picture hosts go in hosts >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 

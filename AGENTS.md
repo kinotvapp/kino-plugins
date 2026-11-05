@@ -17,27 +17,28 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 
 | Line | Section |
 | --- | --- |
-| 83 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
-| 116 | [1. Read first, in this order](#1-read-first-in-this-order) |
-| 201 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
-| 304 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
-| 417 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
-| 419 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
-| 485 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
-| 657 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
-| 693 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
-| 815 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
-| 878 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
-| 1103 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
-| 1201 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1286 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
-| 1465 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1560 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1589 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
-| 1614 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1637 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1751 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1804 | [7. Common mistakes](#7-common-mistakes) |
+| 87 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
+| 120 | [1. Read first, in this order](#1-read-first-in-this-order) |
+| 205 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
+| 309 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
+| 422 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
+| 424 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
+| 490 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
+| 662 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
+| 698 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
+| 831 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
+| 894 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
+| 1119 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
+| 1217 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
+| 1302 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
+| 1481 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1576 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1605 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
+| 1630 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
+| 1683 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1706 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1824 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 1877 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -74,8 +75,11 @@ as well) adds **app themes**: `appThemes` in the manifest
 protocol**: a plugin opens named doors in `provides` and another uses them through Kino with `consumes` and
 `kino.plugins.call` (section 4, "apiVersion 20: the plugin protocol"), and `kino.visualBrowser`, **a web window the person
 drives** to sign in or finish a step (manifest `"visualBrowser": true`; section 4, "apiVersion 20: a browser window the person
-drives"). apiVersion 21 (Kino 0.9.82; the maximum today) adds the `files` capability: **files on the
-person's device**, picked by the person (`kino.files`; section 4, "apiVersion 21: files on the device"). Kino 0.9.82 also adds,
+drives"). apiVersion 21 (Kino 0.9.82) adds the `files` capability: **files on the
+person's device**, picked by the person (`kino.files`; section 4, "apiVersion 21: files on the device"). apiVersion 22 (the
+maximum today; the next Kino release, not published yet) adds the `progress` capability: **where the person is** in a chapter
+or a book, kept by Kino for the plugin to read back (`kino.progress`; section 4, "apiVersion 22: progress"); the same release
+adds, with no new apiVersion, an `Image`'s `headers` (`Referer`, `User-Agent`) for sites that need their own Referer. Kino 0.9.82 also adds,
 with no new apiVersion, `onSwipeLeft`/`onSwipeRight`, `data:` images, `divider: false` on `AppBar`/`TabBar`, `logo`/`h` on
 `heroCard` and optional borders in app themes. See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
@@ -240,7 +244,8 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   0.9.81); `18` only for `appThemes`, `go.useTheme`, `go.setExperience`, `activeTheme` or
   `"hosts": []` in a themes-only plugin (Kino 0.9.81); `19` only for `lyrics` or
   `go.installPlugin`; `20` only for a top-level `provides`/`consumes` (the plugin protocol) or a plugin that only provides
-  (both Kino 0.9.81). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
+  (both Kino 0.9.81); `21` only for `files` (Kino 0.9.82); `22` only for `progress` (the next Kino release, not published yet;
+  a plugin that already has users puts it in `enhancements["22"]`). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
   instead. **17 to 20 need Kino 0.9.81**: every older Kino refuses the whole plugin, so use them only when the
   plugin needs them. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
@@ -341,7 +346,7 @@ exact message Kino shows, never a summary.
    with `signing: "request"`), `panel` (by `"panel"`, apiVersion 9; `panelAction` and `playerEvent` are optional); `categories` (needs `browse`) and `validateSettings` are optional.
    `syncProvider` (apiVersion 12) requires `syncPull` and `syncPush` (`syncStatus` optional), each taking one
    object argument (`null` for `syncStatus`). `byteSource` (apiVersion 13) requires `read` and `imageSource`
-   (apiVersion 13) requires `image`; `socket`, `storageLarge`, `catalog`, `qrScan` and `files` (apiVersion 21) are declarative.
+   (apiVersion 13) requires `image`; `socket`, `storageLarge`, `catalog`, `qrScan`, `files` (apiVersion 21) and `progress` (apiVersion 22) are declarative.
    Return plain JSON only.
    Kino loads exactly one file (`entry`), with no `require` and no module resolver, so do not split
    source across files that `plugin.js` imports at runtime. If the plugin is big enough to want more
@@ -725,6 +730,17 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   inside the field uses `trailingIcon`/`onTrailingTap` and a hidden `Skeleton` grid shown at once with a local `ui` op and hidden
   in the answer; prefer skeletons to a spinner. Many options (genres) go in a `BottomSheet` with a search field, not in a row
   of chips (chips for 3 to 5 short options). Recipes: <https://kinotvapp.github.io/kino-plugins/en/screen-reference/#recipes>.
+  To remember the page across restarts and devices use `kino.progress` (apiVersion 22, see "apiVersion 22: progress" below),
+  not `kino.storage`.
+- **Pictures that need a Referer** (`Image` `headers`; additive, no new apiVersion, next Kino release; an older Kino asks
+  without them). For a site (a manga reader) that answers 403 to a picture not asked from its own page:
+  `{ type: "Image", url, headers: { Referer: "https://site.example/", "User-Agent": "Mozilla/5.0 ..." } }`. Only `Referer` (an
+  https address) and `User-Agent`, each 1 to 512 characters, no control character; anything else is dropped and logged. They
+  are sent **only when the picture's host is in the manifest's `hosts`** (a `*.` pattern counts), and the `Referer` only when
+  its own host is declared too (otherwise the `Referer` alone is left out): so declare the site's picture hosts. An https `url`
+  only (a `data:` picture takes none); not per size; without a `User-Agent` Kino sends `Kino/<version>`. Kino still downloads
+  the picture itself (cached, four at a time), not your code
+  (<https://kinotvapp.github.io/kino-plugins/en/screen-components/#image-headers>).
 - **A search box** in three lines: `{ type: "TextField", key: "q", kind: "search", labelText: "Buscar", labelTextEn: "Search",
   onSubmitted: "search" }`; `screenEvent({ name: "search", value })` gets the typed text in `value`; in the kit
   `node sdk/run.mjs . screenEvent search "" '"tomate"' --trigger submit` (the value is JSON).
@@ -745,7 +761,7 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   Kino's progress bar, `key` required, the index in `state.inputs.<key>`; `reverse: true` for right to left, `progress`
   `segments`/`bar`/`none`, up to 250 pages with `bar` or `none`), `ListTile` (listTile); content `Text` (styles
   `hero` (apiVersion 17, 72 sp), `h1`..`h5`, `p`, `caption`, `label`; `time` + `timeFormat` `relative`/`clock`/`countdown`),
-  `Image` (`aspect` `16:9`/`2:3`/`1:1`/`banner` or any `w:h`; `fit` `cover`/`contain`/`width`; `focus` `top`/`center`/`bottom`; the `url` may be `data:image/png|jpeg|webp|gif;base64,…` of ≤ 200,000 characters, never svg, an older Kino draws the `fallback`), `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
+  `Image` (`aspect` `16:9`/`2:3`/`1:1`/`banner` or any `w:h`; `fit` `cover`/`contain`/`width`; `focus` `top`/`center`/`bottom`; the `url` may be `data:image/png|jpeg|webp|gif;base64,…` of ≤ 200,000 characters, never svg, an older Kino draws the `fallback`; `headers` `{ Referer?, User-Agent? }` for a site that needs its own Referer, sent only to declared hosts), `Icon` (50 names: `info`, `tune`, `settings`, `star`, `play`, `search`, `share`...), `Badge`, `CircleAvatar` (avatar,
   radius 12..64), `MaterialBanner` (banner), `LinearProgressIndicator` (progress), `CircularProgressIndicator` (loading),
   `Skeleton` (`line`, `block`, `circle`, `card`; ≤ 6 lines), `QrImage` (qr, ≤ 1,000 characters), `DataTable` (table, `TableRow`
   /`TableCell`: ≤ 20 columns, 200 rows, `colSpan` ≤ 8), `emptyState`, `errorState`; Kino's own title cards `titleCard`,
@@ -1190,7 +1206,7 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
   than the month. Shares the 30 calls a minute of `watched`/`saved`. Feature-detect `typeof kino.library.stats === "function"`.
 - Jobs: `perProfile: true` (with `runOn: "any"`, never with `enabledBy`) runs `job(ctx)` once per profile of the device that has
   your plugin on, each its own run with that profile's storage, library, shared values and config (ctx gives no profile id);
-  `kino.notifications`, `kino.coins` and `kino.seed` answer `not_allowed` there. Its consent is Kino's own job row (off by
+  `kino.notifications`, `kino.coins`, `kino.seed` and `kino.progress` answer `not_allowed` there. Its consent is Kino's own job row (off by
   default, each profile may leave itself out), with a longer red line. `kino.tmdb` is allowed in any job (each call one of
   the run's requests). A plugin with `ai` approved gets 60 s and 20 requests per run.
 - Screens: `kino.jobOn("<jobId>")` (only in `screen`/`screenEvent`) says whether a job's row is on, and the answer
@@ -1611,6 +1627,59 @@ address. Nothing is uploaded or sent by this capability. Full page: <https://kin
 - **Kit.** `kino.files` in `sdk/run.mjs` answers from the folder named by `KINO_FILES_DIR` (default `./.kino-files`): `pick`
   hands out the files that are there, in name order.
 
+<a id="progress"></a>
+**apiVersion 22: where the person is (`progress`, next Kino release, not published yet).** A plugin whose items are not videos
+(a manga reader, a book reader, a podcast it plays itself) declares `"apiVersion": 22` and `"capabilities": [..., "progress"]`
+(declarative: nothing to export; **no consent line, no approval**; it may stand alone, beside `screen` (`["screen", "progress"]`
+is valid) or beside any capability, and the plugin stays that kind; an enhancement may add it: `enhancements["22"]`). Full page:
+<https://kinotvapp.github.io/kino-plugins/en/progress/>.
+
+- **Calls.** `kino.progress.set({ id, fraction, title?, poster?, label?, labelEn?, resume?, done?, doneAt? })` (`id` matches
+  `^[A-Za-z0-9._~-]{1,128}$`, yours: a chapter, a book, a manga; `fraction` 0 to 1; resolves when Kino has taken it),
+  `get(id)` (the entry, or **`null`** when there is none: always handle it), `list({ limit?, sinceMs? })` (most recently set
+  first; `limit` 1..100, default 50; `sinceMs` a finite number >= 0; finished ones included with `done: true`) and `clear(id)`.
+  An entry is `{ id, fraction, title?, poster?, label?, labelEn?, resume?, done, updatedAtMs }`: **every `list` entry carries its
+  `id`**.
+- **Kino draws nothing.** No Home row, no card, no "Continuar viendo": the plugin builds its own "keep reading" shelf from
+  `list` (in `home()` or on its screen). It is kept apart from the library, the watch time, `kino.library` and `tracking`.
+- **`resume` is opaque.** Any JSON value (string, number, boolean, object, array) of ≤ 1024 bytes once serialized (else
+  `too_large`); Kino stores, syncs and hands it back unchanged and **never reads it**. Put the exact place there
+  (`{ cap: 87, pag: 12 }`, or a screen route and its args); `fraction` is only an approximation. Keep a margin below 1024: Kino
+  counts U+2028/U+2029 as 6 bytes where `JSON.stringify` writes them raw. Validate its shape when you read it back (another
+  device, maybe another version of the plugin, wrote it).
+- **Texts.** `title` ≤ 200 characters; `label` and `labelEn` ≤ 80 each ("Cap. 87 · hoja 12 de 40"); `poster` an https address
+  under the screen `Image` rule or a `KinoImageRef` of `imageSource` (a bad poster costs only the poster). A `set` that leaves
+  `title`/`poster` out keeps what was there.
+- **Finished** at `done: true` or when `fraction >= doneAt` (default 0.9); it stays in `list`; a later `set` with a lower
+  fraction reopens it; an identical `set` changes nothing.
+- **Call it on every page turn if you like**: Kino keeps the latest per element in memory and writes at most every 2 s (and
+  when the screen closes or the app goes to the background); more than 20 calls a second are coalesced, never an error. 500
+  elements per plugin (the oldest by last activity dropped).
+- **Per profile, synced, backed up.** Each element is the plugin's and the profile's (another plugin or profile never sees it);
+  it syncs per profile between the person's linked devices both ways (the latest `set` wins) and travels in backups.
+- **Jobs.** A scheduled job may call it, but **not a job that runs for a profile other than the active one** (`perProfile`):
+  there it rejects with `not_allowed`, like `kino.notifications`, `kino.coins` and `kino.seed`.
+- **Errors** (`err.code`): `bad_request` (a bad `id`, `fraction`, `done`, `doneAt`, text or option), `too_large` (`resume` over
+  1024 bytes), `not_allowed` (capability not declared, a job for another profile, or Kino could not keep it right now).
+- **Feature-detect** with `typeof kino.progress === "object"`.
+- **A `home()` built from it** returns an **array of rows**, each with its own `id`, and every item needs an `id` (plus `ref`,
+  `title`, `kind`):
+
+```js
+async function home() {
+  const rows = [];
+  if (typeof kino.progress === "object") {
+    const reading = (await kino.progress.list({ limit: 15 })).filter((e) => !e.done);
+    if (reading.length) rows.push({ id: "keep-reading", title: "Seguir leyendo",
+      items: reading.map((e) => ({ id: e.id, ref: e.id, title: e.title || e.id, kind: "series", poster: e.poster })) });
+  }
+  return rows; // a KinoRow[], never a single row object
+}
+```
+
+- **Kit.** `kino.progress` in the Node kit keeps the elements in memory for the run, with Kino's checks and error codes
+  (`node --test sdk/test/progress.test.mjs`).
+
 <a id="player-panel"></a>
 **The player panel (apiVersion 9, Kino 0.9.55).** `"panel": { "label", "labelEn?", "icon" | "iconFile" }` adds a
 button in the player, only while a title of the plugin plays, and requires exporting `panel(context)`; optional
@@ -1657,7 +1726,7 @@ people. See
       13 only for `socket`, `byteSource`, `storageLarge`, `catalog`, `qrScan`, `imageSource` or a `qr` setting:
       Kino 0.9.74+; 14 only for screens and their capabilities (Kino 0.9.74+); 15 only for `identity`, `notifications`
       or `pluginStore` (Kino 0.9.77+); 16 only for `coins` (Kino 0.9.78+); 17 and 18 only for what section 2 lists for them:
-      Kino 0.9.81+; 21 only for `files`: Kino 0.9.82+).
+      Kino 0.9.81+; 21 only for `files`: Kino 0.9.82+; 22 only for `progress`: the next Kino release, or `enhancements["22"]`).
       A plugin that uses `kino.nuvio` declares `nuvioRepos`, `"streamHosts": "any"` and checks
       `typeof kino.nuvio === "object"`.
 - [ ] A plugin with no video of its own declares `"catalogOnly": true` and still exports a `resolve`
@@ -1724,6 +1793,10 @@ people. See
       call from a `job`; a `protocol` handler that tolerates repeated items (tried with `--cursor`); the screen drawn with
       `installed` `true` and `false`, `--lang en` and `--device tv` with no `dropped` line; tried with
       `node sdk/run.mjs --provider …` and in Kino 0.9.81+ with the provider installed, switched off and removed.
+- [ ] apiVersion 22 / `progress`: `"apiVersion": 22` or `enhancements["22"]`; `typeof kino.progress === "object"` checked;
+      the exact place in `resume` (well under 1024 bytes); `get` answering `null` handled; the plugin's own "keep reading" row
+      built from `list()` (Kino draws none) inside a `home()` that returns an array of rows with `id`s and items with `id`s;
+      every call in `try`/`catch`. `Image` `headers` only on pictures whose hosts (and the Referer's) are in `hosts`.
 - [ ] `sdk/test/` is not in the plugin's repository (the kit's own suite).
 - [ ] No helper exported under the name `details` unless it is the real `details` export (reserved
       from apiVersion 8).
@@ -1811,6 +1884,12 @@ the raw manifest URL; run `node sdk/validate.mjs .`; check the id; tap "Actualiz
 - A reader that measures bytes or sizes pictures by hand instead of `Image` `fit: "width"`, a scroll with `zoom` and `onScroll`, and
   `pages` with `reverse`/`progress`; a spinner where a `Skeleton` keeps the layout; thirty chips where a bottom sheet with a
   search field fits; a screen that goes past its 600 nodes.
+- `kino.progress`: waiting for Kino to show a "keep reading" row (it draws none: build it from `list()`); reading
+  `here.resume` without checking that `get` did not answer `null`; putting the page's content in `resume` (≤ 1024 bytes, else
+  `too_large`); expecting it to work in a `perProfile` job run for another profile (`not_allowed`); a `home()` that returns one
+  row object instead of an array, a row or an item without `id`.
+- `Image` `headers` on a picture whose host is not in `hosts` (they are not sent, the site answers 403), a `Referer` on an
+  undeclared host (left out), or other header names (dropped).
 
 - Declaring `*.site.com` only, then failing on `site.com` (or the reverse after a redirect).
 - A CDN, a subtitle host or a license server missing from `hosts`: playback stops with an error.

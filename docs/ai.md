@@ -100,7 +100,11 @@ Cada pantalla del plugin usa una sola barra compacta: su AppBar lleva mergeWithK
 leading que es una salida real ({ close: true } en la portada, un regreso en las demás). La ruta sin nombre es "main",
 la portada. Un elemento de una fila del Home que abre una pantalla usa open: { screen: { args } } y el detalle se apila
 desde la respuesta de open, así Atrás vuelve a la portada. Un lector usa Image fit: "width", un desplazamiento con zoom
-y onScroll, y pages con reverse y progress. Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
+y onScroll, y pages con reverse y progress. Si las imágenes del sitio solo responden a su propia página, cada Image lleva
+headers { Referer, User-Agent }, que se envían solo a hosts que están en los hosts del manifiesto. Para recordar dónde se
+quedó la persona, usa kino.progress (apiVersion 22, próxima versión de Kino): el lugar exacto va en resume (opaco para
+Kino, máximo 1024 bytes), get(id) responde null cuando no hay nada, y Kino no dibuja ninguna fila: el plugin arma su propia
+fila "Seguir leyendo" con list() (https://kinotvapp.github.io/kino-plugins/progress/). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
 búsqueda a muchos chips; una pantalla tiene un presupuesto de 600 nodos.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
@@ -159,6 +163,8 @@ Lo que quiero:
 - Identidad o avisos (apiVersion 15): <<< no / sí: quién necesita el seudónimo de Telegram de la persona (solo responde a plugins firmados con la llave de autor de Kino) y qué avisos dejar en la campanita de Inicio >>>
 - Otros plugins (el protocolo entre plugins, apiVersion 20, Kino 0.9.81): <<< no / usa la puerta de otro plugin: su repositorio y su puerta (p. ej. kinotvapp/kino-plugin-tmdb, "movies") / abre una puerta: qué podrían pedirle otros plugins >>>
 - Archivos del aparato de la persona (apiVersion 21, Kino 0.9.82): <<< no / sí: de qué tipo (libros, música, videos, imágenes, subtítulos), un archivo o una carpeta entera, y si solo los lee o los reproduce >>>
+- Recordar dónde se quedó la persona (apiVersion 22, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué recorre la persona página a página o capítulo a capítulo (un manga, un libro, un podcast que reproduce el plugin), la unidad que hay que recordar (capítulo y página, una posición en el libro) y qué guardar en resume para volver al lugar exacto (p. ej. { cap: 87, pag: 12 }), y si mi plugin muestra su propia fila "Seguir leyendo" (Kino no dibuja ninguna) >>>
+- Imágenes de un sitio que solo responde a su propia página (los headers de una Image, próxima versión de Kino): <<< no / sí: el sitio, el Referer que pide (p. ej. https://mangasite.example/) y si necesita un User-Agent de navegador; sus hosts de imágenes van en hosts >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
