@@ -805,6 +805,7 @@ cannot change or hide:
 | `schedule` | "Podrá ejecutarse en segundo plano cada cierto tiempo para actualizar sus datos, usando internet y batería" ("Can run in the background every so often to refresh its data, using your internet and battery") | yes | "Dejar que trabaje en segundo plano" ("Let it work in the background") |
 | `ai` | "Podrá enviar texto a un servicio de IA de terceros (Kilo) para que lo resuma o clasifique; lo que envíe sale de tu aparato" ("Can send text to a third-party AI service (Kilo) to have it summarized or classified; what it sends leaves your device") | yes | "Dejar que use la IA de texto" ("Let it use the text AI") |
 | `shared` | "Guarda unos pocos resultados que se sincronizan entre tus aparatos vinculados" ("Keeps a few small results that sync between your linked devices") | no | none |
+| `playerSlot` | with a `fixed` element: "Mostrará algo suyo de forma permanente en el reproductor mientras ves un video" ("Will keep something of its own on screen in the player while you watch a video") | yes, only when an element is `fixed` (an overlay-only slot asks nothing) | "Dejar que muestre algo en el reproductor" ("Let it show something in the player") |
 
 - A red line is asked at install and again on the update that adds it, **never approved by Kino on its own**; the kit's
   import starts it unticked. Until the person approves it the API refuses (`permission_denied`, `refused`), so always handle
@@ -828,6 +829,7 @@ Each capability has its own page:
 | `ai` | One short text to Kino's text AI, to summarise or classify. | [AI](jobs-and-shared.md#ai) |
 | `qrScan` | `kino.qr.scan` from a `screenEvent` that follows the person's tap or submit. | [QR](qr.md) |
 | `playerPanelTab` | Your tab in the player panel of any plugin's title. | [Contributed tab](player-panel.md#contributed-tab) |
+| `playerSlot` (`slot`, apiVersion 23) | Up to three small elements (text, icon, image, button) in the top-right corner of the TV player. | [The player slot](player-slot.md) |
 | `kino.fetch` `maxBytes` / `stopAt` | Read only the head of a page. | [`kino.fetch`](kino-api.md#fetch) |
 | `enhancements` | Screens and the other apiVersion 14 features for a plugin that keeps an older apiVersion; new consents first on an update. | [Enhancements](enhancements.md) |
 

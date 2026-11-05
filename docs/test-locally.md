@@ -390,6 +390,21 @@ El flujo completo, con ejemplos, está en [el protocolo entre plugins](protocol.
   revisa tu `repo`), y no aplica la regla 18+, ni la revisión de secretos sellados, ni el rechazo de llamarse a sí mismo: mira
   [el protocolo entre plugins](protocol.md#kit) y [Lo que el kit no puede copiar](engine-limits.md#kit-protocol).
 
+## apiVersion 22 y 23: progress y el hueco del reproductor { #api23 }
+
+`kino.progress` (apiVersion 22) guarda sus elementos en memoria durante la ejecución, con las revisiones y los códigos de error
+de Kino. El hueco del reproductor (apiVersion 23) tiene sus dos comandos, con los mismos cambios de contexto que un panel:
+
+```bash
+node sdk/run.mjs <carpeta> playerSlot [ref]                         # el cuadro que Kino guarda: orden declarado, refreshMs ajustado
+node sdk/run.mjs <carpeta> playerSlotAction <ref> <id del botón>    # qué hace Kino con un toque: { openPanel, player, controlled }
+node sdk/run.mjs --bare <carpeta> playerSlot                        # el contexto de un título que Kino no puede compartir (sin kind)
+node sdk/run.mjs --live-channel tdt:la1:La 1 <carpeta> playerSlot - # un canal de En vivo
+```
+
+`validate.mjs` revisa el bloque `slot` y los dos exports, e imprime la línea roja de un elemento `fixed`. Mira
+[El hueco del reproductor](player-slot.md#kit).
+
 ## Lo que el kit de Node no reproduce { #differences }
 
 Kino es la autoridad; el kit solo se le aproxima para que puedas iterar rápido. Antes de publicar,

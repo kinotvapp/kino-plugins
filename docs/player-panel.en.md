@@ -15,6 +15,9 @@ From `"apiVersion": 14` (Kino 0.9.74) the panel can also be built with the scree
 panel or on a live channel, and the person can pin it next to the video: see
 [The panel built with the screen kit](#screen-kit).
 
+From `"apiVersion": 23` (the next Kino release) a plugin can also keep up to three small elements in the top-right corner of
+the TV player, and a button there can open this panel (`openPanel`): see [The player slot](player-slot.md).
+
 !!! note "What is not in this version"
     `ai` (Kino's AI) and `chat` do not ship in Kino 0.9.55; they come in a later version. If your panel includes
     an `ai` or `chat` element, Kino drops it and writes "needs a newer Kino" to the log. There is no `kino.socket`

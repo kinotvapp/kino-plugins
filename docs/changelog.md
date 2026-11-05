@@ -3,10 +3,10 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Próxima versión de Kino: guardar dónde va la persona, e imágenes que necesitan un Referer { #next }
+## Próxima versión de Kino (provisionalmente la 0.9.83): guardar dónde va la persona, el hueco del reproductor, e imágenes que necesitan un Referer { #next }
 
 !!! note "Todavía sin publicar"
-    Esto llega con la próxima versión de Kino, que todavía no está publicada. Un Kino anterior rechaza `"apiVersion": 22` e
+    Esto llega con la próxima versión de Kino, que todavía no está publicada. Un Kino anterior rechaza `"apiVersion": 22` y `23`, e
     ignora los `headers` de una `Image`.
 
 - **Guardar dónde va la persona (`apiVersion` 22).** La capacidad `progress` y `kino.progress` (`set`, `get`, `list`, `clear`):
@@ -14,6 +14,14 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   de seguridad; `resume` son hasta 1024 bytes de tu propio JSON que Kino nunca lee. **Kino no dibuja nada**: tu plugin arma su
   propio estante "Seguir leyendo" con `list`. Sin línea de consentimiento; se rechaza en un trabajo que corre para otro perfil;
   se puede declarar en `enhancements["22"]`. [Guardar dónde va la persona](progress.md).
+- **El hueco del reproductor (`apiVersion` 23).** La capacidad `playerSlot` y el bloque `slot` del manifiesto: hasta tres
+  elementos pequeños (un texto, un ícono, una imagen, un botón) en la esquina superior derecha del reproductor de la TV, en
+  películas, series y canales de En vivo, que llena tu export `playerSlot(context)` y que se aprietan con
+  `playerSlotAction({ id, context })`. Los elementos `overlay` salen con los controles; uno `fixed` se queda y le pregunta a
+  la persona en rojo, en cada aparato. El ejemplo es un reloj. [El hueco del reproductor](player-slot.md).
+- **La tipografía nueva de Kino, tus pantallas sin cambios.** Las pantallas propias de Kino pasan a pesos más livianos en
+  esta versión; las pantallas de los plugins conservan la escala de texto con la que se diseñaron (los encabezados siguen en
+  negrita), así que nada cambia en tu pantalla.
 - **Imágenes que necesitan un Referer.** Una `Image` acepta `headers: { Referer?, User-Agent? }` (sin `apiVersion` nuevo), que
   se envían solo cuando el host de la imagen, y el del Referer, están en los `hosts` de tu manifiesto: lectores de manga cuyas
   imágenes le responden 403 a cualquier otro. [Imágenes que necesitan un Referer](screen-components.md#image-headers).

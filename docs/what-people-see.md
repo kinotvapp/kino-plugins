@@ -155,6 +155,10 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
   su línea en rojo en la hoja de consentimiento y se piden en la instalación y en la actualización que las agrega; `shared`
   muestra una línea normal. La persona puede apagar cada una en la pestaña del plugin en Ajustes
   ([Salas, biblioteca y control del reproductor](rooms.md), [Trabajos, resultados compartidos e IA](jobs-and-shared.md)).
+- **El hueco del reproductor.** Un plugin con un elemento `fixed` en el [hueco del reproductor](player-slot.md) muestra
+  «Mostrará algo suyo de forma permanente en el reproductor mientras ves un video» en rojo, y se pregunta en cada aparato; su
+  interruptor es «Dejar que muestre algo en el reproductor». En la TV sus elementos van en la esquina superior derecha del
+  reproductor.
 - **Actualizaciones.** Una actualización que agrega una línea en rojo o un host nuevo lo muestra primero, abierto, bajo
   «Nuevo en esta actualización».
 - **Pestañas en el panel del reproductor.** Un plugin con `playerPanelTab` agrega una pestaña al panel del reproductor de

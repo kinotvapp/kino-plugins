@@ -159,6 +159,8 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Sockets y bytes del plugin](bytes.md) | apiVersion 13, Kino 0.9.74: WebSockets con `kino.ws`, streams que sirve tu plugin con `read` (Kino los reproduce y los envía al televisor), las operaciones de bytes de `kino.crypto`, un ejemplo completo sobre WebSocket con su prueba |
 | [Catálogo y almacenamiento grande](catalog.md) | apiVersion 13, Kino 0.9.74: `kino.catalog`, un catálogo SQLite de hasta 100.000 ítems en el que busca Kino, y `storageLarge` |
 | [Imágenes del plugin](images.md) | apiVersion 13, Kino 0.9.74: pósteres e imágenes de episodio que sirve tu plugin con `image` |
+| [Archivos del aparato](files.md) | apiVersion 21, Kino 0.9.82: `kino.files`, archivos y carpetas que elige la persona, leídos por rangos o reproducidos con `kino-file:` |
+| [Guardar dónde va la persona](progress.md) | apiVersion 22 (próxima versión de Kino): `kino.progress`, hasta dónde va la persona en un capítulo o un libro; tu plugin arma su propia fila "Seguir leyendo" |
 | [Códigos QR](qr.md) | apiVersion 13, Kino 0.9.74: el tipo de ajuste `qr` y `kino.qr.scan`, con una receta de inicio de sesión entre dos aparatos |
 | [Pantallas](screens.md) | apiVersion 14, Kino 0.9.74: la pantalla completa de tu plugin, el bloque `screen`, `screen()` y `screenEvent()`, el estado, las respuestas, `go`, temporizadores, el foco en el TV, límites, probar con el kit |
 | [Componentes: diseño, contenido y acciones](screen-components.md) | Cada componente de una pantalla con sus propiedades: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, texto, imágenes, tablas, botones, toasts |
@@ -179,6 +181,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
 | [Temas de la app](themes.md) | `appThemes` (apiVersion 18): tokens y rangos, `price` en kinos, `experience`, un `logo` vectorial, `go.useTheme` y `go.setExperience` |
 | [Panel del reproductor](player-panel.md) | `panel`, `panelAction` y `playerEvent`, acciones sobre el reproductor y `settingsLayout` (apiVersion 9); el panel en modo pantalla, las pestañas en el panel de otro plugin y en un canal en vivo, el panel fijo (apiVersion 14) |
+| [El hueco del reproductor](player-slot.md) | `playerSlot` y el bloque `slot` (apiVersion 23, próxima versión de Kino): hasta tres elementos pequeños en la esquina superior derecha del reproductor de la TV, el ejemplo del reloj, el consentimiento y el kit |
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |

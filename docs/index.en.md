@@ -150,6 +150,8 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Sockets and plugin-served bytes](bytes.md) | apiVersion 13, Kino 0.9.74: `kino.ws` WebSockets, streams your plugin serves through `read` (played and cast by Kino), `kino.crypto`'s byte operations, a complete WebSocket example with its test |
 | [Catalog and large storage](catalog.md) | apiVersion 13, Kino 0.9.74: `kino.catalog`, a SQLite catalog of up to 100,000 items searched by Kino, and `storageLarge` |
 | [Images from the plugin](images.md) | apiVersion 13, Kino 0.9.74: posters and stills your plugin serves through `image` |
+| [Files on the device](files.md) | apiVersion 21, Kino 0.9.82: `kino.files`, files and folders the person picks, read by ranges or played with `kino-file:` |
+| [Saving where the person is](progress.md) | apiVersion 22 (next Kino release): `kino.progress`, where the person is in a chapter or a book; your plugin builds its own "keep reading" row |
 | [QR codes](qr.md) | apiVersion 13, Kino 0.9.74: the settings form's `qr` type and `kino.qr.scan`, with a two-device login recipe |
 | [Screens](screens.md) | apiVersion 14, Kino 0.9.74: your plugin's full screen, the `screen` block, `screen()` and `screenEvent()`, state, answers, `go`, timers, TV focus, limits, testing with the kit |
 | [Components: layout, content and actions](screen-components.md) | Every screen component with its properties: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, text, images, tables, buttons, toasts |
@@ -170,6 +172,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Section, categories and colors](section-theme.md) | `section`, `categories` and `theme` (apiVersion 6) |
 | [App themes](themes.md) | `appThemes` (apiVersion 18): tokens and ranges, `price` in kinos, `experience`, a vector `logo`, `go.useTheme` and `go.setExperience` |
 | [The player panel](player-panel.md) | `panel`, `panelAction` and `playerEvent`, player actions and `settingsLayout` (apiVersion 9); the panel in screen mode, tabs in another plugin's panel and on a live channel, the pinned panel (apiVersion 14) |
+| [The player slot](player-slot.md) | `playerSlot` and the `slot` block (apiVersion 23, next Kino release): up to three small elements in the top-right corner of the TV player, the clock example, consent and the kit |
 | [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |

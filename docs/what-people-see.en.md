@@ -135,6 +135,9 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
   the consent sheet and are asked at install and on the update that adds them; `shared` shows a plain line. The person can
   switch each one off in the plugin's tab in Ajustes ([Rooms, the library and player control](rooms.md),
   [Background jobs, shared results and AI](jobs-and-shared.md)).
+- **The player slot.** A plugin with a `fixed` [player slot](player-slot.md) element shows «Mostrará algo suyo de forma
+  permanente en el reproductor mientras ves un video» in red, asked on each device; its switch is «Dejar que muestre algo en
+  el reproductor». On the TV its elements sit in the top-right corner of the player.
 - **Updates.** An update that adds a red consent line or a new host shows it first, open, under «Nuevo en esta
   actualización».
 - **Tabs in the player panel.** A plugin with `playerPanelTab` adds a tab to the player panel of any title; the person

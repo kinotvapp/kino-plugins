@@ -380,6 +380,21 @@ The whole workflow, with examples, is in [the plugin protocol](protocol.md#kit).
   `repo`), and it does not apply the 18+ rule, the sealed-secret check nor the self-call refusal: see
   [the plugin protocol](protocol.md#kit) and [What the kit cannot copy](engine-limits.md#kit-protocol).
 
+## apiVersion 22 and 23: progress and the player slot { #api23 }
+
+`kino.progress` (apiVersion 22) keeps its elements in memory for the run, with Kino's checks and error codes. The player slot
+(apiVersion 23) has its own two commands, with the same context switches as a panel:
+
+```bash
+node sdk/run.mjs <folder> playerSlot [ref]                       # the frame Kino keeps: declared order, refreshMs clamped
+node sdk/run.mjs <folder> playerSlotAction <ref> <button id>     # what Kino does with a press: { openPanel, player, controlled }
+node sdk/run.mjs --bare <folder> playerSlot                      # the context of a title Kino cannot share (no kind)
+node sdk/run.mjs --live-channel tdt:la1:La 1 <folder> playerSlot - # an En vivo channel
+```
+
+`validate.mjs` checks the `slot` block and the two exports and prints the red line of a `fixed` element. See
+[The player slot](player-slot.md#kit).
+
 ## What the Node kit does not reproduce { #differences }
 
 Kino is the authority; the kit only approximates it so

@@ -867,6 +867,7 @@ pregunta a la persona **con sus propias palabras**, que no puedes cambiar ni esc
 | `schedule` | "Podrá ejecutarse en segundo plano cada cierto tiempo para actualizar sus datos, usando internet y batería" | sí | "Dejar que trabaje en segundo plano" |
 | `ai` | "Podrá enviar texto a un servicio de IA de terceros (Kilo) para que lo resuma o clasifique; lo que envíe sale de tu aparato" | sí | "Dejar que use la IA de texto" |
 | `shared` | "Guarda unos pocos resultados que se sincronizan entre tus aparatos vinculados" | no | ninguno |
+| `playerSlot` | con un elemento `fixed`: "Mostrará algo suyo de forma permanente en el reproductor mientras ves un video" | sí, solo cuando un elemento es `fixed` (un hueco con solo `overlay` no pregunta nada) | "Dejar que muestre algo en el reproductor" |
 
 - Una línea en rojo se pregunta al instalar y otra vez en la actualización que la agrega, y **Kino nunca la aprueba por su
   cuenta**; la importación del kit la deja sin marcar. Hasta que la persona la aprueba, la API se niega
@@ -891,6 +892,7 @@ Cada capacidad tiene su propia página:
 | `ai` | Un texto corto a la IA de texto de Kino, para resumir o clasificar. | [IA](jobs-and-shared.md#ai) |
 | `qrScan` | `kino.qr.scan` desde un `screenEvent` que sigue a un toque o envío de la persona. | [QR](qr.md) |
 | `playerPanelTab` | Tu pestaña en el panel del reproductor del título de cualquier plugin. | [Pestaña aportada](player-panel.md#contributed-tab) |
+| `playerSlot` (`slot`, apiVersion 23) | Hasta tres elementos pequeños (texto, ícono, imagen, botón) en la esquina superior derecha del reproductor de la TV. | [El hueco del reproductor](player-slot.md) |
 | `kino.fetch` `maxBytes` / `stopAt` | Leer solo el principio de una página. | [`kino.fetch`](kino-api.md#fetch) |
 | `enhancements` | Pantallas y las demás funciones de apiVersion 14 para un plugin que conserva un apiVersion anterior; en una actualización, los consentimientos nuevos primero. | [Pantallas sin subir tu apiVersion](enhancements.md) |
 

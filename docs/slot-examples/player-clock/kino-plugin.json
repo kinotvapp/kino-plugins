@@ -1,0 +1,25 @@
+{
+  "id": "player-clock",
+  "name": "Reloj del reproductor",
+  "version": "1.0.0",
+  "apiVersion": 23,
+  "entry": "plugin.js",
+  "description": "Ejemplo del hueco del reproductor: la hora y la fecha en la esquina de la imagen en la TV, sin red",
+  "author": "kinotvapp",
+  "homepage": "https://kinotvapp.github.io/kino-plugins/",
+  "hosts": [
+    "kinotvapp.github.io"
+  ],
+  "capabilities": [
+    "playerSlot"
+  ],
+  "slot": {
+    "elements": [
+      {
+        "id": "clock",
+        "kind": "text",
+        "mode": "fixed"
+      }
+    ]
+  }
+}

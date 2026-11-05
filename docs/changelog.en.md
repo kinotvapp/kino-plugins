@@ -3,10 +3,10 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Next Kino release: saving where the person is, and pictures that need a Referer { #next }
+## Next Kino release (provisionally 0.9.83): saving where the person is, the player slot, and pictures that need a Referer { #next }
 
 !!! note "Not published yet"
-    These arrive with the next Kino release, which is not published yet. A Kino before it refuses `"apiVersion": 22`, and
+    These arrive with the next Kino release, which is not published yet. A Kino before it refuses `"apiVersion": 22` and `23`, and
     ignores an `Image`'s `headers`.
 
 - **Saving where the person is (`apiVersion` 22).** The `progress` capability and `kino.progress` (`set`, `get`, `list`,
@@ -14,6 +14,13 @@ What changed in Kino that matters when you write a plugin, by app version. Every
   backups; `resume` is up to 1024 bytes of your own JSON that Kino never reads. **Kino draws nothing**: your plugin builds its
   own "keep reading" shelf from `list`. No consent line; refused in a job that runs for another profile; may be declared in
   `enhancements["22"]`. [Saving where the person is](progress.md).
+- **The player slot (`apiVersion` 23).** The `playerSlot` capability and the manifest's `slot` block: up to three small
+  elements (a text, an icon, an image, a button) in the top-right corner of the TV player, on movies, series and En vivo
+  channels, filled by your `playerSlot(context)` export and pressed through `playerSlotAction({ id, context })`. `overlay`
+  elements show with the controls; a `fixed` one stays and asks the person in red, on each device. A clock is the example.
+  [The player slot](player-slot.md).
+- **Kino's new type, your screens unchanged.** Kino's own screens move to lighter weights in this release; plugin screens keep
+  the type scale they were designed against (headings still bold), so nothing changes for your screen.
 - **Pictures that need a Referer.** An `Image` takes `headers: { Referer?, User-Agent? }` (no new `apiVersion`), sent only when
   the picture's host, and the Referer's, are in your manifest's `hosts`: manga readers whose pictures answer 403 to anyone else.
   [Pictures that need a Referer](screen-components.md#image-headers).

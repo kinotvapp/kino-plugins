@@ -16,6 +16,10 @@ Desde `"apiVersion": 14` (Kino 0.9.74) el panel también se arma con el kit de p
 panel de otro plugin o en un canal en vivo, y la persona puede fijarlo junto al video: mira
 [El panel con el kit de pantallas](#screen-kit).
 
+Desde `"apiVersion": 23` (la próxima versión de Kino) un plugin también puede tener hasta tres elementos pequeños en la
+esquina superior derecha del reproductor de la TV, y un botón ahí puede abrir este panel (`openPanel`): mira
+[El hueco del reproductor](player-slot.md).
+
 !!! note "Qué no está en esta versión"
     `ai` (la IA de Kino) y `chat` no vienen en Kino 0.9.55; llegarán en una versión posterior. Si tu panel
     incluye un elemento `ai` o `chat`, Kino lo descarta y escribe «needs a newer Kino» en el registro. Tampoco
