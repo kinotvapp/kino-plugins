@@ -1,12 +1,13 @@
 {
   "id": "player-clock",
   "name": "Reloj del reproductor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "apiVersion": 23,
   "entry": "plugin.js",
-  "description": "Ejemplo del hueco del reproductor: la hora y la fecha en la esquina de la imagen en la TV, sin red",
+  "description": "Ejemplo del hueco del reproductor: la hora y la fecha en la esquina de la imagen en la TV, con zona horaria, tamaño, color, fondo y posición a tu gusto, sin red",
   "author": "kinotvapp",
   "homepage": "https://kinotvapp.github.io/kino-plugins/",
+  "discoverable": false,
   "hosts": [
     "kinotvapp.github.io"
   ],
@@ -18,8 +19,358 @@
       {
         "id": "clock",
         "kind": "text",
-        "mode": "fixed"
+        "mode": "overlay"
       }
     ]
-  }
+  },
+  "settings": [
+    {
+      "key": "secTime",
+      "label": "Hora",
+      "labelEn": "Time",
+      "type": "section"
+    },
+    {
+      "key": "timezone",
+      "label": "Zona horaria",
+      "labelEn": "Time zone",
+      "type": "select",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "La del aparato (por defecto)",
+          "labelEn": "This device's own (default)"
+        },
+        {
+          "value": "-8",
+          "label": "UTC-8 · Pacífico (Los Ángeles)",
+          "labelEn": "UTC-8 · Pacific (Los Angeles)"
+        },
+        {
+          "value": "-7",
+          "label": "UTC-7 · Montaña (Denver)",
+          "labelEn": "UTC-7 · Mountain (Denver)"
+        },
+        {
+          "value": "-6",
+          "label": "UTC-6 · México, Centroamérica",
+          "labelEn": "UTC-6 · Mexico, Central America"
+        },
+        {
+          "value": "-5",
+          "label": "UTC-5 · Colombia, Perú, Nueva York",
+          "labelEn": "UTC-5 · Colombia, Peru, New York"
+        },
+        {
+          "value": "-4",
+          "label": "UTC-4 · Venezuela, Bolivia, Chile",
+          "labelEn": "UTC-4 · Venezuela, Bolivia, Chile"
+        },
+        {
+          "value": "-3",
+          "label": "UTC-3 · Argentina, Brasil, Uruguay",
+          "labelEn": "UTC-3 · Argentina, Brazil, Uruguay"
+        },
+        {
+          "value": "0",
+          "label": "UTC · Londres, Lisboa",
+          "labelEn": "UTC · London, Lisbon"
+        },
+        {
+          "value": "1",
+          "label": "UTC+1 · Madrid, París, Berlín",
+          "labelEn": "UTC+1 · Madrid, Paris, Berlin"
+        },
+        {
+          "value": "2",
+          "label": "UTC+2 · Atenas, El Cairo",
+          "labelEn": "UTC+2 · Athens, Cairo"
+        },
+        {
+          "value": "3",
+          "label": "UTC+3 · Moscú, Estambul",
+          "labelEn": "UTC+3 · Moscow, Istanbul"
+        },
+        {
+          "value": "4",
+          "label": "UTC+4 · Dubái",
+          "labelEn": "UTC+4 · Dubai"
+        },
+        {
+          "value": "5.5",
+          "label": "UTC+5:30 · India",
+          "labelEn": "UTC+5:30 · India"
+        },
+        {
+          "value": "8",
+          "label": "UTC+8 · Pekín, Singapur",
+          "labelEn": "UTC+8 · Beijing, Singapore"
+        },
+        {
+          "value": "9",
+          "label": "UTC+9 · Tokio, Seúl",
+          "labelEn": "UTC+9 · Tokyo, Seoul"
+        },
+        {
+          "value": "10",
+          "label": "UTC+10 · Sídney",
+          "labelEn": "UTC+10 · Sydney"
+        },
+        {
+          "value": "12",
+          "label": "UTC+12 · Nueva Zelanda",
+          "labelEn": "UTC+12 · New Zealand"
+        }
+      ],
+      "hint": "Un desfase fijo: no cambia solo con el horario de verano",
+      "hintEn": "A fixed offset: it does not follow daylight saving time"
+    },
+    {
+      "key": "secLook",
+      "label": "Aspecto",
+      "labelEn": "Look",
+      "type": "section"
+    },
+    {
+      "key": "size",
+      "label": "Tamaño del texto",
+      "labelEn": "Text size",
+      "type": "select",
+      "default": "normal",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeño",
+          "labelEn": "Small"
+        },
+        {
+          "value": "normal",
+          "label": "Normal (por defecto)",
+          "labelEn": "Normal (default)"
+        },
+        {
+          "value": "large",
+          "label": "Grande",
+          "labelEn": "Large"
+        },
+        {
+          "value": "xlarge",
+          "label": "Muy grande",
+          "labelEn": "Extra large"
+        }
+      ]
+    },
+    {
+      "key": "weight",
+      "label": "Grosor de la letra",
+      "labelEn": "Letter weight",
+      "type": "select",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "La de Kino (por defecto)",
+          "labelEn": "Kino's own (default)"
+        },
+        {
+          "value": "extralight",
+          "label": "Extra fina",
+          "labelEn": "Extra light"
+        },
+        {
+          "value": "light",
+          "label": "Fina",
+          "labelEn": "Light"
+        },
+        {
+          "value": "normal",
+          "label": "Normal",
+          "labelEn": "Regular"
+        },
+        {
+          "value": "medium",
+          "label": "Media",
+          "labelEn": "Medium"
+        },
+        {
+          "value": "semibold",
+          "label": "Seminegrita",
+          "labelEn": "Semibold"
+        },
+        {
+          "value": "bold",
+          "label": "Negrita",
+          "labelEn": "Bold"
+        }
+      ]
+    },
+    {
+      "key": "color",
+      "label": "Color de la letra",
+      "labelEn": "Letter colour",
+      "type": "select",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Blanco de Kino (por defecto)",
+          "labelEn": "Kino white (default)"
+        },
+        {
+          "value": "white",
+          "label": "Blanco",
+          "labelEn": "White"
+        },
+        {
+          "value": "yellow",
+          "label": "Amarillo",
+          "labelEn": "Yellow"
+        },
+        {
+          "value": "cyan",
+          "label": "Cian",
+          "labelEn": "Cyan"
+        },
+        {
+          "value": "green",
+          "label": "Verde",
+          "labelEn": "Green"
+        },
+        {
+          "value": "orange",
+          "label": "Naranja",
+          "labelEn": "Orange"
+        },
+        {
+          "value": "pink",
+          "label": "Rosa",
+          "labelEn": "Pink"
+        },
+        {
+          "value": "black",
+          "label": "Negro",
+          "labelEn": "Black"
+        }
+      ]
+    },
+    {
+      "key": "background",
+      "label": "Fondo de la pastilla",
+      "labelEn": "Pill background",
+      "type": "select",
+      "default": "default",
+      "options": [
+        {
+          "value": "default",
+          "label": "Oscuro translúcido (por defecto)",
+          "labelEn": "Translucent dark (default)"
+        },
+        {
+          "value": "none",
+          "label": "Sin fondo",
+          "labelEn": "No background"
+        },
+        {
+          "value": "dark",
+          "label": "Oscuro más fuerte",
+          "labelEn": "Stronger dark"
+        },
+        {
+          "value": "black",
+          "label": "Negro",
+          "labelEn": "Black"
+        },
+        {
+          "value": "white",
+          "label": "Blanco",
+          "labelEn": "White"
+        }
+      ]
+    },
+    {
+      "key": "secPlace",
+      "label": "Posición",
+      "labelEn": "Position",
+      "type": "section"
+    },
+    {
+      "key": "left",
+      "label": "Horizontal",
+      "labelEn": "Horizontal",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "-240",
+          "label": "240 a la izquierda",
+          "labelEn": "240 to the left"
+        },
+        {
+          "value": "-120",
+          "label": "120 a la izquierda",
+          "labelEn": "120 to the left"
+        },
+        {
+          "value": "-60",
+          "label": "60 a la izquierda",
+          "labelEn": "60 to the left"
+        },
+        {
+          "value": "0",
+          "label": "Donde está (por defecto)",
+          "labelEn": "Where it is (default)"
+        },
+        {
+          "value": "20",
+          "label": "20 a la derecha",
+          "labelEn": "20 to the right"
+        },
+        {
+          "value": "40",
+          "label": "40 a la derecha",
+          "labelEn": "40 to the right"
+        }
+      ]
+    },
+    {
+      "key": "top",
+      "label": "Vertical",
+      "labelEn": "Vertical",
+      "type": "select",
+      "default": "0",
+      "options": [
+        {
+          "value": "-16",
+          "label": "16 más arriba",
+          "labelEn": "16 higher"
+        },
+        {
+          "value": "0",
+          "label": "Donde está (por defecto)",
+          "labelEn": "Where it is (default)"
+        },
+        {
+          "value": "24",
+          "label": "24 más abajo",
+          "labelEn": "24 lower"
+        },
+        {
+          "value": "48",
+          "label": "48 más abajo",
+          "labelEn": "48 lower"
+        },
+        {
+          "value": "96",
+          "label": "96 más abajo",
+          "labelEn": "96 lower"
+        },
+        {
+          "value": "160",
+          "label": "160 más abajo",
+          "labelEn": "160 lower"
+        }
+      ]
+    }
+  ]
 }
