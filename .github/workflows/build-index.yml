@@ -1,12 +1,11 @@
-# Copy to kinotvapp/kino-plugins/.github/workflows/. Rebuilds index.json (every repo with topic `kino-plugin`) every hour.
+# Copy to kinotvapp/kino-plugins/.github/workflows/. Rebuilds index.json (every repo with topic `kino-plugin`). The scheduled run moved to the AWS box (systemd timer every 10 min,
+# pushes with a deploy key); this workflow is now manual only (workflow_dispatch).
 # kino-plugins holds only catalog.json, index.json and this workflow: the builder (tools/, src/) is checked out from the
 # kinotvapp/kino-plugin-store repository, pinned to the commit in STORE_COMMIT_SHA. That repository must be public, or the
 # second checkout needs a token (`token:`) that can read it.
 name: Build index
 
 on:
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
