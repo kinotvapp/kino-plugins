@@ -24,18 +24,41 @@ The numbers on this page come from [`contract.json`](reference/contract.json) (`
 
 ## A first slot: a clock { #example }
 
-The complete example is the **player clock**: the time and the date in Spanish or English, in one `fixed` text element, with
-no network. Its modules live in `src/` and are bundled into `plugin.js` by `scripts/build.mjs` (Kino loads one file).
+The complete example is the **player clock** (version 1.1.0): the time and the date in Spanish or English, in one `overlay` text
+element, with no network. The person dresses it in the plugin's settings: time zone (the device's own by default), size, weight,
+colour, background and position (see [Dressing a text](#dress)). Its modules live in `src/` and are bundled into `plugin.js` by
+`scripts/build.mjs` (Kino loads one file).
 
 Downloads: [`kino-plugin.json`](slot-examples/player-clock/kino-plugin.json) ·
 [`plugin.js`](slot-examples/player-clock/plugin.js) · [`src/clock.js`](slot-examples/player-clock/src/clock.js) ·
 [`src/index.js`](slot-examples/player-clock/src/index.js) · [`scripts/build.mjs`](slot-examples/player-clock/scripts/build.mjs)
 
-**`kino-plugin.json`**
+**`kino-plugin.json`** (the essentials; the download has the full settings form, with its English texts and every option)
 
 ```json
---8<-- "slot-examples/player-clock/kino-plugin.json"
+{
+  "id": "player-clock",
+  "version": "1.1.0",
+  "apiVersion": 23,
+  "entry": "plugin.js",
+  "hosts": ["kinotvapp.github.io"],
+  "capabilities": ["playerSlot"],
+  "slot": { "elements": [{ "id": "clock", "kind": "text", "mode": "overlay" }] },
+  "settings": [
+    { "key": "timezone", "label": "Zona horaria", "labelEn": "Time zone", "type": "select", "default": "auto",
+      "options": [{ "value": "auto", "label": "La del aparato (por defecto)", "labelEn": "This device's own (default)" },
+                  { "value": "-5", "label": "UTC-5 · Colombia, Perú, Nueva York", "labelEn": "UTC-5 · Colombia, Peru, New York" }] },
+    { "key": "size", "label": "Tamaño del texto", "labelEn": "Text size", "type": "select", "default": "normal", "options": [] },
+    { "key": "weight", "label": "Grosor de la letra", "labelEn": "Letter weight", "type": "select", "default": "auto", "options": [] },
+    { "key": "color", "label": "Color de la letra", "labelEn": "Letter colour", "type": "select", "default": "auto", "options": [] },
+    { "key": "background", "label": "Fondo de la pastilla", "labelEn": "Pill background", "type": "select", "default": "default", "options": [] },
+    { "key": "left", "label": "Horizontal", "labelEn": "Horizontal", "type": "select", "default": "0", "options": [] },
+    { "key": "top", "label": "Vertical", "labelEn": "Vertical", "type": "select", "default": "0", "options": [] }
+  ]
+}
 ```
+
+(`"options": []` stands for the list in the download: a `select` needs at least one option.)
 
 **`src/index.js`** (the entry; `src/clock.js` turns a `Date` and `context.lang` into `"21:05\nWed Nov 4"`)
 
@@ -52,7 +75,8 @@ Downloads: [`kino-plugin.json`](slot-examples/player-clock/kino-plugin.json) ·
 ```bash
 node sdk/run.mjs player-clock playerSlot                              # the frame Kino would keep
 node sdk/run.mjs --context '{"lang":"en-US"}' player-clock playerSlot  # in English
-node sdk/validate.mjs player-clock                                     # also prints the red consent line
+node sdk/validate.mjs player-clock                                     # an overlay-only slot shows no consent line
+node sdk/run.mjs --config timezone=-5 player-clock playerSlot          # try a setting
 ```
 
 ## The manifest's `slot` block { #manifest }
@@ -111,6 +135,29 @@ node sdk/validate.mjs player-clock                                     # also pr
   nothing to show are dropped; a repeated id keeps the first valid one. If the answer is not an object with an `items` list,
   Kino keeps the last good frame (none the first time).
 - **Items come out in declared order**, whatever order you answer in. An element you leave out is simply not drawn.
+
+### Dressing a text and placing an element { #dress }
+
+A `text` item may also say how it looks, and any item may say where it sits. The usual way is to offer them as ordinary
+[settings](manifest.md) of your plugin, as the clock example does, and read them with `kino.config.get`.
+
+| Field | On | Value | What Kino draws |
+| --- | --- | --- | --- |
+| `size` | `text` | `"small"`, `"normal"`, `"large"` or `"xlarge"` | 12, 14 (the default), 18 or 24 sp, on a line that grows with it; the pill grows with the letters |
+| `weight` | `text` | `"extralight"`, `"light"`, `"normal"`, `"medium"`, `"semibold"` or `"bold"` | Inter's weight (200, 300, 400, 500, 600, 700) for every line. Absent: Kino's own, the first line Medium and the next Regular |
+| `color` | `text` | `"#RRGGBB"` or `"#RRGGBBAA"` | The letters' colour. Never less than half opaque (a weaker alpha is raised to half) |
+| `background` | `text` | `"#RRGGBB"` or `"#RRGGBBAA"` | The pill behind the text, instead of Kino's translucent black. `"#00000000"` (alpha 0) draws no pill |
+| `left`, `top` | any item | whole numbers of dp | Nudges the element from its place in the row: `left` moves it right (negative: left), `top` moves it down (negative: up). Clamped to -400..200 and -40..300; anything that is not a number counts as 0 |
+
+- **Each field is read on its own.** An invalid one (an unknown size or weight, `"red"`, `"#12345"`) is ignored: Kino draws
+  its own for that field.
+- **Kino keeps the text readable.** A `color` whose contrast against an opaque pill (or against Kino's dark one, when you give no
+  `background`) is under 2:1 is dropped, and Kino's white letters turn black on a light opaque pill. A pill that is not opaque
+  (alpha under 240) is never checked, because Kino cannot know what the video shows behind it.
+- **A nudge keeps the space the element had**, so it can overlap its neighbour: nudge an element that sits alone.
+- **The time zone is yours, not Kino's.** The clock example offers a "Time zone" setting whose default is the device's own
+  clock; the others are fixed offsets from UTC (UTC-5, UTC+5:30...) that do not follow daylight saving time, because a plugin
+  cannot rely on a time zone database in its sandbox.
 
 ### Timing, retries and the background { #timing }
 
@@ -182,7 +229,8 @@ applies, and there is no focus `ring` or `key` to set.
 
 - **A text** sits on a translucent dark pill: the player's small label size, white with a shadow (readable over bare video, since
   a `fixed` element shows with the controls gone), the first line Medium and the second Regular, with tabular figures so a
-  ticking clock never changes the pill's width; past the width it ends with an ellipsis.
+  ticking clock never changes the pill's width; past the width it ends with an ellipsis. Your answer may change the size, weight,
+  colour and pill, and nudge it: see [Dressing a text and placing an element](#dress).
 - **A button** is a round button (icon only) or a pill (with a label), on the same translucent fill until it has focus.
 - **Order:** elements keep the order you declared, `overlay` ones to the left of `fixed` ones, so a fixed element never moves
   when the overlay ones come and go.

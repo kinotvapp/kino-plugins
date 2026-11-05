@@ -18,7 +18,9 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
   elementos pequeños (un texto, un ícono, una imagen, un botón) en la esquina superior derecha del reproductor de la TV, en
   películas, series y canales de En vivo, que llena tu export `playerSlot(context)` y que se aprietan con
   `playerSlotAction({ id, context })`. Los elementos `overlay` salen con los controles; uno `fixed` se queda y le pregunta a
-  la persona en rojo, en cada aparato. El ejemplo es un reloj. [El hueco del reproductor](player-slot.md).
+  la persona en rojo, en cada aparato. El ejemplo es un reloj. Un texto también puede decir su `size`, `weight`, `color` y
+  `background`, y cualquier elemento su `left` y `top`, para que la persona vista el reloj desde los ajustes del plugin (la
+  zona horaria incluida). [El hueco del reproductor](player-slot.md).
 - **La tipografía nueva de Kino, tus pantallas sin cambios.** Las pantallas propias de Kino pasan a pesos más livianos en
   esta versión; las pantallas de los plugins conservan la escala de texto con la que se diseñaron (los encabezados siguen en
   negrita), así que nada cambia en tu pantalla.

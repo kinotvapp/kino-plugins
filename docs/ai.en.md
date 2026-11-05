@@ -102,8 +102,9 @@ no row: the plugin builds its own "keep reading" row from list() (https://kinotv
 For something small that stays on the TV player (a clock, a score, a button that opens my panel), use the player slot
 (apiVersion 23, next Kino release): the "playerSlot" capability, a "slot" block of 1 to 3 elements (text, icon, image,
 button; "overlay" with the controls or "fixed", which asks me in red), and both exports playerSlot(context) and
-playerSlotAction({ id, context }); context may lack kind, and refreshMs is 2000 to 60000
-(https://kinotvapp.github.io/kino-plugins/en/player-slot/).
+playerSlotAction({ id, context }); context may lack kind, and refreshMs is 2000 to 60000. A text accepts size, weight, color
+and background, and any element left and top; offer them as ordinary settings, and Kino ignores what is invalid and keeps the
+text readable (https://kinotvapp.github.io/kino-plugins/en/player-slot/#dress).
 Prefer a Skeleton to a spinner and a bottom sheet with a search field to many chips; a screen has a 600-node budget.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 

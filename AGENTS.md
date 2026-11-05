@@ -36,10 +36,10 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 | 1610 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
 | 1635 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
 | 1688 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
-| 1747 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1770 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1893 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1946 | [7. Common mistakes](#7-common-mistakes) |
+| 1754 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1777 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1900 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 1953 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -1703,6 +1703,13 @@ host: an `image` is loaded by Kino from any public https address. Full page:
   id, a wrong kind, an unknown icon or a bad image drops that item; a repeated id keeps the first valid one; items come out in
   declared order; an answer without an `items` list keeps the last good frame. `refreshMs` is clamped to 2,000..60,000 and
   counted from the end of the last call; absent = never called again.
+- **Look and place (no new apiVersion).** A `text` item may carry `size` (`small`, `normal`, `large`, `xlarge`: 12, 14, 18, 24 sp),
+  `weight` (`extralight`, `light`, `normal`, `medium`, `semibold`, `bold`: Inter 200..700, every line), `color` and `background`
+  (`#RRGGBB` or `#RRGGBBAA`; alpha 0 on `background` draws no pill); any item may carry `left` and `top` (whole dp, clamped to
+  -400..200 and -40..300). An invalid field is ignored on its own; the letters are never under half opacity, a `color` under 2:1
+  contrast on an opaque pill (or on Kino's dark one) is dropped, white letters turn black on a light opaque pill. Offer them as
+  ordinary `select` settings read with `kino.config.get`; a time zone is a fixed UTC offset (no daylight saving), the device's own
+  by default (the player-clock example, `docs/slot-examples/player-clock`; <https://kinotvapp.github.io/kino-plugins/en/player-slot/#dress>).
 - **Timing.** 5 s a call, one at a time per plugin; until the first good answer a failed call is retried every 5 s, 4 more
   times; calls never count toward "No responde" (a press does); no call while Kino is in the background.
 - **`playerSlotAction({ id, context })`** runs on OK on a declared button on screen; answer `null`/`{}` or

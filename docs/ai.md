@@ -108,8 +108,9 @@ fila "Seguir leyendo" con list() (https://kinotvapp.github.io/kino-plugins/progr
 en el reproductor de la TV (un reloj, un marcador, un botón que abre mi panel), usa el hueco del reproductor (apiVersion 23,
 próxima versión de Kino): la capacidad "playerSlot", un bloque "slot" de 1 a 3 elementos (text, icon, image, button;
 "overlay" con los controles o "fixed", que me pregunta en rojo) y los dos exports playerSlot(context) y
-playerSlotAction({ id, context }); el context puede venir sin kind, y refreshMs va de 2000 a 60000
-(https://kinotvapp.github.io/kino-plugins/player-slot/). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
+playerSlotAction({ id, context }); el context puede venir sin kind, y refreshMs va de 2000 a 60000. Un text acepta size, weight,
+color y background, y cualquier elemento left y top; los ofreces como ajustes normales y Kino ignora lo inválido y mantiene el
+texto legible (https://kinotvapp.github.io/kino-plugins/player-slot/#dress). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
 búsqueda a muchos chips; una pantalla tiene un presupuesto de 600 nodos.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 

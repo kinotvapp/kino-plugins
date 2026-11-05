@@ -25,18 +25,41 @@ Los números de esta página salen de [`contract.json`](reference/contract.json)
 
 ## Un primer hueco: un reloj { #example }
 
-El ejemplo completo es el **reloj del reproductor**: la hora y la fecha en español o en inglés, en un único elemento de texto
-`fixed`, sin red. Sus módulos están en `src/` y `scripts/build.mjs` los junta en `plugin.js` (Kino carga un solo archivo).
+El ejemplo completo es el **reloj del reproductor** (versión 1.1.0): la hora y la fecha en español o en inglés, en un único
+elemento de texto `overlay`, sin red. La persona lo viste en los ajustes del plugin: zona horaria (la del aparato por defecto),
+tamaño, grosor, color, fondo y posición (ver [Vestir un texto](#dress)). Sus módulos están en `src/` y `scripts/build.mjs` los
+junta en `plugin.js` (Kino carga un solo archivo).
 
 Descargas: [`kino-plugin.json`](slot-examples/player-clock/kino-plugin.json) ·
 [`plugin.js`](slot-examples/player-clock/plugin.js) · [`src/clock.js`](slot-examples/player-clock/src/clock.js) ·
 [`src/index.js`](slot-examples/player-clock/src/index.js) · [`scripts/build.mjs`](slot-examples/player-clock/scripts/build.mjs)
 
-**`kino-plugin.json`**
+**`kino-plugin.json`** (lo esencial; la descarga trae el formulario de ajustes completo, con sus textos en inglés y todas las opciones)
 
 ```json
---8<-- "slot-examples/player-clock/kino-plugin.json"
+{
+  "id": "player-clock",
+  "version": "1.1.0",
+  "apiVersion": 23,
+  "entry": "plugin.js",
+  "hosts": ["kinotvapp.github.io"],
+  "capabilities": ["playerSlot"],
+  "slot": { "elements": [{ "id": "clock", "kind": "text", "mode": "overlay" }] },
+  "settings": [
+    { "key": "timezone", "label": "Zona horaria", "labelEn": "Time zone", "type": "select", "default": "auto",
+      "options": [{ "value": "auto", "label": "La del aparato (por defecto)", "labelEn": "This device's own (default)" },
+                  { "value": "-5", "label": "UTC-5 · Colombia, Perú, Nueva York", "labelEn": "UTC-5 · Colombia, Peru, New York" }] },
+    { "key": "size", "label": "Tamaño del texto", "labelEn": "Text size", "type": "select", "default": "normal", "options": [] },
+    { "key": "weight", "label": "Grosor de la letra", "labelEn": "Letter weight", "type": "select", "default": "auto", "options": [] },
+    { "key": "color", "label": "Color de la letra", "labelEn": "Letter colour", "type": "select", "default": "auto", "options": [] },
+    { "key": "background", "label": "Fondo de la pastilla", "labelEn": "Pill background", "type": "select", "default": "default", "options": [] },
+    { "key": "left", "label": "Horizontal", "labelEn": "Horizontal", "type": "select", "default": "0", "options": [] },
+    { "key": "top", "label": "Vertical", "labelEn": "Vertical", "type": "select", "default": "0", "options": [] }
+  ]
+}
 ```
+
+(`"options": []` representa la lista de la descarga: un `select` necesita al menos una opción.)
 
 **`src/index.js`** (la entrada; `src/clock.js` convierte una `Date` y `context.lang` en `"21:05\nmié 4 nov"`)
 
@@ -54,7 +77,8 @@ Descargas: [`kino-plugin.json`](slot-examples/player-clock/kino-plugin.json) ·
 ```bash
 node sdk/run.mjs player-clock playerSlot                              # el cuadro que Kino guardaría
 node sdk/run.mjs --context '{"lang":"en-US"}' player-clock playerSlot  # en inglés
-node sdk/validate.mjs player-clock                                     # también imprime la línea roja de consentimiento
+node sdk/validate.mjs player-clock                                     # un hueco solo `overlay` no muestra línea de consentimiento
+node sdk/run.mjs --config timezone=-5 player-clock playerSlot          # probar un ajuste
 ```
 
 ## El bloque `slot` del manifiesto { #manifest }
@@ -115,6 +139,30 @@ node sdk/validate.mjs player-clock                                     # tambié
   `items`, Kino conserva el último cuadro bueno (ninguno la primera vez).
 - **Los elementos salen en el orden declarado**, respondas en el orden que respondas. Un elemento que dejas fuera simplemente
   no se dibuja.
+
+### Vestir un texto y colocar un elemento { #dress }
+
+Un elemento `text` también puede decir cómo se ve, y cualquier elemento puede decir dónde va. Lo habitual es ofrecerlos como
+[ajustes](manifest.md) normales de tu plugin, como hace el reloj de ejemplo, y leerlos con `kino.config.get`.
+
+| Campo | En | Valor | Lo que Kino dibuja |
+| --- | --- | --- | --- |
+| `size` | `text` | `"small"`, `"normal"`, `"large"` o `"xlarge"` | 12, 14 (el de siempre), 18 o 24 sp, con una línea que crece con él; la píldora crece con las letras |
+| `weight` | `text` | `"extralight"`, `"light"`, `"normal"`, `"medium"`, `"semibold"` o `"bold"` | El grosor de Inter (200, 300, 400, 500, 600, 700) en todas las líneas. Ausente: el de Kino, la primera línea Medium y la siguiente Regular |
+| `color` | `text` | `"#RRGGBB"` o `"#RRGGBBAA"` | El color de la letra. Nunca menos de la mitad de opaca (un alfa menor se sube a la mitad) |
+| `background` | `text` | `"#RRGGBB"` o `"#RRGGBBAA"` | La píldora detrás del texto, en lugar del negro translúcido de Kino. `"#00000000"` (alfa 0) no dibuja píldora |
+| `left`, `top` | cualquier elemento | números enteros de dp | Mueve el elemento desde su lugar en la fila: `left` lo mueve a la derecha (negativo: a la izquierda), `top` hacia abajo (negativo: hacia arriba). Se acota a -400..200 y -40..300; lo que no sea un número cuenta como 0 |
+
+- **Cada campo se lee por separado.** Uno inválido (un tamaño o grosor desconocido, `"red"`, `"#12345"`) se ignora: Kino dibuja
+  el suyo para ese campo.
+- **Kino mantiene el texto legible.** Un `color` cuyo contraste con una píldora opaca (o con la oscura de Kino, si no das
+  `background`) es menor de 2:1 se descarta, y la letra blanca de Kino pasa a negra sobre una píldora opaca clara. Una píldora
+  que no es opaca (alfa menor de 240) nunca se revisa, porque Kino no puede saber qué muestra el video detrás.
+- **Un desplazamiento conserva el espacio que tenía el elemento**, así que puede solaparse con el vecino: desplaza un elemento
+  que esté solo.
+- **La zona horaria es del plugin, no de Kino.** El reloj de ejemplo ofrece un ajuste «Zona horaria» cuyo valor por defecto es el
+  reloj del aparato; las demás son desfases fijos respecto de UTC (UTC-5, UTC+5:30...) que no siguen el horario de verano,
+  porque un plugin no puede contar con una base de datos de zonas horarias en su sandbox.
 
 ### Tiempos, reintentos y segundo plano { #timing }
 
@@ -188,7 +236,8 @@ Kino dibuja cada elemento con su propio aspecto, así que no aplica ninguna prop
 - **Un texto** va sobre una píldora oscura translúcida: el tamaño de etiqueta pequeña del reproductor, blanco con sombra (se lee
   sobre el video solo, porque un elemento `fixed` se ve sin los controles), la primera línea en Medium y la segunda en Regular,
   con cifras tabulares para que un reloj que avanza nunca cambie el ancho de la píldora; si no cabe, termina en puntos
-  suspensivos.
+  suspensivos. Tu respuesta puede cambiar el tamaño, el grosor, el color y la píldora, y moverla: ver
+  [Vestir un texto y colocar un elemento](#dress).
 - **Un botón** es un botón redondo (solo ícono) o una píldora (con texto), con el mismo fondo translúcido mientras no tiene el
   foco.
 - **Orden:** los elementos conservan el orden en que los declaraste, los `overlay` a la izquierda de los `fixed`, así que un

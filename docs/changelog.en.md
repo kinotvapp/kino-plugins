@@ -17,8 +17,9 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 - **The player slot (`apiVersion` 23).** The `playerSlot` capability and the manifest's `slot` block: up to three small
   elements (a text, an icon, an image, a button) in the top-right corner of the TV player, on movies, series and En vivo
   channels, filled by your `playerSlot(context)` export and pressed through `playerSlotAction({ id, context })`. `overlay`
-  elements show with the controls; a `fixed` one stays and asks the person in red, on each device. A clock is the example.
-  [The player slot](player-slot.md).
+  elements show with the controls; a `fixed` one stays and asks the person in red, on each device. A clock is the example. A
+  text can also say its `size`, `weight`, `color` and `background`, and any element its `left` and `top`, so the person can
+  dress the clock from the plugin's settings (time zone included). [The player slot](player-slot.md).
 - **Kino's new type, your screens unchanged.** Kino's own screens move to lighter weights in this release; plugin screens keep
   the type scale they were designed against (headings still bold), so nothing changes for your screen.
 - **Pictures that need a Referer.** An `Image` takes `headers: { Referer?, User-Agent? }` (no new `apiVersion`), sent only when
