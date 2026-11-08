@@ -799,11 +799,12 @@ has no close button of its own. A quick pick beside a button (a reaction, a spee
 
 ## Navigation { #navigation }
 
-A node's action or an answer may carry `go`: one of sixteen shapes, **always into this plugin's own content or one of
+A node's action or an answer may carry `go`: one of seventeen shapes, **always into this plugin's own content or one of
 Kino's own pages**. Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go`
-every 500 ms. No shape names an intent or an app, and only `liveChannel` and `installPlugin` name another plugin (`liveChannel` an En vivo
-provider, whose channel Kino tunes to for a plugin whose player tab joins live channels; `installPlugin` a repository whose
-install sheet Kino opens). The guide covers `go` in
+every 500 ms. No shape names an intent or an app, and only `liveChannel`, `installPlugin` and `plugin` name another plugin
+(`liveChannel` an En vivo provider, whose channel Kino tunes to for a plugin whose player tab joins live channels;
+`installPlugin` a repository whose install sheet Kino opens; `plugin`, from Kino 0.9.84, a repository whose screen or search
+Kino opens). The guide covers `go` in
 [Navigation with `go`](screens.md#go).
 
 | Shape | Written | What opens | Sent from |
@@ -824,6 +825,7 @@ install sheet Kino opens). The guide covers `go` in
 | [`useTheme`](#go-use-theme) | `{ useTheme: { theme } }` | turns on one of this plugin's own `appThemes` as Apariencia does, or back to Kino's theme with `theme: null`; Kino shows its own toast | only the person's own press or submit on your screen, from apiVersion 18 |
 | [`setExperience`](#go-set-experience) | `{ setExperience: "light" \| "full" }` | asks for the light or the full experience of the whole app; Kino asks the person first and changes nothing without their yes | only the person's own press or submit on your screen, from apiVersion 18 |
 | [`installPlugin`](#go-install-plugin) | `{ installPlugin: { repo } }` | Kino's own install sheet for `repo` (a plain `owner/name`); nothing installs without the person's own Instalar | only the person's own press or submit on your screen, from apiVersion 19 |
+| [`plugin`](#go-plugin) | `{ plugin: { repo, route?, args?, query? } }` | another plugin's screen at `route` with `args`, or its search for `query`, found by `repo` (a GitHub `owner/name[/path]`); Kino 0.9.84 | only the person's own press or submit on your screen, from apiVersion 20 |
 
 ![Navigation on the phone](assets/ui/navigation-phone.png)
 ![Navigation on the TV](assets/ui/navigation-tv.png)
@@ -1076,6 +1078,27 @@ export async function screen() {
 - Only from the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button): dropped,
   logged, from `open`, a timer, a change, a load-more, a pop-up's `onClose`, a panel or a notice. Below `apiVersion` 19 it is
   dropped.
+
+### `go.plugin` { #go-plugin }
+
+From `apiVersion` 20 (Kino 0.9.84, not published yet): a button on your own screen that opens **another** plugin's screen, or
+its search, from its GitHub repository. It is the piece behind [share cards](share.md#cards).
+
+```js
+{ type: "ElevatedButton", labelText: "Ver en Mi anime", labelTextEn: "Open in Mi anime", onPressed: { go: { plugin: {
+  repo: "your-user/kino-plugin-anime", route: "detail", args: { id: "frieren" }, query: "Frieren" } } } }
+```
+
+- `repo` is a GitHub `owner/name`, with an optional sub-path, of at most 200 characters; a URL or an `@ref` drops the `go`,
+  logged. `route` is a `go.screen` route, `args` a JSON object within the `go.screen` cap and `query` a text of at most 200
+  characters. Any other field drops the `go`, logged.
+- In order: not installed, so Kino shows its install sheet and continues once the person installs it; 18+ and locked, so
+  nothing opens and Kino shows its toast; off, so Kino asks «¿Activar?»; `route` in the plugin's `openFrom.routes`, so that
+  screen opens with `args`; a `query` sent and the plugin has a search, so Kino's search opens scoped to it; otherwise its
+  section or its screen's default page; and with nothing to open, a toast. A route the target does not list is never opened.
+  The detail: [`go.plugin`](share.md#go-plugin) and [`openFrom`](share.md#open-from).
+- Only from the person's own press or submit on your screen: dropped, logged, from `open`, a timer, a change, a load-more, a
+  pop-up's `onClose`, a panel or a notice. Below `apiVersion` 20 it is dropped.
 
 #### Recommended plugins and `installed` (Kino 0.9.81) { #recommends-installed }
 

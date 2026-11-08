@@ -148,6 +148,9 @@ Before writing anything:
    --door <the real door> --call <a real call> (it writes "hosts": []); its test/provider is a
    stand-in to replace with a copy of the real provider. One-page summary:
    https://kinotvapp.github.io/kino-plugins/en/protocol-quick/.
+9. For the Share button (it goes in every plugin, see the rules), read https://kinotvapp.github.io/kino-plugins/en/share/
+   and copy Megaplay's shape (https://github.com/xuper-plugin/kino-plugin-megaplay, src/browse/share.js and
+   test/share.test.mjs).
 
 What I want:
 - Source: <<< the site or API, e.g. https://example.com >>>
@@ -167,6 +170,7 @@ What I want:
 - Remember where the person stopped (apiVersion 22, next Kino release, not published yet): <<< no / yes: what the person goes through page by page or chapter by chapter (a manga, a book, a podcast it plays itself), the unit to remember (chapter and page, a position in the book) and what to keep in resume to come back to the exact place (e.g. { cap: 87, pag: 12 }), and whether my plugin shows its own "keep reading" row (Kino draws none) >>>
 - Pictures from a site that only answers to its own page (an Image's headers, next Kino release): <<< no / yes: the site, the Referer it wants (e.g. https://mangasite.example/) and whether it needs a browser User-Agent; its picture hosts go in hosts >>>
 - Something always on the TV player (the player slot, apiVersion 23, next Kino release, not published yet): <<< no / yes: what it shows (a clock, a score, a logo, a button that opens my panel), whether it stays the whole time (fixed: Kino asks me in red) or only with the controls (overlay), and how often it changes >>>
+- Share to Kino Social (recommended in every plugin): <<< yes, from each title page and from the bar / only from the bar (text only) / no >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
 
@@ -303,6 +307,18 @@ Rules you cannot break (the detail and exact numbers are in AGENTS.md):
   (the next Kino release, not published yet; to keep older Kinos, the feature goes in "enhancements")). A catalog that plays nothing declares "catalogOnly": true
   (Kino 0.9.54) and still exports a resolve that fails with not_found, for older Kino. A new id of my own (never
   "archive-org").
+- Sharing (recommended in EVERY plugin, unless I say no): a "Compartir" button in the plugin's screen (on a title page, with
+  the title, and/or in the bar, text only) that opens a sheet with a text I can change and an "Adjuntar el título" switch, and
+  sends the text, plus the title when there is one ({ kind: "movie" | "series", tmdb }), to Kino Social's "wall" door with
+  kino.plugins.call("social", "share", { text, title, from }). In the manifest:
+  "consumes": { "social": { "repo": "kinotvapp/kino-social", "door": "wall", "calls": ["share"] } } and
+  "recommends": ["kinotvapp/kino-social"] (apiVersion 20, or inside enhancements["20"] and behind
+  typeof kino.plugins === "object"; Kino 0.9.81 and Kino Social 0.9.7). If it answers provider_missing and Kino Social is not
+  installed, answer go: { installPlugin: { repo: "kinotvapp/kino-social" } }; without kino.plugins, an "Actualiza Kino" toast.
+  Never publish on my behalf: Kino Social only keeps a draft I review and post there, and you tell me so. From Kino 0.9.84
+  (not published yet) the plugin can also declare "openFrom": { "routes": [...] } with the routes of its screen that other
+  plugins' cards may open (read route.args in the open event and check them)
+  (https://kinotvapp.github.io/kino-plugins/en/share/).
 - No "debug": true in a published plugin unless I ask for it: every plugin already has a "Modo debug"
   switch in Kino's Ajustes, and "debug": true only turns it on by default for everyone. "telemetry" only if I agree that the
   plugin's errors reach Kino; log steps and counts, never what the person types.
@@ -333,6 +349,9 @@ you hand the plugin over run this self-check and tell me the result of each line
   service can read the data;
 - if it uses apiVersion 13: read is covered by a Node test
   that checks every range byte for byte, no handle holds a secret, and every socket is closed;
+- the Share button: consumes "social" (kinotvapp/kino-social, door "wall", call "share") and the same repository in
+  recommends, provider_missing answers go.installPlugin, the text can be changed before sending, the title can be dropped,
+  and the final message says the draft waits in Kino Social (nothing is published on its own);
 - if it has a player slot: "playerSlot" and the "slot" block together, both exports present, node sdk/run.mjs . playerSlot
   prints the frame with nothing dropped (also with --bare), and node sdk/validate.mjs . passes;
 - if it has a screen: every screen's AppBar has mergeWithKinoBar: true and dense: true with a real-exit leading,

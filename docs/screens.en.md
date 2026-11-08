@@ -609,11 +609,11 @@ settings (the same store, the same sync between the person's devices, read with 
 
 ## Where a screen sends the person: `go` { #go }
 
-A node's action or an answer may carry `go`: one of sixteen shapes, **always into this plugin's own content or one of Kino's
-own pages**. No shape names an intent or an app, and only `liveChannel` and `installPlugin` name another plugin (an En vivo provider,
-for a plugin whose player tab declares `"kinds": ["live"]`; a repository whose install sheet Kino opens); anything else is
-dropped. Each shape has its own entry in the reference, from [`go.title`](screen-forms.md#go-title) to
-[`go.installPlugin`](screen-forms.md#go-install-plugin).
+A node's action or an answer may carry `go`: one of seventeen shapes, **always into this plugin's own content or one of Kino's
+own pages**. No shape names an intent or an app, and only `liveChannel`, `installPlugin` and `plugin` name another plugin (an
+En vivo provider, for a plugin whose player tab declares `"kinds": ["live"]`; a repository whose install sheet Kino opens; a
+repository whose screen or search Kino opens); anything else is dropped. Each shape has its own entry in the reference, from
+[`go.title`](screen-forms.md#go-title) to [`go.plugin`](screen-forms.md#go-plugin).
 
 | `go` | What opens | Sent from |
 | --- | --- | --- |
@@ -633,6 +633,7 @@ dropped. Each shape has its own entry in the reference, from [`go.title`](screen
 | `useTheme` | turns on one of this plugin's own [`appThemes`](themes.md) as Apariencia does, or with `theme: null` goes back to Kino's theme while one of its own is active; opens nothing, Kino shows its own toast and calls `screen` again, see [`go.useTheme`](screen-forms.md#go-use-theme) | only the person's own press or submit on your screen (a tap, a submit, the answer to one, a pop-up's button), never a panel; from apiVersion 18 |
 | `setExperience` | `"light"` or `"full"`: asks for that whole-app experience; Kino asks the person first and changes nothing without their yes, see [`go.setExperience`](screen-forms.md#go-set-experience) | only the person's own press or submit on your screen, never a panel or a notice; from apiVersion 18 |
 | `installPlugin` | Kino's own install sheet for `repo` (a plain `owner/name`) over your screen; nothing installs without the person's own Instalar, see [`go.installPlugin`](screen-forms.md#go-install-plugin) | only the person's own press or submit on your screen, never a panel or a notice; from apiVersion 19 |
+| `plugin` | **another** plugin's screen (`repo`) at a `route` that plugin lists in its `openFrom.routes`, with `args`; otherwise its search for `query`, or its section; offers to install it when missing (Kino 0.9.84), see [`go.plugin`](screen-forms.md#go-plugin) and [Sharing](share.md#cards) | only the person's own press or submit on your screen, never a panel or a notice; from apiVersion 20 |
 
 - Kino's page opens over your screen; Back returns to it with its state. At most one page-opening `go` every 500 ms (a
   second one meanwhile is dropped, logged).

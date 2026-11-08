@@ -153,6 +153,9 @@ Antes de escribir nada:
    --door <la puerta real> --call <una llamada real> (escribe "hosts": []); su test/provider
    es un reemplazo que hay que cambiar por una copia del proveedor real. Resumen en una página:
    https://kinotvapp.github.io/kino-plugins/protocol-quick/.
+9. Para el botón Compartir (va en todo plugin, mira las reglas), lee https://kinotvapp.github.io/kino-plugins/share/ y
+   copia la forma de Megaplay (https://github.com/xuper-plugin/kino-plugin-megaplay, src/browse/share.js y
+   test/share.test.mjs).
 
 Lo que quiero:
 - Fuente: <<< el sitio o la API, p. ej. https://example.com >>>
@@ -172,6 +175,7 @@ Lo que quiero:
 - Recordar dónde se quedó la persona (apiVersion 22, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué recorre la persona página a página o capítulo a capítulo (un manga, un libro, un podcast que reproduce el plugin), la unidad que hay que recordar (capítulo y página, una posición en el libro) y qué guardar en resume para volver al lugar exacto (p. ej. { cap: 87, pag: 12 }), y si mi plugin muestra su propia fila "Seguir leyendo" (Kino no dibuja ninguna) >>>
 - Imágenes de un sitio que solo responde a su propia página (los headers de una Image, próxima versión de Kino): <<< no / sí: el sitio, el Referer que pide (p. ej. https://mangasite.example/) y si necesita un User-Agent de navegador; sus hosts de imágenes van en hosts >>>
 - Algo siempre a la vista en el reproductor de la TV (el hueco del reproductor, apiVersion 23, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué muestra (un reloj, un marcador, un logo, un botón que abre mi panel), si se queda todo el tiempo (fixed: Kino me pregunta en rojo) o solo con los controles (overlay), y cada cuánto cambia >>>
+- Compartir en Kino Social (recomendado en todo plugin): <<< sí, desde la página de cada título y desde la barra / solo desde la barra (solo texto) / no >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
 
@@ -314,6 +318,18 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
   para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
+- Compartir (recomendado en TODO plugin, salvo que yo diga que no): un botón "Compartir" en la pantalla del plugin (en la
+  página de un título, con el título, y/o en la barra, solo texto) que abre una hoja con un texto que puedo cambiar y un
+  interruptor "Adjuntar el título", y manda el texto, más el título cuando lo hay ({ kind: "movie" | "series", tmdb }), a la
+  puerta "wall" de Kino Social con kino.plugins.call("social", "share", { text, title, from }). En el manifiesto:
+  "consumes": { "social": { "repo": "kinotvapp/kino-social", "door": "wall", "calls": ["share"] } } y
+  "recommends": ["kinotvapp/kino-social"] (apiVersion 20, o dentro de enhancements["20"] y detrás de
+  typeof kino.plugins === "object"; Kino 0.9.81 y Kino Social 0.9.7). Si responde provider_missing y Kino Social no está
+  instalado, responde go: { installPlugin: { repo: "kinotvapp/kino-social" } }; sin kino.plugins, un aviso "Actualiza Kino".
+  Nunca publiques por mí: Kino Social solo guarda un borrador que yo reviso y publico allá, y así me lo dices. Desde Kino
+  0.9.84 (todavía sin publicar) el plugin puede declarar además "openFrom": { "routes": [...] } con las rutas de su pantalla
+  que pueden abrir las tarjetas de otros plugins (lee route.args en el evento open y revísalos)
+  (https://kinotvapp.github.io/kino-plugins/share/).
 - Nada de "debug": true en un plugin publicado salvo que yo lo pida: todo plugin ya tiene un
   interruptor "Modo debug" en Ajustes de Kino, y "debug": true solo lo deja encendido de entrada para todos. "telemetry" solo si yo acepto que
   los errores del plugin lleguen a Kino; registra pasos y conteos, nunca lo que escribe la persona.
@@ -344,6 +360,9 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   plugin y su servicio pueden leer los datos;
 - si usa apiVersion 13: read tiene una prueba de
   Node que revisa cada rango byte por byte, ningún handle lleva un secreto y cada socket se cierra;
+- el botón Compartir: consumes "social" (kinotvapp/kino-social, puerta "wall", llamada "share") y el mismo repositorio en
+  recommends, provider_missing responde go.installPlugin, el texto se puede cambiar antes de enviar, el título se puede quitar,
+  y el mensaje final dice que el borrador espera en Kino Social (nada se publica solo);
 - si tiene un hueco del reproductor: "playerSlot" y el bloque "slot" juntos, los dos exports presentes, node sdk/run.mjs .
   playerSlot imprime el cuadro sin nada descartado (también con --bare), y node sdk/validate.mjs . pasa;
 - si tiene una pantalla: el AppBar de cada pantalla lleva mergeWithKinoBar: true y dense: true con un leading que es una

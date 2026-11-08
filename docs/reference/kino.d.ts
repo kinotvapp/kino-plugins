@@ -1635,13 +1635,13 @@ type KinoScreenNode =
   // placeholder); 18+ items show only while the 18+ code is unlocked. At most 1000 titles per tree, and at most 60 in a
   // grid inside a scroll, list or pop-up, or a rail inside a horizontal scroll (drawn all at once there).
   /** One Home poster card; without `onTap` it opens the title's page (`go: { title: { ref, kind } }`). */
-  | (KinoScreenBase & { type: "titleCard"; item: KinoItem; size?: KinoScreenResponsive<KinoScreenCardSize> })
+  | (KinoScreenBase & { type: "titleCard"; item: KinoItem; size?: KinoScreenResponsive<KinoScreenCardSize>; headers?: KinoScreenImageHeaders })
   /** A Home row: a title, 1..500 items, and "Ver más" (`go: { browse: { ref } }`) when `ref` is set. */
-  | (KinoScreenBase & KinoScreenPaging & { type: "titleRail"; title: string; titleEn?: string; items: KinoItem[]; ref?: string; size?: KinoScreenResponsive<KinoScreenCardSize> })
+  | (KinoScreenBase & KinoScreenPaging & { type: "titleRail"; title: string; titleEn?: string; items: KinoItem[]; ref?: string; size?: KinoScreenResponsive<KinoScreenCardSize>; headers?: KinoScreenImageHeaders })
   /** Home cards in a grid (default 3 columns), 1..500 items. */
-  | (KinoScreenBase & KinoScreenPaging & { type: "titleGrid"; items: KinoItem[]; columns?: KinoScreenResponsive<number> })
+  | (KinoScreenBase & KinoScreenPaging & { type: "titleGrid"; items: KinoItem[]; columns?: KinoScreenResponsive<number>; headers?: KinoScreenImageHeaders })
   /** A section's banner: title, text, an https image and at most 2 buttons. */
-  | (KinoScreenBase & { type: "heroCard"; title: string; titleEn?: string; text?: string; textEn?: string; image?: string; buttons?: ((KinoScreenButton & { type: "ElevatedButton" | "TextButton" | "IconButton" }) | (KinoScreenButton & { type: "Button"; variant?: KinoScreenResponsive<"primary" | "secondary" | "text" | "icon"> }))[] })
+  | (KinoScreenBase & { type: "heroCard"; title: string; titleEn?: string; text?: string; textEn?: string; image?: string; logo?: string; headers?: KinoScreenImageHeaders; buttons?: ((KinoScreenButton & { type: "ElevatedButton" | "TextButton" | "IconButton" }) | (KinoScreenButton & { type: "Button"; variant?: KinoScreenResponsive<"primary" | "secondary" | "text" | "icon"> }))[] })
   /**
    * A pop-up declared in the tree (`key` required), drawn only once a `{ open: key }` ui operation opens it. One pop-up at
    * a time; Back closes it first. An `AlertDialog` or `BottomSheet` takes `children` (an `AlertDialog` also `buttons`); a
@@ -3465,6 +3465,18 @@ declare namespace kino {
    * `rate_limited`, `not_found`, `too_large`, `timeout`, `network`, `unavailable`, `not_allowed` (from `sign()`).
    */
   function tmdb(path: string, params?: Record<string, string | number | boolean>): Promise<any>;
+
+  /**
+   * Kino 0.9.84, no new apiVersion (feature-detect with `typeof kino.image === "object"`): `thumbnail(url, { maxWidth?, maxBytes? })`
+   * downloads an `https` picture under THIS plugin's own `kino.fetch` rules (its hosts, https only, never the home network, its
+   * request budget; capped at 5 MB) and answers a small JPEG as `"data:image/jpeg;base64,…"`. `maxWidth` 32 to 400 (default 200),
+   * `maxBytes` 2048 to 32768 (default 16384). At most 20 calls a minute. Throws `bad_request`, `host_not_allowed`, `not_found`,
+   * `network`, `timeout`, `too_large`, `not_image`, `rate_limited`, `not_allowed` (from `sign()`). Under the Node kit it only
+   * passes a JPEG/PNG that is already small enough through (else `kit_unsupported`); `KINO_THUMBNAIL_FIXTURE=<file>` answers a file.
+   */
+  namespace image {
+    function thumbnail(url: string, options?: { maxWidth?: number; maxBytes?: number }): Promise<string>;
+  }
 
   /**
    * Kino 0.9.71, apiVersion 11, needs `"nuvio"` in the manifest's `capabilities` (a declarative capability; the consent sheet says "Instala y usa

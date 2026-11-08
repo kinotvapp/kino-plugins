@@ -44,6 +44,8 @@ The first real pair, used as the example all along this page:
 - **Kino checks everything:** requests strictly, answers loosely (undeclared fields are dropped), 64 KB each way, 10 s per
   call, 30 calls in any 10 s per door. 18+ content never crosses into a plugin that is not 18+, sealed secrets never cross at
   all.
+- **Sharing to Kino Social** is a consumer of this protocol: Kino Social's `wall` door and its `share` call. See
+  [Sharing](share.md).
 
 ## The mental model { #model }
 
@@ -67,7 +69,7 @@ sequenceDiagram
 
 | Who | Does | Never does |
 | --- | --- | --- |
-| **The provider** | Declares its doors and their types; answers each call with JSON; decides in code what to share | Learns which plugin asked; reaches the consumer; sends a type it did not declare (Kino drops it) |
+| **The provider** | Declares its doors and their types; answers each call with JSON; decides in code what to share | Learns which plugin asked before Kino 0.9.84 (from then on [`ctx.caller`](share.md#ctx-caller) says it); reaches the consumer; sends a type it did not declare (Kino drops it) |
 | **The consumer** | Declares what it uses; calls with an argument that matches `in`; handles the error codes; invites the person to install the provider | Calls a door it did not list; installs anything; reads the provider's storage, settings or secrets |
 | **Kino** | Finds the provider by repository, validates both ways, limits the rate and the time, runs streams while a screen is open, shows the consent line | Stores anything about the exchange (nothing new is synced); asks the person on every call |
 | **The person** | Sees "Usa datos de TMDB (Movie records from TMDB)" on the consumer's install sheet; installs the provider with their own tap | Gets a plugin installed without tapping Instalar |
@@ -331,6 +333,10 @@ inside `enhancements["20"]` it drops only that block instead.
 | a call `random` of the door `movies` | `proto_movies_random` | the consumer's argument, already checked against `in` (`{}` when the consumer sent none and every field of `in` is optional) | JSON that matches `out` (a value or a promise of one) |
 | a stream `trending` of the door `movies` | `proto_movies_trending` | the `cursor` you returned last time, `null` the first time | `{ items: [...], cursor }`: `items` are new since that cursor, each one an `out`; `cursor` is any small JSON you want back next time: it travels inside this answer, at most 64 KB together with the items |
 
+- **Who calls (`ctx`, Kino 0.9.84).** Every `proto_` export also gets a second argument, `ctx`, that Kino fills in and the
+  consumer can neither send nor change: `ctx.caller` is `{ id, repo, name, adult }` of the calling plugin. Use it to answer
+  differently per caller; a provider that declares only `(arg)` keeps working, and an older Kino sends no `ctx`. Cut the
+  `@ref` off `repo` before using it in a `go.plugin`. [`ctx.caller`](share.md#ctx-caller).
 - **Throw to fail.** A thrown error reaches the consumer as `provider_failed` (the message is not passed on, so put nothing
   private in it). A missing export is also `provider_failed`.
 - **You decide what to share.** The export is ordinary code: answer what you want to give out and nothing more. Kino adds a

@@ -17,29 +17,30 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 
 | Line | Section |
 | --- | --- |
-| 90 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
-| 123 | [1. Read first, in this order](#1-read-first-in-this-order) |
-| 208 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
-| 313 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
-| 427 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
-| 429 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
-| 495 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
-| 667 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
-| 703 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
-| 836 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
-| 899 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
-| 1124 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
-| 1222 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1307 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
-| 1486 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1581 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1610 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
-| 1635 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
-| 1688 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
-| 1754 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1777 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1900 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 1953 | [7. Common mistakes](#7-common-mistakes) |
+| 94 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
+| 127 | [1. Read first, in this order](#1-read-first-in-this-order) |
+| 212 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
+| 323 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
+| 437 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
+| 439 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
+| 505 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
+| 677 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
+| 713 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
+| 847 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
+| 910 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
+| 1135 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
+| 1233 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
+| 1318 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
+| 1497 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1592 | &nbsp;&nbsp;[Sharing: Kino Social's wall door, and share cards (go.plugin, openFrom, ctx.caller, kino.image.thumbnail)](#share) |
+| 1647 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1676 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
+| 1701 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
+| 1754 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
+| 1820 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1843 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 1973 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 2026 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -82,7 +83,10 @@ next Kino release, not published yet) adds the `progress` capability: **where th
 or a book, kept by Kino for the plugin to read back (`kino.progress`; section 4, "apiVersion 22: progress"). apiVersion 23 (the
 maximum today; the same next release, provisionally Kino 0.9.83) adds the `playerSlot` capability: **up to three small elements
 in the top-right corner of the TV player** (a clock, a score, a logo, a button; section 4, "apiVersion 23: the player slot").
-The same release adds, with no new apiVersion, an `Image`'s `headers` (`Referer`, `User-Agent`) for sites that need their own Referer. Kino 0.9.82 also adds,
+The same release adds, with no new apiVersion, an `Image`'s `headers` (`Referer`, `User-Agent`) for sites that need their own Referer.
+Kino 0.9.84 (next, not published yet) adds, with no new apiVersion, **share cards**: `go.plugin` (open another plugin's
+screen or search), the manifest's `openFrom.routes` (which of your screen routes other plugins' cards may open), `ctx.caller`
+for protocol providers and `kino.image.thumbnail` (section 4, "Sharing"). Kino 0.9.82 also adds,
 with no new apiVersion, `onSwipeLeft`/`onSwipeRight`, `data:` images, `divider: false` on `AppBar`/`TabBar`, `logo`/`h` on
 `heroCard` and optional borders in app themes. See
 [What's new](https://kinotvapp.github.io/kino-plugins/en/changelog/).
@@ -260,6 +264,12 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   of that door instead of fetching the data itself; if the person wants other plugins to reuse what theirs knows, it can
   be a **provider**. Read the provider's `provides` (its manifest is the door's documentation) before writing a line, and
   follow "apiVersion 20: the plugin protocol" in section 4.
+- **A "Compartir" (Share) action: offer one in every plugin.** The owner of Kino asks that every plugin let the person share
+  what they are watching to Kino Social: a button in the plugin's screen (on a title page with the title, and/or in the bar,
+  text only) that sends a text, plus the title when there is one, to Kino Social's `wall` door. It needs a screen (apiVersion
+  14 or `enhancements["14"]`) and the plugin protocol (apiVersion 20 or `enhancements["20"]`, Kino 0.9.81); Kino Social only
+  keeps a draft the person reviews and posts. Propose it to the person; follow "Sharing" in section 4. From Kino 0.9.84 the
+  plugin can also declare `openFrom.routes`, so share cards can open its content.
 - **Whether to sign it** (optional, `apiVersion` 5): ask whether the person wants people to know every
   update comes from them. If yes, follow "Signing" in section 4. Never sign without telling them
   what it is and that the key must be kept and backed up.
@@ -803,7 +813,7 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   (apiVersion 17: a job id; turns on Kino's own row of that job). A timer's answer keeps only `state`, `toast`, `close`,
   `config`; an `onClose` answer drops pop-ups, `go`, `route`, `share`, `enableJob`; `open`'s answer drops `go` except
   `go.screen`. `share`, `enableJob` and the person-only `go` shapes need the answer to come within 5 s of the person's tap.
-- **`go`: sixteen shapes, always into your own content or one of Kino's pages** (nothing else: no intent, no app):
+- **`go`: seventeen shapes, always into your own content or one of Kino's pages** (nothing else: no intent, no app):
 
   | `go` | Opens | From |
   | --- | --- | --- |
@@ -819,6 +829,7 @@ logged, never drawn wrong. Full catalogue: [layout, content and actions](https:/
   | `useTheme` | `{ theme }`: turns on one of your `appThemes` (or `null`: back to Kino's) | the person's press or submit on your screen, apiVersion 18, never a panel |
   | `setExperience` | `"light"` or `"full"`: asks for that whole-app experience; Kino asks first | the person's press or submit on your screen, apiVersion 18, never a panel |
   | `installPlugin` | `{ repo: "<owner/name>" }`: Kino's normal install sheet for that plugin (its toast when it is already installed) | the person's press or submit on your screen, apiVersion 19, one repository per button |
+  | `plugin` | `{ repo, route?, args?, query? }` (Kino 0.9.84): **another** plugin's screen at a `route` it lists in its `openFrom.routes`, with `args`; else its search for `query`, else its section; offers to install it first (see "Sharing" below) | the person's press or submit on your screen, apiVersion 20 |
 
   The 18+ gate holds everywhere; one page-opening `go` per 500 ms; Back returns to your screen with its state.
 - **Timers**: the root's (or the manifest's `screen.every`) `{ ms, event }` (1 s..24 h, ≤ 3) fires only while the screen is open
@@ -1578,6 +1589,61 @@ for new chapters through `episodes(ref)` (keep series refs stable), saves "Para 
 and treats a **signed** plugin installed from two repos with the same `id` and author key as one
 plugin across devices.
 
+<a id="share"></a>
+**Sharing: Kino Social's `wall` door (Kino 0.9.81, Kino Social 0.9.7) and share cards (Kino 0.9.84).** Recommend a
+**Compartir** action in **every** plugin. Full page: <https://kinotvapp.github.io/kino-plugins/en/share/>. Published example:
+Megaplay (`xuper-plugin/kino-plugin-megaplay`, `src/browse/share.js` and `test/share.test.mjs`).
+
+- **Manifest** (top level with `"apiVersion": 20`, or `consumes` inside `enhancements["20"]` at a lower apiVersion, the feature
+  behind `typeof kino.plugins === "object"`; the plugin needs a screen):
+
+  ```json
+  "consumes": { "social": { "repo": "kinotvapp/kino-social", "door": "wall", "calls": ["share"] } },
+  "recommends": ["kinotvapp/kino-social"]
+  ```
+
+  No host is needed for it.
+- **The call**: `await kino.plugins.call("social", "share", { text?, title?, link?, from? })` from the person's press or submit
+  (never `open`, a timer or a `job`). `text` ≤ 500 characters (longer is cut); `title` is `{ kind: "movie" | "series", tmdb:
+  <positive whole TMDB id>, season?, episode? }` (season and episode only on a series); `link` https only (≤ 500); `from` your
+  plugin's name (≤ 40), shown in the bell notice. At least one of `text`, `title`, `link`; **text only is fine** (no `title`).
+  Any other field is `bad_input`; an empty proposal, a bad `kind` or a non-https link is `provider_failed`. Answer:
+  `{ status: "draft", draftId, pending }`.
+- **What happens**: Kino Social **publishes nothing**. It keeps a draft (at most 5, the oldest goes; the same proposal twice
+  keeps one; 14 days), rings the bell («<from> quiere publicar en tu muro») and shows it at the top of its wall with Revisar /
+  Descartar; the person posts it. **Never publish on the person's behalf, and never say it was posted**: say it waits in Kino
+  Social.
+- **The UI**: a share `IconButton` in the bar (text only) and/or a «Compartir» button on a title page (with the title); the
+  press opens a declared `BottomSheet` (from the answer: `ui: [{ open }]`) with a `Form`: a `TextField` (prefilled «Estoy viendo
+  «…»», editable, `maxLength` 500), a `Switch` «Adjuntar el título» when there is a title, a caption saying it arrives as a
+  draft, and a submit button; the form's values come as the event's `value` (merge `state.inputs` too). ES + EN texts.
+- **Errors**: no `kino.plugins` (Kino before 0.9.81) → a toast «Actualiza Kino…», do not call; `provider_missing` with
+  `installed["kinotvapp/kino-social"] !== true` → answer `{ go: { installPlugin: { repo: "kinotvapp/kino-social" } } }` (Kino's
+  install sheet; the person decides); `provider_missing` while installed → «Kino Social está apagado o le falta configurarse»;
+  `not_declared` → Kino Social older than 0.9.7 (or your `consumes` lacks `share`): ask to update Kino Social; anything else →
+  «No se pudo enviar a Kino Social. Inténtalo de nuevo.» (a default sentence for unknown codes). Never retry in a loop. Nothing
+  private in the arguments.
+- **Share cards (Kino 0.9.84, not published yet; no new apiVersion).** Kino Social will show cards in a later version; until
+  then senders use `share`. The pieces:
+  - `go.plugin` `{ repo, route?, args?, query? }` (apiVersion 20, the person's press or submit only): `repo` a GitHub
+    `owner/name[/path]` ≤ 200 (a URL or `@ref` drops it), `route` a `go.screen` route, `args` ≤ 4 KB JSON, `query` ≤ 200. Kino,
+    in order: not installed → its install sheet, then continues; 18+ and locked → nothing opens, Kino's toast; off → «¿Activar?»;
+    `route` in the target's `openFrom.routes` → that screen with `args`; else with a `query` and a search → Kino's search scoped
+    to that plugin; else its section or screen default page; else a toast. An unlisted route never opens.
+  - `"openFrom": { "routes": ["detail"] }` in the target's manifest (apiVersion 20 at the top level, or `enhancements["20"]`;
+    needs `screen`; 1 to 16 names `^[A-Za-z0-9._~-]{1,64}$`; a bad list refuses the manifest). It says what may be opened, not
+    how. The target's `screen({ route })` gets `route.name` and `route.args`, and the `open` event comes with the same `route`:
+    load there, and **check the `args`** (they come from another plugin).
+  - `ctx.caller` `{ id, repo, name, adult }`: the second argument of every `proto_` export (Kino sets it; an older Kino sends
+    none, so read `ctx && ctx.caller`). `repo` is `owner/name[/path][@ref]` or `null`; **cut the `@ref` off** before using it in
+    `go.plugin`. Kit: `node sdk/run.mjs --repo me/my-game <provider folder> proto <door>.<call>`.
+  - `kino.image.thumbnail(url, { maxWidth?, maxBytes? })` → `"data:image/jpeg;base64,…"`: https only, under the plugin's own
+    `kino.fetch` rules (hosts, budget, never the home network), download ≤ 5 MB, `maxWidth` 32..400 (200), `maxBytes`
+    2,048..32,768 (16,384), 20 a minute; errors `bad_request`, `host_not_allowed`, `not_found`, `network`, `timeout`,
+    `too_large`, `not_image`, `rate_limited`, `not_allowed` (from `sign()`). Feature-detect `typeof kino.image === "object"`;
+    show the card without a picture on any error. The kit has no codec (`kit_unsupported` unless the bytes are already a small
+    JPEG/PNG; `KINO_THUMBNAIL_FIXTURE=<file>` answers a file).
+
 <a id="visual-browser"></a>
 **apiVersion 20: a browser window the person drives (`visualBrowser`, Kino 0.9.81).** When the
 person has to sign in, solve a challenge or accept a site's terms, the hidden `kino.browser` cannot help: with
@@ -1865,6 +1931,13 @@ people. See
       call from a `job`; a `protocol` handler that tolerates repeated items (tried with `--cursor`); the screen drawn with
       `installed` `true` and `false`, `--lang en` and `--device tv` with no `dropped` line; tried with
       `node sdk/run.mjs --provider …` and in Kino 0.9.81+ with the provider installed, switched off and removed.
+- [ ] Sharing (every plugin, recommended): a «Compartir» button in the plugin's screen (a title page with the title and/or the
+      bar, text only) that opens a sheet with an editable text and an «Adjuntar el título» switch and calls
+      `kino.plugins.call("social", "share", …)`; `consumes` `social` → `kinotvapp/kino-social` door `wall` call `share` and the
+      same repo in `recommends`; `provider_missing` answered with `go.installPlugin` (or a sentence when it is installed but
+      off); no `kino.plugins` → a toast; the person told the post waits in Kino Social as a draft (nothing published on their
+      behalf); ES + EN texts. From Kino 0.9.84, `openFrom.routes` declared for the routes a card may open, and each such route
+      checks its `route.args`.
 - [ ] apiVersion 22 / `progress`: `"apiVersion": 22` or `enhancements["22"]`; `typeof kino.progress === "object"` checked;
       the exact place in `resume` (well under 1024 bytes); `get` answering `null` handled; the plugin's own "keep reading" row
       built from `list()` (Kino draws none) inside a `home()` that returns an array of rows with `id`s and items with `id`s;

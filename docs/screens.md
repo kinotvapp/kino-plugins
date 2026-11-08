@@ -647,12 +647,12 @@ leídos con `kino.config`); nada se copia a `kino.storage`. La referencia está 
 
 ## Adónde manda la pantalla a la persona: `go` { #go }
 
-La acción de un nodo o una respuesta puede traer `go`: una de dieciséis formas, **siempre hacia el contenido de este mismo
-plugin o hacia una página propia de Kino**. Ninguna forma nombra un intent ni una app, y solo `liveChannel` e
-`installPlugin` nombran otro plugin (un proveedor de En vivo, para un plugin cuya pestaña del reproductor declara
-`"kinds": ["live"]`; un repositorio cuya hoja de instalación abre Kino); cualquier otra cosa se descarta. Cada forma tiene
-su entrada en la referencia, de [`go.title`](screen-forms.md#go-title) a
-[`go.installPlugin`](screen-forms.md#go-install-plugin).
+La acción de un nodo o una respuesta puede traer `go`: una de diecisiete formas, **siempre hacia el contenido de este mismo
+plugin o hacia una página propia de Kino**. Ninguna forma nombra un intent ni una app, y solo `liveChannel`,
+`installPlugin` y `plugin` nombran otro plugin (un proveedor de En vivo, para un plugin cuya pestaña del reproductor declara
+`"kinds": ["live"]`; un repositorio cuya hoja de instalación abre Kino; un repositorio cuya pantalla o búsqueda abre Kino);
+cualquier otra cosa se descarta. Cada forma tiene su entrada en la referencia, de [`go.title`](screen-forms.md#go-title) a
+[`go.plugin`](screen-forms.md#go-plugin).
 
 | `go` | Qué abre | Desde dónde se manda |
 | --- | --- | --- |
@@ -672,6 +672,7 @@ su entrada en la referencia, de [`go.title`](screen-forms.md#go-title) a
 | `useTheme` | activa uno de los [`appThemes`](themes.md) de este plugin como lo hace Apariencia, o con `theme: null` vuelve al tema de Kino mientras uno de los suyos está activo; no abre nada, Kino muestra su propio aviso y vuelve a llamar a `screen`, véase [`go.useTheme`](screen-forms.md#go-use-theme) | solo un toque o envío de la propia persona en tu pantalla (un toque, un envío, la respuesta a uno, el botón de una ventana emergente), nunca un panel; desde apiVersion 18 |
 | `setExperience` | `"light"` o `"full"`: pide esa experiencia para toda la app; Kino le pregunta antes a la persona y no cambia nada sin su sí, véase [`go.setExperience`](screen-forms.md#go-set-experience) | solo un toque o envío de la propia persona en tu pantalla, nunca un panel ni un aviso; desde apiVersion 18 |
 | `installPlugin` | la hoja de instalación propia de Kino para `repo` (un `owner/name` sin más), encima de tu pantalla; nada se instala sin el Instalar de la propia persona, véase [`go.installPlugin`](screen-forms.md#go-install-plugin) | solo un toque o envío de la propia persona en tu pantalla, nunca un panel ni un aviso; desde apiVersion 19 |
+| `plugin` | la pantalla de **otro** plugin (`repo`) en una `route` que ese plugin lista en su `openFrom.routes`, con `args`; si no, su búsqueda de `query`, o su sección; ofrece instalarlo si falta (Kino 0.9.84), véase [`go.plugin`](screen-forms.md#go-plugin) y [Compartir](share.md#cards) | solo un toque o envío de la propia persona en tu pantalla, nunca un panel ni un aviso; desde apiVersion 20 |
 
 - La página de Kino se abre encima de tu pantalla; Atrás vuelve a ella con su estado. Máximo un `go` que abre una página
   cada 500 ms (uno segundo en ese lapso se descarta, con una línea en el registro).

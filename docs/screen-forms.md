@@ -828,12 +828,12 @@ reacción, una velocidad, un orden):
 
 ## Navegación { #navigation }
 
-La acción de un nodo o una respuesta pueden llevar `go`: una de dieciséis formas, **siempre hacia el contenido propio de este
+La acción de un nodo o una respuesta pueden llevar `go`: una de diecisiete formas, **siempre hacia el contenido propio de este
 plugin o hacia una de las páginas propias de Kino**. La página de Kino se abre sobre tu pantalla; Atrás vuelve a ella con
 su estado. Como máximo un `go` que abre una página cada 500 ms. Ninguna forma nombra un intent ni una app, y solo
-`liveChannel` e `installPlugin` nombran a otro plugin (`liveChannel`, un proveedor de En vivo, a cuyo canal Kino sintoniza
-para un plugin cuya pestaña del reproductor se une a los canales en vivo; `installPlugin`, un repositorio cuya hoja de
-instalación abre Kino). La guía trata `go` en [Navegar con `go`](screens.md#go).
+`liveChannel`, `installPlugin` y `plugin` nombran a otro plugin (`liveChannel`, un proveedor de En vivo, a cuyo canal Kino
+sintoniza para un plugin cuya pestaña del reproductor se une a los canales en vivo; `installPlugin`, un repositorio cuya hoja de
+instalación abre Kino; `plugin`, desde Kino 0.9.84, un repositorio cuya pantalla o búsqueda abre Kino). La guía trata `go` en [Navegar con `go`](screens.md#go).
 
 | Forma | Se escribe | Qué abre | Desde dónde se envía |
 | --- | --- | --- | --- |
@@ -853,6 +853,7 @@ instalación abre Kino). La guía trata `go` en [Navegar con `go`](screens.md#go
 | [`useTheme`](#go-use-theme) | `{ useTheme: { theme } }` | activa uno de los `appThemes` de este plugin como lo hace Apariencia, o vuelve al tema de Kino con `theme: null`; Kino muestra su propio aviso | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 18 |
 | [`setExperience`](#go-set-experience) | `{ setExperience: "light" \| "full" }` | pide la experiencia ligera o la completa de toda la app; Kino le pregunta antes a la persona y no cambia nada sin su sí | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 18 |
 | [`installPlugin`](#go-install-plugin) | `{ installPlugin: { repo } }` | la hoja de instalación propia de Kino para `repo` (un `owner/name` sin más); nada se instala sin el Instalar de la propia persona | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 19 |
+| [`plugin`](#go-plugin) | `{ plugin: { repo, route?, args?, query? } }` | la pantalla de otro plugin en `route` con `args`, o su búsqueda de `query`, encontrado por `repo` (un `owner/name[/ruta]` de GitHub); Kino 0.9.84 | solo la pulsación o el envío de la propia persona en tu pantalla, desde apiVersion 20 |
 
 ![Navegación en el teléfono](assets/ui/navigation-phone.png)
 ![Navegación en el televisor](assets/ui/navigation-tv.png)
@@ -1116,6 +1117,28 @@ export async function screen() {
 - Solo desde la pulsación o el envío de la propia persona en tu pantalla (un toque, un envío, la respuesta a uno, el botón de
   una ventana): se descarta, con registro, desde `open`, un temporizador, un cambio, un «cargar más», el `onClose` de una
   ventana, un panel o un aviso. Por debajo de `apiVersion` 19 se descarta.
+
+### `go.plugin` { #go-plugin }
+
+Desde `apiVersion` 20 (Kino 0.9.84, todavía sin publicar): un botón en tu propia pantalla que abre la pantalla de **otro**
+plugin, o su búsqueda, a partir de su repositorio de GitHub. Es la pieza de las [tarjetas para compartir](share.md#cards).
+
+```js
+{ type: "ElevatedButton", labelText: "Ver en Mi anime", labelTextEn: "Open in Mi anime", onPressed: { go: { plugin: {
+  repo: "tu-usuario/kino-plugin-anime", route: "detail", args: { id: "frieren" }, query: "Frieren" } } } }
+```
+
+- `repo` es un `owner/name` de GitHub, con una subcarpeta opcional, de máximo 200 caracteres; una URL o un `@ref` descartan el
+  `go`, con registro. `route` es una ruta de `go.screen`, `args` un objeto JSON con el tope de `go.screen` y `query` un texto de
+  máximo 200 caracteres. Cualquier otro campo descarta el `go`, con registro.
+- En orden: si no está instalado, Kino muestra su hoja de instalación y sigue cuando la persona lo instala; si es +18 y está
+  bloqueado, no abre nada y muestra su aviso; si está apagado, pregunta «¿Activar?»; si `route` está en el `openFrom.routes`
+  del plugin, abre esa pantalla con `args`; si mandaste una `query` y tiene búsqueda, abre la búsqueda solo en ese plugin; si
+  no, su sección o la página por defecto de su pantalla; y si nada se puede, un aviso. Una ruta que el destino no lista nunca
+  se abre. El detalle: [`go.plugin`](share.md#go-plugin) y [`openFrom`](share.md#open-from).
+- Solo desde la pulsación o el envío de la propia persona en tu pantalla: se descarta, con registro, desde `open`, un
+  temporizador, un cambio, un «cargar más», el `onClose` de una ventana, un panel o un aviso. Por debajo de `apiVersion` 20 se
+  descarta.
 
 #### Plugins recomendados e `installed` (Kino 0.9.81) { #recommends-installed }
 

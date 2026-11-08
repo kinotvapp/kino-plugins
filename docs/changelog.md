@@ -3,6 +3,28 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Kino 0.9.84 (próxima): tarjetas para compartir, quién llama a una puerta y miniaturas { #v0984 }
+
+!!! note "Todavía sin publicar"
+    Esto llega con Kino 0.9.84, que todavía no está publicada. No hay `apiVersion` nuevo: un Kino anterior descarta
+    `go.plugin`, ignora `openFrom` dentro de `enhancements["20"]` y no tiene `ctx` ni `kino.image`.
+
+- **`go.plugin` (`apiVersion` 20).** Un botón de tu pantalla abre la pantalla de **otro** plugin, o su búsqueda, a partir de
+  su repositorio: `{ plugin: { repo, route?, args?, query? } }`, solo desde la pulsación o el envío de la persona. Kino ofrece
+  instalarlo si falta, respeta el candado +18, pregunta «¿Activar?» si está apagado, abre la `route` solo si el destino la
+  lista en `openFrom.routes` y, si no, busca la `query` en ese plugin o abre su sección. [`go.plugin`](share.md#go-plugin).
+- **`openFrom.routes` en el manifiesto (`apiVersion` 20, también en `enhancements["20"]`).** De 1 a 16 rutas de tu pantalla que
+  las tarjetas de otros plugins pueden abrir; tu pantalla lee `route.args` en su evento `open`.
+  [`openFrom`](share.md#open-from).
+- **`ctx.caller` para los proveedores.** Cada exportación `proto_` recibe un segundo argumento, `ctx`, con el plugin que
+  llama: `{ id, repo, name, adult }` (quita el `@ref` de `repo` antes de usarlo en `go.plugin`). [`ctx.caller`](share.md#ctx-caller).
+- **`kino.image.thumbnail(url, { maxWidth?, maxBytes? })`.** Kino descarga una imagen con las reglas de red de tu plugin y
+  responde un JPEG pequeño como `data:` (32 a 400 de ancho, 2.048 a 32.768 bytes, 20 por minuto). Revisa
+  `typeof kino.image === "object"`. [`kino.image.thumbnail`](share.md#thumbnail).
+- **Compartir en Kino Social.** Kino Social mostrará las tarjetas en una versión posterior; hasta entonces, un plugin comparte
+  con la llamada `share` de su puerta `wall` (Kino 0.9.81 y Kino Social 0.9.7), que deja un borrador que la persona revisa y
+  publica. [Compartir](share.md).
+
 ## Próxima versión de Kino (provisionalmente la 0.9.83): guardar dónde va la persona, el hueco del reproductor, e imágenes que necesitan un Referer { #next }
 
 !!! note "Todavía sin publicar"

@@ -527,6 +527,15 @@ Kino's, with the stricter limit on Kino's key (20 per 10 s; the kit has no perso
 `KINO_TMDB_FIXTURE` it answers offline from a JSON file keyed `"<path>?<params sorted by name>"` or `"<path>"`. Without
 either, it throws `no_tmdb_key`, as a Kino build without a key does.
 
+## `await kino.image.thumbnail(url, { maxWidth?, maxBytes? })` (Kino 0.9.84, not published yet) { #image-thumbnail }
+
+Kino downloads an `https` picture under **the same network rules as your `kino.fetch`** (your `hosts`, https only, never the
+home network, your request budget; at most 5 MB) and answers a small JPEG as `"data:image/jpeg;base64,…"`, so a card can carry
+its picture inside a message. `maxWidth` 32 to 400 (default 200), `maxBytes` 2,048 to 32,768 (default 16,384), at most 20
+calls a minute. Errors: `bad_request`, `host_not_allowed`, `not_found`, `network`, `timeout`, `too_large`, `not_image`,
+`rate_limited`, `not_allowed` (from `sign()`). No new `apiVersion`: check `typeof kino.image === "object"`. The full guide,
+with the kit: [`kino.image.thumbnail`](share.md#thumbnail).
+
 ## `kino.nuvio` (apiVersion 11, Kino 0.9.71) { #nuvio }
 
 Experiment. With the `nuvio` capability and `nuvioRepos` in the manifest, your plugin asks Kino to install and use the scrapers of a Nuvio repository: `kino.nuvio.available({ repo })`, `use({ repo, scrapers })`, `scrapers({ repo })` and `streams({ repo, type, tmdbId, season?, episode?, scrapers?, timeoutMs? })`. Only inside your functions; 20 calls a minute; detect it with `typeof kino.nuvio === "object"`. Everything, with a complete example, in [Plugins that use Nuvio scrapers](nuvio-plugins.md).
@@ -762,6 +771,8 @@ if (typeof kino.plugins === "object") {                 // absent on a Kino olde
 - `arg` reaches the provider, which may send it to its own hosts: put nothing private in it.
 - A provider's **streams** are not called with this function: your screen switches them on with
   `state.protocol.<alias>.<stream> = true` and receives the event `protocol` ([Streams](protocol.md#streams)).
+- From Kino 0.9.84 the provider knows who calls: its `proto_` exports get `ctx.caller`
+  ([`ctx.caller`](share.md#ctx-caller)). To share to Kino Social with this function, see [Sharing](share.md#social).
 
 ## `kino.visualBrowser.open(options)` (apiVersion 20, Kino 0.9.81) { #visual-browser }
 

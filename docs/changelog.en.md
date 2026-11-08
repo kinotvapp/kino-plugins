@@ -3,6 +3,27 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.84 (next): share cards, who calls a door, and thumbnails { #v0984 }
+
+!!! note "Not published yet"
+    These arrive with Kino 0.9.84, which is not published yet. There is no new `apiVersion`: an older Kino drops `go.plugin`,
+    ignores `openFrom` inside `enhancements["20"]` and has no `ctx` and no `kino.image`.
+
+- **`go.plugin` (`apiVersion` 20).** A button on your screen opens **another** plugin's screen, or its search, from its
+  repository: `{ plugin: { repo, route?, args?, query? } }`, only from the person's press or submit. Kino offers to install it
+  when missing, respects the 18+ lock, asks «¿Activar?» when it is off, opens the `route` only if the target lists it in
+  `openFrom.routes`, and otherwise searches that plugin for the `query` or opens its section. [`go.plugin`](share.md#go-plugin).
+- **`openFrom.routes` in the manifest (`apiVersion` 20, also in `enhancements["20"]`).** 1 to 16 routes of your screen that other
+  plugins' cards may open; your screen reads `route.args` in its `open` event. [`openFrom`](share.md#open-from).
+- **`ctx.caller` for providers.** Every `proto_` export gets a second argument, `ctx`, with the calling plugin:
+  `{ id, repo, name, adult }` (cut the `@ref` off `repo` before using it in `go.plugin`). [`ctx.caller`](share.md#ctx-caller).
+- **`kino.image.thumbnail(url, { maxWidth?, maxBytes? })`.** Kino downloads a picture under your plugin's network rules and
+  answers a small JPEG as `data:` (32 to 400 wide, 2,048 to 32,768 bytes, 20 a minute). Check `typeof kino.image === "object"`.
+  [`kino.image.thumbnail`](share.md#thumbnail).
+- **Sharing to Kino Social.** Kino Social will show the cards in a later version; until then a plugin shares with the `share`
+  call of its `wall` door (Kino 0.9.81 and Kino Social 0.9.7), which leaves a draft the person reviews and posts.
+  [Sharing](share.md).
+
 ## Next Kino release (provisionally 0.9.83): saving where the person is, the player slot, and pictures that need a Referer { #next }
 
 !!! note "Not published yet"

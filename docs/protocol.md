@@ -44,6 +44,8 @@ La primera pareja real, el ejemplo de toda esta página:
 - **Kino lo revisa todo:** las peticiones con rigor, las respuestas con holgura (los campos no declarados se descartan), 64 KB
   en cada sentido, 10 s por llamada, 30 llamadas en cualquier ventana de 10 s por puerta. El contenido 18+ nunca pasa a un
   plugin que no es 18+, y los secretos sellados no pasan nunca.
+- **Compartir en Kino Social** es un consumidor de este protocolo: la puerta `wall` de Kino Social y su llamada `share`. Mira
+  [Compartir](share.md).
 
 ## El modelo mental { #model }
 
@@ -67,7 +69,7 @@ sequenceDiagram
 
 | Quién | Hace | Nunca hace |
 | --- | --- | --- |
-| **El proveedor** | Declara sus puertas y sus tipos; responde cada llamada con JSON; decide en código qué comparte | Saber qué plugin preguntó; llegar al consumidor; mandar algo que no declaró (Kino lo descarta) |
+| **El proveedor** | Declara sus puertas y sus tipos; responde cada llamada con JSON; decide en código qué comparte | Saber qué plugin preguntó antes de Kino 0.9.84 (desde ahí lo dice [`ctx.caller`](share.md#ctx-caller)); llegar al consumidor; mandar algo que no declaró (Kino lo descarta) |
 | **El consumidor** | Declara lo que usa; llama con un argumento que cumple `in`; maneja los códigos de error; invita a la persona a instalar al proveedor | Llamar a una puerta que no declaró; instalar algo; leer el almacenamiento, los ajustes o los secretos del proveedor |
 | **Kino** | Encuentra al proveedor por repositorio, valida en los dos sentidos, limita el ritmo y el tiempo, corre los flujos mientras hay una pantalla abierta, muestra la línea de consentimiento | Guardar algo del intercambio (no hay nada nuevo que sincronizar); preguntarle a la persona en cada llamada |
 | **La persona** | Ve «Usa datos de TMDB (Movie records from TMDB)» en la hoja de instalación del consumidor; instala al proveedor con su propio toque | Recibir un plugin instalado sin tocar Instalar |
@@ -335,6 +337,10 @@ rechaza todo el manifiesto con un mensaje que nombra la puerta y el campo (por e
 | una llamada `random` de la puerta `movies` | `proto_movies_random` | el argumento del consumidor, ya revisado contra `in` (`{}` cuando el consumidor no mandó nada y todos los campos de `in` son opcionales) | JSON que cumple `out` (un valor o una promesa de uno) |
 | un flujo `trending` de la puerta `movies` | `proto_movies_trending` | el `cursor` que devolviste la vez anterior, `null` la primera vez | `{ items: [...], cursor }`: `items` son lo nuevo desde ese cursor, cada uno un `out`; `cursor` es un JSON pequeño que quieras recibir la próxima vez: viaja dentro de esta respuesta, como mucho 64 KB junto con los ítems |
 
+- **Quién llama (`ctx`, Kino 0.9.84).** Cada exportación `proto_` recibe además un segundo argumento, `ctx`, que llena Kino y
+  que el consumidor no puede mandar ni cambiar: `ctx.caller` es `{ id, repo, name, adult }` del plugin que llama. Úsalo para
+  responder distinto según quién pregunta; un proveedor que solo declara `(arg)` sigue funcionando, y un Kino anterior no
+  manda `ctx`. Quita el `@ref` de `repo` antes de usarlo en un `go.plugin`. [`ctx.caller`](share.md#ctx-caller).
 - **Para fallar, lanza un error.** Un error lanzado le llega al consumidor como `provider_failed` (el mensaje no viaja, así que
   no pongas nada privado ahí). Una exportación que falta también es `provider_failed`.
 - **Tú decides qué compartes.** La exportación es código normal: responde lo que quieras dar y nada más. Kino pone una red de
