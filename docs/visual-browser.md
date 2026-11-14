@@ -38,11 +38,12 @@ if (kino.visualBrowser?.available) {                   // undefined en un Kino s
     url: "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com",
     title: "YouTube Music",                              // después del nombre de tu plugin en la barra de Kino
     doneWhen: { cookies: ["SAPISID"] },                  // opcional: la ventana se cierra sola cuando la página las tiene
+    // también: doneWhen: { localStorage: ["token"] } y collect: { localStorage: ["token"] } (los datos que el sitio guarda)
     collect: { cookies: ["SID", "HSID", "SAPISID"], storeAs: { setting: "cookieHeader", format: "header" } },
     userAgent: "browser",                                // o tu propio texto
     timeoutMs: 600000,                                   // 10 minutos como máximo
   });
-  // r = { status: "done" | "closed" | "timeout", finalUrl?, cookies?, html?, stored?, storedNames?, userAgent? }
+  // r = { status: "done" | "closed" | "timeout", finalUrl?, cookies?, localStorage?, html?, stored?, storedNames?, userAgent? }
 }
 ```
 
@@ -52,7 +53,7 @@ if (kino.visualBrowser?.available) {                   // undefined en un Kino s
 ## Lo que ve la persona { #consent }
 
 La hoja propia de Kino **cada vez**, con las palabras de Kino (nunca las tuyas): «&lt;tu plugin&gt; quiere abrir una ventana web»,
-los sitios (los `hosts` de tu manifest), los **nombres** de las cookies que pediste, si la ventana se presenta como un navegador
+los sitios (los `hosts` de tu manifest), los **nombres** de las cookies y las **claves** de `localStorage` que pediste, si la ventana se presenta como un navegador
 normal o con un texto propio y, con `storeAs`, que Kino guarda las cookies y tú no las ves. Solo después de Continuar se abre la
 ventana, con la barra de Kino (el nombre de tu plugin, tu `title`, el host con un candado, Cerrar y, si no diste `doneWhen`, Listo)
 que no puedes cambiar. Decir que No, Cerrar y Atrás te dan `{ status: "closed" }`.
@@ -68,6 +69,15 @@ que no puedes cambiar. Decir que No, Cerrar y Atrás te dan `{ status: "closed" 
 - **Cookies.** Los nombres de `collect.cookies` (32 como máximo) se leen de los hosts por los que pasó la ventana y que tú declaras,
   también las HttpOnly, con 64 cookies como máximo y 16.384 caracteres entre nombres y valores; llegan solo con `done`.
   `collect.html` es el DOM de la página (2.000.000 de caracteres como máximo) y `collect.finalUrl` su última dirección.
+- **localStorage.** Muchos sitios guardan el token de sesión en el `localStorage` de la página y no en una cookie. `collect.localStorage`
+  nombra claves (hasta 32, de 1 a 256 caracteres, sin caracteres de control); Kino lee **solo esas claves** de la página donde termina
+  la ventana (que debe estar en uno de tus hosts), nunca todo el almacén, y solo con `done`. El `localStorage` de la respuesta es
+  `{ clave: valor }` con las claves que existen (una clave que la página no tiene no aparece, nunca es `null`), con un máximo de 65.536
+  caracteres de claves y valores juntos (lo que no cabe se deja fuera, sin cortarlo por la mitad). La hoja de Kino lista las claves junto a
+  los nombres de las cookies. **`storeAs` solo cubre las cookies**: los valores de `localStorage` vuelven a tu script, así que guárdalos en
+  `kino.storage` o en un ajuste `password` que escribas tú, y nunca los registres. Es aditivo dentro de apiVersion 20 (Kino 0.9.87,
+  provisional): un Kino anterior ignora las opciones y responde sin `localStorage`, así que comprueba que la clave venga en la
+  respuesta antes de fiarte de ella.
 - **`storeAs`**: Kino mismo escribe las cookies en tu ajuste `password` `setting` (declarado en el manifest) como
   `name=value; name2=value2` (`"header"`) o un objeto JSON (`"json"`), **cuando tu llamada ya terminó** (guardar un ajuste reinicia
   tu runtime); tu script recibe `stored` y `storedNames` (los nombres, nunca un valor). Un ajuste `password` admite 500
@@ -100,8 +110,9 @@ que no puedes cambiar. Decir que No, Cerrar y Atrás te dan `{ status: "closed" 
   abrió (el de una acción de ajustes, una `panelAction` o un `screenEvent`) no corre, así que un inicio de sesión de Google con
   verificación en dos pasos puede tardar lo que la persona necesite, hasta `timeoutMs`. Cuando la ventana se cierra, tu llamada
   tiene al menos 10 segundos para ejecutar el código posterior a `open`; si se cuelga después de eso, se detiene como siempre.
-- **`doneWhen`** cierra la ventana solo: `cookies` (existen todas las cookies nombradas) y/o `urlMatches` (la dirección coincide con
-  el patrón, donde `*` es cualquier tramo de caracteres y el resto es literal; 200 caracteres como máximo).
+- **`doneWhen`** cierra la ventana solo: `cookies` (existen todas las cookies nombradas), `localStorage` (existen todas las claves
+  nombradas en el `localStorage` de la página, comprobado más o menos cada 0,7 s) y/o `urlMatches` (la dirección coincide con el
+  patrón, donde `*` es cualquier tramo de caracteres y el resto es literal; 200 caracteres como máximo). Basta con una.
 - **`userAgent`**: `"browser"` es el texto del Chrome del teléfono, que Kino mantiene al día; o el tuyo, de 1 a 300 caracteres ASCII
   imprimibles, para que un sitio que cambia lo que acepta se arregle con una actualización del plugin. De cualquier forma se quita
   la marca del WebView (`; wv`) y no se envía `X-Requested-With` (en un WebView que deja a Kino quitarlo). Sin él: el del WebView.
@@ -189,9 +200,35 @@ La advertencia honesta: Google puede negarse a iniciar sesión dentro de una ven
 cambiarlo sin avisar. Deja el ajuste de pegar las cookies como alternativa y envía `userAgent` con tu propio texto si uno más nuevo
 funciona mejor (lo puedes publicar en una actualización del plugin, sin esperar un Kino nuevo).
 
+## Receta: un token que vive en `localStorage` { #recipe-localstorage }
+
+```js
+export async function action(key) {
+  if (key !== "link") return null;
+  if (!kino.visualBrowser?.available) return { message: "Este aparato no puede abrir la ventana de inicio de sesión" };
+  const r = await kino.visualBrowser.open({
+    url: "https://auth.miservicio.com/login",           // un host de tu manifest
+    title: "Mi servicio",
+    doneWhen: { localStorage: ["access_token"] },        // se cierra sola cuando la página guardó la clave
+    collect: { localStorage: ["access_token", "refresh_token"] },   // solo vuelven estas claves
+    timeoutMs: 300000,
+  });
+  if (r.status !== "done") return { message: "No se vinculó la cuenta" };
+  const ls = r.localStorage;
+  // Un Kino anterior ignora la opción y responde sin `localStorage`: dilo en vez de fallar más tarde.
+  if (!ls) return { message: "Este Kino no puede leer el almacenamiento del sitio. Actualízalo." };
+  if (!ls.access_token) return { message: "El sitio no guardó el token" };
+  await kino.storage.set("auth", JSON.stringify({ access: ls.access_token, refresh: ls.refresh_token ?? null }));
+  return { message: "Cuenta vinculada" };
+}
+```
+
+Kino abre la ventana, la persona inicia sesión y, en cuanto la página guarda `access_token`, la ventana se cierra y recibes los valores
+de las claves que nombraste, nada más del almacenamiento del sitio.
+
 ## Probarla { #kit }
 
 El kit de Node no tiene ventana: `node sdk/validate.mjs` revisa la clave del manifest, las opciones y la línea de consentimiento, e
 imprime una nota; `kino.visualBrowser.open` responde `unavailable` en `run.mjs` a menos que una prueba tuya le pase a `createKino` una
-opción `visualBrowser` (hace de la persona). Prueba la ventana real en un teléfono o un TV, y deja otra forma de entrar (pegar las
+opción `visualBrowser` (hace de la persona: responde `{ status: "done", localStorage: { token: "…" } }` para probar tu código de `collect.localStorage`). Prueba la ventana real en un teléfono o un TV, y deja otra forma de entrar (pegar las
 cookies en un ajuste `password`). Más en [Probar en local](test-locally.md).

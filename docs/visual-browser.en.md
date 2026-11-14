@@ -38,11 +38,12 @@ if (kino.visualBrowser?.available) {                   // undefined on a Kino wi
     url: "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com",
     title: "YouTube Music",                              // after your plugin's name in Kino's bar
     doneWhen: { cookies: ["SAPISID"] },                  // optional: the window closes by itself when the page holds them
+    // also: doneWhen: { localStorage: ["token"] } and collect: { localStorage: ["token"] } (the site's own saved data)
     collect: { cookies: ["SID", "HSID", "SAPISID"], storeAs: { setting: "cookieHeader", format: "header" } },
     userAgent: "browser",                                // or your own string
     timeoutMs: 600000,                                   // at most 10 minutes
   });
-  // r = { status: "done" | "closed" | "timeout", finalUrl?, cookies?, html?, stored?, storedNames?, userAgent? }
+  // r = { status: "done" | "closed" | "timeout", finalUrl?, cookies?, localStorage?, html?, stored?, storedNames?, userAgent? }
 }
 ```
 
@@ -52,7 +53,7 @@ on the desktop and on a device without a WebView.
 ## What the person sees { #consent }
 
 Kino's own sheet **every time**, in Kino's words (never yours): "&lt;your plugin&gt; wants to open a web window", the sites (your
-manifest `hosts`), the cookie **names** you asked for, whether the window identifies itself as a regular browser or with a custom
+manifest `hosts`), the cookie **names** and the `localStorage` **keys** you asked for, whether the window identifies itself as a regular browser or with a custom
 string, and, with `storeAs`, that Kino keeps the cookies and you do not see them. Only after Continuar does the window open, with
 Kino's bar (your plugin's name, your `title`, the host with a lock, Cerrar, and Listo when you gave no `doneWhen`) that you cannot
 change. Saying No, Cerrar and Back all give you `{ status: "closed" }`.
@@ -68,6 +69,14 @@ change. Saying No, Cerrar and Back all give you `{ status: "closed" }`.
 - **Cookies.** `collect.cookies` names (at most 32) are read from the hosts the window was on that you declare, HttpOnly ones
   included, at most 64 cookies and 16,384 characters of names and values together; they come back with `done` only.
   `collect.html` is the page's DOM (at most 2,000,000 characters), `collect.finalUrl` its last address.
+- **localStorage.** Many sites keep the session token in the page's `localStorage`, not in a cookie. `collect.localStorage` names keys
+  (at most 32, each 1 to 256 characters, no control character); Kino reads **only those keys** from the page the window ends on (which
+  must be on one of your hosts), never the whole store, and only with `done`. The answer's `localStorage` is `{ key: value }` for the
+  keys that exist (a key the page does not have is absent, never `null`), at most 65,536 characters of keys and values together (what
+  does not fit is left out, never cut in half). Kino's sheet lists the keys next to the cookie names. **`storeAs` keeps to the
+  cookies**: localStorage values come back to your script, so keep them in `kino.storage` or a `password` setting you write yourself,
+  and never log them. This is additive within apiVersion 20 (Kino 0.9.87, provisional): an older Kino ignores the options and answers no
+  `localStorage`, so check for the key in the answer before relying on it.
 - **`storeAs`**: Kino writes the cookies itself into your `password` setting `setting` (declared in the manifest) as
   `name=value; name2=value2` (`"header"`) or a JSON object (`"json"`), **after your call has ended** (saving a setting restarts
   your runtime); your script gets `stored` and `storedNames` (the names, never a value). A `password` setting holds 500
@@ -99,8 +108,9 @@ change. Saying No, Cerrar and Back all give you `{ status: "closed" }`.
   action's, a `panelAction`'s, a `screenEvent`'s) does not run, so a Google sign-in with 2-step verification can take as long as
   the person needs, up to `timeoutMs`. When the window closes your call has at least 10 seconds left to run the code after
   `open` resolves; a hang after that is stopped as usual.
-- **`doneWhen`** closes the window by itself: `cookies` (every named cookie exists) and/or `urlMatches` (the address matches the
-  pattern, where `*` is any run of characters and the rest is literal; at most 200 characters).
+- **`doneWhen`** closes the window by itself: `cookies` (every named cookie exists), `localStorage` (every named key exists in the
+  page's localStorage, checked about every 0.7 s) and/or `urlMatches` (the address matches the pattern, where `*` is any run of
+  characters and the rest is literal; at most 200 characters). Any one of them is enough.
 - **`userAgent`**: `"browser"` is the phone's Chrome string, kept up to date by Kino; or your own, 1 to 300 printable ASCII
   characters, so a site that changes what it accepts is fixed by a plugin update. Either way the WebView marker (`; wv`) is
   removed and `X-Requested-With` is not sent (on a WebView that lets Kino remove it). Absent: the WebView's own.
@@ -188,9 +198,35 @@ The honest caveat: Google may refuse to sign in inside an embedded window whatev
 without notice. Keep the paste-the-cookies setting as the fallback, and send `userAgent` as your own string if a newer one works
 better (you can ship that in a plugin update, with no Kino release).
 
+## Recipe: a token that lives in `localStorage` { #recipe-localstorage }
+
+```js
+export async function action(key) {
+  if (key !== "link") return null;
+  if (!kino.visualBrowser?.available) return { message: "Este aparato no puede abrir la ventana de inicio de sesión" };
+  const r = await kino.visualBrowser.open({
+    url: "https://auth.miservicio.com/login",           // a host of your manifest
+    title: "Mi servicio",
+    doneWhen: { localStorage: ["access_token"] },        // closes by itself when the page has saved the key
+    collect: { localStorage: ["access_token", "refresh_token"] },   // only these keys come back
+    timeoutMs: 300000,
+  });
+  if (r.status !== "done") return { message: "No se vinculó la cuenta" };
+  const ls = r.localStorage;
+  // An older Kino ignores the option and answers no `localStorage`: say so instead of failing later.
+  if (!ls) return { message: "Este Kino no puede leer el almacenamiento del sitio. Actualízalo." };
+  if (!ls.access_token) return { message: "El sitio no guardó el token" };
+  await kino.storage.set("auth", JSON.stringify({ access: ls.access_token, refresh: ls.refresh_token ?? null }));
+  return { message: "Cuenta vinculada" };
+}
+```
+
+Kino opens the window, the person signs in, and as soon as the page has saved `access_token` the window closes and you get the
+values of the keys you named, nothing else of the site's storage.
+
 ## Testing it { #kit }
 
 The Node kit has no window: `node sdk/validate.mjs` checks the manifest key, the options and the consent line, and prints a note;
 `kino.visualBrowser.open` answers `unavailable` in `run.mjs` unless a test of your own passes `createKino` a `visualBrowser`
-option (it plays the person). Test the real window on a phone or a TV, and keep another way in (pasting the cookies into a
+option (it plays the person: answer `{ status: "done", localStorage: { token: "…" } }` to test your `collect.localStorage` code). Test the real window on a phone or a TV, and keep another way in (pasting the cookies into a
 `password` setting). More: [Test it locally](test-locally.md).

@@ -17,30 +17,30 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 
 | Line | Section |
 | --- | --- |
-| 94 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
-| 127 | [1. Read first, in this order](#1-read-first-in-this-order) |
-| 212 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
-| 323 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
-| 437 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
-| 439 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
-| 505 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
-| 677 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
-| 713 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
-| 847 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
-| 910 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
-| 1135 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
-| 1233 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
-| 1318 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
-| 1497 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1592 | &nbsp;&nbsp;[Sharing: Kino Social's wall door, and share cards (go.plugin, openFrom, ctx.caller, kino.image.thumbnail)](#share) |
-| 1647 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1676 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
-| 1701 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
-| 1754 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
-| 1820 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 1843 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 1973 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 2026 | [7. Common mistakes](#7-common-mistakes) |
+| 99 | [0. The plugin's UI: screens first (one compact bar)](#0-the-plugins-ui-screens-first) |
+| 132 | [1. Read first, in this order](#1-read-first-in-this-order) |
+| 217 | [2. Before writing code, settle these with the person](#2-before-writing-code-settle-these-with-the-person) |
+| 330 | [3. Workflow (scaffolds, copying the kit, testing)](#3-workflow) |
+| 444 | [4. Hard rules (with the exact numbers)](#4-hard-rules-with-the-exact-numbers) |
+| 446 | &nbsp;&nbsp;[Network: hosts, https, redirects](#network) |
+| 512 | &nbsp;&nbsp;[Limits (from contract.json)](#limits) |
+| 684 | &nbsp;&nbsp;[apiVersion 14: screens, panels, rooms, jobs, AI](#api14) |
+| 720 | &nbsp;&nbsp;[The screen UI in one place (widgets, styles, answers, go, a search box)](#screen-ui) |
+| 854 | &nbsp;&nbsp;[apiVersion 13: sockets, bytes, catalog, images, QR](#api13) |
+| 917 | &nbsp;&nbsp;[Errors a plugin throws](#errors) |
+| 1142 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
+| 1240 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
+| 1351 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
+| 1530 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1625 | &nbsp;&nbsp;[Sharing: Kino Social's wall door, and share cards (go.plugin, openFrom, ctx.caller, kino.image.thumbnail)](#share) |
+| 1680 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1715 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
+| 1740 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
+| 1793 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
+| 1859 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 1882 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 2012 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 2065 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -81,8 +81,13 @@ drives"). apiVersion 21 (Kino 0.9.82) adds the `files` capability: **files on th
 person's device**, picked by the person (`kino.files`; section 4, "apiVersion 21: files on the device"). apiVersion 22 (the
 next Kino release, not published yet) adds the `progress` capability: **where the person is** in a chapter
 or a book, kept by Kino for the plugin to read back (`kino.progress`; section 4, "apiVersion 22: progress"). apiVersion 23 (the
-maximum today; the same next release, provisionally Kino 0.9.83) adds the `playerSlot` capability: **up to three small elements
+same next release, provisionally Kino 0.9.83) adds the `playerSlot` capability: **up to three small elements
 in the top-right corner of the TV player** (a clock, a score, a logo, a button; section 4, "apiVersion 23: the player slot").
+apiVersion 24 (Kino 0.9.85) lets a stream's `drm` be a list and adds ClearKey; apiVersion 25 (Kino 0.9.86) lets a stream
+subtitle carry its own decrypted `text`; apiVersion 26 (the maximum today; Kino 0.9.87, provisional, not published yet) lets an
+**app theme paint**: `surfaces`, `style.gloss`, `layout`, `assets`, `background.image`, `typography.fontFamily` (section 4,
+"apiVersion 18: app themes", level 2). Also next, with no new apiVersion: `kino.visualBrowser` can read the page's `localStorage`
+(`collect.localStorage`, `doneWhen.localStorage`; section 4, "a browser window the person drives").
 The same release adds, with no new apiVersion, an `Image`'s `headers` (`Referer`, `User-Agent`) for sites that need their own Referer.
 Kino 0.9.84 (next, not published yet) adds, with no new apiVersion, **share cards**: `go.plugin` (open another plugin's
 screen or search), the manifest's `openFrom.routes` (which of your screen routes other plugins' cards may open), `ctx.caller`
@@ -253,7 +258,9 @@ Do not rely on memory of other plugin systems (Kodi, Stremio, Cloudstream…): t
   `go.installPlugin`; `20` only for a top-level `provides`/`consumes` (the plugin protocol) or a plugin that only provides
   (both Kino 0.9.81); `21` only for `files` (Kino 0.9.82); `22` only for `progress` (the next Kino release, not published yet;
   a plugin that already has users puts it in `enhancements["22"]`); `23` only for `playerSlot` and its `slot` block (the same
-  release, provisionally Kino 0.9.83; or `enhancements["23"]` with both). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
+  release, provisionally Kino 0.9.83; or `enhancements["23"]` with both); `24` only for a stream's `drm` as a list or `type:
+  "clearkey"` (Kino 0.9.85); `25` only for a stream subtitle's own `text` (Kino 0.9.86); `26` only for the level-2 keys of an app theme
+  (`surfaces`, `style`, `layout`, `assets`, `background.image`, `typography.fontFamily`; Kino 0.9.87, provisional). A provider that already has users keeps its `apiVersion` and puts `provides` in `enhancements["20"]`
   instead. **17 to 20 need Kino 0.9.81**: every older Kino refuses the whole plugin, so use them only when the
   plugin needs them. `kino.crypto`'s byte
   operations (`aesIge`, `aesIgeVerify`, `modPow`, `gunzip`, `convert`) are gated on the Kino version, not on the
@@ -1314,6 +1321,32 @@ no network, no capability, no consent line (turning a theme on is the person's c
   Kino's is used`); `node sdk/run.mjs --context '{"activeTheme":"<id>"}' . screen` and `. screenEvent <name> --trigger tap`
   check the screen and say what Kino does with `go.useTheme` / `go.setExperience`. The kit draws no colours: look at the theme in
   Kino's preview.
+- **Level 2, painted themes (`apiVersion` 26, Kino 0.9.87, provisional, not published yet).** A theme that declares 26 may add the
+  keys below; a Kino that does not know 26 refuses the manifest as a whole (never put these keys in a theme that declares a lower
+  apiVersion: an older Kino refuses an unknown field):
+  - `surfaces`: keys `button`, `buttonGhost`, `navItem`, `navActive`, `rail`, `iconButton`, `card`, `cardFocus`, `focus`, `hero`,
+    `progress`; each `{ fill?, stroke?, glow? }`. `fill` is `{ type: "solid", color }` or `{ type: "gradient", colors: [2..8],
+    angle? }`; `stroke` is `{ width: 0..4, color }` **or** `{ width, gradient: { type: "gradient", … } }` (exactly one); `glow` is
+    `{ color, radius: 0..24, alpha: 0..1 }`. `focus` has a stroke and a glow, never a fill; a `card` has no fill (the picture is
+    the fill). `tv` and `phone` blocks may carry their own `surfaces` and `layout`.
+  - `style.gloss` (0 to 1): an element with no explicit `fill` gets a lighter-top, darker-bottom gradient from its base colour,
+    and `button`, `navActive`, `cardFocus` a glow from the accent; explicit values win.
+  - `layout`: `hero` `"fullBleed"` | `"framed"` and `rail` `"strip"` | `"floating"`, TV only (the phone ignores them); with
+    `shape.heroRadius` (0 to 32) and `shape.railItemRadius` (0 to 24).
+  - `assets` (at most 16 `{ id, path, sha256, bytes }`, files of the plugin's own repository, fetched and hash-checked at
+    install: a picture at most 2,000,000 bytes and 3,840 x 2,160, a font at most 1,000,000, 6,000,000 in all; a file that fails
+    is left out and the theme still installs, so every effect needs a fallback) with `background.image` `{ asset, fit: "cover" |
+    "top", dim: 0.3..1 }` (`colors.background` stays required as the fallback; contrast is measured on it darkened by `dim`) and
+    `typography.fontFamily` `{ regular, bold? }` (asset ids of TTF or OTF files). `.kinoplugin` files and packaged plugins do not
+    carry theme assets yet.
+  - Guardrails (each drops **that value** with a warning, never the manifest): text on a fill keeps 4.5:1 on every gradient stop;
+    a `focus` or `cardFocus` stroke too close to the page colour is dropped (focus is never invisible); ranges are clamped or
+    dropped. The kit's `validate.mjs` checks the format of these keys; replay of the contrast and range warnings for them is not in the
+    kit yet, so check them in Kino.
+  - The person can turn each of seven effects off on its own (Ajustes ▸ Experiencia visual ▸ Personalizar uno por uno, or the
+    Rendimiento tile of the TV's plugins panel): glows, gradient fills, gradient strokes, the background picture, the framed hero,
+    the floating rail, the theme font. The device wins, so design every effect as an addition. A complete example:
+    <https://github.com/kinotvapp/kino-plugin-theme-crimson>.
 
 <a id="protocol"></a>
 **apiVersion 20: the plugin protocol (Kino 0.9.81; `provides`/`consumes` also work inside
@@ -1667,11 +1700,17 @@ the "Vincular cuenta" recipe: <https://kinotvapp.github.io/kino-plugins/en/visua
   declared, distinct `password` settings) takes a longer text: Kino cuts it at 500 characters over `setting` then each `spill`
   setting in order, in one save, all or nothing (`store_failed` if it does not fit); read it back with
   `[kino.config.cookieA, kino.config.cookieB, ...].join("")`, no separator, never trimming a piece.
-- **`doneWhen`** `{ cookies?, urlMatches? }` closes the window by itself; `timeoutMs` 5,000 to 600,000; `userAgent` is `"browser"`
+- **localStorage** (additive inside apiVersion 20, Kino 0.9.87, provisional; an older Kino ignores it and answers no
+  `localStorage`, so check the answer): `collect.localStorage` (at most 32 keys of 1 to 256 characters, no control character) returns
+  `localStorage: { key: value }` for the keys the page's own `localStorage` holds, read from the page the window ends on (a declared
+  host), only with `done`, at most 65,536 characters of keys and values together; a missing key is absent. Kino's sheet lists the keys.
+  `storeAs` covers only cookies, so these values reach your script: keep them in `kino.storage`, never log them.
+  `doneWhen.localStorage` closes the window once every named key exists.
+- **`doneWhen`** `{ cookies?, localStorage?, urlMatches? }` closes the window by itself; `timeoutMs` 5,000 to 600,000; `userAgent` is `"browser"`
   or your own string (1 to 300 printable ASCII characters). The window's own `timeoutMs` is its only time bound: the opening
   call's time bound does not run while it is up, and the call has at least 10 seconds after `open` resolves. The window starts with a clean cookie jar.
 - **Test**: the Node kit has no window; `validate.mjs` checks the key and prints a note, and `kino.visualBrowser.open` answers
-  `unavailable` unless a test of yours gives `createKino` a `visualBrowser` option. Try the real window on a phone or a TV.
+  `unavailable` unless a test of yours gives `createKino` a `visualBrowser` option (answer `{ status: "done", localStorage: { … } }` to test `collect.localStorage`). Try the real window on a phone or a TV.
 
 <a id="files"></a>
 **apiVersion 21: files on the device (`files`, Kino 0.9.82).** A plugin that reads books, plays music or shows videos the

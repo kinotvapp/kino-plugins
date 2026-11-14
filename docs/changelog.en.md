@@ -3,6 +3,31 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.87 (next): themes that paint, and the site's saved data in the browser window { #v0987 }
+
+!!! note "Not published yet"
+    These arrive with Kino 0.9.87 (provisional: the number moves if the release does). The themes arrive with `"apiVersion": 26`, which
+    an older Kino refuses as a whole; `collect.localStorage` and `doneWhen.localStorage` are additive inside apiVersion 20, so an
+    older Kino ignores them and answers no `localStorage`.
+
+- **App themes that paint (`apiVersion` 26).** A theme may declare `surfaces` (a fill, a stroke and a glow for the buttons, the
+  menu, the rail, the round buttons, the cards, the focus ring, the hero and the progress bar), `style.gloss`, `layout` (a framed hero
+  and a floating rail, TV only), `assets` (a background picture and a font that ship in your repository, hash-checked at install),
+  `background.image`, `typography.fontFamily`, and the tokens `shape.heroRadius` and `shape.railItemRadius`. Seven switches in
+  Ajustes ▸ Experiencia visual let the person remove each effect on its own. [Painted surfaces, layouts and files](themes.md#level2).
+- **`kino.visualBrowser`: the page's `localStorage`.** `collect.localStorage: ["key", …]` hands you the values of the keys you name,
+  read from the page the window ends on, and `doneWhen.localStorage` closes the window once the page has saved them. The sheet lists
+  the keys; `storeAs` still covers only cookies. [The rules](visual-browser.md#rules) and
+  [a recipe](visual-browser.md#recipe-localstorage).
+
+## Kino 0.9.85 and 0.9.86: protected streams in a list, and subtitles with their own text { #v0985 }
+
+- **ClearKey and a list of DRM options (`apiVersion` 24, Kino 0.9.85).** A stream's `drm` may be a list, best option first, and a
+  block may be `type: "clearkey"` with its `keys`. On a phone with Widevine L1, a license refused for output protection is retried
+  once at L1. Kino 0.9.85 also replaces the player's zoom with a picture-format button.
+- **A subtitle with its own text (`apiVersion` 25, Kino 0.9.86).** A stream's `subtitles` entry may carry its own decrypted `text`
+  (with `format` `vtt` or `srt`, at most 2,000,000 bytes) instead of a `url`; Kino plays it from a local file.
+
 ## Kino 0.9.84 (next): share cards, who calls a door, and thumbnails { #v0984 }
 
 !!! note "Not published yet"

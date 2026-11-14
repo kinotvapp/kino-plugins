@@ -110,7 +110,18 @@ próxima versión de Kino): la capacidad "playerSlot", un bloque "slot" de 1 a 3
 "overlay" con los controles o "fixed", que me pregunta en rojo) y los dos exports playerSlot(context) y
 playerSlotAction({ id, context }); el context puede venir sin kind, y refreshMs va de 2000 a 60000. Un text acepta size, weight,
 color y background, y cualquier elemento left y top; los ofreces como ajustes normales y Kino ignora lo inválido y mantiene el
-texto legible (https://kinotvapp.github.io/kino-plugins/player-slot/#dress). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
+texto legible (https://kinotvapp.github.io/kino-plugins/player-slot/#dress).
+Si el inicio de sesión guarda su token en el localStorage de la página (no en una cookie), abre la ventana con
+kino.visualBrowser.open y collect.localStorage: ["access_token"] más doneWhen.localStorage (próxima versión de Kino, la 0.9.87, sin
+apiVersion nuevo): el localStorage de la respuesta trae solo las claves nombradas, con "done"; un Kino anterior no responde ninguna,
+así que compruébalo, guarda los valores en kino.storage y nunca los registres (storeAs cubre solo cookies;
+https://kinotvapp.github.io/kino-plugins/visual-browser/#rules).
+Para un aspecto de toda la app (temas), el appThemes del manifiesto (apiVersion 18) lleva colores, formas y tipografía; desde
+apiVersion 26 (próxima versión de Kino, la 0.9.87) un tema también puede pintar: surfaces (relleno, contorno y resplandor por
+elemento), style.gloss, layout (un héroe enmarcado y un riel flotante, solo TV), assets con background.image y
+typography.fontFamily. Nunca pongas esas claves en un tema que declara un apiVersion menor, dale a cada asset su sha256 y sus bytes
+exactos (una imagen de 2 MB como máximo), haz que el tema se vea bien con cada efecto apagado y mantén el texto legible en cada
+parada de un degradado (https://kinotvapp.github.io/kino-plugins/themes/#level2). Prefiere un Skeleton a un spinner y una hoja inferior con un campo de
 búsqueda a muchos chips; una pantalla tiene un presupuesto de 600 nodos.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
@@ -175,6 +186,8 @@ Lo que quiero:
 - Recordar dónde se quedó la persona (apiVersion 22, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué recorre la persona página a página o capítulo a capítulo (un manga, un libro, un podcast que reproduce el plugin), la unidad que hay que recordar (capítulo y página, una posición en el libro) y qué guardar en resume para volver al lugar exacto (p. ej. { cap: 87, pag: 12 }), y si mi plugin muestra su propia fila "Seguir leyendo" (Kino no dibuja ninguna) >>>
 - Imágenes de un sitio que solo responde a su propia página (los headers de una Image, próxima versión de Kino): <<< no / sí: el sitio, el Referer que pide (p. ej. https://mangasite.example/) y si necesita un User-Agent de navegador; sus hosts de imágenes van en hosts >>>
 - Algo siempre a la vista en el reproductor de la TV (el hueco del reproductor, apiVersion 23, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué muestra (un reloj, un marcador, un logo, un botón que abre mi panel), si se queda todo el tiempo (fixed: Kino me pregunta en rojo) o solo con los controles (overlay), y cada cuánto cambia >>>
+- Inicio de sesión que guarda su token en el localStorage de la página (kino.visualBrowser, próxima versión de Kino): <<< no / sí: el sitio, las claves de localStorage que guardan el token (p. ej. access_token) y dónde guardarlas (kino.storage) >>>
+- Un aspecto para toda la app (temas; superficies pintadas desde apiVersion 26, próxima versión de Kino, todavía sin publicar): <<< no / sí: el ambiente (colores, oscuro o claro), si necesita superficies (botones degradados o brillantes, resplandores), una imagen de fondo (mi propio archivo, de 2 MB como máximo, en el repositorio del plugin), su propia fuente (TTF u OTF), un héroe enmarcado y un riel flotante (solo TV) >>>
 - Compartir en Kino Social (recomendado en todo plugin): <<< sí, desde la página de cada título y desde la barra / solo desde la barra (solo texto) / no >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>

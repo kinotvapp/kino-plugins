@@ -7,7 +7,7 @@
     [`enhancements`](enhancements.md). Por debajo de apiVersion 18 el campo se ignora.
 
 Un plugin puede ofrecer **aspectos para toda la app**: colores, un fondo, el redondeo de las esquinas, el tamaño del texto,
-sombras, movimiento, el tamaño de los controles del reproductor y su propio logo, en todas las pantallas de Kino en el
+sombras, movimiento, el tamaño de los controles del reproductor y su propio logo, y desde apiVersion 26 [superficies pintadas, una imagen de fondo, una fuente y capas de la TV](#level2), en todas las pantallas de Kino en el
 celular y en el TV. Un tema son **datos en el manifiesto**: no corre código, no usa la red y no necesita ninguna capacidad. La
 persona elige un tema en **Ajustes ▸ Apariencia** (o con un botón en tu propia pantalla), puede ajustar lo que tú permitas, y
 la elección es por perfil y se sincroniza entre sus aparatos.
@@ -69,7 +69,7 @@ acento del reproductor. Los dos pueden estar en el mismo manifiesto.
 | `id` | Obligatorio. `^[a-z0-9][a-z0-9-]{1,39}$`, único en el plugin. Nunca lo cambies después de publicar: de él cuelgan la elección y los ajustes de la persona. |
 | `name` | Obligatorio. `{ "es", "en" }` (si falta uno, toma el otro) o un solo texto para los dos; como máximo 40 caracteres. |
 | `colors`, `shape`, `typography`, `elevation`, `motion`, `player` | Los grupos de tokens de abajo. Todos son opcionales: lo que no pongas sigue siendo de Kino. |
-| `background` | `{ "type": "solid", "colors": [uno] }` o `{ "type": "gradient", "colors": [2 a 8], "angle": grados enteros }` (ángulo por defecto 180). `image` se rechaza por ahora: "background.image arrives in a later version of Kino; remove it from this theme". |
+| `background` | `{ "type": "solid", "colors": [uno] }` o `{ "type": "gradient", "colors": [2 a 8], "angle": grados enteros }` (ángulo por defecto 180). `image` (apiVersion 26): `{ "asset", "fit", "dim" }`, ver [una imagen detrás de la app](#image) (un Kino anterior la rechaza). |
 | `tv`, `phone` | Los mismos grupos y `background`, que reemplazan al tema solo en ese tipo de aparato. |
 | `adjustable` | Lo que la persona puede cambiar en Ajustes ▸ Apariencia ▸ Personalizar (como máximo 48 tokens): `true`, `{ "swatches": ["#RRGGBB", …] }` (solo colores) o `{ "min", "max" }` (solo números). |
 | `pluginColors` | `"respect"` (por defecto) u `"override"`: qué pasa con los colores `theme` de apiVersion 6 de los otros plugins. |
@@ -85,7 +85,7 @@ el TV.
 
 ## Tokens y rangos { #tokens }
 
-Los 45 tokens, con los rangos que aplica `contract.json` (`manifest.appThemes`):
+Los 47 tokens, con los rangos que aplica `contract.json` (`manifest.appThemes`):
 
 | Grupo | Token | Tipo y rango | Valor propio de Kino |
 | --- | --- | --- | --- |
@@ -100,6 +100,7 @@ Los 45 tokens, con los rangos que aplica `contract.json` (`manifest.appThemes`):
 | `colors` | `border` (el color de los bordes, ver [Bordes](#borders)) | `#RRGGBB` | ninguno: sin él se usa `outline` |
 | `shape` | `cardRadius`, `channelRadius`, `buttonRadius`, `chipRadius`, `dialogRadius`, `inputRadius` | número, de 0 a 32 | los de Kino |
 | `shape` | `dialogBorder`, `menuBorder`, `headerBorder`, `cardBorder`, `panelBorder` (grosor en dp, ver [Bordes](#borders)) | número, de 0 a 4 | 0: Kino no dibuja bordes |
+| `shape` | `heroRadius`, `railItemRadius` (apiVersion 26: esquinas del héroe enmarcado y del riel flotante, ver [Superficies pintadas](#level2)) | número, de 0 a 32 y de 0 a 24 | 16 y los de Kino |
 | `typography` | `scale`, `titleScale`, `bodyScale` | número, de 0,85 a 1,3 | 1 |
 | `elevation` | `cardShadow`, `dialogShadow` | número, de 0 a 1 | los de Kino |
 | `elevation` | `heroScrim` | número, de 0,3 a 1 | el de Kino |
@@ -252,6 +253,139 @@ El color es `colors.border`; si el tema no lo da, se usa `outline`. El borde sig
 "shape": { "dialogBorder": 2, "cardBorder": 1, "headerBorder": 1 }
 ```
 
+## Superficies pintadas, capas y archivos (apiVersion 26) { #level2 }
+
+!!! note "Próxima versión de Kino, aún no publicada"
+    Todo esto llega con `"apiVersion": 26` (Kino 0.9.87, provisional: el número se mueve si se mueve la versión).
+    Un tema que las use debe declarar `"apiVersion": 26`: un Kino que no conoce el 26 rechaza entonces el manifiesto entero («Este
+    plugin necesita una versión más nueva de Kino») en lugar de leerlo mal. **No** pongas estas claves en un tema que declara un
+    apiVersion menor: Kino 0.9.87 las salta ahí, pero un Kino anterior rechaza un tema con un campo desconocido. Sin ninguna de
+    estas claves el tema se ve exactamente igual que antes, en cualquier Kino.
+
+El nivel 1 daba colores, formas y tamaños. El nivel 2 deja que el tema **pinte**: un relleno degradado o brillante, un contorno
+degradado y un resplandor suave en los elementos que Kino dibuja, una **imagen** de fondo, su propia **fuente** y dos **capas** de
+la TV (un héroe enmarcado y un riel flotante). Sigue siendo datos: no corre código, no usa red en ejecución, y las imágenes y las
+fuentes viajan en el repositorio de tu plugin.
+
+### `surfaces`: relleno, contorno y resplandor por elemento { #surfaces }
+
+`surfaces` es un objeto cuyas claves son los elementos de abajo; cada valor es `{ "fill"?, "stroke"?, "glow"? }`. Un elemento que no
+listas conserva el aspecto de Kino.
+
+| Elemento | Dónde pinta |
+| --- | --- |
+| `button` | el botón principal relleno (el confirmar de un diálogo, «Continuar viendo» del héroe) |
+| `buttonGhost` | el botón secundario de al lado (Cancelar, «…») |
+| `navItem`, `navActive` | las píldoras del menú superior y los ítems del riel, inactivo y activo (el enfocado o elegido) |
+| `rail` | el panel del riel: su relleno y su borde |
+| `iconButton` | los botones redondos de la esquina (perfil, campana, recargar) y el botón de plugins |
+| `card`, `cardFocus` | una tarjeta de póster o ancha en reposo y enfocada: contorno y resplandor (el relleno es la imagen, así que no lo tiene) |
+| `focus` | el aro de foco de todo lo demás que se enfoca: contorno y resplandor, nunca relleno |
+| `hero` | la tarjeta del héroe enmarcado (contorno y resplandor; sus esquinas son `shape.heroRadius`) |
+| `progress` | la parte llena de la barra de progreso de «Continuar viendo» |
+
+Los tres tipos de valor:
+
+| Valor | Forma | Rango |
+| --- | --- | --- |
+| `fill` | `{ "type": "solid", "color": "#RRGGBB" }` o `{ "type": "gradient", "colors": ["#RRGGBB", …], "angle": grados }` (ángulo por defecto 180) | de 2 a 8 colores; un degradado fuera de eso se descarta con un aviso |
+| `stroke` | `{ "width": dp, "color": "#RRGGBB" }` **o** `{ "width": dp, "gradient": { "type": "gradient", … } }` (exactamente uno de los dos) | ancho de 0 a 4 |
+| `glow` | `{ "color": "#RRGGBB", "radius": dp, "alpha": 0 a 1 }`, un halo difuminado detrás del elemento | radio de 0 a 24 |
+
+```json
+"surfaces": {
+  "button":     { "fill": { "type": "gradient", "colors": ["#D9232F", "#A8060F"], "angle": 180 }, "stroke": { "width": 1, "color": "#FF7B83" } },
+  "navActive":  { "fill": { "type": "solid", "color": "#2A0D12" }, "stroke": { "width": 1.5, "color": "#E50914" }, "glow": { "color": "#E50914", "radius": 10, "alpha": 0.55 } },
+  "cardFocus":  { "stroke": { "width": 2, "color": "#F2E8EA" }, "glow": { "color": "#E50914", "radius": 14, "alpha": 0.45 } },
+  "card":       { "glow": { "color": "#E50914", "radius": 10, "alpha": 0.22 } }
+}
+```
+
+Los bloques `tv` y `phone` del tema pueden llevar sus propias `surfaces`; el bloque gana sobre el tema solo en esa forma. El teléfono
+pinta `button`, `buttonGhost`, `iconButton`, `card` y `progress`; el riel, el menú superior y el héroe enmarcado existen solo en la TV.
+
+### `style.gloss`: un aspecto brillante con un solo número { #gloss }
+
+`"style": { "gloss": 0 a 1 }`. Un elemento **sin `fill` explícito** recibe un degradado más claro arriba y más oscuro abajo derivado de
+su color base (el acento para `button` y `navActive`, `surfaceHigh` para `iconButton` y `buttonGhost`), y `button`, `navActive` y
+`cardFocus` reciben un resplandor derivado del acento. Lo que escribas explícitamente gana sobre lo derivado. `0` o ausente = el aspecto
+plano de Kino. Un valor fuera de 0 a 1 se recorta con un aviso.
+
+### `layout`: héroe enmarcado y riel flotante (TV) { #layout }
+
+`"layout": { "hero": "fullBleed" | "framed", "rail": "strip" | "floating" }`, ambos opcionales; los bloques `tv` y `phone` pueden llevarlo.
+
+- `"hero": "framed"` dibuja el héroe del Home como una tarjeta redondeada con margen (con `surfaces.hero`) en lugar de una imagen que
+  llega a los bordes de la pantalla. Sus esquinas son `shape.heroRadius` (0 a 32, por defecto 16).
+- `"rail": "floating"` mantiene el riel izquierdo de la TV como un panel redondeado siempre, cerrado o abierto, con el mismo aire a
+  ambos lados; sus ítems usan `shape.railItemRadius` (0 a 24).
+- **Solo TV.** El teléfono ignora ambas claves y conserva su propia disposición. Una palabra desconocida rechaza el manifiesto; los
+  interruptores del aparato (abajo) apagan cada capa.
+
+### `assets` y `background.image`: una imagen detrás de la app { #image }
+
+El tema lista los archivos que trae en `assets`, cada uno `{ "id", "path", "sha256", "bytes" }`: `id` `^[a-z0-9][a-z0-9-]{1,39}$`,
+`path` una ruta relativa dentro del repositorio de tu plugin, `sha256` 64 caracteres hexadecimales, `bytes` el tamaño exacto. Como
+máximo **16** archivos.
+
+```json
+"assets": [ { "id": "background", "path": "assets/background.webp", "sha256": "0ed54aa7…", "bytes": 8276 } ],
+"background": { "image": { "asset": "background", "fit": "cover", "dim": 0.35 } }
+```
+
+- `background.image` es `{ "asset": id, "fit": "cover" | "top", "dim": 0.3 a 1 }`: `cover` llena la página y la centra, `top` la ancla
+  al borde superior, y `dim` es cuánto negro se pone encima. `colors.background` sigue **siendo obligatorio** como respaldo (mientras
+  carga la imagen, si falla, y para las comprobaciones de contraste). Un bloque `tv` o `phone` puede nombrar otra imagen.
+- Kino baja cada archivo **al instalar**, desde la misma dirección de la que vino tu manifiesto (nunca de un host nuevo), comprueba el
+  tamaño y el sha256, y los guarda con el plugin: una actualización los reemplaza, quitar el plugin los quita. Una imagen pesa como máximo
+  **2.000.000 bytes** y 3.840 x 2.160 píxeles, una fuente **1.000.000**, y todos los archivos juntos **6.000.000**.
+- Un archivo que falta, no pasa su hash, supera un tope o no se puede decodificar se **deja fuera**, con una nota en el registro: el
+  plugin y el resto del tema se instalan igual, y la página muestra el color de respaldo (o la fuente de Kino). Nunca rechaza la instalación.
+- El contraste del texto se comprueba contra el color de respaldo **oscurecido por `dim`**; de la imagen en sí se confía, así que
+  pruébala en Kino. Las imágenes se decodifican una vez, al tamaño de la ventana, fuera del hilo principal.
+
+Los archivos de un tema se instalan desde una dirección de repositorio (GitHub, una URL de manifiesto); un plugin importado desde un
+archivo `.kinoplugin` o empaquetado a mano todavía no lleva sus archivos de tema.
+
+### `typography.fontFamily`: tu propia fuente { #font }
+
+`"typography": { "fontFamily": { "regular": "<id de asset>", "bold": "<id de asset>" } }`: `bold` es opcional, y ambos nombran entradas
+de `assets` (un archivo TTF u OTF de como máximo 1.000.000 bytes). Todo el texto que Kino dibuja con su escala toma la familia, y las
+escalas (`scale`, `titleScale`, `bodyScale`) siguen funcionando encima. Una fuente que falta o que Android no puede leer deja la de Kino.
+
+### Los dos tokens de forma nuevos { #new-shapes }
+
+`shape.heroRadius` (0 a 32) y `shape.railItemRadius` (0 a 24) se suman a la tabla de [Tokens y rangos](#tokens). Por debajo de
+apiVersion 26 se saltan sin avisar.
+
+### Reglas de seguridad de lo que pintas { #level2-guardrails }
+
+Cada regla descarta **ese valor** con un aviso (`node sdk/validate.mjs .` lo muestra, y también el registro de Kino); nunca rechaza el
+manifiesto, así que un tema con un número malo sigue siendo usable:
+
+- **El texto debe seguir legible sobre un relleno.** El color de texto que Kino pone sobre un relleno (`onAccent` en `button` y
+  `navActive`, el texto de la página en lo demás) debe mantener 4,5 : 1 contra **cada parada** de un degradado. Un relleno que falla se
+  descarta: «surfaces.navActive.fill: the text on it isn't readable on every stop (at least 4.5:1); dropped».
+- **El foco nunca queda invisible.** Un contorno de `focus` o `cardFocus` demasiado parecido al color de la página se descarta y Kino
+  conserva su propio aro. `focus` tiene contorno y resplandor, nunca relleno (un `fill` ahí se descarta con un aviso).
+- El número de colores, el ángulo, el ancho, el radio, el alfa y `dim` se mantienen en los rangos de arriba (se recortan o se descartan, con aviso).
+- Con `background.image`, `dim` es como mínimo 0,3.
+
+### Los interruptores de la persona { #switches }
+
+El aparato siempre gana sobre el tema. En **Ajustes ▸ Experiencia visual ▸ Personalizar uno por uno** (también desde el icono
+**Rendimiento** del panel de plugins en la TV) la persona puede apagar cada uno de siete efectos por separado, conservando tus colores,
+formas y tipografía: los resplandores, los rellenos degradados, los contornos degradados, la imagen de fondo, el héroe enmarcado, el riel
+flotante y la fuente del tema. Son por aparato. En una TV débil, «todos los efectos apagados» apaga los siete. Por eso diseña cada
+efecto como una **adición**: un tema con los siete apagados debe verse bien.
+
+### Un ejemplo completo { #crimson }
+
+[`kinotvapp/kino-plugin-theme-crimson`](https://github.com/kinotvapp/kino-plugin-theme-crimson) es un tema pequeño, sin firma, que usa
+todas las claves de esta sección: botones brillantes y degradados, una píldora oscura con aro rojo para el menú activo, un resplandor
+suave en las tarjetas, un héroe enmarcado, un riel flotante y una imagen de fondo. Instálalo desde Plugins ▸ Agregar con
+`kinotvapp/kino-plugin-theme-crimson`.
+
 ## Activar un tema desde tu pantalla (`go.useTheme`, `activeTheme`) { #use-theme }
 
 La persona activa un tema en **Ajustes ▸ Apariencia** (Tema de Kino siempre es la primera opción; una vista previa muestra una
@@ -317,4 +451,6 @@ previa).
 - [ ] `adjustable` ofrece muestras de color (no solo colores libres) para que se pueda usar con un control remoto.
 - [ ] Un `price` lleva tu `payTo` real; no agregaste `coins` solo para vender.
 - [ ] Una pantalla que activa el tema lee `activeTheme` y usa `go.useTheme` solo desde un toque.
+- [ ] Las claves del nivel 2 (`surfaces`, `style`, `layout`, `assets`, `background.image`, `typography.fontFamily`) solo en un tema que declara `"apiVersion": 26`; el `sha256` y los `bytes` de cada asset coinciden con el archivo, y la imagen pesa como máximo 2 MB.
+- [ ] El tema se ve bien con los siete efectos apagados (Ajustes ▸ Experiencia visual): los colores y las formas lo sostienen, los efectos solo suman.
 - [ ] `"categories": ["themes"]`, y `"hosts": []` cuando el plugin solo trae temas.

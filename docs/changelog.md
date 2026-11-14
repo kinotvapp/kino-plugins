@@ -3,6 +3,32 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Kino 0.9.87 (próxima): temas que pintan, y los datos guardados del sitio en la ventana del navegador { #v0987 }
+
+!!! note "Todavía sin publicar"
+    Esto llega con Kino 0.9.87 (provisional: el número se mueve si se mueve la versión). Los temas llegan con `"apiVersion": 26`,
+    que un Kino anterior rechaza entero; `collect.localStorage` y `doneWhen.localStorage` son aditivos dentro de apiVersion 20, así
+    que un Kino anterior los ignora y responde sin `localStorage`.
+
+- **Temas que pintan (`apiVersion` 26).** Un tema puede declarar `surfaces` (un relleno, un contorno y un resplandor para los botones,
+  el menú, el riel, los botones redondos, las tarjetas, el aro de foco, el héroe y la barra de progreso), `style.gloss`, `layout` (un
+  héroe enmarcado y un riel flotante, solo en la TV), `assets` (una imagen de fondo y una fuente que viajan en tu repositorio, con su
+  hash comprobado al instalar), `background.image`, `typography.fontFamily`, y los tokens `shape.heroRadius` y `shape.railItemRadius`.
+  Siete interruptores en Ajustes ▸ Experiencia visual dejan que la persona quite cada efecto por separado.
+  [Superficies pintadas, capas y archivos](themes.md#level2).
+- **`kino.visualBrowser`: el `localStorage` de la página.** `collect.localStorage: ["clave", …]` te entrega los valores de las claves
+  que nombras, leídas de la página donde termina la ventana, y `doneWhen.localStorage` cierra la ventana cuando la página las guardó.
+  La hoja lista las claves; `storeAs` sigue cubriendo solo las cookies. [Las reglas](visual-browser.md#rules) y
+  [una receta](visual-browser.md#recipe-localstorage).
+
+## Kino 0.9.85 y 0.9.86: streams protegidos en lista, y subtítulos con su propio texto { #v0985 }
+
+- **ClearKey y una lista de opciones de DRM (`apiVersion` 24, Kino 0.9.85).** El `drm` de un stream puede ser una lista, la mejor
+  opción primero, y un bloque puede ser `type: "clearkey"` con sus `keys`. En un teléfono con Widevine L1, una licencia rechazada por
+  protección de salida se reintenta una vez en L1. Kino 0.9.85 también cambia el zoom del reproductor por un botón de formato de imagen.
+- **Un subtítulo con su propio texto (`apiVersion` 25, Kino 0.9.86).** Una entrada `subtitles` de un stream puede llevar su propio
+  `text` descifrado (con `format` `vtt` o `srt`, hasta 2.000.000 de bytes) en lugar de una `url`; Kino lo reproduce desde un archivo local.
+
 ## Kino 0.9.84 (próxima): tarjetas para compartir, quién llama a una puerta y miniaturas { #v0984 }
 
 !!! note "Todavía sin publicar"

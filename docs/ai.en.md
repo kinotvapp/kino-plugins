@@ -105,6 +105,15 @@ button; "overlay" with the controls or "fixed", which asks me in red), and both 
 playerSlotAction({ id, context }); context may lack kind, and refreshMs is 2000 to 60000. A text accepts size, weight, color
 and background, and any element left and top; offer them as ordinary settings, and Kino ignores what is invalid and keeps the
 text readable (https://kinotvapp.github.io/kino-plugins/en/player-slot/#dress).
+If the sign-in keeps its token in the page's localStorage (not in a cookie), open the window with kino.visualBrowser.open and
+collect.localStorage: ["access_token"] plus doneWhen.localStorage (next Kino release, 0.9.87, no new apiVersion): the answer's
+localStorage holds only the keys named, with "done"; an older Kino answers none, so check it, keep the values in kino.storage and
+never log them (storeAs covers cookies only; https://kinotvapp.github.io/kino-plugins/en/visual-browser/#rules).
+For a look for the whole app (app themes), the manifest's appThemes (apiVersion 18) holds colours, shapes and type; from
+apiVersion 26 (next Kino release, 0.9.87) a theme may also paint: surfaces (fill, stroke and glow per element), style.gloss,
+layout (a framed hero and a floating rail, TV only), assets with background.image and typography.fontFamily. Never put those keys in
+a theme that declares a lower apiVersion, give every asset its exact sha256 and bytes (a picture at most 2 MB), make the theme look
+right with each effect off, and keep text readable on every gradient stop (https://kinotvapp.github.io/kino-plugins/en/themes/#level2).
 Prefer a Skeleton to a spinner and a bottom sheet with a search field to many chips; a screen has a 600-node budget.
 (https://kinotvapp.github.io/kino-plugins/en/screen-components/#one-compact-bar)
 
@@ -170,6 +179,8 @@ What I want:
 - Remember where the person stopped (apiVersion 22, next Kino release, not published yet): <<< no / yes: what the person goes through page by page or chapter by chapter (a manga, a book, a podcast it plays itself), the unit to remember (chapter and page, a position in the book) and what to keep in resume to come back to the exact place (e.g. { cap: 87, pag: 12 }), and whether my plugin shows its own "keep reading" row (Kino draws none) >>>
 - Pictures from a site that only answers to its own page (an Image's headers, next Kino release): <<< no / yes: the site, the Referer it wants (e.g. https://mangasite.example/) and whether it needs a browser User-Agent; its picture hosts go in hosts >>>
 - Something always on the TV player (the player slot, apiVersion 23, next Kino release, not published yet): <<< no / yes: what it shows (a clock, a score, a logo, a button that opens my panel), whether it stays the whole time (fixed: Kino asks me in red) or only with the controls (overlay), and how often it changes >>>
+- Sign-in that keeps its token in the page's localStorage (kino.visualBrowser, next Kino release): <<< no / yes: the site, the localStorage keys that hold the token (e.g. access_token) and where to keep them (kino.storage) >>>
+- A look for the whole app (app themes; painted surfaces from apiVersion 26, next Kino release, not published yet): <<< no / yes: the mood (colours, dark or light), whether it needs surfaces (gradient or glossy buttons, glows), a background picture (my own file, at most 2 MB, in the plugin's repository), its own font (TTF or OTF), a framed hero and a floating rail (TV only) >>>
 - Share to Kino Social (recommended in every plugin): <<< yes, from each title page and from the bar / only from the bar (text only) / no >>>
 - Sign the plugin with my own key, so people know every update is mine: <<< yes / no >>>
 - My GitHub user: <<< e.g. my-user >>>
