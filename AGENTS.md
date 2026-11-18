@@ -31,18 +31,18 @@ plugin protocol, the one-page summary is <https://kinotvapp.github.io/kino-plugi
 | 1182 | &nbsp;&nbsp;[apiVersion 15: identity, notifications, stores](#api15) |
 | 1282 | &nbsp;&nbsp;[apiVersion 18: app themes](#api18) |
 | 1393 | &nbsp;&nbsp;[apiVersion 20: the plugin protocol (provider, consumer, hosts: a screen-only consumer declares none, open, recipes, kit)](#protocol) |
-| 1572 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
-| 1667 | &nbsp;&nbsp;[Sharing: Kino Social's wall door, and share cards (go.plugin, openFrom, ctx.caller, kino.image.thumbnail)](#share) |
-| 1722 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
-| 1757 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
-| 1782 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
-| 1835 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
-| 1901 | &nbsp;&nbsp;[apiVersion 27: live by clock (clockLive), a lower base with enhancements["27"], kino.pluginApiVersion](#clock-live) |
-| 1949 | &nbsp;&nbsp;[Getting a title ready ahead (resolveAhead, prepare)](#resolve-ahead) |
-| 1994 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
-| 2017 | [5. Checklist before publishing](#5-checklist-before-publishing) |
-| 2157 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
-| 2210 | [7. Common mistakes](#7-common-mistakes) |
+| 1573 | &nbsp;&nbsp;[A minimal consumer screen that draws clean, and its three traps](#minimal-consumer) |
+| 1668 | &nbsp;&nbsp;[Sharing: Kino Social's wall door, and share cards (go.plugin, openFrom, ctx.caller, kino.image.thumbnail)](#share) |
+| 1723 | &nbsp;&nbsp;[apiVersion 20: a browser window the person drives (visualBrowser)](#visual-browser) |
+| 1758 | &nbsp;&nbsp;[apiVersion 21: files on the device (files)](#files) |
+| 1783 | &nbsp;&nbsp;[apiVersion 22: where the person is (progress)](#progress) |
+| 1836 | &nbsp;&nbsp;[apiVersion 23: the player slot (playerSlot)](#player-slot) |
+| 1902 | &nbsp;&nbsp;[apiVersion 27: live by clock (clockLive), a lower base with enhancements["27"], kino.pluginApiVersion](#clock-live) |
+| 1950 | &nbsp;&nbsp;[Getting a title ready ahead (resolveAhead, prepare)](#resolve-ahead) |
+| 1995 | &nbsp;&nbsp;[The player panel (apiVersion 9)](#player-panel) |
+| 2018 | [5. Checklist before publishing](#5-checklist-before-publishing) |
+| 2158 | [6. Being discovered ("De la comunidad")](#6-being-discovered-de-la-comunidad) |
+| 2211 | [7. Common mistakes](#7-common-mistakes) |
 
 
 **Start here, in this order:**
@@ -1454,7 +1454,8 @@ page: <https://kinotvapp.github.io/kino-plugins/en/protocol/>. Reference pair: t
   A **screen-only consumer** (`"apiVersion": 20` or later, a non-empty `consumes`, `capabilities` exactly `["screen"]`;
   `contract.json` `protocol.screenOnlyConsumer`) declares **`"hosts": []`**, as Cine Trivia does. With no host its own
   `kino.fetch` is refused unless it declares `"fetchHosts": "any"` or has a `url` setting (alone or in a `list`). An `Image`
-  needs **no** host declaration (any public https address,
+  needs **no** host declaration (any public https address, and from Kino 0.9.88 a public http one where
+  `kino.screen.httpImages`,
   [Image](https://kinotvapp.github.io/kino-plugins/en/screen-components/#image)): TMDB's `posterUrl` draws without
   `image.tmdb.org`. With `"hosts": []` and **no setting at all** its card says it does not connect to the internet; any setting
   rules that out. If the screen does fetch something itself, declare that real host (it stays screen-only). Any other
