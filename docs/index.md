@@ -139,8 +139,8 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 
 !!! tip "Nuevo: monedas de Kino (apiVersion 16, con Kino 0.9.78) y apiVersion 17"
     La capacidad `coins` deja mostrar el saldo de monedas de Kino de la persona y regalarlas (`kino.coins`), y
-    `kino.sync.setActive` deja que un proveedor de sincronización se encienda o se apague. `apiVersion` 17 (con la próxima
-    versión de Kino) trae `kino.library.stats`, trabajos por perfil, el widget `pages` y más. Lo que cambió:
+    `kino.sync.setActive` deja que un proveedor de sincronización se encienda o se apague. `apiVersion` 17 (con Kino
+    0.9.81) trae `kino.library.stats`, trabajos por perfil, el widget `pages` y más. Lo que cambió:
     [Novedades](changelog.md#v17).
 
 ## La guía, página por página { #pages }
@@ -161,7 +161,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Catálogo y almacenamiento grande](catalog.md) | apiVersion 13, Kino 0.9.74: `kino.catalog`, un catálogo SQLite de hasta 100.000 ítems en el que busca Kino, y `storageLarge` |
 | [Imágenes del plugin](images.md) | apiVersion 13, Kino 0.9.74: pósteres e imágenes de episodio que sirve tu plugin con `image` |
 | [Archivos del aparato](files.md) | apiVersion 21, Kino 0.9.82: `kino.files`, archivos y carpetas que elige la persona, leídos por rangos o reproducidos con `kino-file:` |
-| [Guardar dónde va la persona](progress.md) | apiVersion 22 (próxima versión de Kino): `kino.progress`, hasta dónde va la persona en un capítulo o un libro; tu plugin arma su propia fila "Seguir leyendo" |
+| [Guardar dónde va la persona](progress.md) | apiVersion 22 (Kino 0.9.83): `kino.progress`, hasta dónde va la persona en un capítulo o un libro; tu plugin arma su propia fila "Seguir leyendo" |
 | [Códigos QR](qr.md) | apiVersion 13, Kino 0.9.74: el tipo de ajuste `qr` y `kino.qr.scan`, con una receta de inicio de sesión entre dos aparatos |
 | [Pantallas](screens.md) | apiVersion 14, Kino 0.9.74: la pantalla completa de tu plugin, el bloque `screen`, `screen()` y `screenEvent()`, el estado, las respuestas, `go`, temporizadores, el foco en el TV, límites, probar con el kit |
 | [Componentes: diseño, contenido y acciones](screen-components.md) | Cada componente de una pantalla con sus propiedades: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, texto, imágenes, tablas, botones, toasts |
@@ -176,13 +176,13 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
 | [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `setSettings` y "¿Eres tú?", las ayudas `link` y `help`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
 | [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
-| [Una ventana de navegador que la persona maneja](visual-browser.md) | `"visualBrowser": true` y `kino.visualBrowser.open` (apiVersion 20, Kino 0.9.81): una ventana web que la persona ve y usa para iniciar sesión o terminar un paso, sobre tus propios hosts; cookies, `storeAs`, la receta "Vincular cuenta", Android TV (experimental) También el `localStorage` de la página: `collect.localStorage` y `doneWhen.localStorage` (próxima versión de Kino). |
+| [Una ventana de navegador que la persona maneja](visual-browser.md) | `"visualBrowser": true` y `kino.visualBrowser.open` (apiVersion 20, Kino 0.9.81): una ventana web que la persona ve y usa para iniciar sesión o terminar un paso, sobre tus propios hosts; cookies, `storeAs`, la receta "Vincular cuenta", Android TV (experimental). También el `localStorage` de la página: `collect.localStorage` y `doneWhen.localStorage` (Kino 0.9.87). |
 | [Navegador oculto](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` y `kino.browser.page`: cuándo usarlos, el modelo de seguridad, nunca un captcha, tiempos y fallas (apiVersion 6) |
 | [Pasar lo guardado](migrate.md) | `migrate`: pasar a tu plugin lo que la persona tenía guardado (apiVersion 6) |
 | [Sección, categorías y colores](section-theme.md) | `section`, `categories` y `theme` (apiVersion 6) |
 | [Temas de la app](themes.md) | `appThemes` (apiVersion 18; superficies pintadas, una imagen de fondo, una fuente y capas de la TV desde apiVersion 26): tokens y rangos, `price` en kinos, `experience`, un `logo` vectorial, `go.useTheme` y `go.setExperience` |
 | [Panel del reproductor](player-panel.md) | `panel`, `panelAction` y `playerEvent`, acciones sobre el reproductor y `settingsLayout` (apiVersion 9); el panel en modo pantalla, las pestañas en el panel de otro plugin y en un canal en vivo, el panel fijo (apiVersion 14) |
-| [El hueco del reproductor](player-slot.md) | `playerSlot` y el bloque `slot` (apiVersion 23, próxima versión de Kino): hasta tres elementos pequeños en la esquina superior derecha del reproductor de la TV, el ejemplo del reloj, el consentimiento y el kit |
+| [El hueco del reproductor](player-slot.md) | `playerSlot` y el bloque `slot` (apiVersion 23, Kino 0.9.83): hasta tres elementos pequeños en la esquina superior derecha del reproductor de la TV, el ejemplo del reloj, el consentimiento y el kit |
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |

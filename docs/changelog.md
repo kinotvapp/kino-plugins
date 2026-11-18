@@ -3,12 +3,12 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
-## Kino 0.9.87 (próxima): temas que pintan, y los datos guardados del sitio en la ventana del navegador { #v0987 }
+## Kino 0.9.87: temas que pintan, y los datos guardados del sitio en la ventana del navegador { #v0987 }
 
-!!! note "Todavía sin publicar"
-    Esto llega con Kino 0.9.87 (provisional: el número se mueve si se mueve la versión). Los temas llegan con `"apiVersion": 26`,
-    que un Kino anterior rechaza entero; `collect.localStorage` y `doneWhen.localStorage` son aditivos dentro de apiVersion 20, así
-    que un Kino anterior los ignora y responde sin `localStorage`.
+!!! note "Disponible desde Kino 0.9.87"
+    Los temas llegan con `"apiVersion": 26`, que un Kino anterior rechaza entero; `collect.localStorage` y
+    `doneWhen.localStorage` son aditivos dentro de apiVersion 20, así que un Kino anterior los ignora y responde sin
+    `localStorage`.
 
 - **Temas que pintan (`apiVersion` 26).** Un tema puede declarar `surfaces` (un relleno, un contorno y un resplandor para los botones,
   el menú, el riel, los botones redondos, las tarjetas, el aro de foco, el héroe y la barra de progreso), `style.gloss`, `layout` (un
@@ -29,11 +29,11 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 - **Un subtítulo con su propio texto (`apiVersion` 25, Kino 0.9.86).** Una entrada `subtitles` de un stream puede llevar su propio
   `text` descifrado (con `format` `vtt` o `srt`, hasta 2.000.000 de bytes) en lugar de una `url`; Kino lo reproduce desde un archivo local.
 
-## Kino 0.9.84 (próxima): tarjetas para compartir, quién llama a una puerta y miniaturas { #v0984 }
+## Kino 0.9.84: tarjetas para compartir, quién llama a una puerta y miniaturas { #v0984 }
 
-!!! note "Todavía sin publicar"
-    Esto llega con Kino 0.9.84, que todavía no está publicada. No hay `apiVersion` nuevo: un Kino anterior descarta
-    `go.plugin`, ignora `openFrom` dentro de `enhancements["20"]` y no tiene `ctx` ni `kino.image`.
+!!! note "Disponible desde Kino 0.9.84"
+    No hay `apiVersion` nuevo: un Kino anterior descarta `go.plugin`, ignora `openFrom` dentro de `enhancements["20"]`, no
+    tiene `ctx` ni `kino.image` e ignora la operación `fullscreen`.
 
 - **`go.plugin` (`apiVersion` 20).** Un botón de tu pantalla abre la pantalla de **otro** plugin, o su búsqueda, a partir de
   su repositorio: `{ plugin: { repo, route?, args?, query? } }`, solo desde la pulsación o el envío de la persona. Kino ofrece
@@ -50,12 +50,16 @@ está en [el contrato](contract.md) y en [los archivos de referencia](reference/
 - **Compartir en Kino Social.** Kino Social mostrará las tarjetas en una versión posterior; hasta entonces, un plugin comparte
   con la llamada `share` de su puerta `wall` (Kino 0.9.81 y Kino Social 0.9.7), que deja un borrador que la persona revisa y
   publica. [Compartir](share.md).
+- **Pantalla completa.** La operación `ui` `{ fullscreen: true }` esconde la barra de título de Kino y las barras del
+  teléfono para un lienzo de borde a borde, y `{ fullscreen: false }` las devuelve. Solo tu pantalla la cambia, así que dibuja
+  tu propia salida; el Atrás del teléfono siempre cierra la pantalla. [Operaciones `ui` locales](screen-components.md#ui-ops).
+- **La «Letra» también en los podcasts.** El botón «Letra» del reproductor de música sale también en los ítems `podcast`: la
+  transcripción de un episodio, el texto de un audiolibro o de una lectura. [Letras](contract.md#lyrics).
 
-## Próxima versión de Kino (provisionalmente la 0.9.83): guardar dónde va la persona, el hueco del reproductor, e imágenes que necesitan un Referer { #next }
+## Kino 0.9.83: guardar dónde va la persona, el hueco del reproductor, e imágenes que necesitan un Referer { #v0983 }
 
-!!! note "Todavía sin publicar"
-    Esto llega con la próxima versión de Kino, que todavía no está publicada. Un Kino anterior rechaza `"apiVersion": 22` y `23`, e
-    ignora los `headers` de una `Image`.
+!!! note "Disponible desde Kino 0.9.83"
+    Un Kino anterior rechaza `"apiVersion": 22` y `23`, e ignora los `headers` de una `Image`.
 
 - **Guardar dónde va la persona (`apiVersion` 22).** La capacidad `progress` y `kino.progress` (`set`, `get`, `list`, `clear`):
   Kino guarda hasta dónde va la persona en un capítulo o un libro, por perfil, sincronizado entre sus aparatos y en las copias

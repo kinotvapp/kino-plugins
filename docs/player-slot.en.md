@@ -1,7 +1,7 @@
 # The player slot (`playerSlot`, apiVersion 23) { #player-slot }
 
-!!! note "Next Kino release, not published yet"
-    apiVersion 23 arrives with the next Kino release (provisionally 0.9.83), which is not published yet. A Kino that does not
+!!! note "Available from Kino 0.9.83"
+    apiVersion 23 arrives with Kino 0.9.83. A Kino that does not
     have it refuses a manifest with the `playerSlot` capability or the `slot` block ("Este plugin necesita una versión más
     nueva de Kino"). To keep running on older Kinos, keep your `apiVersion` and add both as an [enhancement](enhancements.md)
     (`enhancements["23"]`: `"capabilities": ["playerSlot"], "slot": { ... }`).

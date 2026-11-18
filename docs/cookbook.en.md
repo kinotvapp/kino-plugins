@@ -767,7 +767,7 @@ What the flag does, and what it does not:
 
 ## A manga reader that remembers the page (apiVersion 22) { #manga-reader }
 
-Two additions of the next Kino release (not published yet) cover what a reader needs:
+Two additions of Kino 0.9.83 cover what a reader needs:
 
 1. **Pages that load.** Many manga sites answer 403 to a picture asked without their own page as `Referer`. Declare their hosts
    in `hosts` and give each page's `Image` the [`headers`](screen-components.md#image-headers) the site wants:

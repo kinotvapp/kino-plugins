@@ -1062,8 +1062,8 @@ recorta.
 
 #### Imágenes que necesitan un Referer { #image-headers }
 
-!!! note "Próxima versión de Kino, todavía sin publicar"
-    `headers` es aditivo (sin `apiVersion` nuevo) y llega con la próxima versión de Kino. Un Kino anterior pide la imagen sin
+!!! note "Disponible desde Kino 0.9.83"
+    `headers` es aditivo (sin `apiVersion` nuevo) y llega con Kino 0.9.83. Un Kino anterior pide la imagen sin
     ellos, así que con él un sitio que los necesita sigue respondiendo 403 y se dibuja el `fallback`.
 
 Algunos sitios (sobre todo los lectores de manga) solo entregan sus imágenes a una petición que viene de su propia página, con
@@ -1916,6 +1916,7 @@ conserva.
 | `clear` | `{ clear: key }` | vacía una entrada |
 | `open` | `{ open: key }` | abre una ventana emergente declarada (reemplazando una abierta); en una respuesta espera al árbol nuevo; se descarta en un `onClose` |
 | `close` | `{ close: key }` | la cierra cuando es la que está abierta |
+| `fullscreen` | `{ fullscreen: true \| false }` | modo inmersivo, no es un nodo (Kino 0.9.84): `true` esconde la barra de título de Kino (su botón de cerrar, el nombre de tu pantalla, la campanita) y las barras de estado y de navegación del teléfono para un lienzo de borde a borde; `false` las devuelve. Solo tu pantalla lo cambia, así que dibuja tu propia salida (un botón con `{ ui: [{ fullscreen: false }] }`); el Atrás del teléfono siempre cierra la pantalla, así que la persona nunca queda atrapada. Reiniciar en una ruta nueva lo restablece. Un Kino anterior ignora la operación y la pantalla queda como estaba |
 
 ```json
 { "type": "Column", "gap": 8, "children": [

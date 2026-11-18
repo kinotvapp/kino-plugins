@@ -255,8 +255,8 @@ El color es `colors.border`; si el tema no lo da, se usa `outline`. El borde sig
 
 ## Superficies pintadas, capas y archivos (apiVersion 26) { #level2 }
 
-!!! note "Próxima versión de Kino, aún no publicada"
-    Todo esto llega con `"apiVersion": 26` (Kino 0.9.87, provisional: el número se mueve si se mueve la versión).
+!!! note "Disponible desde Kino 0.9.87"
+    Todo esto llega con `"apiVersion": 26` (Kino 0.9.87).
     Un tema que las use debe declarar `"apiVersion": 26`: un Kino que no conoce el 26 rechaza entonces el manifiesto entero («Este
     plugin necesita una versión más nueva de Kino») en lugar de leerlo mal. **No** pongas estas claves en un tema que declara un
     apiVersion menor: Kino 0.9.87 las salta ahí, pero un Kino anterior rechaza un tema con un campo desconocido. Sin ninguna de

@@ -1,7 +1,7 @@
 # Saving where the person is (`progress`, apiVersion 22) { #progress }
 
-!!! note "Next Kino release, not published yet"
-    apiVersion 22 arrives with the next Kino release, which is not published yet. A Kino that does not have it refuses a
+!!! note "Available from Kino 0.9.83"
+    apiVersion 22 arrives with Kino 0.9.83. A Kino that does not have it refuses a
     manifest with `"apiVersion": 22` ("Este plugin necesita una versión más nueva de Kino"). To keep running on older Kinos,
     keep your `apiVersion` and add `progress` as an [enhancement](enhancements.md) (`enhancements["22"]`).
 

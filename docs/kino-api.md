@@ -15,7 +15,7 @@ kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLit
 kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 kino.files         // apiVersion 21 (Kino 0.9.82), capability "files": files on the person's device (pick, read, url); absent otherwise
-kino.progress      // apiVersion 22 (next Kino release), capability "progress": where the person is in an element of yours (set, get, list, clear); absent otherwise
+kino.progress      // apiVersion 22 (Kino 0.9.83), capability "progress": where the person is in an element of yours (set, get, list, clear); absent otherwise
 ```
 
 `kino.apiVersion` responde 13 en Kino 0.9.74 y 11 en Kino 0.9.71 a 0.9.73.
@@ -567,7 +567,7 @@ de Kino, con el límite más estricto de la llave de Kino (20 cada 10 s; el kit 
 pasar), y con `KINO_TMDB_FIXTURE` responde sin red desde un archivo JSON con claves `"<path>?<params ordenados por
 nombre>"` o `"<path>"`. Sin ninguno de los dos lanza `no_tmdb_key`, como una versión de Kino sin llave propia.
 
-## `await kino.image.thumbnail(url, { maxWidth?, maxBytes? })` (Kino 0.9.84, todavía sin publicar) { #image-thumbnail }
+## `await kino.image.thumbnail(url, { maxWidth?, maxBytes? })` (Kino 0.9.84) { #image-thumbnail }
 
 Kino descarga una imagen `https` con **las mismas reglas de red que tu `kino.fetch`** (tus `hosts`, solo https, nunca la red de
 la casa, tu cupo de peticiones; máximo 5 MB) y responde un JPEG pequeño como `"data:image/jpeg;base64,…"`, para que una
@@ -702,7 +702,7 @@ llamada), `forget` y `url` (`kino-file:<id>`, para el `url` de un stream o de un
 Errores: `unavailable`, `not_allowed`, `busy`, `timeout`, `invalid_request`, `gone`, `too_large`, `denied`, `quota`. Nada se
 sube ni se envía. La guía completa, con cada regla y límite: [Archivos del aparato](files.md).
 
-## `kino.progress` (apiVersion 22, próxima versión de Kino) { #progress }
+## `kino.progress` (apiVersion 22, Kino 0.9.83) { #progress }
 
 Con la capacidad `progress` (sin línea de consentimiento): dónde va la persona en un elemento de tu plugin (un capítulo y una
 página de manga, una posición en un libro). `set({ id, fraction, title?, poster?, label?, labelEn?, resume?, done?, doneAt? })`,

@@ -75,8 +75,8 @@ que no puedes cambiar. Decir que No, Cerrar y Atrás te dan `{ status: "closed" 
   `{ clave: valor }` con las claves que existen (una clave que la página no tiene no aparece, nunca es `null`), con un máximo de 65.536
   caracteres de claves y valores juntos (lo que no cabe se deja fuera, sin cortarlo por la mitad). La hoja de Kino lista las claves junto a
   los nombres de las cookies. **`storeAs` solo cubre las cookies**: los valores de `localStorage` vuelven a tu script, así que guárdalos en
-  `kino.storage` o en un ajuste `password` que escribas tú, y nunca los registres. Es aditivo dentro de apiVersion 20 (Kino 0.9.87,
-  provisional): un Kino anterior ignora las opciones y responde sin `localStorage`, así que comprueba que la clave venga en la
+  `kino.storage` o en un ajuste `password` que escribas tú, y nunca los registres. Es aditivo dentro de apiVersion 20 (Kino
+  0.9.87): un Kino anterior ignora las opciones y responde sin `localStorage`, así que comprueba que la clave venga en la
   respuesta antes de fiarte de ella.
 - **`storeAs`**: Kino mismo escribe las cookies en tu ajuste `password` `setting` (declarado en el manifest) como
   `name=value; name2=value2` (`"header"`) o un objeto JSON (`"json"`), **cuando tu llamada ya terminó** (guardar un ajuste reinicia

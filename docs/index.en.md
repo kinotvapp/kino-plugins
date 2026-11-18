@@ -152,7 +152,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Catalog and large storage](catalog.md) | apiVersion 13, Kino 0.9.74: `kino.catalog`, a SQLite catalog of up to 100,000 items searched by Kino, and `storageLarge` |
 | [Images from the plugin](images.md) | apiVersion 13, Kino 0.9.74: posters and stills your plugin serves through `image` |
 | [Files on the device](files.md) | apiVersion 21, Kino 0.9.82: `kino.files`, files and folders the person picks, read by ranges or played with `kino-file:` |
-| [Saving where the person is](progress.md) | apiVersion 22 (next Kino release): `kino.progress`, where the person is in a chapter or a book; your plugin builds its own "keep reading" row |
+| [Saving where the person is](progress.md) | apiVersion 22 (Kino 0.9.83): `kino.progress`, where the person is in a chapter or a book; your plugin builds its own "keep reading" row |
 | [QR codes](qr.md) | apiVersion 13, Kino 0.9.74: the settings form's `qr` type and `kino.qr.scan`, with a two-device login recipe |
 | [Screens](screens.md) | apiVersion 14, Kino 0.9.74: your plugin's full screen, the `screen` block, `screen()` and `screenEvent()`, state, answers, `go`, timers, TV focus, limits, testing with the kit |
 | [Components: layout, content and actions](screen-components.md) | Every screen component with its properties: `Column`, `Row`, `Card`, `Scaffold`, `AppBar`, `NavigationBar`, `PageView`, `ListTile`, text, images, tables, buttons, toasts |
@@ -167,13 +167,13 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
 | [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `setSettings` and "Is this you?", the `link` and `help` aids, `validateSettings`, a complete example, the own tab and syncing |
 | [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |
-| [A browser window the person drives](visual-browser.md) | `"visualBrowser": true` and `kino.visualBrowser.open` (apiVersion 20, Kino 0.9.81): a web window the person sees and uses to sign in or finish a step, on your own hosts; cookies, `storeAs`, the "Vincular cuenta" recipe, Android TV (experimental) Also the page's `localStorage`: `collect.localStorage` and `doneWhen.localStorage` (next Kino release). |
+| [A browser window the person drives](visual-browser.md) | `"visualBrowser": true` and `kino.visualBrowser.open` (apiVersion 20, Kino 0.9.81): a web window the person sees and uses to sign in or finish a step, on your own hosts; cookies, `storeAs`, the "Vincular cuenta" recipe, Android TV (experimental). Also the page's `localStorage`: `collect.localStorage` and `doneWhen.localStorage` (Kino 0.9.87). |
 | [Hidden browser](browser.md) | `"browser": true` / `"pages"`, `kino.browser.capture` and `kino.browser.page`: when to use them, the safety model, never a captcha, timeouts and failures (apiVersion 6) |
 | [Moving saved titles](migrate.md) | `migrate`: move what the person had saved to your plugin (apiVersion 6) |
 | [Section, categories and colors](section-theme.md) | `section`, `categories` and `theme` (apiVersion 6) |
 | [App themes](themes.md) | `appThemes` (apiVersion 18; painted surfaces, a background picture, a font and TV layouts from apiVersion 26): tokens and ranges, `price` in kinos, `experience`, a vector `logo`, `go.useTheme` and `go.setExperience` |
 | [The player panel](player-panel.md) | `panel`, `panelAction` and `playerEvent`, player actions and `settingsLayout` (apiVersion 9); the panel in screen mode, tabs in another plugin's panel and on a live channel, the pinned panel (apiVersion 14) |
-| [The player slot](player-slot.md) | `playerSlot` and the `slot` block (apiVersion 23, next Kino release): up to three small elements in the top-right corner of the TV player, the clock example, consent and the kit |
+| [The player slot](player-slot.md) | `playerSlot` and the `slot` block (apiVersion 23, Kino 0.9.83): up to three small elements in the top-right corner of the TV player, the clock example, consent and the kit |
 | [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |

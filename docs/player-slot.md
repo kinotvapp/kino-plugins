@@ -1,7 +1,7 @@
 # El hueco del reproductor (`playerSlot`, apiVersion 23) { #player-slot }
 
-!!! note "Próxima versión de Kino, todavía sin publicar"
-    El apiVersion 23 llega con la próxima versión de Kino (provisionalmente la 0.9.83), que todavía no está publicada. Un Kino
+!!! note "Disponible desde Kino 0.9.83"
+    El apiVersion 23 llega con Kino 0.9.83. Un Kino
     que no lo tiene rechaza un manifiesto con la capacidad `playerSlot` o el bloque `slot` ("Este plugin necesita una versión
     más nueva de Kino"). Para seguir corriendo en Kinos anteriores, conserva tu `apiVersion` y agrega los dos como
     [mejora](enhancements.md) (`enhancements["23"]`: `"capabilities": ["playerSlot"], "slot": { ... }`).

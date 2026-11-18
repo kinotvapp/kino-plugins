@@ -1120,7 +1120,7 @@ export async function screen() {
 
 ### `go.plugin` { #go-plugin }
 
-Desde `apiVersion` 20 (Kino 0.9.84, todavía sin publicar): un botón en tu propia pantalla que abre la pantalla de **otro**
+Desde `apiVersion` 20 (Kino 0.9.84): un botón en tu propia pantalla que abre la pantalla de **otro**
 plugin, o su búsqueda, a partir de su repositorio de GitHub. Es la pieza de las [tarjetas para compartir](share.md#cards).
 
 ```js

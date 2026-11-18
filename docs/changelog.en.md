@@ -3,12 +3,11 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
-## Kino 0.9.87 (next): themes that paint, and the site's saved data in the browser window { #v0987 }
+## Kino 0.9.87: themes that paint, and the site's saved data in the browser window { #v0987 }
 
-!!! note "Not published yet"
-    These arrive with Kino 0.9.87 (provisional: the number moves if the release does). The themes arrive with `"apiVersion": 26`, which
-    an older Kino refuses as a whole; `collect.localStorage` and `doneWhen.localStorage` are additive inside apiVersion 20, so an
-    older Kino ignores them and answers no `localStorage`.
+!!! note "Available from Kino 0.9.87"
+    The themes arrive with `"apiVersion": 26`, which an older Kino refuses as a whole; `collect.localStorage` and
+    `doneWhen.localStorage` are additive inside apiVersion 20, so an older Kino ignores them and answers no `localStorage`.
 
 - **App themes that paint (`apiVersion` 26).** A theme may declare `surfaces` (a fill, a stroke and a glow for the buttons, the
   menu, the rail, the round buttons, the cards, the focus ring, the hero and the progress bar), `style.gloss`, `layout` (a framed hero
@@ -28,11 +27,11 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 - **A subtitle with its own text (`apiVersion` 25, Kino 0.9.86).** A stream's `subtitles` entry may carry its own decrypted `text`
   (with `format` `vtt` or `srt`, at most 2,000,000 bytes) instead of a `url`; Kino plays it from a local file.
 
-## Kino 0.9.84 (next): share cards, who calls a door, and thumbnails { #v0984 }
+## Kino 0.9.84: share cards, who calls a door, and thumbnails { #v0984 }
 
-!!! note "Not published yet"
-    These arrive with Kino 0.9.84, which is not published yet. There is no new `apiVersion`: an older Kino drops `go.plugin`,
-    ignores `openFrom` inside `enhancements["20"]` and has no `ctx` and no `kino.image`.
+!!! note "Available from Kino 0.9.84"
+    There is no new `apiVersion`: an older Kino drops `go.plugin`, ignores `openFrom` inside `enhancements["20"]`, has no
+    `ctx` and no `kino.image`, and ignores the `fullscreen` operation.
 
 - **`go.plugin` (`apiVersion` 20).** A button on your screen opens **another** plugin's screen, or its search, from its
   repository: `{ plugin: { repo, route?, args?, query? } }`, only from the person's press or submit. Kino offers to install it
@@ -48,12 +47,16 @@ What changed in Kino that matters when you write a plugin, by app version. Every
 - **Sharing to Kino Social.** Kino Social will show the cards in a later version; until then a plugin shares with the `share`
   call of its `wall` door (Kino 0.9.81 and Kino Social 0.9.7), which leaves a draft the person reviews and posts.
   [Sharing](share.md).
+- **Full screen.** The `ui` operation `{ fullscreen: true }` hides Kino's title bar and the phone's bars for a full-bleed
+  canvas, and `{ fullscreen: false }` brings them back. Only your screen toggles it, so draw your own way out; the phone's
+  Back always closes the screen. [Local `ui` operations](screen-components.md#ui-ops).
+- **"Letra" for podcasts too.** The music player's "Letra" button also shows on `podcast` items: an episode's transcript,
+  an audiobook's or a reading's text. [Lyrics](contract.md#lyrics).
 
-## Next Kino release (provisionally 0.9.83): saving where the person is, the player slot, and pictures that need a Referer { #next }
+## Kino 0.9.83: saving where the person is, the player slot, and pictures that need a Referer { #v0983 }
 
-!!! note "Not published yet"
-    These arrive with the next Kino release, which is not published yet. A Kino before it refuses `"apiVersion": 22` and `23`, and
-    ignores an `Image`'s `headers`.
+!!! note "Available from Kino 0.9.83"
+    A Kino before it refuses `"apiVersion": 22` and `23`, and ignores an `Image`'s `headers`.
 
 - **Saving where the person is (`apiVersion` 22).** The `progress` capability and `kino.progress` (`set`, `get`, `list`,
   `clear`): Kino keeps how far along the person is in a chapter or a book, per profile, synced between their devices and in

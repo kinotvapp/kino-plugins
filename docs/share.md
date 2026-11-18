@@ -6,7 +6,7 @@ Cualquier plugin puede ofrecerle a la persona un botón **Compartir**. Esta pág
   propone a Kino Social una publicación (un texto y, si quieres, el título que la persona está viendo) por la puerta `wall`
   del [protocolo entre plugins](protocol.md). Kino Social la guarda como **borrador**; la persona la revisa y la publica allá.
   **Nada se publica sin la persona.**
-- **[Tarjetas para compartir](#cards)** (Kino 0.9.84, todavía sin publicar): las piezas para que un plugin abra el
+- **[Tarjetas para compartir](#cards)** (Kino 0.9.84): las piezas para que un plugin abra el
   contenido de otro plugin desde una tarjeta: [`go.plugin`](#go-plugin), [`openFrom.routes`](#open-from),
   [`ctx.caller`](#ctx-caller) y [`kino.image.thumbnail`](#thumbnail).
 
@@ -219,7 +219,7 @@ async function sendShare(v, share, installed) {
 ## Tarjetas para compartir { #cards }
 
 !!! note "Disponible desde Kino 0.9.84"
-    Todavía sin publicar: esto llega con Kino 0.9.84. No hay `apiVersion` nuevo: `go.plugin` y `openFrom` son de
+    Esto llega con Kino 0.9.84. No hay `apiVersion` nuevo: `go.plugin` y `openFrom` son de
     `apiVersion` 20 y un Kino anterior los descarta o los ignora; `ctx` y `kino.image` simplemente no existen en un Kino
     anterior (revisa antes de usarlos). Cada número está en `contract.json` (`manifest.openFrom`, `manifest.screen.goPlugin`,
     `protocol.ctx`, `kinoImage`).

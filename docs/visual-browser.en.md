@@ -75,7 +75,7 @@ change. Saying No, Cerrar and Back all give you `{ status: "closed" }`.
   keys that exist (a key the page does not have is absent, never `null`), at most 65,536 characters of keys and values together (what
   does not fit is left out, never cut in half). Kino's sheet lists the keys next to the cookie names. **`storeAs` keeps to the
   cookies**: localStorage values come back to your script, so keep them in `kino.storage` or a `password` setting you write yourself,
-  and never log them. This is additive within apiVersion 20 (Kino 0.9.87, provisional): an older Kino ignores the options and answers no
+  and never log them. This is additive within apiVersion 20 (Kino 0.9.87): an older Kino ignores the options and answers no
   `localStorage`, so check for the key in the answer before relying on it.
 - **`storeAs`**: Kino writes the cookies itself into your `password` setting `setting` (declared in the manifest) as
   `name=value; name2=value2` (`"header"`) or a JSON object (`"json"`), **after your call has ended** (saving a setting restarts

@@ -999,7 +999,8 @@ dropped and why, and the button it makes of it.
 A plugin that finds a song's lyrics -- LRCLIB, a lyrics site, the person's own library -- declares
 `"capabilities": ["lyrics"]` (alone, with `subtitles`/`tracking`/`segments`, or next to a source's capabilities) and
 `"apiVersion": 19`, and exports `lyrics(query)`. Kino then shows a "Letra" button next to the playback controls of the music
-player, over the cover, on phone and TV.
+player, over the cover, on phone and TV, for `music` items and, from Kino 0.9.84, `podcast` items too: an episode's
+transcript, an audiobook's or a reading's text.
 
 - **Consent.** The install sheet says what your plugin learns: the title and artist of what the person listens to (not in
   red). An update that adds `lyrics` needs no approval of its own.

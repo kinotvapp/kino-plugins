@@ -15,7 +15,7 @@ kino.catalog       // apiVersion 13 (Kino 0.9.74), capability "catalog": a SQLit
 kino.qr            // apiVersion 13 (Kino 0.9.74), capability "qrScan": { scan() }, the phone's QR scanner; absent otherwise
 kino.plugins       // apiVersion 20 (Kino 0.9.81): { call() }, the doors of the plugins your manifest consumes; absent before
 kino.files         // apiVersion 21 (Kino 0.9.82), capability "files": files on the person's device (pick, read, url); absent otherwise
-kino.progress      // apiVersion 22 (next Kino release), capability "progress": where the person is in an element of yours (set, get, list, clear); absent otherwise
+kino.progress      // apiVersion 22 (Kino 0.9.83), capability "progress": where the person is in an element of yours (set, get, list, clear); absent otherwise
 ```
 
 `kino.apiVersion` reports 13 on Kino 0.9.74 and 11 on Kino 0.9.71 to 0.9.73.
@@ -527,7 +527,7 @@ Kino's, with the stricter limit on Kino's key (20 per 10 s; the kit has no perso
 `KINO_TMDB_FIXTURE` it answers offline from a JSON file keyed `"<path>?<params sorted by name>"` or `"<path>"`. Without
 either, it throws `no_tmdb_key`, as a Kino build without a key does.
 
-## `await kino.image.thumbnail(url, { maxWidth?, maxBytes? })` (Kino 0.9.84, not published yet) { #image-thumbnail }
+## `await kino.image.thumbnail(url, { maxWidth?, maxBytes? })` (Kino 0.9.84) { #image-thumbnail }
 
 Kino downloads an `https` picture under **the same network rules as your `kino.fetch`** (your `hosts`, https only, never the
 home network, your request budget; at most 5 MB) and answers a small JPEG as `"data:image/jpeg;base64,…"`, so a card can carry
@@ -657,7 +657,7 @@ handles, never an address; `list`, `folders`, `info`, `read`, `readText` (at mos
 `timeout`, `invalid_request`, `gone`, `too_large`, `denied`, `quota`. Nothing is uploaded or sent. The full guide, with every rule
 and limit: [Files on the device](files.md).
 
-## `kino.progress` (apiVersion 22, next Kino release) { #progress }
+## `kino.progress` (apiVersion 22, Kino 0.9.83) { #progress }
 
 With the `progress` capability (no consent line): where the person is in an element your plugin owns (a manga chapter and
 page, a book position). `set({ id, fraction, title?, poster?, label?, labelEn?, resume?, done?, doneAt? })`, `get(id)` (the

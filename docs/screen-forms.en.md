@@ -1081,7 +1081,7 @@ export async function screen() {
 
 ### `go.plugin` { #go-plugin }
 
-From `apiVersion` 20 (Kino 0.9.84, not published yet): a button on your own screen that opens **another** plugin's screen, or
+From `apiVersion` 20 (Kino 0.9.84): a button on your own screen that opens **another** plugin's screen, or
 its search, from its GitHub repository. It is the piece behind [share cards](share.md#cards).
 
 ```js

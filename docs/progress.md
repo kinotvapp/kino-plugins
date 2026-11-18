@@ -1,7 +1,7 @@
 # Guardar dónde va la persona (`progress`, apiVersion 22) { #progress }
 
-!!! note "Próxima versión de Kino, todavía sin publicar"
-    El apiVersion 22 llega con la próxima versión de Kino, que todavía no está publicada. Un Kino que no lo tiene rechaza un
+!!! note "Disponible desde Kino 0.9.83"
+    El apiVersion 22 llega con Kino 0.9.83. Un Kino que no lo tiene rechaza un
     manifiesto con `"apiVersion": 22` ("Este plugin necesita una versión más nueva de Kino"). Para seguir corriendo en Kinos
     anteriores, conserva tu `apiVersion` y agrega `progress` como [mejora](enhancements.md) (`enhancements["22"]`).
 

@@ -778,7 +778,7 @@ Lo que hace la bandera, y lo que no:
 
 ## Un lector de manga que recuerda la página (apiVersion 22) { #manga-reader }
 
-Dos novedades de la próxima versión de Kino (todavía sin publicar) cubren lo que necesita un lector:
+Dos novedades de Kino 0.9.83 cubren lo que necesita un lector:
 
 1. **Páginas que cargan.** Muchos sitios de manga le responden 403 a una imagen que se pide sin su propia página como
    `Referer`. Declara sus hosts en `hosts` y dale a la `Image` de cada página los

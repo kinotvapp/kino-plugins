@@ -16,7 +16,7 @@ Desde `"apiVersion": 14` (Kino 0.9.74) el panel también se arma con el kit de p
 panel de otro plugin o en un canal en vivo, y la persona puede fijarlo junto al video: mira
 [El panel con el kit de pantallas](#screen-kit).
 
-Desde `"apiVersion": 23` (la próxima versión de Kino) un plugin también puede tener hasta tres elementos pequeños en la
+Desde `"apiVersion": 23` (Kino 0.9.83) un plugin también puede tener hasta tres elementos pequeños en la
 esquina superior derecha del reproductor de la TV, y un botón ahí puede abrir este panel (`openPanel`): mira
 [El hueco del reproductor](player-slot.md).
 

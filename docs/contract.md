@@ -1043,7 +1043,8 @@ que descartó y por qué, y el botón que arma con eso.
 Un plugin que encuentra la letra de una canción -- LRCLIB, un sitio de letras, la biblioteca de la persona -- declara
 `"capabilities": ["lyrics"]` (solo, con `subtitles`/`tracking`/`segments`, o junto a las capacidades de una fuente) y
 `"apiVersion": 19`, y exporta `lyrics(query)`. Kino muestra entonces un botón «Letra» junto a los controles de reproducción del
-reproductor de música, sobre la carátula, en el teléfono y en la TV.
+reproductor de música, sobre la carátula, en el teléfono y en la TV, para los ítems `music` y, desde Kino 0.9.84, también para
+los ítems `podcast`: la transcripción de un episodio, el texto de un audiolibro o de una lectura.
 
 - **Consentimiento.** La hoja de instalación dice lo que tu plugin sabe: el título y el artista de lo que la persona escucha (no
   va en rojo). Una actualización que agrega `lyrics` no necesita aprobación propia.

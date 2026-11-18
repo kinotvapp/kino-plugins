@@ -248,8 +248,8 @@ The colour is `colors.border`; when the theme gives none, `outline` is used. A b
 
 ## Painted surfaces, layouts and files (apiVersion 26) { #level2 }
 
-!!! note "Next Kino release, not published yet"
-    Everything in this section arrives with `"apiVersion": 26` (Kino 0.9.87, provisional: the number moves if the release does).
+!!! note "Available from Kino 0.9.87"
+    Everything in this section arrives with `"apiVersion": 26` (Kino 0.9.87).
     A theme that uses them must declare `"apiVersion": 26`: a Kino that does not know 26 then refuses the whole manifest ("Este
     plugin necesita una versión más nueva de Kino") instead of misreading it. **Do not** put these keys in a theme that declares a
     lower apiVersion: Kino 0.9.87 skips them there, but an older Kino refuses a theme with an unknown field. With none of these

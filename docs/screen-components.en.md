@@ -1022,8 +1022,8 @@ picture loads. `focus` (`top`, `center`, `bottom`) picks the part that stays whe
 
 #### Pictures that need a Referer { #image-headers }
 
-!!! note "Next Kino release, not published yet"
-    `headers` is additive (no new `apiVersion`) and arrives with the next Kino release. An older Kino asks for the picture
+!!! note "Available from Kino 0.9.83"
+    `headers` is additive (no new `apiVersion`) and arrives with Kino 0.9.83. An older Kino asks for the picture
     without them, so on it a site that needs them still answers 403 and the `fallback` draws.
 
 Some sites (manga readers above all) serve their pictures only to a request that comes from their own page, with a browser
@@ -1850,6 +1850,7 @@ accordion), so your next call sees it and a re-render keeps it.
 | `clear` | `{ clear: key }` | empties an input |
 | `open` | `{ open: key }` | opens a declared pop-up (replacing an open one); in an answer it waits for the new tree; dropped in an `onClose` |
 | `close` | `{ close: key }` | closes it when it is the one open |
+| `fullscreen` | `{ fullscreen: true \| false }` | immersive mode, not a node (Kino 0.9.84): `true` hides Kino's title bar (its close, your screen's name, the bell) and the phone's status and navigation bars for a full-bleed canvas; `false` brings them back. Only your screen toggles it, so draw your own way out (a button with `{ ui: [{ fullscreen: false }] }`); the phone's Back always closes the screen, so the person is never trapped. A restart to a new route resets it. An older Kino ignores the operation and the screen stays as it was |
 
 ```json
 { "type": "Column", "gap": 8, "children": [
