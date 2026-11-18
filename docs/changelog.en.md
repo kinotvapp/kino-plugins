@@ -3,6 +3,42 @@
 What changed in Kino that matters when you write a plugin, by app version. Every number is in
 [the contract](contract.md) and [the reference files](reference/index.md).
 
+## Kino 0.9.88: titles ready ahead, live by clock, http pictures on screens { #v0988 }
+
+!!! note "Available from Kino 0.9.88"
+    `apiVersion` 27 (`clockLive`) arrives with Kino 0.9.88: an older Kino refuses `"apiVersion": 27` and ignores an
+    `enhancements["27"]` block. Everything else here is additive, with no new `apiVersion`: an older Kino ignores
+    `resolveAhead`, never calls `prepare`, has no `kino.pluginApiVersion` and no `kino.screen.httpImages`, and drops a
+    screen's http pictures.
+
+- **Getting a title ready ahead.** The manifest's `"resolveAhead": true` lets Kino call `resolve` for a movie or an
+  episode once the person has stayed about 0.3 s on its title page, and play that answer if they press play within 20
+  minutes; only for a plugin whose `resolve` can ask the person nothing (an approved `"fetchHosts": "any"` and video from
+  any server). [Getting a title ready ahead](contract.md#resolve-ahead).
+- **Warming up before the play.** The optional export `prepare(ref)`, for a plugin whose `resolve` must never run for
+  titles nobody plays (a quota per account, plays counted): Kino calls it at the same moment and ignores its answer, so it
+  can warm a session or a token. 15 s, in the background, once per `ref` every 5 minutes, 6 a minute;
+  `node sdk/run.mjs . prepare <ref>`. [Warming up before the play](contract.md#prepare).
+- **Live by clock (`apiVersion` 27).** A live stream may carry `clockLive`: the template, duration grid and anchor of a CDN
+  that names its segments by a media clock, and Kino builds the HLS window itself, with no plugin call while it plays. Kino
+  reads it from your feature apiVersion, so an empty `"enhancements": { "27": {} }` turns it on without raising yours.
+  [Live by clock](live-channels.md#clock-live).
+- **`kino.pluginApiVersion`.** Your feature apiVersion on this Kino: your `apiVersion` or the highest `enhancements` key
+  applied. Check it, not `kino.apiVersion`, before you send `clockLive`.
+  [`kino.pluginApiVersion`](kino-api.md#plugin-api-version).
+- **http pictures on screens.** A screen's pictures (an `Image`, a `heroCard`'s image and logo, a `CircleAvatar`, the
+  posters of `titleCard`, `titleRail` and `titleGrid`) may be http on a public host, as a Home poster: IPTV channel logos
+  show. Check `kino.screen.httpImages === true`; `headers` still go only with https.
+  [http pictures](screen-components.md#http-pictures).
+- **Identity.** `kino.identity.telegram` gives the `token` only to the author keys in `kinoIdentity.tokenAuthors`, now two;
+  any other author gets the `id` and, with a challenge, the attestation, where Kino 0.9.87 answered `permission_denied`.
+  [Identity](identity.md).
+- **Screens.** On the TV a plugin's button is 40 dp tall with 14 dp each side (it was 52 dp and 22 dp), and its own
+  `padding` replaces that room ([Buttons](screen-components.md#button)); each destination of a `Scaffold`'s
+  `NavigationBar` keeps its scroll, as each tab of a `TabBar` does ([NavigationBar](screen-components.md#navigation-bar)).
+- **What people see.** A "Continuar viendo" card opens the title page, and the install confirmation says
+  "Abrir &lt;name&gt;" when it opens your screen ([What people see](what-people-see.md#v0988)).
+
 ## Kino 0.9.87: themes that paint, and the site's saved data in the browser window { #v0987 }
 
 !!! note "Available from Kino 0.9.87"

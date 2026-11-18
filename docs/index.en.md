@@ -117,6 +117,12 @@ travels as is to the person's other devices with plugin sync.
 can paste the address of a Stremio addon's `manifest.json` (or a `stremio://` link) and Kino generates
 a plugin for it. Nothing in this guide changes for your plugin.
 
+!!! tip "New in Kino 0.9.88: titles ready ahead, live by clock, http pictures"
+    A plugin can get a title ready while the person reads its page ([`resolveAhead` and `prepare`](contract.md#resolve-ahead)),
+    a live stream can hand Kino a CDN's media clock instead of a playlist ([`clockLive`](live-channels.md#clock-live),
+    apiVersion 27, also through an empty `enhancements["27"]`), and screens draw http pictures on a public host
+    ([http pictures](screen-components.md#http-pictures)). What changed: [What's new](changelog.md#v0988).
+
 !!! tip "New: identity, notices and plugin stores (apiVersion 15, with Kino 0.9.77)"
     A plugin can know who the person is without a sign-up ([Identity](identity.md)), leave notices in the Home bell
     ([Notices](notifications.md)) and be a **store**: a source of plugins for Kino's store, backed by GitHub, by its own
@@ -142,7 +148,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Signed plugins](signed.md) | **Sign your plugin with your own key** so people know every update is yours (apiVersion 5, Kino 0.9.45+) |
 | [What's new](changelog.md) | What changed for plugin authors, by Kino version |
 | [The manifest](manifest.md) | Every field and rule of `kino-plugin.json`, settings, `streamHosts`, sealed secrets, the person's own servers, `insecureHttp`, downloads |
-| [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, and the errors people understand |
+| [The contract](contract.md) | The functions you export, their arguments, what you return, host questions and the broad video permission, getting a title ready ahead (`resolveAhead`, `prepare`), and the errors people understand |
 | [The `kino` API](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [The plugin protocol](protocol.md) | apiVersion 20, Kino 0.9.81: plugins that use each other through Kino. A provider opens doors (`provides`, `proto_<door>_<call>`), a consumer uses them (`consumes`, `kino.plugins.call`); types, errors, limits, streams, the install gate with `recommends` and `go.installPlugin`, what the person sees, and the TMDB + Cine Trivia example |
 | [Sharing](share.md) | A Share button that sends a text (and the title) to Kino Social's `wall` door as a draft (Kino 0.9.81, Kino Social 0.9.7), and Kino 0.9.84's share cards: `go.plugin`, `openFrom.routes`, `ctx.caller` and `kino.image.thumbnail` |
@@ -160,10 +166,10 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Components: state, style and recipes](screen-reference.md) | State, events, per-size values, Flutter-style names, common properties, tokens, limits and recipes |
 | [Rooms, the library and player control](rooms.md) | apiVersion 14: `kino.room`, `kino.library` and `playerControl` |
 | [Background jobs, shared results and AI](jobs-and-shared.md) | apiVersion 14: `schedule` with `jobs` and `job(ctx)`, `kino.shared` and `kino.ai` |
-| [Screens without raising your apiVersion](enhancements.md) | `enhancements`: offer a screen and the apiVersion 14 features and still install on an older Kino |
+| [Screens without raising your apiVersion](enhancements.md) | `enhancements`: offer a screen and the apiVersion 14 features and still install on an older Kino; an empty `"27"` block turns on `clockLive`; the feature apiVersion |
 | [Structure a bigger plugin](structure.md) | `src/` by responsibility, a `plugin.js` generated with esbuild and checked with `check:built` |
 | [Exporting and importing a plugin](plugin-files.md) | The `.kinoplugin` file: what it holds, the signature, sealed secrets |
-| [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, three recipes |
+| [Live channels](live-channels.md) | `live` items, the En vivo tab, M3U/XMLTV playlists, guides, `liveStreamHosts`, live by clock (`clockLive`, apiVersion 27, Kino 0.9.88), three recipes |
 | [Customize your plugin](customize.md) | **Everything your plugin can change** in how Kino shows it, in one table: icon, color, settings, section, categories, colors, Home rows, the Servidor menu, your own sentences |
 | [The settings form](settings-form.md) | Every field type and its attributes, `section`, `status` and `action`, `clearSettings`, `setSettings` and "Is this you?", the `link` and `help` aids, `validateSettings`, a complete example, the own tab and syncing |
 | [Signing every request](signed-streams.md) | HLS streams signed on every request: `signing`, `sign`, retries and `alternateHosts` (apiVersion 6) |

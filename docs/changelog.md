@@ -3,6 +3,42 @@
 Lo que cambió en Kino y que importa cuando escribes un plugin, por versión de la app. Cada número
 está en [el contrato](contract.md) y en [los archivos de referencia](reference/index.md).
 
+## Kino 0.9.88: títulos listos por adelantado, en vivo por reloj, imágenes http en las pantallas { #v0988 }
+
+!!! note "Disponible desde Kino 0.9.88"
+    El `apiVersion` 27 (`clockLive`) llega con Kino 0.9.88: un Kino anterior rechaza `"apiVersion": 27` e ignora un bloque
+    `enhancements["27"]`. Todo lo demás de aquí es aditivo, sin `apiVersion` nuevo: un Kino anterior ignora `resolveAhead`,
+    nunca llama `prepare`, no tiene `kino.pluginApiVersion` ni `kino.screen.httpImages`, y descarta las imágenes http de una
+    pantalla.
+
+- **Dejar listo un título por adelantado.** El `"resolveAhead": true` del manifiesto deja que Kino llame `resolve` para una
+  película o un episodio cuando la persona lleva unos 0,3 s en la página del título, y que reproduzca esa respuesta si
+  aprieta reproducir dentro de 20 minutos; solo para un plugin cuyo `resolve` no puede preguntarle nada a la persona (un
+  `"fetchHosts": "any"` aprobado y video desde cualquier servidor). [Dejar listo un título](contract.md#resolve-ahead).
+- **Prepararse antes de reproducir.** El export opcional `prepare(ref)`, para un plugin cuyo `resolve` nunca debe correr
+  para títulos que nadie reproduce (un cupo por cuenta, reproducciones contadas): Kino lo llama en el mismo momento e ignora
+  su respuesta, así puede preparar una sesión o un token. 15 s, en segundo plano, una vez por `ref` cada 5 minutos, 6 por
+  minuto; `node sdk/run.mjs . prepare <ref>`. [Prepararse antes de reproducir](contract.md#prepare).
+- **En vivo por reloj (`apiVersion` 27).** Un stream en vivo puede llevar `clockLive`: la plantilla, la serie de duraciones
+  y el ancla de un CDN que nombra sus segmentos con un reloj de medios, y Kino arma la ventana HLS él mismo, sin llamar a tu
+  plugin mientras se ve. Kino lo lee de tu apiVersion efectivo, así que un `"enhancements": { "27": {} }` vacío lo enciende
+  sin subir el tuyo. [En vivo por reloj](live-channels.md#clock-live).
+- **`kino.pluginApiVersion`.** Tu apiVersion efectivo en este Kino: tu `apiVersion` o la clave más alta de `enhancements`
+  aplicada. Revísalo, no `kino.apiVersion`, antes de enviar `clockLive`.
+  [`kino.pluginApiVersion`](kino-api.md#plugin-api-version).
+- **Imágenes http en las pantallas.** Las imágenes de una pantalla (una `Image`, la imagen y el logo de un `heroCard`, un
+  `CircleAvatar`, los pósters de `titleCard`, `titleRail` y `titleGrid`) pueden ser http en un host público, como un póster
+  del Inicio: se ven los logos de los canales de IPTV. Revisa `kino.screen.httpImages === true`; los `headers` siguen yendo
+  solo con https. [Imágenes http](screen-components.md#http-pictures).
+- **Identidad.** `kino.identity.telegram` da el `token` solo a las llaves de autor de `kinoIdentity.tokenAuthors`, ahora
+  dos; cualquier otro autor recibe el `id` y, con un desafío, la atestación, donde Kino 0.9.87 respondía `permission_denied`.
+  [Identidad](identity.md).
+- **Pantallas.** En la TV el botón de un plugin mide 40 dp de alto con 14 dp a cada lado (eran 52 dp y 22 dp), y su propio
+  `padding` reemplaza ese espacio ([Botones](screen-components.md#button)); cada destino de la `NavigationBar` de un
+  `Scaffold` conserva su desplazamiento, como cada pestaña de un `TabBar` ([NavigationBar](screen-components.md#navigation-bar)).
+- **Lo que ve la persona.** Una tarjeta de "Continuar viendo" abre la página del título, y la confirmación de instalación
+  dice "Abrir &lt;name&gt;" cuando abre tu pantalla ([Lo que ve la persona](what-people-see.md#v0988)).
+
 ## Kino 0.9.87: temas que pintan, y los datos guardados del sitio en la ventana del navegador { #v0987 }
 
 !!! note "Disponible desde Kino 0.9.87"

@@ -124,6 +124,12 @@ la sincronización de plugins.
 campo una persona puede pegar la dirección del `manifest.json` de un addon de Stremio (o un enlace
 `stremio://`) y Kino genera un plugin para él. Nada de esta guía cambia para tu plugin.
 
+!!! tip "Nuevo en Kino 0.9.88: títulos listos por adelantado, en vivo por reloj, imágenes http"
+    Un plugin puede dejar listo un título mientras la persona lee su página ([`resolveAhead` y `prepare`](contract.md#resolve-ahead)),
+    un stream en vivo puede darle a Kino el reloj de medios de un CDN en lugar de una lista ([`clockLive`](live-channels.md#clock-live),
+    apiVersion 27, también con un `enhancements["27"]` vacío), y las pantallas dibujan imágenes http en un host público
+    ([imágenes http](screen-components.md#http-pictures)). Lo que cambió: [Novedades](changelog.md#v0988).
+
 !!! tip "Nuevo: pantallas propias para tu plugin (apiVersion 14, con Kino 0.9.74)"
     Un plugin puede dibujar su propia pantalla completa dentro de Kino: columnas, tarjetas, listas, pestañas,
     formularios, ventanas emergentes y las filas de pósteres de Kino, con el aspecto de Kino, en el celular y en el TV
@@ -151,7 +157,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Plugins firmados](signed.md) | **Firma tu plugin con tu propia clave** para que la gente sepa que cada actualización es tuya (apiVersion 5, Kino 0.9.45+) |
 | [Novedades](changelog.md) | Qué cambió para quienes escriben plugins, por versión de Kino |
 | [Manifiesto](manifest.md) | Cada campo y regla de `kino-plugin.json`, ajustes, `streamHosts`, secretos sellados, los servidores propios de la persona, `insecureHttp`, descargas |
-| [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, y los errores que la gente entiende |
+| [Contrato](contract.md) | Las funciones que exportas, sus argumentos, lo que devuelves, las preguntas de host y el permiso amplio de video, dejar listo un título por adelantado (`resolveAhead`, `prepare`), y los errores que la gente entiende |
 | [API kino](kino-api.md) | `fetch`, cookies, `secret`, crypto, sleep, config, HTML, storage, log, rank |
 | [Protocolo entre plugins](protocol.md) | apiVersion 20, Kino 0.9.81: plugins que se usan entre sí a través de Kino. Un proveedor abre puertas (`provides`, `proto_<puerta>_<llamada>`), un consumidor las usa (`consumes`, `kino.plugins.call`); tipos, errores, límites, flujos, la puerta de instalación con `recommends` y `go.installPlugin`, lo que ve la persona y el ejemplo de TMDB + Cine Trivia |
 | [Compartir](share.md) | Un botón Compartir que manda un texto (y el título) a la puerta `wall` de Kino Social como borrador (Kino 0.9.81, Kino Social 0.9.7), y las tarjetas para compartir de Kino 0.9.84: `go.plugin`, `openFrom.routes`, `ctx.caller` y `kino.image.thumbnail` |
@@ -169,10 +175,10 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Componentes: estado, estilo y recetas](screen-reference.md) | Estado, eventos, valores por tamaño, nombres al estilo Flutter, propiedades comunes, tokens, límites y recetas |
 | [Salas, biblioteca y control del reproductor](rooms.md) | apiVersion 14: `kino.room`, `kino.library` y `playerControl` |
 | [Trabajos, resultados compartidos e IA](jobs-and-shared.md) | apiVersion 14: `schedule` con `jobs` y `job(ctx)`, `kino.shared` y `kino.ai` |
-| [Pantallas sin subir tu apiVersion](enhancements.md) | `enhancements`: ofrecer una pantalla y las funciones de apiVersion 14 sin dejar de instalarse en un Kino anterior |
+| [Pantallas sin subir tu apiVersion](enhancements.md) | `enhancements`: ofrecer una pantalla y las funciones de apiVersion 14 sin dejar de instalarse en un Kino anterior; un bloque `"27"` vacío enciende `clockLive`; el apiVersion efectivo |
 | [Estructurar un plugin grande](structure.md) | `src/` por responsabilidades, un `plugin.js` generado con esbuild y revisado con `check:built` |
 | [Exportar e importar un plugin](plugin-files.md) | El archivo `.kinoplugin`: qué lleva, la firma, los secretos sellados |
-| [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, tres recetas |
+| [Canales en vivo](live-channels.md) | Ítems `live`, la pestaña En vivo, listas M3U/XMLTV, guías, `liveStreamHosts`, en vivo por reloj (`clockLive`, apiVersion 27, Kino 0.9.88), tres recetas |
 | [Personaliza tu plugin](customize.md) | **Todo lo que tu plugin puede cambiar** de cómo lo muestra Kino, en una tabla: ícono, color, ajustes, sección, categorías, colores, filas de Inicio, menú Servidor, tus propias frases |
 | [Formulario de ajustes](settings-form.md) | Todos los tipos de campo y sus atributos, `section`, `status` y `action`, `clearSettings`, `setSettings` y "¿Eres tú?", las ayudas `link` y `help`, `validateSettings`, un ejemplo completo, la pestaña propia y la sincronización |
 | [Firma por petición](signed-streams.md) | Streams HLS firmados en cada petición: `signing`, `sign`, reintentos y `alternateHosts` (apiVersion 6) |
