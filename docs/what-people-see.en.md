@@ -51,7 +51,8 @@
   files, its storage and its cached Home rows immediately, but keeps the person's library titles and
   progress: opening one says "Esto venía del plugin &lt;name&gt;, que ya no está instalado", and installing
   the plugin again restores them. That is one more reason to keep `id` and `ref` handling stable.
-  Titles already downloaded keep playing offline and can be removed from Descargas.
+  Titles already downloaded keep playing offline and can be removed from Descargas. From Kino 0.9.87 each card in
+  Instalados has its own uninstall button (built-in and required plugins have none).
 
 - **Signed plugins.** A signed plugin ([Signed plugins](signed.md)) shows the line "Firmado por su
   autor" on the consent sheet, a "Firmado" pill on catalog and community cards ("Activo · Firmado" on
@@ -120,6 +121,16 @@ When a plugin declares `syncProvider` ([Sync providers](sync-providers.md)):
 - **Receiving on a second device**: a QR, an address and a 6-digit code for 3 minutes (and, when the
   Cloudflare quick tunnel opens, the words for "Otra red"), then "Recibido para &lt;plugin&gt;: ¿aplicar?" with the labels of the settings it got,
   never their values, and "Aplicar".
+
+## Kino 0.9.88 { #v0988 }
+
+- **"Continuar viendo" opens the title page.** A "Continuar viendo" card opens the title's page (a series on the episode
+  to go on with) instead of the player; its play button starts it.
+- **The title page gets the video ready.** While the person reads the page of one of your titles, Kino may already
+  resolve it ([`resolveAhead`](contract.md#resolve-ahead)) or let your plugin warm up ([`prepare`](contract.md#prepare)),
+  so the video starts sooner. The person sees nothing of it, and nothing changes if they leave the page.
+- **"Abrir &lt;name&gt;".** After an install, the confirmation's main button reads "Abrir &lt;name&gt;" when it opens your
+  plugin's own screen; a plugin that only adds a screen with a menu entry gets that button too.
 
 ## Screens and apiVersion 14 (Kino 0.9.74) { #v14 }
 

@@ -9,6 +9,7 @@ export async function home() { /* -> Row[] */ }
 export async function browse(ref, cursor) { /* -> Page */ }
 export async function episodes(ref) { /* -> { series?: SeriesInfo, episodes: Episode[], seasons?: Season[] } */ }
 export async function resolve(ref) { /* -> Stream */ }
+export async function prepare(ref) { /* answer ignored: warm what resolve(ref) will need (optional, any apiVersion, Kino 0.9.88) */ }
 export async function details(ref) { /* -> SeriesInfo or null (apiVersion 8, Kino 0.9.54) */ }
 export async function liveCategories() { /* -> Array<LiveCategory | Playlist> or Playlist */ }
 export async function liveChannels({ categoryId, cursor }) { /* -> { items: LiveChannel[], next? } */ }
@@ -876,6 +877,116 @@ manifest serve both:
 `sdk/validate.mjs` prints the consent line and a note about older Kino; `sdk/run.mjs . resolve <ref>`
 still runs your `resolve` (for the older Kino it serves) and reminds you that 0.9.54+ never calls it. A
 complete catalog that uses it: [A TMDB catalog](cookbook.md#tmdb-catalog).
+
+## Getting a title ready ahead (`resolveAhead`, Kino 0.9.88) { #resolve-ahead }
+
+!!! note "Available from Kino 0.9.88"
+    No new `apiVersion`: the manifest field is valid at every one, Kino 0.9.88 is the first to read it, and an older Kino
+    ignores it like any key it does not know.
+
+Pressing play on one of your titles waits for your `resolve` before the player can even start: on a 1.5 GB TV box, a
+`resolve` that makes three requests took 0.7 to 0.8 s. The person has usually spent longer than that on the title's page
+before pressing play (a "Continuar viendo" card opens that page too, on the episode to go on with), and
+`"resolveAhead": true` lets Kino use that time:
+
+```json
+{
+  "id": "my-movies", "name": "My movies", "version": "1.4.0", "apiVersion": 9, "entry": "plugin.js",
+  "hosts": ["api.example.com"],
+  "capabilities": ["search", "home", "episodes", "resolve"],
+  "fetchHosts": "any",
+  "streamHosts": "any",
+  "resolveAhead": true
+}
+```
+
+- **When.** Once the person has stayed about 0.3 s on the page of one of your titles, Kino may call your `resolve` for
+  what its play button would start (the movie, or the episode they would go on with), as a background call. If they
+  leave the page before then, nothing is called; a call already running is never cancelled.
+- **Only a `resolve` that can ask nothing.** Nobody waits for that call, so it may not ask the person anything: Kino
+  resolves ahead only a plugin whose person approved its [`"fetchHosts": "any"`](manifest.md#fetch-hosts), whose video may
+  come from any server (an approved [`"streamHosts": "any"`](manifest.md#stream-hosts), or the
+  [broad video permission](#broad-video)), and which declares neither `externalResolve` nor `browser`. For any other
+  plugin the field does nothing, and Kino does not call [`prepare`](#prepare) in its place: leave the field out and export
+  `prepare` instead.
+- **Hosts.** Kino checks the answer exactly as it checks the player's own `resolve`. An answer the player would have had
+  to ask the person about (a DRM license on a host you never declared, say) is not kept: pressing play then calls
+  `resolve` again, and the person is asked as always.
+- **What Kino keeps.** The answer, for that title only, for at most 20 minutes after it came, or until 60 s before its
+  `expiresInSeconds` runs out when that comes first. If the person presses play by then, the player starts from that
+  answer without calling `resolve` again. After that, after a failed answer, and on a retry or a reopen, Kino calls
+  `resolve` as it always does.
+- **Never for** a live channel, an 18+ plugin while the person's 18+ code is locked, a title with a finished download, or
+  a plugin that is off or waiting for its settings; at most 6 calls ahead a minute per plugin.
+- **What it asks of you.** Your `resolve` may run for titles nobody plays. Declare the field only if such a call has no
+  effect the person would notice: no play counted on your service, no quota or trial spent, no hidden page.
+- **Ignored beside** `catalogOnly` (Kino never calls that `resolve`) and `browser`, `true` or `"pages"` (a `resolve`
+  called ahead is a background call, where `kino.browser.capture` and `kino.browser.page` are refused).
+
+The next episode of a series is a different case: Kino already gets it ready near the end of the episode playing, for
+any plugin that opens no hidden pages, with or without this field.
+
+The field is a hint and never refuses the plugin: any value but `true`, `false` or `null` (read as left out) is ignored,
+and Kino logs "The \"resolveAhead\" field must be true or false; Kino ignores any other value". `sdk/validate.mjs` warns
+about that value and about `catalogOnly` or `browser` beside the field, and notes what `true` means.
+
+## Warming up before the play (`prepare`, Kino 0.9.88) { #prepare }
+
+!!! note "Available from Kino 0.9.88"
+    No new `apiVersion`: any `apiVersion` may export it, Kino 0.9.88 is the first to call it and an older Kino never does.
+
+Some services must never be asked for a stream nobody plays: a backend that allows a set number of `resolve` calls an
+hour per account, or a portal whose free plays each `resolve` spends. Such a plugin leaves `resolveAhead` out and may
+export `prepare` instead, to get ready while the person reads the title page. It works for any plugin with `resolve`,
+whatever its hosts:
+
+```js
+// Kino ignores what prepare returns: warm only what resolve(ref) will need, and never count a play or spend a quota.
+export async function prepare(ref) {
+  await sessionToken();
+}
+
+export async function resolve(ref) {
+  const token = await sessionToken(); // already there when prepare ran
+  const r = await kino.fetch("https://api.example.com/play/" + encodeURIComponent(ref), {
+    headers: { Authorization: "Bearer " + token },
+  });
+  if (!r.ok) throw kino.error("unavailable", "play " + r.status);
+  return { url: r.json().url };
+}
+
+async function sessionToken() {
+  const kept = kino.storage.get("session");
+  if (kept) return kept;
+  const r = await kino.fetch("https://api.example.com/session", { method: "POST" });
+  if (!r.ok) throw kino.error("unavailable", "session " + r.status);
+  const token = r.json().token;
+  kino.storage.set("session", token, { ttlMs: 20 * 60 * 1000 });
+  return token;
+}
+```
+
+- **When.** Once the person has stayed about 0.3 s on the page of one of your titles, Kino calls `prepare(ref)` with the
+  very `ref` your `resolve` gets for what the page's play button would start (the movie, the episode they would go on
+  with, or a lone track; never a series and never a live channel). If they leave the page before then, nothing is
+  called; a call already running is never cancelled.
+- **What Kino does with it.** Nothing: the answer is ignored, whatever it is, and so is a failure. Pressing play calls
+  `resolve` as always, so warm what that `resolve` will need: sign in, refresh a token, open a session, fetch an
+  authorization and keep it (in memory, `kino.storage` or `kino.cookies`).
+- **Limits.** A background call of 15 s: nobody is asked anything (a `kino.fetch` that would need the person to approve
+  a host fails instead of asking), a timeout or a failure never counts toward "No responde", and the person's own calls go
+  first in your plugin's queue. At most once every 5 minutes for the same `ref` (a failed call counts), and at most 6 a
+  minute for your plugin.
+- **What it asks of you.** `prepare` must not start or count a play, and must not spend anything of the person's: no
+  quota, no trial, no free play. It may run for titles nobody plays.
+- **When Kino never calls it.** Beside `"resolveAhead": true` (Kino resolves ahead instead, or calls neither when it
+  cannot), in a plugin without the `resolve` capability, in a `catalogOnly` plugin (Kino never calls its `resolve`) and in
+  one that declares `browser` (`true` or `"pages"`: its hidden pages need a play the person started); nor for an 18+
+  plugin while the person's 18+ code is locked, a title with a finished download, or a plugin that is off or waiting for
+  its settings.
+
+`sdk/validate.mjs` notes what Kino does with it and warns when Kino would never call it; `node sdk/run.mjs . prepare <ref>`
+runs it ([Test it locally](test-locally.md#v0988)).
 
 ## Telling a tracker what the person watches (`tracking`, apiVersion 7) { #tracking }
 

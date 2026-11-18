@@ -68,7 +68,8 @@
   guardadas, pero conserva los títulos y el progreso de la persona en la biblioteca: al abrir uno dice
   "Esto venía del plugin &lt;name&gt;, que ya no está instalado", e instalar el plugin otra vez los
   recupera. Esa es una razón más para mantener estable el manejo de `id` y `ref`. Los títulos ya
-  descargados se siguen reproduciendo sin conexión y se pueden quitar en Descargas.
+  descargados se siguen reproduciendo sin conexión y se pueden quitar en Descargas. Desde Kino 0.9.87 cada tarjeta de
+  Instalados tiene su propio botón para desinstalar (los plugins que vienen con Kino y los obligatorios no lo tienen).
 
 - **Plugins firmados.** Un plugin firmado ([Plugins firmados](signed.md)) muestra la línea "Firmado
   por su autor" en la hoja de consentimiento, una insignia "Firmado" en las tarjetas del catálogo y
@@ -139,6 +140,16 @@ Cuando un plugin declara `syncProvider` ([Proveedores de sincronización](sync-p
 - **Recibir en un segundo aparato**: un QR, una dirección y un código de 6 dígitos durante 3 minutos (y,
   cuando abre el túnel rápido de Cloudflare, las palabras para "Otra red"), y después "Recibido para &lt;plugin&gt;: ¿aplicar?" con las
   etiquetas de los ajustes que llegaron, nunca sus valores, y "Aplicar".
+
+## Kino 0.9.88 { #v0988 }
+
+- **"Continuar viendo" abre la página del título.** Una tarjeta de "Continuar viendo" abre la página del título (una serie,
+  en el episodio por el que va) en lugar del reproductor; su botón de reproducir lo empieza.
+- **La página del título deja listo el video.** Mientras la persona lee la página de uno de tus títulos, Kino puede ya
+  resolverlo ([`resolveAhead`](contract.md#resolve-ahead)) o dejar que tu plugin se prepare ([`prepare`](contract.md#prepare)),
+  así el video arranca antes. La persona no ve nada de eso, y nada cambia si se va de la página.
+- **"Abrir &lt;name&gt;".** Después de instalar, el botón principal de la confirmación dice "Abrir &lt;name&gt;" cuando abre la
+  pantalla propia de tu plugin; un plugin que solo agrega una pantalla con su entrada en el menú también recibe ese botón.
 
 ## Pantallas y apiVersion 14 (Kino 0.9.74) { #v14 }
 

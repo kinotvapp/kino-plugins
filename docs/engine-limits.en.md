@@ -113,6 +113,8 @@ From Kino 0.9.88, also:
 | What | Limit |
 | --- | --- |
 | `clockLive` (apiVersion 27, live streams only) | `template` at most 2,048 characters, with `{seg}`; `mediaCode` 1 to 128 characters of `A-Z a-z 0-9 . _ ~ -`; `grid` 1 to 16 steps of 200 to 60,000 ms; `rate` 500 to 2,000 (default 1,000); `window.count` 2 to 20 (6), `window.behind` 0 to 20 (3); `reanchor.everySec` 60 to 21,600 (1,200), `reanchor.probeSpan` 0 to 12 (4); `segWidth` 0 to 12 ([Live by clock](live-channels.md#clock-live)) |
+| `resolveAhead` (any apiVersion) | after about 0.3 s on a title page; the answer kept at most 20 minutes, or until 60 s before its `expiresInSeconds`; at most 6 calls ahead a minute per plugin, with the `prepare` calls ([Getting a title ready ahead](contract.md#resolve-ahead)) |
+| `prepare` (any apiVersion) | 15 s, in the background (never "No responde"); at most once every 5 minutes per `ref` and 6 a minute per plugin ([Warming up before the play](contract.md#prepare)) |
 
 ## How your code lives { #lifecycle }
 

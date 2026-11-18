@@ -395,6 +395,23 @@ node sdk/run.mjs --live-channel tdt:la1:La 1 <folder> playerSlot - # an En vivo 
 `validate.mjs` checks the `slot` block and the two exports and prints the red line of a `fixed` element. See
 [The player slot](player-slot.md#kit).
 
+## Kino 0.9.88: getting ready ahead, live by clock { #v0988 }
+
+```bash
+node sdk/run.mjs <folder> prepare <ref>     # runs prepare(ref): what Kino does with it, or why it never calls it
+node sdk/validate.mjs <folder>              # notes what "resolveAhead": true and an exported prepare mean, and warns
+```
+
+- `prepare <ref>` runs your [`prepare`](contract.md#prepare) with that `ref` and prints what Kino does with it (its answer is
+  ignored), or warns that Kino never calls it (beside `"resolveAhead": true`, `catalogOnly` or `browser`, or without the
+  `resolve` capability); past 15 s it warns that Kino stops waiting there.
+- `validate.mjs` warns about a `resolveAhead` that is not `true` or `false`, or that sits beside `catalogOnly` or `browser`,
+  in the words the app logs, and notes what a `true` that stands means. It does not check the rest of the rule: Kino resolves
+  ahead only with an approved `"fetchHosts": "any"` and video from any server ([Getting a title ready ahead](contract.md#resolve-ahead)).
+- [`kino.pluginApiVersion`](kino-api.md#plugin-api-version) is your feature apiVersion: your `apiVersion` or the highest
+  `enhancements` key the kit applied.
+- `clockLive` is not modelled yet: `resolve` checks the plain `url` ([Live by clock](live-channels.md#clock-live-older)).
+
 ## What the Node kit does not reproduce { #differences }
 
 Kino is the authority; the kit only approximates it so
