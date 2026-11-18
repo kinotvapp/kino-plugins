@@ -326,7 +326,7 @@ Los campos (los tipos en [`kino.d.ts`](reference/index.md), `KinoClockLive`; los
 | `anchor` | `{ t, s, firstStep? }`: en el instante `t` (ms, UTC) empieza el segmento número `s`, en la posición `firstStep` de `grid` | `t` y `s` obligatorios (enteros, `t` positivo); `firstStep` cuenta desde 0, por defecto 0, fuera de rango se lee como 0 |
 | `rate` | ms de medio por cada 1.000 ms de reloj | por defecto 1.000; se lleva a 500..2.000 |
 | `window` | `{ count?, behind? }`: la ventana lista `count` segmentos que terminan `behind` segmentos antes del borde en vivo | `count` por defecto 6 (2..20), `behind` por defecto 3 (0..20); se llevan a su rango |
-| `reanchor` | `{ everySec?, probeSpan? }`: cada cuánto Kino vuelve a fijar el borde sobre segmentos reales, y cuánto mira hacia cada lado | `everySec` por defecto 1.200 (60..21.600), `probeSpan` por defecto 4 (0..12); se llevan a su rango |
+| `reanchor` | `{ everySec?, probeSpan? }`: cada cuánto Kino vuelve a fijar el borde sobre segmentos reales, y hasta dónde puede buscar hacia cada lado (4 × `probeSpan` segmentos, nunca menos de 16) | `everySec` por defecto 1.200 (60..21.600), `probeSpan` por defecto 4 (0..12); se llevan a su rango |
 | `segWidth` | ceros a la izquierda para `{seg}` | de 0 a 12, por defecto 0 (`000042` es ancho 6) |
 
 El número de un segmento (`{seg}`) es su inicio en el reloj de medios, en ms: con `grid` `[4004, 6006]` y un `anchor.s` de
@@ -336,7 +336,7 @@ de pared, por ejemplo con la velocidad NTSC 1001/1000, que hace que `[4004, 6006
 **Estructura y ajuste.** Lo que podría ubicar mal la ventana o descargar una dirección que no querías (un `grid` malo, un
 `template` sin `{seg}` o con un marcador desconocido, un `{mc}` sin `mediaCode`, un `anchor` malo, un host que las reglas
 rechazan) **rechaza el stream**. Cada perilla de ajuste (`rate`, `window`, `reanchor`, `segWidth`, `firstStep`) se lleva a su
-rango o a su valor por defecto, con registro; nunca rechaza.
+rango o a su valor por defecto, sin aviso; nunca rechaza.
 
 **Hosts.** Cada dirección de segmento (la plantilla con sus marcadores llenos) se revisa exactamente como la `url` de un
 canal: en uno de tus `hosts`, o con [`liveStreamHosts: "any"`](#live-stream-hosts) (con `channels`) o
@@ -350,9 +350,11 @@ canal: en uno de tus `hosts`, o con [`liveStreamHosts: "any"`](#live-stream-host
 - Mientras se ve, Kino vuelve a fijar el borde cada `reanchor.everySec` segundos (cada 20 minutos por defecto, también si
   no envías `reanchor`), así que un reloj que se desvía nunca acumula el error.
 - La ventana es por lo menos tan larga como la que necesita el reproductor para arrancar con seguridad detrás del borde:
-  Kino puede listar más segmentos que tu `window.count` (como mucho 20).
-- Las peticiones de Kino al CDN salen de un mismo cupo que comparten todos los canales, así que ningún plugin puede hacer que
-  Kino inunde un CDN.
+  Kino puede listar más segmentos que tu `window.count` (como mucho 20). Mientras una revisión confirmó el borde en los
+  últimos 25 minutos (con el `reanchor` por defecto, mientras sus revisiones lo sigan encontrando), la ventana termina un
+  segmento antes del borde, o en él con `behind: 0`, aunque pongas un `behind` mayor.
+- Las revisiones que hace Kino al CDN salen de un mismo cupo que comparten todos los canales, así que ningún plugin puede
+  hacer que Kino inunde un CDN con ellas (los segmentos que baja el reproductor no cuentan).
 
 **Lo que ignora.** Con `clockLive`, la `url` se ignora, y también `alternatives` y lo que un canal en vivo nunca usa
 (`audioTracks`, `durationMs`, `skip`, `expiresInSeconds`); el stream siempre se reproduce como HLS. Un `drm`, una firma por

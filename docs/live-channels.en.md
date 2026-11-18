@@ -301,7 +301,7 @@ The fields (types in [`kino.d.ts`](reference/index.md), `KinoClockLive`; ranges 
 | `anchor` | `{ t, s, firstStep? }`: at epoch `t` (ms, UTC) the segment numbered `s` begins, at position `firstStep` of `grid` | `t` and `s` required (whole numbers, `t` positive); `firstStep` counts from 0, default 0, out of range read as 0 |
 | `rate` | ms of media per 1,000 ms of wall clock | default 1,000; clamped to 500..2,000 |
 | `window` | `{ count?, behind? }`: the window lists `count` segments ending `behind` segments before the live edge | `count` default 6 (2..20), `behind` default 3 (0..20); clamped |
-| `reanchor` | `{ everySec?, probeSpan? }`: how often Kino pins the edge again on real segments, and how far it looks each way | `everySec` default 1,200 (60..21,600), `probeSpan` default 4 (0..12); clamped |
+| `reanchor` | `{ everySec?, probeSpan? }`: how often Kino pins the edge again on real segments, and how far its search may reach each way (4 × `probeSpan` segments, never fewer than 16) | `everySec` default 1,200 (60..21,600), `probeSpan` default 4 (0..12); clamped |
 | `segWidth` | zero padding for `{seg}` | 0 to 12, default 0 (`000042` is width 6) |
 
 A segment's number (`{seg}`) is its start on the media clock, in ms: with `grid` `[4004, 6006]` and an `anchor.s` of
@@ -311,7 +311,7 @@ clock, for example the NTSC 1001/1000 rate that makes `[4004, 6006]` add up to 1
 **Structure and tuning.** Whatever could place the window wrong or fetch an address you did not mean (a bad `grid`, a
 `template` without `{seg}` or with an unknown placeholder, a `{mc}` without a `mediaCode`, a bad `anchor`, a host the
 rules refuse) **refuses the stream**. Every tuning knob (`rate`, `window`, `reanchor`, `segWidth`, `firstStep`) is brought
-into its range or to its default, and logged; it never refuses.
+into its range or to its default, without a word; it never refuses.
 
 **Hosts.** Every segment address (the template with its placeholders filled) is checked exactly like a channel's `url`:
 on one of your `hosts`, or under [`liveStreamHosts: "any"`](#live-stream-hosts) (with `channels`) or
@@ -325,8 +325,11 @@ on one of your `hosts`, or under [`liveStreamHosts: "any"`](#live-stream-hosts) 
 - While it plays, Kino pins the edge again every `reanchor.everySec` seconds (every 20 minutes by default, also when you
   leave `reanchor` out), so a drifting clock never builds up.
 - The window is at least as long as the player needs to start safely behind the edge: Kino may list more segments than
-  your `window.count` (at most 20).
-- Kino's requests to the CDN draw on one budget shared by every channel, so no plugin can make Kino flood a CDN.
+  your `window.count` (at most 20). While a check confirmed the edge in the last 25 minutes (with the default
+  `reanchor`, as long as its checks keep finding it), the window ends one segment before the edge, or at it with
+  `behind: 0`, whatever larger `behind` you set.
+- Kino's own checks of the CDN draw on one budget shared by every channel, so no plugin can make Kino flood a CDN with
+  them (the segments the player downloads are not counted).
 
 **What it ignores.** With `clockLive`, `url` is ignored, and so are `alternatives` and what a live channel never uses
 (`audioTracks`, `durationMs`, `skip`, `expiresInSeconds`); the stream always plays as HLS. A `drm`, a request `signing` or

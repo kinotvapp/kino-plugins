@@ -356,7 +356,7 @@ interface KinoStream {
  * ceil(max(grid)/1000)`, no `#EXT-X-ENDLIST`. Kino replaces the predicted edge with the one it probes (`reanchor`).
  * Parts that could mislocate the window or fetch an unintended URL REFUSE the stream (bad `grid`, `template` without `{seg}`,
  * an unknown placeholder, a bad `anchor`, a host-rule failure); tuning knobs (`rate`, `reanchor`, `window`, `segWidth`,
- * `firstStep`) are clamped/defaulted and logged, never refusing.
+ * `firstStep`) are clamped or defaulted silently, never refusing.
  */
 interface KinoClockLive {
   /**
@@ -382,32 +382,34 @@ interface KinoClockLive {
   /**
    * Media-clock speed: ms of media advanced per 1000 ms of wall clock. Default 1000 (realtime); clamped to 500..2000.
    * Lets the window track real time when `Σ grid` is not an exact multiple of a second (e.g. the NTSC 1001/1000 drift that
-   * makes `[4004, 6006]` sum to 10010). A non-number is dropped to the default and logged.
+   * makes `[4004, 6006]` sum to 10010). A value that is not a whole number reads as the default.
    */
   rate?: number;
   /**
    * Pins the clock to the segment lattice: at wall-clock epoch `t` (ms, UTC) the segment numbered `s` begins, sitting at
    * lattice-phase `firstStep` (0-based index into `grid`, default 0). `t` and `s` are REQUIRED; a missing or bad anchor
-   * REFUSES the stream (the live edge cannot be located). `firstStep` out of range is dropped to 0 and logged.
+   * REFUSES the stream (the live edge cannot be located). `firstStep` out of range reads as 0.
    */
   anchor: { t: number; s: number; firstStep?: number };
   /**
-   * Robustness: instead of trusting the clock blindly, Kino re-pins the live edge by probing real segment URLs around its
-   * predicted edge every `everySec` seconds, scanning up to `probeSpan` segments each way, to absorb device↔CDN clock skew
-   * and keep latency honest. Without the object Kino uses the defaults. Both are clamped, never refusing:
-   * `everySec` 60..21600 (default 1200, every 20 minutes), `probeSpan` 0..12 (default 4; 0
-   * keeps the periodic re-pin but probes only the estimated edge).
+   * Robustness: instead of trusting the clock blindly, Kino pins the live edge on real segment URLs before the channel
+   * plays (no segment answering: the channel is not available) and again every `everySec` seconds, to absorb device↔CDN
+   * clock skew and keep latency honest. Each search starts at the predicted edge (two probes when the clock is right) and
+   * may reach `4 × probeSpan` segments each way, never fewer than 16. Without the object Kino uses the defaults. Both are
+   * clamped, never refusing: `everySec` 60..21600 (default 1200, every 20 minutes), `probeSpan` 0..12 (default 4; any
+   * value up to 4 reaches ±16 segments).
    */
   reanchor?: { everySec?: number; probeSpan?: number };
   /**
    * The sliding window Kino emits: `count` segments ending `behind` segments before the computed live edge (a latency
-   * cushion against half-written newest segments). `count` default 6 (clamped 2..20), `behind` default 3 (clamped 0..20).
-   * Clamped and logged, never refusing.
+   * cushion against half-written newest segments). `count` default 6 (clamped 2..20), `behind` default 3 (clamped 0..20),
+   * never refusing. Kino may list more than `count` (at most 20) so the player can start safely behind the edge, and
+   * while a probe confirmed the edge in the last 25 minutes the window ends at most 1 segment before it.
    */
   window?: { count?: number; behind?: number };
   /**
    * Optional zero-pad width for `{seg}` (0..12, default 0 = no padding) so `{seg}` renders e.g. `"000042"` when the CDN
-   * names segments with fixed-width indices. A bad value is dropped to 0 and logged.
+   * names segments with fixed-width indices. A value out of range is clamped; one that is not a whole number reads as 0.
    */
   segWidth?: number;
 }

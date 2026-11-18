@@ -1919,7 +1919,7 @@ straight from the CDN. Full page: <https://kinotvapp.github.io/kino-plugins/en/l
   `{ t, s, firstStep? }` (required: at epoch ms `t` the segment numbered `s` begins, at position `firstStep` of `grid`),
   `rate` (ms of media per 1,000 ms, default 1,000, 500..2,000), `window` `{ count, behind }` (2..20, default 6; 0..20, default
   3), `reanchor` `{ everySec, probeSpan }` (60..21,600, default 1,200; 0..12, default 4), `segWidth` 0..12. A wrong template,
-  mediaCode, grid, anchor or host refuses the stream; the tuning knobs are clamped and logged.
+  mediaCode, grid, anchor or host refuses the stream; the tuning knobs are clamped silently, never refusing.
 - **Hosts**: every concrete segment URL is checked like a channel's `url` (a declared host, `liveStreamHosts: "any"` with
   `channels`, or `streamHosts: "any"`; never the home network).
 - **Beside it**: `url` is ignored, and so are `alternatives`, `audioTracks`, `durationMs`, `skip` and `expiresInSeconds`; a
