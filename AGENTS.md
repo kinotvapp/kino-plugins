@@ -1668,7 +1668,7 @@ plugin across devices.
 <a id="share"></a>
 **Sharing: Kino Social's `wall` door (Kino 0.9.81, Kino Social 0.9.7) and share cards (Kino 0.9.84).** Recommend a
 **Compartir** action in **every** plugin. Full page: <https://kinotvapp.github.io/kino-plugins/en/share/>. Published example:
-Megaplay (`xuper-plugin/kino-plugin-megaplay`, `src/browse/share.js` and `test/share.test.mjs`).
+Megaplay (the `kino-plugin-megaplay` repository, its `src/browse/share.js` and `test/share.test.mjs`).
 
 - **Manifest** (top level with `"apiVersion": 20`, or `consumes` inside `enhancements["20"]` at a lower apiVersion, the feature
   behind `typeof kino.plugins === "object"`; the plugin needs a screen):

@@ -100,7 +100,7 @@ in the manifest's hosts and only with an https picture. From Kino 0.9.88 a scree
 host (IPTV channel logos): send an http picture only when kino.screen.httpImages === true, else an https one or none (the
 initials show). On the TV a plugin's button is 40 dp tall with 14 dp each side (Kino 0.9.88): give it padding, height or
 minHeight only when it must be bigger. A Scaffold's NavigationBar keeps each destination's scroll when its scrolling node
-has a key of mine. { ui: [{ fullscreen: true }] } (Kino 0.9.84) hides Kino's bar for an immersive canvas: draw your own way
+has its own key. { ui: [{ fullscreen: true }] } (Kino 0.9.84) hides Kino's bar for an immersive canvas: draw your own way
 out. To remember where the person stopped, use kino.progress (apiVersion 22, Kino 0.9.83): the
 exact place goes in resume (opaque to Kino, at most 1024 bytes), get(id) answers null when there is none, and Kino draws
 no row: the plugin builds its own "keep reading" row from list() (https://kinotvapp.github.io/kino-plugins/en/progress/).
@@ -163,7 +163,7 @@ Before writing anything:
    stand-in to replace with a copy of the real provider. One-page summary:
    https://kinotvapp.github.io/kino-plugins/en/protocol-quick/.
 9. For the Share button (it goes in every plugin, see the rules), read https://kinotvapp.github.io/kino-plugins/en/share/
-   and copy Megaplay's shape (https://github.com/xuper-plugin/kino-plugin-megaplay, src/browse/share.js and
+   and copy Megaplay's shape (its kino-plugin-megaplay repository, src/browse/share.js and
    test/share.test.mjs).
 
 What I want:

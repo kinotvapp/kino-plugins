@@ -106,7 +106,7 @@ Desde Kino 0.9.88 las imágenes de una pantalla también pueden ser http en un h
 una imagen http solo cuando kino.screen.httpImages === true; si no, una https o ninguna (se ven las iniciales). En la TV el
 botón de un plugin mide 40 dp de alto con 14 dp a cada lado (Kino 0.9.88): ponle padding, height o minHeight solo cuando
 deba ser más grande. La NavigationBar de un Scaffold conserva el desplazamiento de cada destino cuando su nodo que se
-desplaza lleva una key mía. { ui: [{ fullscreen: true }] } (Kino 0.9.84) esconde la barra de Kino para un lienzo inmersivo:
+desplaza lleva su propia key. { ui: [{ fullscreen: true }] } (Kino 0.9.84) esconde la barra de Kino para un lienzo inmersivo:
 dibuja tu propia salida. Para recordar dónde se
 quedó la persona, usa kino.progress (apiVersion 22, Kino 0.9.83): el lugar exacto va en resume (opaco para
 Kino, máximo 1024 bytes), get(id) responde null cuando no hay nada, y Kino no dibuja ninguna fila: el plugin arma su propia
@@ -171,7 +171,7 @@ Antes de escribir nada:
    es un reemplazo que hay que cambiar por una copia del proveedor real. Resumen en una página:
    https://kinotvapp.github.io/kino-plugins/protocol-quick/.
 9. Para el botón Compartir (va en todo plugin, mira las reglas), lee https://kinotvapp.github.io/kino-plugins/share/ y
-   copia la forma de Megaplay (https://github.com/xuper-plugin/kino-plugin-megaplay, src/browse/share.js y
+   copia la forma de Megaplay (su repositorio kino-plugin-megaplay, src/browse/share.js y
    test/share.test.mjs).
 
 Lo que quiero:

@@ -10,7 +10,7 @@ Any plugin can offer the person a **Compartir** (Share) button. This page has tw
   card: [`go.plugin`](#go-plugin), [`openFrom.routes`](#open-from), [`ctx.caller`](#ctx-caller) and
   [`kino.image.thumbnail`](#thumbnail).
 
-Look at Megaplay ([xuper-plugin/kino-plugin-megaplay](https://github.com/xuper-plugin/kino-plugin-megaplay), its
+Look at Megaplay (the `kino-plugin-megaplay` repository, its
 `src/browse/share.js`) as the published example: it shares from a title page and from the bar.
 
 !!! tip "Not the `share` answer"

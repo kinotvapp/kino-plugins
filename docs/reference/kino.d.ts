@@ -330,7 +330,7 @@ interface KinoStream {
    * window on every player playlist-refresh -- WITHOUT any plugin call while it plays and without ever fetching a
    * playlist from the CDN. Every specific (CDN template, channel code, duration lattice, clock, anchor, window) is
    * plugin-supplied data, so ANY plugin uses it with ITS own CDN; nothing is hardcoded. The player then downloads the
-   * segments the synthesized playlist lists straight from the CDN (deviceless, each viewer from its own IP).
+   * segments the synthesized playlist lists straight from the CDN (each viewer from its own IP).
    *
    * When `clockLive` is present `url` is IGNORED (as with `external`), and so are `alternatives`, `audioTracks`,
    * `durationMs`, `skip` and `expiresInSeconds` (a clock window has no single URL, fixed length or expiry); a `drm`,
