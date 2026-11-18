@@ -748,7 +748,8 @@ unos pocos resultados pequeños sincronizados entre los aparatos de la persona (
 ## `kino.identity` y `kino.notifications` (apiVersion 15) { #api15 }
 
 Cada una necesita su capacidad (declarativa, no exportas nada): `kino.identity.telegram({ challenge? })` responde un seudónimo
-de la persona para tu plugin y el token firmado que lo prueba, solo a plugins firmados con la llave de autor de Kino
+de la persona para tu plugin y, para las llaves de autor en las que Kino confía (`kinoIdentity.tokenAuthors`), el token
+firmado que lo prueba; desde Kino 0.9.88 cualquier otro autor recibe el seudónimo y la atestación sin el token
 ([`identity`](identity.md)); `kino.notifications.post({ id, title, titleEn?, text?, textEn?, go? })` y `clear(id?)` dejan y
 quitan avisos en la campanita de Inicio ([`notifications`](notifications.md)). Detéctalas con
 `typeof kino.identity === "object"` y `typeof kino.notifications === "object"`. En una serie vista,

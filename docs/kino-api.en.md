@@ -703,7 +703,8 @@ results synced between the person's devices ([`shared`](jobs-and-shared.md#share
 ## `kino.identity` and `kino.notifications` (apiVersion 15) { #api15 }
 
 Each needs its capability (declarative, you export nothing): `kino.identity.telegram({ challenge? })` answers a pseudonym of
-the person for your plugin and the signed token that proves it, only to plugins signed with Kino's own author key
+the person for your plugin and, for the author keys Kino trusts (`kinoIdentity.tokenAuthors`), the signed token that
+proves it; from Kino 0.9.88 any other author gets the pseudonym and the attestation without the token
 ([`identity`](identity.md)); `kino.notifications.post({ id, title, titleEn?, text?, textEn?, go? })` and `clear(id?)` leave
 and remove notices in the Home bell ([`notifications`](notifications.md)). Detect them with
 `typeof kino.identity === "object"` and `typeof kino.notifications === "object"`. On a watched series,

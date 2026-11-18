@@ -9,11 +9,14 @@
 [panel](player-panel.md) action uses it) and is not offered through [`enhancements`](enhancements.md): the plugin declares
 `apiVersion` 15 itself.
 
-!!! warning "Only plugins signed with Kino's own author key"
-    `kino.identity.telegram` **answers only plugins signed with Kino's own author key** (`07DA-B67F-2ACF-B4D3`; a debug build
-    of Kino answers any author, for development). The token works as a login for every server that trusts Kino's bot and its
-    payload names the Telegram account, so a community plugin gets `permission_denied` whatever the person approved. If your
-    plugin is not Kino's, it needs another way in; a per-plugin bot key would lift this restriction.
+!!! warning "The token goes only to the author keys Kino trusts"
+    **Only plugins signed with one of the author keys in `contract.json` `kinoIdentity.tokenAuthors` get the `token`**:
+    `07DA-B67F-2ACF-B4D3` (Kino's own) and, from Kino 0.9.88, `E04E-EA25-1A34-290E` (a second author key Kino trusts like
+    its own); Kino 0.9.87 and older give it to `07DA-B67F-2ACF-B4D3` only. A debug build of Kino gives it to any author, for
+    development. The token works as a login for every server that trusts Kino's bot and its payload names the Telegram
+    account, so any other author (a community plugin) never gets it, whatever the person approved: from Kino 0.9.88 it still
+    gets `id` and, with a challenge, the [attestation](#challenge); Kino 0.9.87 and older refuse it with
+    `permission_denied`. A per-plugin token from the bot would lift this restriction.
 
 ```json
 "capabilities": ["screen", "identity"]
@@ -22,7 +25,7 @@
 ## The call { #call }
 
 ```js
-const { id, token } = await kino.identity.telegram();
+const { id, token } = await kino.identity.telegram(); // token only for the author keys above
 ```
 
 - **`id`** is a **pseudonym of the person for your plugin**: the first 32 hex characters of SHA-256 of
@@ -30,13 +33,15 @@ const { id, token } = await kino.identity.telegram();
   person and **different for every plugin**. You never receive the Telegram id or the username.
 - **`token`** is the token Kino's bot signed for this device (`base64url(payload).base64url(Ed25519 signature)`). Your server
   verifies it with the bot's public key. It still names the Telegram account, so treat it as a credential: **never log or
-  show it**.
+  show it**. It is optional in `kino.d.ts`: a plugin by any other author gets no `token`, and without it your server cannot
+  check the `id` against the bot, so treat that `id` as a pseudonym your plugin reports and use the
+  [attestation](#challenge) to bind a session to this install and to your own code.
 
 ## With a challenge: binding the session to this device and to your code { #challenge }
 
 ```js
 const who = await kino.identity.telegram({ challenge }); // the nonce your server issued
-// who = { id, token, deviceKey, signature, author, codeHash }
+// who = { id, token?, deviceKey, signature, author, codeHash }
 ```
 
 `challenge` is a nonce from your server: 16 to 128 characters of `A-Z a-z 0-9 _ -`. With it, Kino also **signs**
@@ -77,7 +82,7 @@ plugin.
 
 | `code` | When |
 | --- | --- |
-| `permission_denied` | The person did not approve it or switched it off, the plugin is disabled, the owner's switch, the call is not one of the allowed ones, or the plugin is not signed with Kino's key. |
+| `permission_denied` | The person did not approve it or switched it off, the plugin is disabled, the owner's switch, or the call is not one of the allowed ones; on Kino 0.9.87 and older also a plugin not signed with Kino's key. |
 | `not_available` | This device holds no token (the person must validate again in Kino) or the key could not sign. |
 | `rate_limited` | More than 10 calls in a minute. |
 | `bad_request` | Options that are not an object, an unknown key or a `challenge` that does not match the pattern. |
@@ -112,8 +117,8 @@ KINO_IDENTITY_TG=401234567 node sdk/run.mjs --device phone . screenEvent open
 ```
 
 The kit applies the same gates as the app (the capability, the call being the person's, `bad_request`, 10 a minute) but
-**not** the Kino author-key rule: in the kit it answers any plugin, so try it in the app, with a signed plugin, before you
-depend on it.
+**not** the token rule: the kit gives the `token` to any author, like a debug build of Kino, so try it in the app, with a
+signed plugin, before you depend on it.
 
 The contract is in `contract.json` (`kinoIdentity`) and the types in `kino.d.ts`.
 

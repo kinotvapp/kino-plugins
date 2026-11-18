@@ -186,7 +186,7 @@ campo una persona puede pegar la dirección del `manifest.json` de un addon de S
 | [Registro y telemetría](diagnostics.md) | `debug`, la página Registro, `telemetry`, `kino.log.report`, logcat y las métricas de reproducción (apiVersion 6) |
 | [Límites y trampas del motor](engine-limits.md) | Todos los números en un solo lugar, cómo vive tu código, lo que le falta a QuickJS, la trampa del rechazo |
 | [Probar en local](test-locally.md) | El kit de Node: `run.mjs`, `validate.mjs`, grabar y reproducir, canales en vivo |
-| [Identidad](identity.md) | apiVersion 15: `kino.identity.telegram`, un seudónimo de la persona para tu plugin y el token firmado, solo para plugins firmados con la llave de Kino |
+| [Identidad](identity.md) | apiVersion 15: `kino.identity.telegram`, un seudónimo de la persona para tu plugin y, para las llaves de autor en las que Kino confía, el token firmado |
 | [Avisos en la campanita](notifications.md) | apiVersion 15: `kino.notifications.post` y `clear`, límites, `go.screen` |
 | [Tiendas de plugins](plugin-stores.md) | apiVersion 15: `pluginStore`, `storeSync` completo o en cambios, tiendas locales y en vivo, cómo las mezcla Kino, lista de bloqueo, +18 y límites |
 | [Tiendas de ejemplo](store-examples.md) | Dos tiendas completas para copiar: una con un JSON estático y una con su propia API |

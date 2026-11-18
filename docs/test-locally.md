@@ -324,7 +324,7 @@ Llega con Kino 0.9.77. El kit ya revisa y corre todo con las reglas de la app:
 
 - **`identity`**: `kino.identity.telegram` responde con una cuenta de mentira: `KINO_IDENTITY_TG=<id|none>`,
   `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR` y `KINO_IDENTITY_REVOKED=1`. Solo dentro de una llamada de la persona
-  (`screen`, `screenEvent`, `panelAction`). El kit no aplica la regla de la llave de autor de Kino. [Identidad](identity.md#kit).
+  (`screen`, `screenEvent`, `panelAction`). El kit le da el `token` a cualquier autor, como una compilación de depuración de Kino. [Identidad](identity.md#kit).
 - **`notifications`**: `kino.notifications.post` y `clear` guardan en `<carpeta>/.kino-notices.json`;
   `node sdk/run.mjs . notifications` lo imprime y `KINO_NOTIFICATIONS_REVOKED=1` simula que la persona la apagó.
   [Avisos en la campanita](notifications.md#kit).

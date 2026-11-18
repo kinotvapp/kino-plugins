@@ -177,7 +177,7 @@ a plugin for it. Nothing in this guide changes for your plugin.
 | [Logs and telemetry](diagnostics.md) | `debug`, the Registro page, `telemetry`, `kino.log.report`, logcat and playback metrics (apiVersion 6) |
 | [Limits and engine quirks](engine-limits.md) | Every number in one place, how your code lives, what QuickJS lacks, the rejection trap |
 | [Test it locally](test-locally.md) | The Node kit: `run.mjs`, `validate.mjs`, record and replay, live channels |
-| [Identity](identity.md) | apiVersion 15: `kino.identity.telegram`, a pseudonym of the person for your plugin and the signed token, only for plugins signed with Kino's key |
+| [Identity](identity.md) | apiVersion 15: `kino.identity.telegram`, a pseudonym of the person for your plugin and, for the author keys Kino trusts, the signed token |
 | [Notices in the bell](notifications.md) | apiVersion 15: `kino.notifications.post` and `clear`, limits, `go.screen` |
 | [Plugin stores](plugin-stores.md) | apiVersion 15: `pluginStore`, `storeSync` full or as changes, local and live stores, how Kino mixes them, the blocklist, 18+ and limits |
 | [Example stores](store-examples.md) | Two complete stores to copy: one with a static JSON, one with its own API |

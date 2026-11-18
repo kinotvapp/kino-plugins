@@ -8,12 +8,15 @@
 capacidad **declarativa** (no exportas nada nuevo), no puede ir sola (la usa una [pantalla](screens.md) o una acción del
 [panel](player-panel.md)) y no se ofrece con [`enhancements`](enhancements.md): el plugin declara `apiVersion` 15 él mismo.
 
-!!! warning "Solo los plugins firmados con la llave de autor de Kino"
-    `kino.identity.telegram` **solo responde a plugins firmados con la llave de autor de Kino**
-    (`07DA-B67F-2ACF-B4D3`; una compilación de depuración de Kino responde a cualquier autor, para desarrollar). El token
-    sirve como inicio de sesión en cualquier servidor que confíe en el bot de Kino y su contenido nombra la cuenta de
-    Telegram, así que un plugin de la comunidad recibe `permission_denied` aunque la persona lo haya aprobado. Si tu plugin
-    no es de Kino, necesita otra forma de entrar; una llave de bot propia por plugin levantaría esta restricción.
+!!! warning "El token solo va a las llaves de autor en las que Kino confía"
+    **Solo los plugins firmados con una de las llaves de autor de `contract.json` `kinoIdentity.tokenAuthors` reciben el
+    `token`**: `07DA-B67F-2ACF-B4D3` (la de Kino) y, desde Kino 0.9.88, `E04E-EA25-1A34-290E` (una segunda llave de autor en
+    la que Kino confía como en la suya); Kino 0.9.87 y anteriores se lo dan solo a `07DA-B67F-2ACF-B4D3`. Una compilación de
+    depuración de Kino se lo da a cualquier autor, para desarrollar. El token sirve como inicio de sesión en cualquier
+    servidor que confíe en el bot de Kino y su contenido nombra la cuenta de Telegram, así que cualquier otro autor (un plugin
+    de la comunidad) nunca lo recibe, aunque la persona lo haya aprobado: desde Kino 0.9.88 igual recibe `id` y, con un
+    desafío, la [atestación](#challenge); Kino 0.9.87 y anteriores lo rechazan con `permission_denied`. Un token por plugin
+    desde el bot levantaría esta restricción.
 
 ```json
 "capabilities": ["screen", "identity"]
@@ -22,7 +25,7 @@ capacidad **declarativa** (no exportas nada nuevo), no puede ir sola (la usa una
 ## La llamada { #call }
 
 ```js
-const { id, token } = await kino.identity.telegram();
+const { id, token } = await kino.identity.telegram(); // token solo para las llaves de autor de arriba
 ```
 
 - **`id`** es un **seudónimo de la persona para tu plugin**: los primeros 32 caracteres hex de SHA-256 sobre
@@ -30,13 +33,15 @@ const { id, token } = await kino.identity.telegram();
   persona y **distinto en cada plugin**. Nunca recibes el id de Telegram ni el nombre de usuario.
 - **`token`** es el token que el bot de Kino firmó para este aparato (`base64url(carga).base64url(firma Ed25519)`). Tu
   servidor lo verifica con la llave pública del bot. Todavía nombra la cuenta de Telegram, así que trátalo como una
-  credencial: **nunca lo registres ni lo muestres**.
+  credencial: **nunca lo registres ni lo muestres**. Es opcional en `kino.d.ts`: un plugin de cualquier otro autor no recibe
+  `token`, y sin él tu servidor no puede comprobar el `id` contra el bot, así que trata ese `id` como un seudónimo que
+  informa tu plugin y usa la [atestación](#challenge) para ligar una sesión a esta instalación y a tu propio código.
 
 ## Con un desafío: ligar la sesión a este aparato y a tu código { #challenge }
 
 ```js
 const who = await kino.identity.telegram({ challenge }); // el nonce que emitió tu servidor
-// who = { id, token, deviceKey, signature, author, codeHash }
+// who = { id, token?, deviceKey, signature, author, codeHash }
 ```
 
 `challenge` es un nonce de tu servidor: de 16 a 128 caracteres de `A-Z a-z 0-9 _ -`. Con él, Kino además **firma** (SHA256withECDSA,
@@ -78,7 +83,7 @@ o la sincronización. Hasta **10 llamadas por minuto** por plugin.
 
 | `code` | Cuándo |
 | --- | --- |
-| `permission_denied` | La persona no la aprobó o la apagó, el plugin está desactivado, el interruptor del dueño, la llamada no es de las permitidas, o el plugin no está firmado con la llave de Kino. |
+| `permission_denied` | La persona no la aprobó o la apagó, el plugin está desactivado, el interruptor del dueño, o la llamada no es de las permitidas; en Kino 0.9.87 y anteriores también un plugin que no está firmado con la llave de Kino. |
 | `not_available` | Este aparato no tiene token (la persona debe validarse otra vez en Kino) o la llave no pudo firmar. |
 | `rate_limited` | Más de 10 llamadas en un minuto. |
 | `bad_request` | Opciones que no son un objeto, una clave desconocida o un `challenge` que no cumple el patrón. |
@@ -113,8 +118,8 @@ KINO_IDENTITY_TG=401234567 node sdk/run.mjs --device phone . screenEvent open
 ```
 
 El kit aplica las mismas puertas que la app (la capacidad, que la llamada sea de la persona, `bad_request`, 10 por minuto) pero
-**no** la regla de la llave de autor de Kino: en el kit responde a cualquier plugin, así que pruébalo en la app, con un
-plugin firmado, antes de depender de ella.
+**no** la regla del token: el kit le da el `token` a cualquier autor, como una compilación de depuración de Kino, así que
+pruébalo en la app, con un plugin firmado, antes de depender de ella.
 
 El contrato está en `contract.json` (`kinoIdentity`) y los tipos en `kino.d.ts`.
 

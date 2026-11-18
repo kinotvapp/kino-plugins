@@ -316,7 +316,7 @@ Arrives with Kino 0.9.77. The kit already checks and runs all of it with the app
 
 - **`identity`**: `kino.identity.telegram` answers with a fake account: `KINO_IDENTITY_TG=<id|none>`,
   `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR` and `KINO_IDENTITY_REVOKED=1`. Only inside a call the person started
-  (`screen`, `screenEvent`, `panelAction`). The kit does not apply Kino's author-key rule. [Identity](identity.md#kit).
+  (`screen`, `screenEvent`, `panelAction`). The kit gives the `token` to any author, like a debug build of Kino. [Identity](identity.md#kit).
 - **`notifications`**: `kino.notifications.post` and `clear` write to `<folder>/.kino-notices.json`;
   `node sdk/run.mjs . notifications` prints it and `KINO_NOTIFICATIONS_REVOKED=1` simulates the person switching it off.
   [Notices in the bell](notifications.md#kit).

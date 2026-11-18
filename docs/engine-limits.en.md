@@ -51,7 +51,7 @@
 
 | What (apiVersion 15) | Limit |
 | --- | --- |
-| `kino.identity` (apiVersion 15) | only inside a call the person started; at most 10 calls a minute per plugin; a `challenge` of 16 to 128 characters `A-Z a-z 0-9 _ -`; only plugins signed with Kino's own author key ([Identity](identity.md)) |
+| `kino.identity` (apiVersion 15) | only inside a call the person started; at most 10 calls a minute per plugin; a `challenge` of 16 to 128 characters `A-Z a-z 0-9 _ -`; the `token` only for the author keys in `kinoIdentity.tokenAuthors` (any other author gets `id` and the attestation from Kino 0.9.88, `permission_denied` before) ([Identity](identity.md)) |
 | `kino.notifications` (apiVersion 15) | at most 20 posts an hour per plugin, 30 notices kept for 30 days; a `title` of 1 to 80 characters, a `text` of at most 160; a request of at most 8,192 characters ([Notices in the bell](notifications.md#limits)) |
 | Stores (`pluginStore`, apiVersion 15) | at most 5,000 entries and 4 MB of JSON per `storeSync`, a 16 KB `state`; one `storeSync` run at most 60 s, 40 requests and 8 MB downloaded; for a live store, 5 s a call, 20 calls a minute and a 30-minute cache ([Plugin stores](plugin-stores.md#limits)) |
 
