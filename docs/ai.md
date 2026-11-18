@@ -101,23 +101,29 @@ leading que es una salida real ({ close: true } en la portada, un regreso en las
 la portada. Un elemento de una fila del Home que abre una pantalla usa open: { screen: { args } } y el detalle se apila
 desde la respuesta de open, así Atrás vuelve a la portada. Un lector usa Image fit: "width", un desplazamiento con zoom
 y onScroll, y pages con reverse y progress. Si las imágenes del sitio solo responden a su propia página, cada Image lleva
-headers { Referer, User-Agent }, que se envían solo a hosts que están en los hosts del manifiesto. Para recordar dónde se
-quedó la persona, usa kino.progress (apiVersion 22, próxima versión de Kino): el lugar exacto va en resume (opaco para
+headers { Referer, User-Agent }, que se envían solo a hosts que están en los hosts del manifiesto y solo con una imagen https.
+Desde Kino 0.9.88 las imágenes de una pantalla también pueden ser http en un host público (logos de canales de IPTV): manda
+una imagen http solo cuando kino.screen.httpImages === true; si no, una https o ninguna (se ven las iniciales). En la TV el
+botón de un plugin mide 40 dp de alto con 14 dp a cada lado (Kino 0.9.88): ponle padding, height o minHeight solo cuando
+deba ser más grande. La NavigationBar de un Scaffold conserva el desplazamiento de cada destino cuando su nodo que se
+desplaza lleva una key mía. { ui: [{ fullscreen: true }] } (Kino 0.9.84) esconde la barra de Kino para un lienzo inmersivo:
+dibuja tu propia salida. Para recordar dónde se
+quedó la persona, usa kino.progress (apiVersion 22, Kino 0.9.83): el lugar exacto va en resume (opaco para
 Kino, máximo 1024 bytes), get(id) responde null cuando no hay nada, y Kino no dibuja ninguna fila: el plugin arma su propia
 fila "Seguir leyendo" con list() (https://kinotvapp.github.io/kino-plugins/progress/). Para algo pequeño que se queda
 en el reproductor de la TV (un reloj, un marcador, un botón que abre mi panel), usa el hueco del reproductor (apiVersion 23,
-próxima versión de Kino): la capacidad "playerSlot", un bloque "slot" de 1 a 3 elementos (text, icon, image, button;
+Kino 0.9.83): la capacidad "playerSlot", un bloque "slot" de 1 a 3 elementos (text, icon, image, button;
 "overlay" con los controles o "fixed", que me pregunta en rojo) y los dos exports playerSlot(context) y
 playerSlotAction({ id, context }); el context puede venir sin kind, y refreshMs va de 2000 a 60000. Un text acepta size, weight,
 color y background, y cualquier elemento left y top; los ofreces como ajustes normales y Kino ignora lo inválido y mantiene el
 texto legible (https://kinotvapp.github.io/kino-plugins/player-slot/#dress).
 Si el inicio de sesión guarda su token en el localStorage de la página (no en una cookie), abre la ventana con
-kino.visualBrowser.open y collect.localStorage: ["access_token"] más doneWhen.localStorage (próxima versión de Kino, la 0.9.87, sin
+kino.visualBrowser.open y collect.localStorage: ["access_token"] más doneWhen.localStorage (Kino 0.9.87, sin
 apiVersion nuevo): el localStorage de la respuesta trae solo las claves nombradas, con "done"; un Kino anterior no responde ninguna,
 así que compruébalo, guarda los valores en kino.storage y nunca los registres (storeAs cubre solo cookies;
 https://kinotvapp.github.io/kino-plugins/visual-browser/#rules).
 Para un aspecto de toda la app (temas), el appThemes del manifiesto (apiVersion 18) lleva colores, formas y tipografía; desde
-apiVersion 26 (próxima versión de Kino, la 0.9.87) un tema también puede pintar: surfaces (relleno, contorno y resplandor por
+apiVersion 26 (Kino 0.9.87) un tema también puede pintar: surfaces (relleno, contorno y resplandor por
 elemento), style.gloss, layout (un héroe enmarcado y un riel flotante, solo TV), assets con background.image y
 typography.fontFamily. Nunca pongas esas claves en un tema que declara un apiVersion menor, dale a cada asset su sha256 y sus bytes
 exactos (una imagen de 2 MB como máximo), haz que el tema se vea bien con cada efecto apagado y mantén el texto legible en cada
@@ -180,14 +186,16 @@ Lo que quiero:
 - Nombre en Kino y una descripción corta: <<< p. ej. "Mi fuente": "Películas de …, en español" >>>
 - Su propia pantalla (un tablero, una configuración paso a paso, una pestaña del panel...): <<< no / sí: qué muestra y qué hace ahí la persona >>>
 - Una tienda (una fuente de plugins para la tienda de Kino, apiVersion 15): <<< no / sí: local (una lista que entrega en segundo plano, desde GitHub, mi servidor o un archivo JSON estático) o en vivo (también responde mientras la persona navega: storeList y storeSearch, así que lo que busque llega a mi servidor), los hosts que usa y los plugins que lista >>>
-- Identidad o avisos (apiVersion 15): <<< no / sí: quién necesita el seudónimo de Telegram de la persona (solo responde a plugins firmados con la llave de autor de Kino) y qué avisos dejar en la campanita de Inicio >>>
+- Identidad o avisos (apiVersion 15): <<< no / sí: quién necesita el seudónimo de Telegram de la persona (solo las llaves de autor en las que Kino confía reciben el token firmado; cualquier otro plugin recibe el seudónimo y, desde Kino 0.9.88, la atestación) y qué avisos dejar en la campanita de Inicio >>>
 - Otros plugins (el protocolo entre plugins, apiVersion 20, Kino 0.9.81): <<< no / usa la puerta de otro plugin: su repositorio y su puerta (p. ej. kinotvapp/kino-plugin-tmdb, "movies") / abre una puerta: qué podrían pedirle otros plugins >>>
 - Archivos del aparato de la persona (apiVersion 21, Kino 0.9.82): <<< no / sí: de qué tipo (libros, música, videos, imágenes, subtítulos), un archivo o una carpeta entera, y si solo los lee o los reproduce >>>
-- Recordar dónde se quedó la persona (apiVersion 22, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué recorre la persona página a página o capítulo a capítulo (un manga, un libro, un podcast que reproduce el plugin), la unidad que hay que recordar (capítulo y página, una posición en el libro) y qué guardar en resume para volver al lugar exacto (p. ej. { cap: 87, pag: 12 }), y si mi plugin muestra su propia fila "Seguir leyendo" (Kino no dibuja ninguna) >>>
-- Imágenes de un sitio que solo responde a su propia página (los headers de una Image, próxima versión de Kino): <<< no / sí: el sitio, el Referer que pide (p. ej. https://mangasite.example/) y si necesita un User-Agent de navegador; sus hosts de imágenes van en hosts >>>
-- Algo siempre a la vista en el reproductor de la TV (el hueco del reproductor, apiVersion 23, próxima versión de Kino, todavía sin publicar): <<< no / sí: qué muestra (un reloj, un marcador, un logo, un botón que abre mi panel), si se queda todo el tiempo (fixed: Kino me pregunta en rojo) o solo con los controles (overlay), y cada cuánto cambia >>>
-- Inicio de sesión que guarda su token en el localStorage de la página (kino.visualBrowser, próxima versión de Kino): <<< no / sí: el sitio, las claves de localStorage que guardan el token (p. ej. access_token) y dónde guardarlas (kino.storage) >>>
-- Un aspecto para toda la app (temas; superficies pintadas desde apiVersion 26, próxima versión de Kino, todavía sin publicar): <<< no / sí: el ambiente (colores, oscuro o claro), si necesita superficies (botones degradados o brillantes, resplandores), una imagen de fondo (mi propio archivo, de 2 MB como máximo, en el repositorio del plugin), su propia fuente (TTF u OTF), un héroe enmarcado y un riel flotante (solo TV) >>>
+- Recordar dónde se quedó la persona (apiVersion 22, Kino 0.9.83): <<< no / sí: qué recorre la persona página a página o capítulo a capítulo (un manga, un libro, un podcast que reproduce el plugin), la unidad que hay que recordar (capítulo y página, una posición en el libro) y qué guardar en resume para volver al lugar exacto (p. ej. { cap: 87, pag: 12 }), y si mi plugin muestra su propia fila "Seguir leyendo" (Kino no dibuja ninguna) >>>
+- Imágenes de un sitio que solo responde a su propia página (los headers de una Image, Kino 0.9.83): <<< no / sí: el sitio, el Referer que pide (p. ej. https://mangasite.example/) y si necesita un User-Agent de navegador; sus hosts de imágenes van en hosts >>>
+- Algo siempre a la vista en el reproductor de la TV (el hueco del reproductor, apiVersion 23, Kino 0.9.83): <<< no / sí: qué muestra (un reloj, un marcador, un logo, un botón que abre mi panel), si se queda todo el tiempo (fixed: Kino me pregunta en rojo) o solo con los controles (overlay), y cada cuánto cambia >>>
+- Inicio de sesión que guarda su token en el localStorage de la página (kino.visualBrowser, Kino 0.9.87): <<< no / sí: el sitio, las claves de localStorage que guardan el token (p. ej. access_token) y dónde guardarlas (kino.storage) >>>
+- Un aspecto para toda la app (temas; superficies pintadas desde apiVersion 26, Kino 0.9.87): <<< no / sí: el ambiente (colores, oscuro o claro), si necesita superficies (botones degradados o brillantes, resplandores), una imagen de fondo (mi propio archivo, de 2 MB como máximo, en el repositorio del plugin), su propia fuente (TTF u OTF), un héroe enmarcado y un riel flotante (solo TV) >>>
+- Lo que cuesta cada reproducción en la fuente (decide entre resolveAhead y prepare, Kino 0.9.88): <<< nada / cuenta una reproducción / gasta un cupo (cuántas llamadas por hora y por cuenta) / gasta una prueba o una reproducción gratis / abre una página oculta >>>
+- Canales en vivo de un CDN cuyas direcciones de segmento terminan en un número de reloj que crece (en vivo por reloj, apiVersion 27, Kino 0.9.88): <<< no / sí: una dirección de segmento real, las duraciones de las líneas #EXTINF de la lista y cómo conseguir un instante con el segmento que empezó entonces >>>
 - Compartir en Kino Social (recomendado en todo plugin): <<< sí, desde la página de cada título y desde la barra / solo desde la barra (solo texto) / no >>>
 - Firmar el plugin con mi propia clave, para que la gente sepa que cada actualización es mía: <<< sí / no >>>
 - Mi usuario de GitHub: <<< p. ej. mi-usuario >>>
@@ -215,7 +223,7 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   captcha o una revisión de "confirma que eres humano": con blocked, pasa al siguiente servidor. Si un
   título tiene varios servidores o idiomas, resuelve uno y lista los demás como alternatives
   { label, ref }.
-- Límites: search 15 s y las demás llamadas 20 s; 60 peticiones por llamada (cada salto de
+- Límites: search 15 s, prepare 15 s y las demás llamadas 20 s; 60 peticiones por llamada (cada salto de
   redirección cuenta, también los rechazados) y máximo 6 al mismo tiempo; cuerpos de 5 MB;
   256 KB de kino.storage; 100 resultados de búsqueda; Inicio con 20 filas de 60.
 - Errores para la persona: kino.error("auth_required" | "not_found" | "geo_blocked" |
@@ -326,8 +334,9 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   "storageLarge", "catalog", "qrScan", "imageSource" o un ajuste "qr" (Kino 0.9.74); 14 para las pantallas y sus capacidades (Kino 0.9.74); 15 para
   "identity", "notifications" o "pluginStore" (Kino 0.9.77); 16 para "coins" (Kino 0.9.78); 17 a 20 solo para lo que
   la sección 2 de AGENTS.md lista para ellos (Kino 0.9.81); 21 para "files" (Kino 0.9.82); 22 para "progress" y 23 para
-  "playerSlot" (la próxima versión de Kino, todavía sin publicar; para seguir en Kinos anteriores, la función va en
-  "enhancements")). Un catálogo que no reproduce
+  "playerSlot" (Kino 0.9.83; para seguir en Kinos anteriores, la función va en "enhancements"); 24 para una lista de drm o
+  ClearKey (Kino 0.9.85), 25 para el texto propio de un subtítulo (Kino 0.9.86), 26 para un tema pintado (Kino 0.9.87); 27
+  solo para clockLive (Kino 0.9.88), y aun así deja la base más baja y agrega "enhancements": { "27": {} }). Un catálogo que no reproduce
   nada declara "catalogOnly": true (Kino 0.9.54) y aun así exporta un resolve que falla con not_found,
   para los Kino anteriores. Un id nuevo y
   mío (nunca "archive-org").
@@ -340,9 +349,23 @@ Reglas que no puedes romper (el detalle y los números exactos están en AGENTS.
   typeof kino.plugins === "object"; Kino 0.9.81 y Kino Social 0.9.7). Si responde provider_missing y Kino Social no está
   instalado, responde go: { installPlugin: { repo: "kinotvapp/kino-social" } }; sin kino.plugins, un aviso "Actualiza Kino".
   Nunca publiques por mí: Kino Social solo guarda un borrador que yo reviso y publico allá, y así me lo dices. Desde Kino
-  0.9.84 (todavía sin publicar) el plugin puede declarar además "openFrom": { "routes": [...] } con las rutas de su pantalla
+  0.9.84 el plugin puede declarar además "openFrom": { "routes": [...] } con las rutas de su pantalla
   que pueden abrir las tarjetas de otros plugins (lee route.args en el evento open y revísalos)
   (https://kinotvapp.github.io/kino-plugins/share/).
+- Dejar listo un título por adelantado (Kino 0.9.88, cualquier apiVersion), según lo que dije que cuesta una reproducción:
+  si un resolve cuenta una reproducción o gasta un cupo, una prueba o una reproducción gratis, nunca declares
+  "resolveAhead": true; exporta en cambio prepare(ref), que prepara una sesión o un token mientras leo la página del título
+  (Kino ignora su respuesta; 15 s en segundo plano, una vez por ref cada 5 minutos; no debe gastar nada ni empezar ninguna
+  reproducción). "resolveAhead": true solo cuando resolve no gasta nada y el plugin tiene un "fetchHosts": "any" y un
+  "streamHosts": "any" que yo apruebo (si no, Kino no resuelve nada por adelantado). Pruébalo con
+  node sdk/run.mjs . prepare <ref> (https://kinotvapp.github.io/kino-plugins/contract/#resolve-ahead).
+- En vivo por reloj (apiVersion 27, Kino 0.9.88), solo para un CDN abierto (sin DRM ni firma por petición) cuyas direcciones
+  de segmento nombra un reloj de medios: un stream en vivo devuelve una url (una real para un Kino anterior), mime
+  "application/vnd.apple.mpegurl" y clockLive { template con {seg} (y {mc} con mediaCode), grid en ms, anchor { t, s } };
+  nunca con drm, signing ni external; cada host de segmento pasa la regla de hosts del canal. Conserva el apiVersion de base,
+  agrega "enhancements": { "27": {} } y manda clockLive solo cuando kino.pluginApiVersion >= 27 (nunca revises kino.apiVersion
+  para esto); resolve devuelve el Stream mismo; el kit no lo modela
+  (https://kinotvapp.github.io/kino-plugins/live-channels/#clock-live).
 - Nada de "debug": true en un plugin publicado salvo que yo lo pida: todo plugin ya tiene un
   interruptor "Modo debug" en Ajustes de Kino, y "debug": true solo lo deja encendido de entrada para todos. "telemetry" solo si yo acepto que
   los errores del plugin lleguen a Kino; registra pasos y conteos, nunca lo que escribe la persona.
@@ -376,6 +399,10 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
 - el botón Compartir: consumes "social" (kinotvapp/kino-social, puerta "wall", llamada "share") y el mismo repositorio en
   recommends, provider_missing responde go.installPlugin, el texto se puede cambiar antes de enviar, el título se puede quitar,
   y el mensaje final dice que el borrador espera en Kino Social (nada se publica solo);
+- si declara "resolveAhead": un resolve no gasta nada y el plugin tiene "fetchHosts" y "streamHosts" "any"; si exporta
+  prepare: node sdk/run.mjs . prepare <ref> no imprime ningún aviso y prepare no empieza ni cuenta ninguna reproducción;
+- si usa clockLive: el apiVersion de base se conserva con "enhancements": { "27": {} }, una url real a su lado para un Kino
+  anterior, sin drm, signing ni external a su lado;
 - si tiene un hueco del reproductor: "playerSlot" y el bloque "slot" juntos, los dos exports presentes, node sdk/run.mjs .
   playerSlot imprime el cuadro sin nada descartado (también con --bare), y node sdk/validate.mjs . pasa;
 - si tiene una pantalla: el AppBar de cada pantalla lleva mergeWithKinoBar: true y dense: true con un leading que es una
@@ -397,8 +424,9 @@ antes de entregarme el plugin, corre esta autocomprobación y dime el resultado 
   tienda tiene las pestañas «De Kino» (la lista por defecto de Kino Plugins), «De la comunidad» (todo lo demás, de todas
   las tiendas) e «Instalados». Comprueba con node sdk/validate.mjs . y node sdk/run.mjs . storeSync (y storeList /
   storeSearch si es en vivo) sin nada reportado como [dropped by Kino]. identity: kino.identity.telegram({ challenge? })
-  responde { id, token } solo a plugins firmados con la llave de autor de Kino y solo dentro de una llamada que la persona
-  inició; nunca registres ni muestres el token; el plugin funciona si se rechaza (permission_denied). notifications:
+  responde { id, token? } solo dentro de una llamada que la persona inició: el token solo para las llaves de autor de
+  kinoIdentity.tokenAuthors (cualquier otro autor recibe el id y, con un desafío, la atestación desde Kino 0.9.88;
+  permission_denied antes); nunca registres ni muestres el token; el plugin funciona si se rechaza (permission_denied). notifications:
   kino.notifications.post({ id, title, text?, go? }) y clear(id?), títulos de 80 caracteres, textos de 160, 20 avisos por
   hora, desde una pantalla o el trabajo. library: kino.library.watched() trae season y episode en las series. Todo
   declarativo y probado con node sdk/run.mjs . notifications y las variables KINO_IDENTITY_*.
