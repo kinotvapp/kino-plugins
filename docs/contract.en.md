@@ -39,7 +39,9 @@ At every `apiVersion`, from Kino 0.9.74, an `action` may also answer `setSetting
 `read` for a stream your plugin serves and `image` for a picture it serves ([Bytes and images your plugin
 serves](#apiversion-13)). From `"apiVersion": 14` (Kino 0.9.74): `screen` and `screenEvent` for a
 [screen](screens.md#exports) and `job` for a [background job](jobs-and-shared.md#jobs); a plugin with
-`playerPanelTab` uses the `panel` export ([The player panel](player-panel.md#contributed-tab)).
+`playerPanelTab` uses the `panel` export ([The player panel](player-panel.md#contributed-tab)). And at every
+`apiVersion`, from Kino 0.9.88, a plugin with `resolve` may export `prepare` ([Warming up before the play](#prepare)) or
+declare `"resolveAhead": true` ([Getting a title ready ahead](#resolve-ahead)).
 
 ```js
 export async function read({ handle, offset, length }) { /* -> { bytes: base64 } (apiVersion 13, byteSource) */ }

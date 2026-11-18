@@ -40,7 +40,9 @@ ajustes](settings-form.md#set-settings)). Desde `"apiVersion": 13` (Kino 0.9.74)
 para un stream que sirve tu plugin e `image` para una imagen que sirve ([Bytes e imágenes que sirve tu
 plugin](#apiversion-13)). Desde `"apiVersion": 14` (Kino 0.9.74): `screen` y `screenEvent` para una
 [pantalla](screens.md#exports) y `job` para un [trabajo en segundo plano](jobs-and-shared.md#jobs); un plugin con
-`playerPanelTab` usa el export `panel` ([Panel del reproductor](player-panel.md#contributed-tab)).
+`playerPanelTab` usa el export `panel` ([Panel del reproductor](player-panel.md#contributed-tab)). Y en cualquier
+`apiVersion`, desde Kino 0.9.88, un plugin con `resolve` puede exportar `prepare` ([Prepararse antes de
+reproducir](#prepare)) o declarar `"resolveAhead": true` ([Dejar listo un título por adelantado](#resolve-ahead)).
 
 ```js
 export async function read({ handle, offset, length }) { /* -> { bytes: base64 } (apiVersion 13, byteSource) */ }
