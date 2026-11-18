@@ -1,8 +1,8 @@
 # Reference
 
-Two files describe the plugin contract for machines. They are copied verbatim from Kino's own
-repository, where a test pins them to the app's code, and the tables in this guide are generated
-from `contract.json`.
+Two files describe the plugin contract for machines. They are copied from Kino's own repository,
+where a test pins their values to the app's code (a few comments are reworded for this public copy), and the tables in this
+guide are generated from `contract.json`.
 
 | File | What it is | Download |
 | --- | --- | --- |

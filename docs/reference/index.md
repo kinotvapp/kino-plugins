@@ -1,8 +1,8 @@
 # Referencia
 
-Dos archivos describen el contrato de los plugins para máquinas. Están copiados tal cual del
-repositorio de Kino, donde una prueba los amarra al código de la app, y las tablas de esta guía salen
-de `contract.json`.
+Dos archivos describen el contrato de los plugins para máquinas. Están copiados del repositorio de
+Kino, donde una prueba amarra sus valores al código de la app (algunos comentarios se reescriben para esta copia pública), y
+las tablas de esta guía salen de `contract.json`.
 
 | Archivo | Qué es | Descarga |
 | --- | --- | --- |
