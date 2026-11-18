@@ -8,6 +8,7 @@ kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
 kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
 kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
+kino.pluginApiVersion // Kino 0.9.88+: your plugin's feature apiVersion (your apiVersion or the highest enhancements key applied); undefined before
 kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync provider (see below); absent before
 kino.ws            // apiVersion 13 (Kino 0.9.74), capability "socket": outbound WebSockets (see below); absent otherwise
@@ -73,6 +74,21 @@ const url = kino.fetchAnyHost === true ? enlaceDelExtractor : await miRespaldo(e
 Aun en `true`, un host que no declaraste solo se alcanza por `https` en el puerto 443 (y con un cupo de peticiones), la red
 de la casa sigue rechazada y un [secreto sellado](manifest.md#secrets) solo va a tus `hosts` declarados ([las reglas](manifest.md#fetch-hosts)). En el kit de Node es `true` cuando el manifiesto pide `"fetchHosts": "any"` con `apiVersion` 9 (el kit da
 la aprobación por hecha).
+
+### `kino.pluginApiVersion`: el apiVersion con que corren tus funciones { #plugin-api-version }
+
+Desde **Kino 0.9.88**, `kino.pluginApiVersion` es el **apiVersion efectivo** de tu plugin en este Kino: el `apiVersion` de tu
+manifiesto, o la clave más alta de tus [`enhancements`](enhancements.md) que aplicó este Kino, la que sea mayor. Una función
+que depende de él está encendida justo cuando es lo bastante alto, así que un plugin que conserva un `apiVersion` bajo para los
+Kino anteriores igual puede saber si este lee, por ejemplo, [`clockLive`](live-channels.md#clock-live-older) (27). No es
+`kino.apiVersion`: ese es el apiVersion más alto que entiende esta versión de Kino, el mismo para todo plugin. En Kino 0.9.87 y
+anteriores es `undefined`:
+
+```js
+const conReloj = typeof kino.pluginApiVersion === "number" && kino.pluginApiVersion >= 27;
+```
+
+Sin `apiVersion` nuevo; el kit de Node da el mismo número, a partir de tu manifiesto y sus `enhancements`.
 
 Kino también pone los globales web que le faltan a QuickJS, escritos en JavaScript y congelados:
 `URL`, `URLSearchParams`, `atob`, `btoa`, `TextEncoder` y `TextDecoder` (solo UTF-8). Se comportan

@@ -8,6 +8,7 @@ kino.appVersion   // the version of Kino, for example "1.42.0"
 kino.lang         // "es-CO"; from Kino 0.9.54 "en-US" too, when Kino speaks English
 kino.fetchAnyHost // Kino 0.9.55+: true when this install's kino.fetch may reach any public host; undefined before
 kino.device       // Kino 0.9.55+: "tv" or "phone", the UI Kino shows on this device; undefined before
+kino.pluginApiVersion // Kino 0.9.88+: your plugin's feature apiVersion (your apiVersion or the highest enhancements key applied); undefined before
 kino.seed(session) // Kino 0.9.55+: share one anonymous guest session (see below); absent before
 kino.sync          // Kino 0.9.74+: { remoteChanged() } for a realtime sync provider (see below); absent before
 kino.ws            // apiVersion 13 (Kino 0.9.74), capability "socket": outbound WebSockets (see below); absent otherwise
@@ -68,6 +69,21 @@ const url = kino.fetchAnyHost === true ? extractorLink : await myFallback(extrac
 Even when `true`, a host you did not declare is reached only over `https` on port 443 (and under a request budget), the home
 network stays refused and a [sealed secret](manifest.md#secrets) only goes to your declared `hosts` ([the rules](manifest.md#fetch-hosts)). In the Node kit it is `true` when the manifest asks for `"fetchHosts": "any"` at `apiVersion` 9 (the kit
 takes the approval as given).
+
+### `kino.pluginApiVersion`: the apiVersion your features run at { #plugin-api-version }
+
+From **Kino 0.9.88**, `kino.pluginApiVersion` is your plugin's **feature apiVersion** on this Kino: your manifest's
+`apiVersion`, or the highest key of your [`enhancements`](enhancements.md) this Kino applied, whichever is higher. A feature
+gated on it is on exactly when it is high enough, so a plugin that keeps a low `apiVersion` for older Kinos can still tell
+whether this one reads, say, [`clockLive`](live-channels.md#clock-live-older) (27). It is not `kino.apiVersion`: that one is
+the highest apiVersion this build of Kino understands, the same for every plugin. On Kino 0.9.87 and older it is
+`undefined`:
+
+```js
+const clock = typeof kino.pluginApiVersion === "number" && kino.pluginApiVersion >= 27;
+```
+
+No new `apiVersion`; the Node kit gives the same number, from your manifest and its `enhancements`.
 
 Kino also provides the web globals QuickJS lacks, written in JavaScript and frozen: `URL`,
 `URLSearchParams`, `atob`, `btoa`, `TextEncoder` and `TextDecoder` (UTF-8 only). They behave like the

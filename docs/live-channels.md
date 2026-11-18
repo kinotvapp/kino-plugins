@@ -8,6 +8,9 @@ Hay dos formas de darle televisión en vivo a Kino, y un plugin puede usar las d
   TV, el cajón de canales y la fila "Canales en vivo" de Inicio, dados uno por uno o como una lista
   M3U con una guía XMLTV que Kino descarga y analiza por su cuenta.
 
+Para un CDN que nombra sus segmentos con un reloj de medios, un stream en vivo también puede darle a Kino el reloj en lugar
+de una lista, y Kino arma la ventana en vivo él mismo: [En vivo por reloj](#clock-live) (apiVersion 27, Kino 0.9.88).
+
 Cómo probarlos con el kit de Node está en [Probar en local](test-locally.md#live).
 
 ## Canales en vivo (apiVersion 2) { #live-items }
@@ -275,6 +278,120 @@ export async function liveSearch({ query }) {
 
 Usa el mismo `id` que tu `liveChannels` le da a ese canal. Pruébalo con
 `node sdk/run.mjs . live search <consulta>` ([Probar en local](test-locally.md#live)).
+
+## En vivo por reloj (`clockLive`, apiVersion 27) { #clock-live }
+
+!!! note "Disponible desde Kino 0.9.88"
+    Kino 0.9.88 es el primero que lee `clockLive`, y solo de un plugin cuyo apiVersion efectivo es 27: declara
+    `"apiVersion": 27`, o conserva el tuyo y agrega `"enhancements": { "27": {} }` ([más abajo](#clock-live-older)). Un Kino
+    anterior ignora el campo.
+
+Algunos CDN de TV en vivo nombran sus segmentos con un **reloj de medios**: el segmento de un canal es
+`.../{código}/{código}_<n>.ts`, donde `<n>` es el inicio del segmento en el reloj de medios, en ms, y avanza según una serie
+fija de duraciones que se repite desde un instante conocido. Cuando ese CDN es abierto (sin DRM, sin firma por petición), un
+stream `live` puede darle a Kino el **reloj** en lugar de una lista, y Kino arma la ventana en vivo **él mismo**, en su propio
+proxy local, de nuevo cada vez que el reproductor vuelve a pedir la lista. Ninguna llamada a tu plugin corre mientras el canal
+se ve y Kino nunca descarga una lista del CDN: el reproductor baja cada segmento directo del CDN, por la conexión de quien
+mira.
+
+Es un campo de un stream `live` (lo que `resolve` devuelve para un canal o un ítem `live`, o el `stream` en línea de un
+canal):
+
+```js
+export async function resolve(ref) {
+  const canal = await buscarCanal(ref); // tu propia consulta: el código del canal y dónde va su reloj
+  return {
+    url: canal.urlDeRespaldo,            // Kino 0.9.88 la ignora; es lo que reproduce un Kino anterior (mira abajo)
+    mime: "application/vnd.apple.mpegurl",
+    clockLive: {
+      template: "https://cdn.example.com/live/{mc}/{mc}_{seg}.ts",
+      mediaCode: canal.codigo,           // llena cada {mc}
+      grid: [4004, 6006],                // las duraciones de los segmentos, que se repiten, en ms
+      anchor: { t: canal.instanteMs, s: canal.segmento, firstStep: 0 },
+      window: { count: 6, behind: 3 },            // opcional; los valores por defecto
+      reanchor: { everySec: 1200, probeSpan: 4 }  // opcional; los valores por defecto
+    }
+  };
+}
+```
+
+Los campos (los tipos en [`kino.d.ts`](reference/index.md), `KinoClockLive`; los rangos en `contract.json`,
+`output.clockLive`):
+
+| Campo | Qué es | Reglas |
+| --- | --- | --- |
+| `template` | la dirección de un segmento | obligatorio; `{seg}` obligatorio, puede repetirse; `{mc}` opcional; cualquier otro `{…}` rechaza el stream (un error de tipeo nunca se descarga); como mucho 2.048 caracteres; su host se revisa como la `url` de un canal |
+| `mediaCode` | lo que reemplaza cada `{mc}` | obligatorio cuando la plantilla usa `{mc}`; `^[A-Za-z0-9._~-]{1,128}$` (sin barra: no puede cambiar el host ni la ruta) |
+| `grid` | las duraciones de los segmentos, que se repiten, en ms | obligatorio; de 1 a 16 números enteros de 200 a 60.000: `[4004, 6006]` son 4004 ms, luego 6006 ms, y otra vez |
+| `anchor` | `{ t, s, firstStep? }`: en el instante `t` (ms, UTC) empieza el segmento número `s`, en la posición `firstStep` de `grid` | `t` y `s` obligatorios (enteros, `t` positivo); `firstStep` cuenta desde 0, por defecto 0, fuera de rango se lee como 0 |
+| `rate` | ms de medio por cada 1.000 ms de reloj | por defecto 1.000; se lleva a 500..2.000 |
+| `window` | `{ count?, behind? }`: la ventana lista `count` segmentos que terminan `behind` segmentos antes del borde en vivo | `count` por defecto 6 (2..20), `behind` por defecto 3 (0..20); se llevan a su rango |
+| `reanchor` | `{ everySec?, probeSpan? }`: cada cuánto Kino vuelve a fijar el borde sobre segmentos reales, y cuánto mira hacia cada lado | `everySec` por defecto 1.200 (60..21.600), `probeSpan` por defecto 4 (0..12); se llevan a su rango |
+| `segWidth` | ceros a la izquierda para `{seg}` | de 0 a 12, por defecto 0 (`000042` es ancho 6) |
+
+El número de un segmento (`{seg}`) es su inicio en el reloj de medios, en ms: con `grid` `[4004, 6006]` y un `anchor.s` de
+`1180000`, los segmentos siguientes son `1184004`, `1190010`, `1194014`… `rate` importa cuando la serie se aparta del reloj
+de pared, por ejemplo con la velocidad NTSC 1001/1000, que hace que `[4004, 6006]` sume 10.010 ms.
+
+**Estructura y ajuste.** Lo que podría ubicar mal la ventana o descargar una dirección que no querías (un `grid` malo, un
+`template` sin `{seg}` o con un marcador desconocido, un `{mc}` sin `mediaCode`, un `anchor` malo, un host que las reglas
+rechazan) **rechaza el stream**. Cada perilla de ajuste (`rate`, `window`, `reanchor`, `segWidth`, `firstStep`) se lleva a su
+rango o a su valor por defecto, con registro; nunca rechaza.
+
+**Hosts.** Cada dirección de segmento (la plantilla con sus marcadores llenos) se revisa exactamente como la `url` de un
+canal: en uno de tus `hosts`, o con [`liveStreamHosts: "any"`](#live-stream-hosts) (con `channels`) o
+[`streamHosts: "any"`](manifest.md#stream-hosts); nunca la red de la casa.
+
+**Lo que hace Kino con él.**
+
+- Antes de que empiece el canal, Kino le pide al CDN unos segmentos reales alrededor de donde el reloj pone el borde en
+  vivo. Un canal del que no responde ningún segmento cuenta como fuera del aire: la persona lee que no está disponible y el
+  reproductor no recibe ninguna lista.
+- Mientras se ve, Kino vuelve a fijar el borde cada `reanchor.everySec` segundos (cada 20 minutos por defecto, también si
+  no envías `reanchor`), así que un reloj que se desvía nunca acumula el error.
+- La ventana es por lo menos tan larga como la que necesita el reproductor para arrancar con seguridad detrás del borde:
+  Kino puede listar más segmentos que tu `window.count` (como mucho 20).
+- Las peticiones de Kino al CDN salen de un mismo cupo que comparten todos los canales, así que ningún plugin puede hacer que
+  Kino inunde un CDN.
+
+**Lo que ignora.** Con `clockLive`, la `url` se ignora, y también `alternatives` y lo que un canal en vivo nunca usa
+(`audioTracks`, `durationMs`, `skip`, `expiresInSeconds`); el stream siempre se reproduce como HLS. Un `drm`, una firma por
+petición (`signing`) o un `external` a su lado **rechazan** el stream. `headers` y `subtitles` siguen valiendo para cada
+petición del reproductor. En un stream que no es en vivo (una película, un episodio) Kino ignora el campo, así que una `url`
+vacía ahí se rechaza.
+
+### Conserva tu apiVersion: `enhancements["27"]` { #clock-live-older }
+
+`"apiVersion": 27` hace que todo Kino anterior a la 0.9.88 rechace tu plugin entero. Kino lee `clockLive` de tu **apiVersion
+efectivo** (tu `apiVersion`, o la clave más alta de `enhancements` que aplicó), así que conserva tu base y agrega un bloque
+vacío:
+
+```json
+{
+  "id": "mis-canales", "name": "Mis canales", "version": "2.1.0", "apiVersion": 6, "entry": "plugin.js",
+  "hosts": ["api.example.com", "cdn.example.com"],
+  "capabilities": ["home", "resolve", "channels"],
+  "enhancements": { "27": {} }
+}
+```
+
+Un Kino con `clockLive` aplica el bloque y lee el campo; uno anterior ignora la clave y reproduce la `url` que envías al lado
+de `clockLive`. Para saber mientras corre si este Kino lo va a leer, revisa
+[`kino.pluginApiVersion`](kino-api.md#plugin-api-version):
+
+```js
+const conReloj = typeof kino.pluginApiVersion === "number" && kino.pluginApiVersion >= 27;
+return conReloj
+  ? { url: "", mime: "application/vnd.apple.mpegurl", clockLive: { /* ... */ } }
+  : { url: await urlDeLaLista(ref), mime: "application/vnd.apple.mpegurl" };
+```
+
+Revisa `kino.pluginApiVersion`, no `kino.apiVersion`: en Kino 0.9.88 `kino.apiVersion` es 27 para todo plugin, pero Kino lee
+`clockLive` solo de un plugin cuyo propio apiVersion efectivo es 27. Un plugin de `"apiVersion": 6` sin el bloque enviaría una
+`url` vacía, que Kino rechaza.
+
+El kit de Node todavía no modela `clockLive`: `run.mjs resolve` revisa la `url` normal, así que deja una `url` real a su lado
+mientras pruebas, y prueba el reloj en Kino 0.9.88 ([Lo que el kit no puede copiar](engine-limits.md#kit-differences)).
 
 ## Tres recetas (apiVersion 3) { #recipes }
 

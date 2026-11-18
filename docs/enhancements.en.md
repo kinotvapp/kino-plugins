@@ -33,8 +33,9 @@ Another example, with a background job:
 
 ### How Kino reads it { #merge }
 
-- **The keys** are the `apiVersion` that brought the feature: today, `"14"`. A Kino that knows the key merges its block
-  over the manifest, keys in numeric order. A key above that Kino's apiVersion is ignored.
+- **The keys** are the `apiVersion` that brought the feature: `"14"` for screens, `"20"`, `"21"`, `"22"`, `"23"` and
+  `"27"` for what is below. A Kino that knows the key merges its block over the manifest, keys in numeric order. A key
+  above that Kino's apiVersion is ignored.
 - **`capabilities` are added.** Only `screen`, `library`, `playerPanelTab`, `playerControl`, `room`, `schedule`, `shared`,
   `ai`, [`files`](files.md) (key `"21"`), [`progress`](progress.md) (key `"22"`) and [`playerSlot`](player-slot.md) (key `"23"`, with its `slot` block, which replaces the manifest's) can be added this way.
 - **`screen`, `settings` (the whole list), `panel` and `jobs` replace** the manifest's. `playerPanelTab` and a `panel` with
@@ -43,7 +44,10 @@ Another example, with a background job:
 - Then **everything is checked at that apiVersion**, with the very same rules as the plain fields:
   [`screen`](screens.md#manifest), [`jobs`](jobs-and-shared.md#jobs-manifest), [`panel`](player-panel.md#contributed-tab),
   the [capabilities](screens.md#consent).
-- **Your `apiVersion` never moves**, so nothing else changes behaviour.
+- **Your `apiVersion` never moves**: what reads it stays as it was (Categorías, your sealed `secrets` limit, the rules of
+  your other fields). What a block brings follows your **feature apiVersion** instead: your `apiVersion`, or the highest key
+  this Kino applied. From Kino 0.9.88 your code reads it in [`kino.pluginApiVersion`](kino-api.md#plugin-api-version)
+  (`undefined` before).
 - **Key `"20"` (Kino 0.9.81): `provides` and `consumes`**, the [plugin protocol](protocol.md#versions). They replace the
   manifest's and are checked with apiVersion 20's rules: `"apiVersion": 7, "enhancements": { "20": { "provides": { … } } }`
   opens a door on Kino 0.9.81 and later while the plugin keeps installing as before on every older Kino (that is how TMDB
@@ -51,6 +55,11 @@ Another example, with a background job:
 - **Key `"20"`: `visualBrowser`** (`true`), the manifest key for [a browser window the person drives](visual-browser.md). It replaces
   the manifest's and is checked with apiVersion 20's rules, so a plugin that keeps an older `apiVersion` offers the window only
   to a Kino that has it: `"enhancements": { "20": { "visualBrowser": true } }`. Check `kino.visualBrowser?.available` before using it.
+- **Key `"27"` (Kino 0.9.88), even empty: `clockLive`.** A stream field can follow the feature apiVersion too.
+  `"enhancements": { "27": {} }` adds nothing to your manifest, but a Kino that applies it reads the
+  [`clockLive`](live-channels.md#clock-live) field of your live streams; an older Kino ignores the key and plays the `url`
+  you send beside it. Check `kino.pluginApiVersion >= 27` before you send an empty `url`
+  ([Keep your apiVersion](live-channels.md#clock-live-older)).
 
 ### When a block is dropped { #dropped }
 

@@ -1,4 +1,4 @@
-# El contrato (apiVersion 1 a 17)
+# El contrato (apiVersion 1 a 27)
 
 Tu archivo de entrada es un módulo ES que exporta una función `async` por cada capacidad que
 declaraste, y no se llama nada que no hayas declarado:
@@ -439,6 +439,12 @@ no aplican a él, y sus propias reglas están en [Sockets y bytes del plugin](by
   reglas de hosts); cualquier otra cosa, un `mime` que no sea HLS incluido, se descarta y el resto de la
   respuesta sigue valiendo. Se ignora junto a `drm`, la `signing` por petición o `external`.
   [Detalles](resolver.md#portable).
+- `clockLive` (apiVersion 27, Kino 0.9.88; solo streams en vivo): en lugar de la dirección de una lista, el reloj de medios
+  de un CDN que nombra sus segmentos con él, con el que Kino arma la ventana en vivo él mismo. A su lado la `url` se ignora
+  (envía `""`, o la dirección que reproduce un Kino anterior), y también `alternatives` y lo que un canal en vivo nunca usa;
+  un `drm`, una firma por petición (`signing`) o un `external` a su lado rechazan el stream. Kino lo lee solo de un plugin
+  cuyo apiVersion efectivo es 27 (`enhancements["27"]` lo enciende sin subir el tuyo).
+  [En vivo por reloj](live-channels.md#clock-live).
 - **DRM solo si se declara.** Un stream que traiga cualquiera de `drm`, `license`, `licenseUrl`,
   `drmLicenseUrl`, `keySystem` o `widevine` se rechaza ("El video tiene DRM y los plugins no lo
   soportan") -- salvo que tu manifiesto declare la capacidad `drm` (apiVersion 2) y la única clave de

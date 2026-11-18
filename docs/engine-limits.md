@@ -93,6 +93,12 @@ Desde apiVersion 13 (Kino 0.9.74), además:
 | Ajuste `qr` | el texto de 1 a 512 caracteres; `refreshMs` de 2.000 a 60.000; cuenta entre los 16 ajustes que no guardan valor |
 | `storageLarge` | 16 MB en total, 2 MB por valor, 1.000 llaves de máximo 256 caracteres; solo en el aparato, nunca se sincroniza, no va en ninguna copia de seguridad |
 
+Desde Kino 0.9.88, también:
+
+| Qué | Límite |
+| --- | --- |
+| `clockLive` (apiVersion 27, solo streams en vivo) | `template` de como mucho 2.048 caracteres, con `{seg}`; `mediaCode` de 1 a 128 caracteres de `A-Z a-z 0-9 . _ ~ -`; `grid` de 1 a 16 pasos de 200 a 60.000 ms; `rate` de 500 a 2.000 (1.000 por defecto); `window.count` de 2 a 20 (6), `window.behind` de 0 a 20 (3); `reanchor.everySec` de 60 a 21.600 (1.200), `reanchor.probeSpan` de 0 a 12 (4); `segWidth` de 0 a 12 ([En vivo por reloj](live-channels.md#clock-live)) |
+
 ## Cómo vive tu código { #lifecycle }
 
 - **Una llamada a la vez.** Las llamadas a un mismo plugin corren una detrás de otra. El sandbox se
@@ -180,6 +186,11 @@ Lo que **no** puede copiar, así que un plugin puede pasar en el kit y aun así 
 
 Si algo se comporta en Kino distinto que en el kit, es una sonda por añadir: la lista de diferencias conocidas está en
 `plugins/sdk/test/engine-probes.known.json`, con una razón por línea.
+
+El kit todavía no modela [`clockLive`](live-channels.md#clock-live) (apiVersion 27): `run.mjs resolve` y
+`validate --run resolve` revisan la `url` normal del stream, así que una vacía falla ahí con "the video has an invalid
+address". Deja una `url` real al lado de `clockLive` mientras pruebas (un Kino anterior la necesita de todos modos) y prueba
+el reloj en Kino 0.9.88.
 
 ### El protocolo entre plugins: lo que solo revisa la app { #kit-protocol }
 

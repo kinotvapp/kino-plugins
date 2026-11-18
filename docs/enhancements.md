@@ -34,8 +34,9 @@ Otro ejemplo, con un trabajo en segundo plano:
 
 ### Cómo lo lee Kino { #merge }
 
-- **Las claves** son el `apiVersion` que trajo la función: hoy, `"14"`. Un Kino que conoce la clave mezcla su bloque sobre
-  el manifiesto, en orden numérico de claves. Una clave por encima del apiVersion de ese Kino se ignora.
+- **Las claves** son el `apiVersion` que trajo la función: `"14"` para las pantallas, `"20"`, `"21"`, `"22"`, `"23"` y
+  `"27"` para lo de más abajo. Un Kino que conoce la clave mezcla su bloque sobre el manifiesto, en orden numérico de claves.
+  Una clave por encima del apiVersion de ese Kino se ignora.
 - **`capabilities` se suman.** Solo se pueden agregar así `screen`, `library`, `playerPanelTab`, `playerControl`, `room`,
   `schedule`, `shared`, `ai`, [`files`](files.md) (clave `"21"`), [`progress`](progress.md) (clave `"22"`) y [`playerSlot`](player-slot.md) (clave `"23"`, con su bloque `slot`, que reemplaza el del manifiesto).
 - **`screen`, `settings` (la lista entera), `panel` y `jobs` reemplazan** los del manifiesto. `playerPanelTab` y un `panel`
@@ -44,7 +45,10 @@ Otro ejemplo, con un trabajo en segundo plano:
 - Después **todo se revisa con ese apiVersion**, con las mismas reglas que los campos normales:
   [`screen`](screens.md#manifest), [`jobs`](jobs-and-shared.md#jobs-manifest), [`panel`](player-panel.md#contributed-tab),
   las [capacidades](screens.md#consent).
-- **Tu `apiVersion` nunca se mueve**, así que nada más cambia de comportamiento.
+- **Tu `apiVersion` nunca se mueve**: lo que lo lee queda como estaba (Categorías, el límite de tus `secrets` sellados, las
+  reglas de tus otros campos). Lo que trae un bloque sigue en cambio tu **apiVersion efectivo**: tu `apiVersion`, o la clave
+  más alta que aplicó este Kino. Desde Kino 0.9.88 tu código lo lee en
+  [`kino.pluginApiVersion`](kino-api.md#plugin-api-version) (`undefined` antes).
 - **Clave `"20"` (Kino 0.9.81): `provides` y `consumes`**, el [protocolo entre plugins](protocol.md#versions). Reemplazan
   los del manifiesto y se revisan con las reglas del apiVersion 20: `"apiVersion": 7, "enhancements": { "20": { "provides": { … } } }`
   abre una puerta en Kino 0.9.81 y posteriores mientras el plugin se sigue instalando como siempre en todo Kino anterior (así
@@ -52,6 +56,11 @@ Otro ejemplo, con un trabajo en segundo plano:
 - **Clave `"20"`: `visualBrowser`** (`true`), la clave del manifest para [una ventana de navegador que la persona maneja](visual-browser.md). Reemplaza
   la del manifest y se revisa con las reglas del apiVersion 20, así que un plugin que conserva un `apiVersion` más bajo ofrece la ventana solo
   a un Kino que la tenga: `"enhancements": { "20": { "visualBrowser": true } }`. Revisa `kino.visualBrowser?.available` antes de usarla.
+- **Clave `"27"` (Kino 0.9.88), aunque esté vacía: `clockLive`.** Un campo de un stream también puede seguir el apiVersion
+  efectivo. `"enhancements": { "27": {} }` no le agrega nada a tu manifiesto, pero un Kino que lo aplica lee el campo
+  [`clockLive`](live-channels.md#clock-live) de tus streams en vivo; un Kino anterior ignora la clave y reproduce la `url` que
+  envías a su lado. Revisa `kino.pluginApiVersion >= 27` antes de enviar una `url` vacía
+  ([Conserva tu apiVersion](live-channels.md#clock-live-older)).
 
 ### Cuándo se descarta un bloque { #dropped }
 

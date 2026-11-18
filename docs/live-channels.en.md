@@ -8,6 +8,9 @@ There are two ways to give Kino live TV, and a plugin can do both:
   channel drawer and Home "Canales en vivo" row, given one by one or as an M3U playlist with an
   XMLTV guide that Kino downloads and parses itself.
 
+For a CDN whose segments a media clock names, a live stream can also hand Kino the clock instead of a playlist, and Kino
+builds the live window itself: [Live by clock](#clock-live) (apiVersion 27, Kino 0.9.88).
+
 Testing them with the Node kit is on [Test it locally](test-locally.md#live).
 
 ## Live channels (apiVersion 2) { #live-items }
@@ -253,6 +256,114 @@ export async function liveSearch({ query }) {
 
 Use the same `id` your `liveChannels` gives that channel. Test it with
 `node sdk/run.mjs . live search <query>` ([Test it locally](test-locally.md#live)).
+
+## Live by clock (`clockLive`, apiVersion 27) { #clock-live }
+
+!!! note "Available from Kino 0.9.88"
+    Kino 0.9.88 is the first to read `clockLive`, and only from a plugin whose feature apiVersion is 27: declare
+    `"apiVersion": 27`, or keep yours and add `"enhancements": { "27": {} }` ([below](#clock-live-older)). An older Kino
+    ignores the field.
+
+Some live CDNs name their segments by a **media clock**: a channel's segment is `.../{code}/{code}_<n>.ts`, where `<n>` is
+the segment's start on the media clock, in ms, and grows by a fixed, repeating series of durations from a known instant.
+When such a CDN is open (no DRM, no per-request signature), a `live` stream can hand Kino the **clock** instead of a
+playlist, and Kino builds the sliding live window **itself**, on its own local proxy, again on every playlist refresh of
+the player. No plugin call runs while the channel plays and Kino never downloads a playlist from the CDN: the player pulls
+each segment straight from the CDN, over the viewer's own connection.
+
+It is a field of a `live` stream (what `resolve` returns for a channel or a `live` item, or a channel's inline `stream`):
+
+```js
+export async function resolve(ref) {
+  const ch = await findChannel(ref); // your own lookup: the channel's code and where its clock stands
+  return {
+    url: ch.fallbackUrl,             // ignored by Kino 0.9.88; what an older Kino plays (see below)
+    mime: "application/vnd.apple.mpegurl",
+    clockLive: {
+      template: "https://cdn.example.com/live/{mc}/{mc}_{seg}.ts",
+      mediaCode: ch.code,            // fills every {mc}
+      grid: [4004, 6006],            // the repeating segment durations, in ms
+      anchor: { t: ch.anchorTimeMs, s: ch.anchorSegment, firstStep: 0 },
+      window: { count: 6, behind: 3 },            // optional; the defaults
+      reanchor: { everySec: 1200, probeSpan: 4 }  // optional; the defaults
+    }
+  };
+}
+```
+
+The fields (types in [`kino.d.ts`](reference/index.md), `KinoClockLive`; ranges in `contract.json`, `output.clockLive`):
+
+| Field | What it is | Rules |
+| --- | --- | --- |
+| `template` | the address of one segment | required; `{seg}` required, may repeat; `{mc}` optional; any other `{…}` refuses the stream (a typo is never fetched); at most 2,048 characters; its host is checked like a channel's `url` |
+| `mediaCode` | what replaces every `{mc}` | required when the template uses `{mc}`; `^[A-Za-z0-9._~-]{1,128}$` (no slash: it cannot change the host or the path) |
+| `grid` | the repeating segment durations, in ms | required; 1 to 16 whole numbers of 200 to 60,000: `[4004, 6006]` is 4004 ms, then 6006 ms, then again |
+| `anchor` | `{ t, s, firstStep? }`: at epoch `t` (ms, UTC) the segment numbered `s` begins, at position `firstStep` of `grid` | `t` and `s` required (whole numbers, `t` positive); `firstStep` counts from 0, default 0, out of range read as 0 |
+| `rate` | ms of media per 1,000 ms of wall clock | default 1,000; clamped to 500..2,000 |
+| `window` | `{ count?, behind? }`: the window lists `count` segments ending `behind` segments before the live edge | `count` default 6 (2..20), `behind` default 3 (0..20); clamped |
+| `reanchor` | `{ everySec?, probeSpan? }`: how often Kino pins the edge again on real segments, and how far it looks each way | `everySec` default 1,200 (60..21,600), `probeSpan` default 4 (0..12); clamped |
+| `segWidth` | zero padding for `{seg}` | 0 to 12, default 0 (`000042` is width 6) |
+
+A segment's number (`{seg}`) is its start on the media clock, in ms: with `grid` `[4004, 6006]` and an `anchor.s` of
+`1180000`, the next segments are `1184004`, `1190010`, `1194014`… `rate` matters when the series drifts from the wall
+clock, for example the NTSC 1001/1000 rate that makes `[4004, 6006]` add up to 10,010 ms.
+
+**Structure and tuning.** Whatever could place the window wrong or fetch an address you did not mean (a bad `grid`, a
+`template` without `{seg}` or with an unknown placeholder, a `{mc}` without a `mediaCode`, a bad `anchor`, a host the
+rules refuse) **refuses the stream**. Every tuning knob (`rate`, `window`, `reanchor`, `segWidth`, `firstStep`) is brought
+into its range or to its default, and logged; it never refuses.
+
+**Hosts.** Every segment address (the template with its placeholders filled) is checked exactly like a channel's `url`:
+on one of your `hosts`, or under [`liveStreamHosts: "any"`](#live-stream-hosts) (with `channels`) or
+[`streamHosts: "any"`](manifest.md#stream-hosts); never the home network.
+
+**What Kino does with it.**
+
+- Before the channel starts, Kino asks the CDN for a few real segments around where the clock puts the live edge. A
+  channel none of whose segments answer counts as off the air: the person reads that it is not available, and the player
+  gets no playlist.
+- While it plays, Kino pins the edge again every `reanchor.everySec` seconds (every 20 minutes by default, also when you
+  leave `reanchor` out), so a drifting clock never builds up.
+- The window is at least as long as the player needs to start safely behind the edge: Kino may list more segments than
+  your `window.count` (at most 20).
+- Kino's requests to the CDN draw on one budget shared by every channel, so no plugin can make Kino flood a CDN.
+
+**What it ignores.** With `clockLive`, `url` is ignored, and so are `alternatives` and what a live channel never uses
+(`audioTracks`, `durationMs`, `skip`, `expiresInSeconds`); the stream always plays as HLS. A `drm`, a request `signing` or
+an `external` hand-off beside it **refuses** the stream. `headers` and `subtitles` still apply to every request the player
+makes. On a stream that is not live (a movie, an episode) Kino ignores the field, so an empty `url` there is refused.
+
+### Keep your apiVersion: `enhancements["27"]` { #clock-live-older }
+
+`"apiVersion": 27` makes every Kino before 0.9.88 refuse your whole plugin. Kino reads `clockLive` from your **feature
+apiVersion** (your `apiVersion`, or the highest `enhancements` key it applied), so keep your base and add an empty block:
+
+```json
+{
+  "id": "my-channels", "name": "My channels", "version": "2.1.0", "apiVersion": 6, "entry": "plugin.js",
+  "hosts": ["api.example.com", "cdn.example.com"],
+  "capabilities": ["home", "resolve", "channels"],
+  "enhancements": { "27": {} }
+}
+```
+
+A Kino with `clockLive` applies the block and reads the field; an older one ignores the key and plays the `url` you send
+beside `clockLive`. To know at run time whether this Kino will read it, check
+[`kino.pluginApiVersion`](kino-api.md#plugin-api-version):
+
+```js
+const clock = typeof kino.pluginApiVersion === "number" && kino.pluginApiVersion >= 27;
+return clock
+  ? { url: "", mime: "application/vnd.apple.mpegurl", clockLive: { /* ... */ } }
+  : { url: await playlistUrlFor(ref), mime: "application/vnd.apple.mpegurl" };
+```
+
+Check `kino.pluginApiVersion`, not `kino.apiVersion`: on Kino 0.9.88 `kino.apiVersion` is 27 for every plugin, but Kino
+reads `clockLive` only from a plugin whose own feature apiVersion is 27. An `"apiVersion": 6` plugin without the block
+would send an empty `url`, which Kino refuses.
+
+The Node kit does not model `clockLive` yet: `run.mjs resolve` checks the plain `url`, so keep a real `url` beside it while
+you test, and try the clock itself on Kino 0.9.88 ([What the kit cannot copy](engine-limits.md#kit-differences)).
 
 ## Three recipes (apiVersion 3) { #recipes }
 
