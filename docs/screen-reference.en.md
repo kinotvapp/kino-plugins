@@ -380,7 +380,8 @@ jump; an animation never delays a press or focus; at most 24 animating nodes a s
 
 Not in this version: pull-to-refresh, segmented buttons, autocomplete and combo boxes, date and time pickers, a range
 slider, a rating, dismissible and reorderable list items, rich text, charts, continue-watching and channel cards and file
-inputs. Feature-detect a widget a newer Kino adds with `kino.screen.names.includes("DataTable")`.
+inputs. Feature-detect a widget a newer Kino adds with `kino.screen.names.includes("DataTable")`, and http pictures with
+`kino.screen.httpImages === true` (Kino 0.9.88, [http pictures](screen-components.md#http-pictures)).
 
 ### Limits { #limits }
 

@@ -194,7 +194,7 @@ Kino's own texts are always its own; yours take an English twin with the `En` su
 | `SingleChildScrollView` | `scroll` | its children, scrolling | `direction` |  |
 | `GridView` | `grid` | its children in `columns` | `columns` |  |
 | `Text` | `text` | plain text (`text`, `textEn`) | `style`, `maxLines`, `bold`, `time`, `timeFormat` |  |
-| `Image` | `image` | an https picture on a public host (`url`, `alt`, `fallback`) | `aspect` |  |
+| `Image` | `image` | a picture on a public host: https, or http where `kino.screen.httpImages` is true (`url`, `alt`, `fallback`) | `aspect` |  |
 | `Icon` | `icon` | one of Kino's icons (`name`) |  |  |
 | `Badge` | `badge` | a small label (`text`) |  |  |
 | `LinearProgressIndicator` | `progress` | a progress bar (`value`, `labelText`) |  |  |
@@ -242,6 +242,8 @@ replaces or covers ([Scaffold](screen-components.md#scaffold)).
 An unknown `type` is dropped with a log line and the rest is drawn. **Feature-detect before you rely on a widget a newer
 Kino adds**: `kino.screen.names` lists the type names this Kino draws as this guide spells them, `kino.screen.widgets` the
 same by their older names, and `kino.screen.version` is the screen contract's own number (1 for now).
+`kino.screen.httpImages === true` says this Kino draws http pictures on a public host (Kino 0.9.88, [http
+pictures](screen-components.md#http-pictures)).
 
 ```js
 const has = (name) => typeof kino.screen === "object" && kino.screen.names.includes(name);
@@ -360,7 +362,8 @@ A card grid, one card per line on a phone, two on a medium window, three on a TV
 })) }
 ```
 
-An `Image` takes only https URLs on a public host (no declaration needed, as every image in Kino). Its `fallback` is one
+An `Image` takes https URLs on a public host (no declaration needed, as every image in Kino), and from Kino 0.9.88 http ones
+on a public host too ([http pictures](screen-components.md#http-pictures)). Its `fallback` is one
 node drawn in the image's box when the picture fails or there is no `url` (with a fallback, an image whose `url` is missing
 or refused is kept): only `Column`, `Row`, `Stack`, `Card`, `Spacer`, `SizedBox`, `Divider`, `Text`, `Icon`, `Badge`,
 `Skeleton` and `Image`, at any depth, and nothing in it is pressed. Without one a failed picture shows Kino's mark
@@ -517,12 +520,13 @@ until the person acts.
 
 **Kino's own components** take data, never styling, in the very shape a `home` or `browse` row returns (`KinoItem`: `id`,
 `ref`, `title`, `kind`, `poster`, `backdrop`, `year`, `rating`, `badges`, `progress`, `adult`), read by the same rules: a
-series needs your `episodes` capability, posters and backdrops are https only (else Kino's placeholder), and 18+ items show
+series needs your `episodes` capability, posters and backdrops are https, or http on a public host where
+`kino.screen.httpImages` is true (else Kino's placeholder), and 18+ items show
 only while the person's 18+ code is unlocked.
 
 - `titleCard` (one Home poster card; `size` small, medium or large), `titleRail` (a Home row with a `title` and, with a
   `ref`, its "Ver más"), `titleGrid` (cards in `columns`, default 3), `heroCard` (a section's banner: `title`, `text`, an
-  https `image`, at most 2 buttons). See [titleCard](screen-components.md#title-card),
+  `image` and a title `logo`, https or, where `kino.screen.httpImages`, http on a public host, at most 2 buttons). See [titleCard](screen-components.md#title-card),
   [titleRail](screen-components.md#title-rail), [titleGrid](screen-components.md#title-grid) and
   [heroCard](screen-components.md#hero-card).
 - A card's tap opens its title the way Home's card does, with that very item, so "Continuar viendo", the saved lists and

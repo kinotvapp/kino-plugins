@@ -689,7 +689,9 @@ profile other than the active one. Errors: `not_allowed`, `bad_request`, `too_la
 What this Kino's screen canvas draws, for feature detection: `kino.screen.names` (the node types as this guide spells
 them, `Column`, `TextField`, `titleRail`...), `kino.screen.widgets` (the same by their older names) and
 `kino.screen.version` (the screen contract's own number, 1 for now). `undefined` on an older Kino. See
-[Screens](screens.md).
+[Screens](screens.md). `kino.screen.httpImages` (Kino 0.9.88, no new `apiVersion`) is `true` when this Kino draws a screen's
+pictures over http on a public host too, as it draws a poster; `undefined` before, where they are https only
+([http pictures](screen-components.md#http-pictures)).
 
 ## `kino.library`, `kino.room`, `kino.ai` and `kino.shared` (apiVersion 14, Kino 0.9.74) { #api14 }
 

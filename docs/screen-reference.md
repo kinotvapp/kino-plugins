@@ -402,7 +402,8 @@ y queda en el registro).
 No están en esta versión: deslizar para actualizar, botones segmentados, autocompletado y cuadros combinados, selectores de
 fecha y hora, un control deslizante de rango, una calificación, elementos de lista que se descartan o se reordenan, texto
 enriquecido, gráficos, tarjetas de «seguir viendo» y de canales, y entradas de archivo. Detecta un componente que agregue un
-Kino más nuevo con `kino.screen.names.includes("DataTable")`.
+Kino más nuevo con `kino.screen.names.includes("DataTable")`, y las imágenes http con `kino.screen.httpImages === true`
+(Kino 0.9.88, [imágenes http](screen-components.md#http-pictures)).
 
 ### Límites { #limits }
 

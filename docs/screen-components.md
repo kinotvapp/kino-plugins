@@ -1023,8 +1023,8 @@ La burbuja propia de un chat, como mucho de tres cuartos de ancho, con la esquin
 
 ### Image { #image }
 
-Una imagen desde una dirección https pública (no hace falta declarar el host, como para toda imagen en Kino). `aspect`
-fija la forma de la caja; `fallback` es un nodo que se dibuja en esa caja cuando la imagen falla o no hay `url`, así un
+Una imagen desde una dirección https pública (no hace falta declarar el host, como para toda imagen en Kino), o desde una
+http pública en un Kino que dice `kino.screen.httpImages` ([imágenes http](#http-pictures)). `aspect` fija la forma de la caja; `fallback` es un nodo que se dibuja en esa caja cuando la imagen falla o no hay `url`, así un
 feed roto nunca muestra un hueco.
 
 ![Image en un celular](assets/ui/image-phone.png)
@@ -1032,12 +1032,12 @@ feed roto nunca muestra un hueco.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
-| `url` | URL https | obligatorio sin `fallback` | no | un host https público (no hace falta declararlo), o `data:image/png\|jpeg\|webp\|gif;base64,…` de 200.000 caracteres como máximo (una imagen que tú tienes, como la portada de un libro; nunca svg; un Kino anterior dibuja el `fallback`); con un `fallback`, sin `url` se dibuja el fallback (también con una vacía o rechazada, con registro) |
+| `url` | URL | obligatorio sin `fallback` | no | un host https público (no hace falta declararlo), http en un host público donde `kino.screen.httpImages` ([imágenes http](#http-pictures)), o `data:image/png\|jpeg\|webp\|gif;base64,…` de 200.000 caracteres como máximo (una imagen que tú tienes, como la portada de un libro; nunca svg; un Kino anterior dibuja el `fallback`); con un `fallback`, sin `url` se dibuja el fallback (también con una vacía o rechazada, con registro) |
 | `alt` | string | ninguno | no | lo que dice un lector de pantalla (`altEn` el de inglés) |
 | `aspect` | `16:9` \| `2:3` \| `1:1` \| `banner` \| `w:h` | el de la imagen | sí | la forma de la caja; `w:h` es cualquier ancho sobre alto de 0,2 a 5, como `1.4:1` o `900:1300` |
 | `fit` | `cover` \| `contain` \| `width` | `cover` | sí | cómo se acomoda la imagen en su caja: `cover` llena y recorta, `contain` la muestra entera, `width` toma el ancho y el alto propio de la imagen (el `aspect`, o 2:3, guarda su lugar hasta que carga) |
 | `focus` | `top` \| `center` \| `bottom` | `center` | sí | la parte de la imagen que se conserva cuando `cover` la recorta |
-| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | los encabezados con los que se pide la imagen, para un sitio que solo responde a su propia página: solo `Referer` (una dirección https) y `User-Agent`, cada uno un texto de hasta 512 caracteres; se envían solo cuando el host de la imagen está en los `hosts` de tu manifiesto (y también el del Referer); un Kino anterior la pide sin ellos ([Imágenes que necesitan un Referer](#image-headers)) |
+| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | los encabezados con los que se pide la imagen, para un sitio que solo responde a su propia página: solo `Referer` (una dirección https) y `User-Agent`, cada uno un texto de hasta 512 caracteres; se envían solo con una imagen https cuyo host está en los `hosts` de tu manifiesto (y también el del Referer), nunca con una http; un Kino anterior la pide sin ellos ([Imágenes que necesitan un Referer](#image-headers)) |
 | `fallback` | nodo | ninguno | no | se dibuja en la caja de la imagen cuando la imagen falla o no hay `url`: solo `Column`, `Row`, `Stack`, `Card`, `Spacer`, `Divider`, `Text`, `Icon`, `Badge`, `Skeleton`, `Image`, a cualquier profundidad, nunca se pulsa |
 
 ```json
@@ -1059,6 +1059,30 @@ export async function screen({ state }) {
 la imagen, así una página o una tira larga nunca se corta. Con `width`, el `aspect` (cualquier `w:h`, como `"1.4:1"`) solo
 guarda el lugar hasta que la imagen carga. `focus` (`top`, `center`, `bottom`) elige la parte que se conserva cuando `cover`
 recorta.
+
+#### Imágenes http { #http-pictures }
+
+!!! note "Disponible desde Kino 0.9.88"
+    Aditivo, sin `apiVersion` nuevo. Kino 0.9.87 y anteriores mantienen una pantalla solo en https y descartan una imagen http
+    (una `Image` dibuja su `fallback`, un `CircleAvatar` sus iniciales, un banner queda sin imagen, una tarjeta muestra el
+    marcador de lugar de Kino).
+
+Cada imagen de una pantalla también puede ser **http en un host público**, exactamente con la regla de un póster del Inicio:
+la `url` de una `Image`, la `image` y el `logo` de un `heroCard`, la `image` de un `CircleAvatar`, y el `poster` y el
+`backdrop` de cada elemento de `titleCard`, `titleRail` y `titleGrid` (también en un panel del reproductor hecho con los
+componentes de pantalla). Los paneles de IPTV entregan los logos de sus canales por http, así una rejilla de canales los
+muestra en lugar de las iniciales. Nunca la red de la casa, una dirección IP privada, local o reservada, `localhost`, un nombre
+local ni (por http) un nombre sin punto: esos se siguen descartando, con registro. Nada más se afloja: los `headers` van solo
+con una imagen https, un enlace (`go.url`) sigue siendo solo https, y una imagen `data:` conserva su propia regla. Revisa
+primero la bandera:
+
+```js
+// Un Kino anterior descarta un logo http: déjalo afuera ahí y se ven las iniciales.
+const logo = canal.logo.startsWith("https://") || kino.screen.httpImages === true ? canal.logo : undefined;
+return { type: "CircleAvatar", ...(logo ? { image: logo } : {}), text: canal.iniciales, labelText: canal.nombre };
+```
+
+El kit de Node dice `kino.screen.httpImages === true`, así una corrida del kit muestra lo que dibuja Kino 0.9.88.
 
 #### Imágenes que necesitan un Referer { #image-headers }
 
@@ -1085,15 +1109,30 @@ los encabezados que pide el sitio:
   patrón `*.example.com` cuenta), y el `Referer` solo cuando su propio host también está declarado (si no, se omite solo el
   `Referer`): un plugin no puede hacer que Kino presente una página falsa a un sitio que nunca nombró. Una imagen de un host
   público no declarado igual carga, sin tus encabezados.
-- **Una `url` https.** Una imagen `data:` no lleva encabezados. Sin `User-Agent`, Kino envía `Kino/<versión>`.
+- **Una `url` https.** Una imagen `data:` no lleva encabezados, y una [http](#http-pictures) siempre se pide sin ellos. Sin
+  `User-Agent`, Kino envía `Kino/<versión>`.
 - **La descarga Kino.** La imagen se sigue descargando en Kino (en caché, cuatro a la vez), no a través de tu código, así que
   no tiene más límite de tamaño que el de la caché de imágenes.
 - **No va por tamaño.** Un solo objeto `headers` para todos los tamaños.
 
+Las tarjetas y el banner aceptan los mismos `headers` (aditivo, Kino 0.9.83): en `titleCard`, `titleRail`, `titleGrid` y
+`heroCard` se aplican a **cada imagen https del nodo** (el `poster` y el `backdrop` de cada elemento; la `image` y el `logo`
+del héroe), con las mismas reglas: solo para hosts de los `hosts` de tu manifiesto, un `Referer` solo en un host declarado, de
+1 a 512 caracteres. Los encabezados son del nodo, no de un elemento. Las filas clásicas (los pósters de una fila de `home` o de
+una búsqueda) todavía no los aceptan.
+
+```json
+{ "type": "titleRail", "title": "Nuevos",
+  "items": [{ "id": "m1", "ref": "title/m1", "title": "Un manga", "kind": "movie", "poster": "https://img.mangasite.example/m1.jpg" }],
+  "headers": { "Referer": "https://mangasite.example/" } }
+```
+
 - **TV:** una imagen no recibe el foco salvo que ella (o lo que la contiene) tenga una acción.
 - **Celular y TV:** igual.
-- **Límites y errores:** `http://` y las direcciones privadas se rechazan (sin fallback el nodo se descarta; con uno se
-  dibuja el fallback, y una `url` presente pero vacía o rechazada queda en el registro: omite `url` cuando no la hay).
+- **Límites y errores:** las direcciones privadas y locales se rechazan, y también `http://` en Kino 0.9.87 y anteriores
+  (desde Kino 0.9.88 una imagen http en un host público se dibuja: [imágenes http](#http-pictures)). Sin fallback, un nodo
+  rechazado se descarta; con uno se dibuja el fallback, y una `url` presente pero vacía o rechazada queda en el registro: omite
+  `url` cuando no la hay.
   El fallback solo acepta nodos simples (`Column`, `Row`, `Stack`, `Card`, `Spacer`, `SizedBox`, `Divider`, `Text`,
   `Icon`, `Badge`, `Skeleton`, `Image`) y nada dentro de él se pulsa. Sin fallback, una imagen que falla muestra la marca
   de Kino.
@@ -1228,14 +1267,15 @@ export async function screen({ state }) {
 
 ### CircleAvatar { #circle-avatar }
 
-El `CircleAvatar` de Flutter: un círculo de `radius` dp en un rol de color que contiene una imagen (https, por la cadena
-de imágenes propia de Kino y sus reglas de hosts), si no unas iniciales (como mucho tres caracteres), si no un icono (la
+El `CircleAvatar` de Flutter: un círculo de `radius` dp en un rol de color que contiene una imagen (https, o http donde
+`kino.screen.httpImages` lo dice: [imágenes http](#http-pictures); por la cadena de imágenes propia de Kino y sus reglas de
+hosts), si no unas iniciales (como mucho tres caracteres), si no un icono (la
 persona de Kino por defecto). Una imagen que falla muestra las iniciales. Siempre es un círculo: no acepta
 `borderRadius` (su `radius` es un número). Un lector de pantalla dice su `labelText`, si no sus iniciales.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
-| `image` | URL https | ninguno | no | una imagen https pública, por la cadena de imágenes de Kino; si falla, las iniciales |
+| `image` | URL | ninguno | no | una imagen https pública, o http en un host público donde `kino.screen.httpImages` ([imágenes http](#http-pictures)), por la cadena de imágenes de Kino; si falla, las iniciales |
 | `text` | string | ninguno | no | iniciales, como mucho 3 caracteres (`textEn`) |
 | `icon` | un nombre de icono de Kino | `person` | no | sin imagen ni iniciales |
 | `radius` | de 12 a 64 (dp) | `20` | sí | siempre un círculo: un `CircleAvatar` no acepta `borderRadius` |
@@ -1576,8 +1616,9 @@ vuelve a abrir tu pantalla en su lugar.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |
-| `item` | `KinoItem` | obligatorio | no | la forma que devuelve una fila de `home` (`id`, `ref`, `title`, `kind`, `poster`...); una serie necesita tu capacidad `episodes` |
+| `item` | `KinoItem` | obligatorio | no | la forma que devuelve una fila de `home` (`id`, `ref`, `title`, `kind`, `poster`...); una serie necesita tu capacidad `episodes`; `poster` y `backdrop` https, o http en un host público donde `kino.screen.httpImages` ([imágenes http](#http-pictures)) |
 | `size` | `small` \| `medium` \| `large` | `medium` | sí | uno de los tres tamaños de Kino |
+| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | aditivo, sin apiVersion nuevo (Kino 0.9.83): los encabezados con los que se pide cada imagen https del nodo (el póster y el fondo de cada elemento, la imagen y el logo del héroe; nunca una http), con las mismas reglas que los [headers](#image-headers) de una `Image` |
 
 ```json
 { "type": "titleCard", "size": "medium", "item": { "id": "bbb", "ref": "bbb", "title": "Big Buck Bunny", "kind": "movie", "year": 2008, "poster": "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg" } }
@@ -1593,7 +1634,8 @@ export async function screen() {
 - **TV:** recibe el foco como las tarjetas del Inicio.
 - **Celular y TV:** la propia tarjeta del Inicio en cada uno.
 - **Límites y errores:** se lee con las reglas del Inicio: una `series` necesita tu capacidad `episodes`, los pósters
-  son solo https (si no, el marcador de lugar de Kino), un elemento 18+ solo se muestra mientras el código 18+ de la
+  son https, o http en un host público donde `kino.screen.httpImages` ([imágenes http](#http-pictures)) (si no, el marcador
+  de lugar de Kino), un elemento 18+ solo se muestra mientras el código 18+ de la
   persona está desbloqueado. Como mucho 1.000 títulos por árbol.
 
 ### titleRail { #title-rail }
@@ -1610,6 +1652,7 @@ La forma de darle a una pantalla el aspecto del Inicio propio de Kino.
 | `items` | `KinoItem[]` | obligatorio | no | de 1 a 500 (60 cuando se dibuja todo de una vez) |
 | `ref` | string | ninguno | no | con él, el «Ver más» de la fila abre tu `browse` (como mucho 4.096 caracteres) |
 | `size` | `small` \| `medium` \| `large` | `medium` | sí | uno de los tres tamaños de Kino |
+| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | aditivo, sin apiVersion nuevo (Kino 0.9.83): los encabezados con los que se pide cada imagen https del nodo (el póster y el fondo de cada elemento, la imagen y el logo del héroe; nunca una http), con las mismas reglas que los [headers](#image-headers) de una `Image` |
 | `onEndReached` | `{ event, arg? }` | ninguno | no | se envía una vez cuando el último elemento entra en la vista, y de nuevo solo después de que tu respuesta dibujó una lista más larga (o `loadingMore` pasó de true a false); nunca más de una vez por segundo |
 | `loadingMore` | boolean | `false` | no | `true` dibuja el indicador de carga de Kino después de los elementos |
 | `done` | boolean | `false` | no | `true` deja de pedir más |
@@ -1643,6 +1686,7 @@ Tarjetas del Inicio en una rejilla de `columns` (3 por defecto): una página de 
 | --- | --- | --- | --- | --- |
 | `items` | `KinoItem[]` | obligatorio | no | de 1 a 500 (60 cuando se dibuja todo de una vez) |
 | `columns` | de 1 a 8 | `3` | sí |  |
+| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | aditivo, sin apiVersion nuevo (Kino 0.9.83): los encabezados con los que se pide cada imagen https del nodo (el póster y el fondo de cada elemento, la imagen y el logo del héroe; nunca una http), con las mismas reglas que los [headers](#image-headers) de una `Image` |
 | `onEndReached` | `{ event, arg? }` | ninguno | no | se envía una vez cuando el último elemento entra en la vista, y de nuevo solo después de que tu respuesta dibujó una lista más larga (o `loadingMore` pasó de true a false); nunca más de una vez por segundo |
 | `loadingMore` | boolean | `false` | no | `true` dibuja el indicador de carga de Kino después de los elementos |
 | `done` | boolean | `false` | no | `true` deja de pedir más |
@@ -1678,8 +1722,9 @@ página de inicio.
 | --- | --- | --- | --- | --- |
 | `title` | string | obligatorio | no | `titleEn` el de inglés |
 | `text` | string | ninguno | no | `textEn` |
-| `image` | URL https | ninguno | no | una imagen https pública |
-| `logo` | URL https | ninguno | no | aditivo, sin apiVersion nuevo: el logo del título (una imagen https pública) dibujado donde va el texto del título cuando carga; el texto sigue nombrándolo para un lector de pantalla y se ve si el logo no carga |
+| `image` | URL | ninguno | no | una imagen https pública, o http en un host público donde `kino.screen.httpImages` ([imágenes http](#http-pictures)) |
+| `logo` | URL | ninguno | no | aditivo, sin apiVersion nuevo: el logo del título (una imagen pública, como `image`) dibujado donde va el texto del título cuando carga; el texto sigue nombrándolo para un lector de pantalla y se ve si el logo no carga |
+| `headers` | `{ Referer?, User-Agent? }` | ninguno | no | aditivo, sin apiVersion nuevo (Kino 0.9.83): los encabezados con los que se pide cada imagen https del nodo (el póster y el fondo de cada elemento, la imagen y el logo del héroe; nunca una http), con las mismas reglas que los [headers](#image-headers) de una `Image` |
 | `h` | un tamaño de la escala | el de Kino (240 dp, 320 en TV) | sí | aditivo, sin apiVersion nuevo: la altura del banner; sirve un mapa por tamaño (`{ "compact": 200, "expanded": 240 }`) |
 | `buttons` | nodos de botón | ninguno | no | como mucho 2 |
 
@@ -1699,7 +1744,7 @@ export async function screen() {
 ```
 
 - **Límites y errores:** como mucho 2 botones (el resto se descarta, con registro), solo botones; una imagen `http` se
-  descarta.
+  descarta en Kino 0.9.87 y anteriores.
 
 ## Acciones { #actions }
 

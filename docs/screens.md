@@ -206,7 +206,7 @@ Los textos de Kino son siempre suyos; los tuyos llevan un gemelo en inglés con 
 | `SingleChildScrollView` | `scroll` | sus hijos, con desplazamiento | `direction` |  |
 | `GridView` | `grid` | sus hijos en `columns` | `columns` |  |
 | `Text` | `text` | texto simple (`text`, `textEn`) | `style`, `maxLines`, `bold`, `time`, `timeFormat` |  |
-| `Image` | `image` | una imagen https en un host público (`url`, `alt`, `fallback`) | `aspect` |  |
+| `Image` | `image` | una imagen en un host público: https, o http donde `kino.screen.httpImages` es true (`url`, `alt`, `fallback`) | `aspect` |  |
 | `Icon` | `icon` | uno de los íconos de Kino (`name`) |  |  |
 | `Badge` | `badge` | una etiqueta pequeña (`text`) |  |  |
 | `LinearProgressIndicator` | `progress` | una barra de progreso (`value`, `labelText`) |  |  |
@@ -254,7 +254,8 @@ ningún plugin reemplaza ni tapa ([Scaffold](screen-components.md#scaffold)).
 Un `type` desconocido se descarta con una línea en el registro y el resto se dibuja. **Revisa que exista un widget antes
 de depender de uno que agrega un Kino más nuevo**: `kino.screen.names` lista los nombres de tipo que dibuja este Kino tal
 como los escribe esta guía, `kino.screen.widgets` los mismos con sus nombres anteriores, y `kino.screen.version` es el
-número propio del contrato de pantallas (1 por ahora).
+número propio del contrato de pantallas (1 por ahora). `kino.screen.httpImages === true` dice que este Kino dibuja imágenes
+http en un host público (Kino 0.9.88, [imágenes http](screen-components.md#http-pictures)).
 
 ```js
 const has = (name) => typeof kino.screen === "object" && kino.screen.names.includes(name);
@@ -380,7 +381,8 @@ Una cuadrícula de tarjetas, una por línea en un celular, dos en una ventana me
 })) }
 ```
 
-Una `Image` solo acepta URL https en un host público (sin declararlo, como toda imagen en Kino). Su `fallback` es un nodo
+Una `Image` acepta URL https en un host público (sin declararlo, como toda imagen en Kino), y desde Kino 0.9.88 también http
+en un host público ([imágenes http](screen-components.md#http-pictures)). Su `fallback` es un nodo
 que se dibuja en la caja de la imagen cuando la imagen falla o no hay `url` (con un `fallback`, una imagen cuya `url` falta
 o se rechaza se conserva): solo `Column`, `Row`, `Stack`, `Card`, `Spacer`, `SizedBox`, `Divider`, `Text`, `Icon`,
 `Badge`, `Skeleton` e `Image`, a cualquier profundidad, y nada adentro se puede tocar. Sin él, una imagen que falla muestra
@@ -547,12 +549,13 @@ achica no vuelve a preguntar hasta que la persona haga algo.
 
 **Los componentes propios de Kino** reciben datos, nunca estilo, con la misma forma que devuelve una fila de `home` o
 `browse` (`KinoItem`: `id`, `ref`, `title`, `kind`, `poster`, `backdrop`, `year`, `rating`, `badges`, `progress`,
-`adult`), leídos con las mismas reglas: una serie necesita tu capacidad `episodes`, los pósters y fondos son solo https (si
-no, el marcador de Kino), y los elementos 18+ solo se ven mientras el código 18+ de la persona está desbloqueado.
+`adult`), leídos con las mismas reglas: una serie necesita tu capacidad `episodes`, los pósters y fondos son https, o http
+en un host público donde `kino.screen.httpImages` es true (si no, el marcador de Kino), y los elementos 18+ solo se ven mientras el código 18+ de la persona está desbloqueado.
 
 - `titleCard` (una tarjeta de póster de Inicio; `size` small, medium o large), `titleRail` (una fila de Inicio con un
   `title` y, con un `ref`, su "Ver más"), `titleGrid` (tarjetas en `columns`, 3 por defecto), `heroCard` (el banner de una
-  sección: `title`, `text`, una `image` https, máximo 2 botones). Ver [titleCard](screen-components.md#title-card),
+  sección: `title`, `text`, una `image` y un `logo` del título, https o, donde `kino.screen.httpImages`, http en un host
+  público, máximo 2 botones). Ver [titleCard](screen-components.md#title-card),
   [titleRail](screen-components.md#title-rail), [titleGrid](screen-components.md#title-grid) y
   [heroCard](screen-components.md#hero-card).
 - El toque de una tarjeta abre su título como lo hace la tarjeta de Inicio, con ese mismo elemento, así que "Continuar

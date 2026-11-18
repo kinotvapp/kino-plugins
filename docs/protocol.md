@@ -427,8 +427,9 @@ de pantalla**: `apiVersion` 20 o mayor, un `consumes` no vacío y `capabilities`
 - Sin host, sus propias llamadas a `kino.fetch` se rechazan, salvo que declare `"fetchHosts": "any"` (entonces pueden llegar a
   cualquier host https público, y su hoja de instalación lo dice en rojo) o tenga un ajuste `url`, solo o como campo de una
   `list` (los servidores que escribe la persona). Sin una capacidad de fuente, no es una fuente.
-- Dibujar una imagen **no** necesita declarar su host: una `Image` acepta cualquier dirección https pública
-  ([Image](screen-components.md#image): no hace falta declarar el host, como con toda imagen en Kino). Los pósters que te da un
+- Dibujar una imagen **no** necesita declarar su host: una `Image` acepta cualquier dirección https pública, y desde Kino
+  0.9.88 una http pública donde `kino.screen.httpImages` es true ([Image](screen-components.md#image): no hace falta declarar
+  el host, como con toda imagen en Kino). Los pósters que te da un
   proveedor (el `posterUrl` de TMDB) se dibujan sin `image.tmdb.org` en tu manifiesto.
 - Con `"hosts": []` **y ningún ajuste**, su tarjeta en Plugins dice que no se conecta a internet. Cualquier ajuste lo descarta
   (una dirección escrita es un servidor, y lo que escribe la persona podría salir con la dirección de una imagen). Sigue siendo
@@ -442,13 +443,14 @@ de pantalla**: `apiVersion` 20 o mayor, un `consumes` no vacío y `capabilities`
   host que no es cierto. `node sdk/init.mjs … --kind consumer` escribe `"hosts": []` (o el host que le pases con `--host`), y
   `node sdk/validate.mjs .` avisa (`!`, igual lo acepta) con `example.com`, `*.example.com`, `example.org`, `example.net` y todo
   lo que termine en `.test`, `.invalid` o `.example`. A un consumidor solo de pantalla el aviso le dice `hosts: "example.com" is
-  a placeholder host; a screen-only consumer needs no host: declare none ("hosts": []); its pictures from public https
-  addresses need no declaration (see …)`; a cualquier otro plugin, `… is a placeholder host; declare a host the plugin really
+  a placeholder host; a screen-only consumer needs no host: declare none ("hosts": []); its pictures from public addresses
+  (https, and http where kino.screen.httpImages) need no declaration (see …)`; a cualquier otro plugin, `… is a placeholder host; declare a host the plugin really
   loads from`.
 
 ### Un consumidor que solo muestra texto { #text-only-consumer }
 
-Una pantalla que solo muestra texto (o imágenes de direcciones https públicas) y no carga nada propio es un consumidor solo de
+Una pantalla que solo muestra texto (o imágenes de direcciones públicas: https, y http donde `kino.screen.httpImages`) y no
+carga nada propio es un consumidor solo de
 pantalla como cualquier otro: declara **`"hosts": []`**. No hay nada que inventar ni que reemplazar:
 
 ```json

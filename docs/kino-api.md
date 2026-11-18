@@ -734,7 +734,9 @@ estante con `list`. Se rechaza (`not_allowed`) en un trabajo que corre para un p
 Lo que dibuja la pantalla de este Kino, para detectar funciones: `kino.screen.names` (los tipos de nodo como los escribe
 esta guía, `Column`, `TextField`, `titleRail`...), `kino.screen.widgets` (los mismos con sus nombres anteriores) y
 `kino.screen.version` (el número propio del contrato de pantallas, 1 por ahora). `undefined` en un Kino anterior. Mira
-[Pantallas](screens.md).
+[Pantallas](screens.md). `kino.screen.httpImages` (Kino 0.9.88, sin `apiVersion` nuevo) es `true` cuando este Kino también
+dibuja las imágenes de una pantalla por http en un host público, como dibuja un póster; `undefined` antes, donde son solo https
+([imágenes http](screen-components.md#http-pictures)).
 
 ## `kino.library`, `kino.room`, `kino.ai` y `kino.shared` (apiVersion 14, Kino 0.9.74) { #api14 }
 
