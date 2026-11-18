@@ -745,6 +745,11 @@ in a plugin field.
   side, lands on the picked item.
 - A `Scroll`, `ListView` or grid of titles with a key of yours under the screen's first `TabBar` (a header `Row` counts)
   keeps its scroll per tab, also when you key each tab's body apart (`newsBody`, `settingsBody`).
+- The same per destination of a `Scaffold`'s `NavigationBar` (Kino 0.9.88): a `Scroll`, a `ListView` (with `columns` too),
+  a grid or a rail of titles with a key of yours in the `Scaffold`'s `body` (the body itself, or stacked in a `Column` of
+  it) keeps its place per destination and key for the screen's session, on the phone and the TV; a destination never opens
+  at another one's offset, and a key you change on purpose (a category or a page in it) opens at the top. Nothing to
+  declare ([NavigationBar](screen-components.md#navigation-bar)).
 - Moving onto a node scrolls only as much as it needs to show it whole: a node already in view scrolls nothing, so the
   first line under a header never ends up half hidden. Up (Down) with nothing more to focus that way inside a `Scroll`
   (or a player panel's body) scrolls it by most of a page until its start (end), so text above the first focusable or

@@ -801,6 +801,11 @@ autocompleta ni sugiere los datos guardados de la persona en un campo de un plug
 - Un `Scroll`, `ListView` o cuadrícula de títulos con una clave tuya debajo del primer `TabBar` de la pantalla (un `Row`
   de encabezado cuenta) conserva su desplazamiento por pestaña, también cuando le pones una clave distinta al cuerpo de
   cada pestaña (`newsBody`, `settingsBody`).
+- Lo mismo por destino de la `NavigationBar` de un `Scaffold` (Kino 0.9.88): un `Scroll`, un `ListView` (también con
+  `columns`), una rejilla o una fila de títulos con una key tuya en el `body` del `Scaffold` (el cuerpo mismo, o apilado en
+  una `Column` de él) conserva su lugar por destino y por key durante la sesión de la pantalla, en el celular y en la TV; un
+  destino nunca abre en el desplazamiento de otro, y una key que cambias a propósito (una categoría o una página dentro de
+  ella) abre arriba. Nada que declarar ([NavigationBar](screen-components.md#navigation-bar)).
 - Moverse a un nodo desplaza solo lo necesario para mostrarlo entero: un nodo que ya está a la vista no desplaza nada, así
   que la primera línea bajo un encabezado nunca queda medio tapada. Arriba (Abajo) sin nada más que enfocar en esa
   dirección dentro de un `Scroll` (o del cuerpo de un panel del reproductor) lo desplaza casi una página hasta su inicio

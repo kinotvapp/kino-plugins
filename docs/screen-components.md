@@ -541,8 +541,9 @@ export async function screenEvent({ name, value }) {
 - **Celular y TV:** un cuerpo bajo el primer `TabBar` de la pantalla (en cualquier parte: también una `Row` de
   encabezado) que sea un `Scroll`, un `ListView` o una rejilla de títulos con una `key` tuya conserva su desplazamiento
   por pestaña: con una key por pestaña (`newsBody`, `settingsBody`) o no, al volver a una pestaña está donde la persona
-  la dejó.
-- **Celular y TV:** una fila de pestañas en los dos.
+  la dejó. La [`NavigationBar`](#navigation-bar) de un `Scaffold` hace lo mismo por destino.
+- **Celular y TV:** una fila de pestañas en los dos. Desde Kino 0.9.88 el `TabBar` de la TV respeta el `padding` que le
+  das.
 - **Límites y errores:** leer `state.inputs.<key>` de una pestaña no da nada; un `TabBar` sin ninguna pestaña válida se
   descarta.
 
@@ -802,6 +803,14 @@ elemento elegido no está en `state.inputs`: guárdalo en tu estado y dibuja el 
 | `value` | string | el primer elemento | no | la key del elemento elegido (o `selectedIndex`); NO está en `state.inputs`: guárdala en tu estado desde `onChanged` |
 | `selectedIndex` | entero | ninguno | no | el elemento elegido por su posición, cuando no hay `value` |
 | `onChanged` | acción | ninguno | no | el `value` de su evento es la key del elemento |
+
+**Celular y TV:** cada destino conserva su lugar, como cada pestaña de un `TabBar` (Kino 0.9.88, nada que declarar, sin
+`apiVersion` nuevo). Un `Scroll`, un `ListView` (también con `columns`), un `titleGrid` o un `titleRail` con una `key` tuya en el
+`body` del `Scaffold` (el cuerpo mismo, o apilado en una `Column` de él, también bajo un `TabBar` de ese destino) conserva su
+desplazamiento por destino (`value`) y por key durante la sesión de la pantalla: ir a otro destino y volver lo encuentra donde
+la persona lo dejó, y un destino nunca abre en el desplazamiento de otro. Una key que cambias a propósito (la categoría y la
+página dentro de ella) abre arriba; la misma key vuelve a encontrar su lugar. Un nodo sin key tuya (Kino le pone una) no
+conserva nada.
 
 ### PageView (y el carrusel) { #page-view }
 
@@ -1771,6 +1780,11 @@ abajo](#ui-ops).
 e `IconButton` un icono (su `labelText` es lo que dice un lector de pantalla). `confirm` hace que Kino pregunte antes de
 ejecutar la acción; `submit: true` dentro de un [`Form`](screen-forms.md#form) lo revisa y lo envía; `enabled: false` lo
 dibuja apagado.
+
+**Tamaño.** Kino mantiene compacto un botón: en la TV mide 40 dp de alto con 14 dp a cada lado (desde Kino 0.9.88; antes,
+52 dp con 22 dp), en el celular el tamaño propio de Material. El `padding` propio de un botón ([Estilo](screen-reference.md#style))
+reemplaza ese espacio en los dos, y `height` y `minHeight` fijan su altura: un plugin que quiere un botón más grande lo dice
+con esas propiedades, Kino no agrega nada.
 
 | Propiedad | Tipo | Por defecto | Por tamaño | Notas |
 | --- | --- | --- | --- | --- |

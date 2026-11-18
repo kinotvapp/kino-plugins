@@ -524,8 +524,9 @@ export async function screenEvent({ name, value }) {
   Kino's title bar. Entering the bar, from above, below or beside, lands on the selected tab. The same for `Chips`.
 - **Phone and TV:** a body under the screen's first `TabBar` (anywhere: a header `Row` too) that is a `Scroll`, a
   `ListView` or a grid of titles with a `key` of yours keeps its scroll per tab: keyed per tab (`newsBody`,
-  `settingsBody`) or not, coming back to a tab finds it where the person left it.
-- **Phone and TV:** a row of tabs on both.
+  `settingsBody`) or not, coming back to a tab finds it where the person left it. A `Scaffold`'s
+  [`NavigationBar`](#navigation-bar) does the same per destination.
+- **Phone and TV:** a row of tabs on both. From Kino 0.9.88 the TV's `TabBar` keeps the `padding` you give it.
 - **Limits and mistakes:** reading `state.inputs.<key>` for a tab gives nothing; a `TabBar` with no valid tab is dropped.
 
 ### ExpansionTile (accordion) { #accordion }
@@ -770,6 +771,14 @@ matching body.
 | `value` | string | the first item | no | the picked item's key (or `selectedIndex`); NOT in `state.inputs`: keep it in your state from `onChanged` |
 | `selectedIndex` | integer | none | no | the picked item by its place, when there is no `value` |
 | `onChanged` | action | none | no | its event's `value` is the item's key |
+
+**Phone and TV:** each destination keeps its place, as each tab of a `TabBar` does (Kino 0.9.88, nothing to declare, no new
+`apiVersion`). A `Scroll`, a `ListView` (with `columns` too), a `titleGrid` or a `titleRail` with a `key` of yours in the
+`Scaffold`'s `body` (the body itself, or stacked in a `Column` of it, under a `TabBar` of that destination too) keeps its
+scroll per destination (`value`) and key for the screen's session: going to another destination and coming back finds it
+where the person left it, and a destination never opens at another one's offset. A key you change on purpose (the category
+and the page in it) opens at the top; the same key finds its place again. A node with no key of yours (Kino makes one)
+keeps nothing.
 
 ### PageView (and the carousel) { #page-view }
 
@@ -1708,6 +1717,11 @@ onPressed: { event: "login", timeoutMs: 28000 }               // this press's ca
 `ElevatedButton` is Kino's primary button, `Button` with `variant: "secondary"` the secondary one, `TextButton` a flat
 one and `IconButton` an icon (its `labelText` is what a screen reader says). `confirm` makes Kino ask before the action
 runs; `submit: true` inside a [`Form`](screen-forms.md#form) checks and submits it; `enabled: false` draws it off.
+
+**Size.** Kino keeps a button compact: on the TV it is 40 dp tall with 14 dp on each side (from Kino 0.9.88; before it,
+52 dp with 22 dp), on the phone Material's own size. A button's own `padding` ([Style](screen-reference.md#style)) replaces
+that room on both, and `height` and `minHeight` set its height: a plugin that wants a bigger button says so with those, Kino
+adds none.
 
 | Property | Type | Default | Per size | Notes |
 | --- | --- | --- | --- | --- |
