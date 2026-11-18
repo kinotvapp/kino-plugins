@@ -904,7 +904,7 @@ before pressing play (a "Continuar viendo" card opens that page too, on the epis
   what its play button would start (the movie, or the episode they would go on with), as a background call. If they
   leave the page before then, nothing is called; a call already running is never cancelled.
 - **Only a `resolve` that can ask nothing.** Nobody waits for that call, so it may not ask the person anything: Kino
-  resolves ahead only a plugin whose person approved its [`"fetchHosts": "any"`](manifest.md#fetch-hosts), whose video may
+  resolves ahead only for a plugin whose [`"fetchHosts": "any"`](manifest.md#fetch-hosts) the person approved, whose video may
   come from any server (an approved [`"streamHosts": "any"`](manifest.md#stream-hosts), or the
   [broad video permission](#broad-video)), and which declares neither `externalResolve` nor `browser`. For any other
   plugin the field does nothing, and Kino does not call [`prepare`](#prepare) in its place: leave the field out and export
