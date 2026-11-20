@@ -1,17 +1,17 @@
 {
  "schema": 1,
- "generatedAt": 1795176980510,
+ "generatedAt": 1795187854577,
  "windowDays": 7,
  "minUsers": 5,
  "method": "wilson_upper_bound_of_per_call_failure_rate_v2",
  "rankMethod": "score_shrunk_toward_prior_by_shrinkK_users",
- "prior": 79.1,
+ "prior": 78.9,
  "shrinkK": 100,
  "newPlugins": {
   "days": 14,
   "slots": 5,
   "floorPercentile": 0.85,
-  "floor": 85.6
+  "floor": 85.5
  },
  "weights": {
   "core_hard": 1.0,
@@ -30,25 +30,25 @@
    "score": 98.7,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 16800,
-   "users_failing": 186,
-   "fail_rate": 0.0114,
+   "active_users": 16981,
+   "users_failing": 187,
+   "fail_rate": 0.0115,
    "trend": {
     "direction": "mejorando",
-    "delta": 10.4
+    "delta": 9.5
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "track",
-     "events": 1159,
-     "users": 388
+     "events": 1177,
+     "users": 391
     },
     {
      "kind": "network",
      "function": "track",
-     "events": 63,
-     "users": 37
+     "events": 64,
+     "users": 38
     },
     {
      "kind": "timeout",
@@ -67,9 +67,9 @@
    "score": 98.6,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 3895,
-   "users_failing": 29,
-   "fail_rate": 0.01,
+   "active_users": 3939,
+   "users_failing": 30,
+   "fail_rate": 0.0103,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -78,66 +78,29 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 84,
-     "users": 69
+     "events": 86,
+     "users": 70
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 26,
-     "users": 26
+     "events": 29,
+     "users": 29
     }
    ],
    "rank": 98.1
-  },
-  {
-   "id": "premium-tv",
-   "name": "Premium TV",
-   "address": "xuper-plugin/kino-plugin-premium-tv",
-   "version": "0.1.0",
-   "score": 97.6,
-   "grade": "A",
-   "confidence": "alta",
-   "active_users": 3176,
-   "users_failing": 52,
-   "fail_rate": 0.0184,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 45,
-     "users": 37
-    },
-    {
-     "kind": "playback",
-     "function": "play_live",
-     "events": 39,
-     "users": 32
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 24,
-     "users": 22
-    }
-   ],
-   "rank": 97.0
   },
   {
    "id": "vampi-tv",
    "name": "Vampi TV",
    "address": "xuper-plugin/kino-plugin-vampi-tv",
    "version": "0.1.0",
-   "score": 98.1,
+   "score": 98.2,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1615,
+   "active_users": 1639,
    "users_failing": 17,
-   "fail_rate": 0.0122,
+   "fail_rate": 0.012,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -146,7 +109,7 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 33,
+     "events": 34,
      "users": 30
     },
     {
@@ -162,6 +125,43 @@
      "users": 1
     }
    ],
+   "rank": 97.1
+  },
+  {
+   "id": "premium-tv",
+   "name": "Premium TV",
+   "address": "xuper-plugin/kino-plugin-premium-tv",
+   "version": "0.1.0",
+   "score": 97.6,
+   "grade": "A",
+   "confidence": "alta",
+   "active_users": 3226,
+   "users_failing": 54,
+   "fail_rate": 0.0188,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 45,
+     "users": 37
+    },
+    {
+     "kind": "playback",
+     "function": "play_live",
+     "events": 41,
+     "users": 34
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 25,
+     "users": 23
+    }
+   ],
    "rank": 97.0
   },
   {
@@ -169,15 +169,15 @@
    "name": "Mis Listas M3U",
    "address": "baskettv23/kino-plugin-m3u",
    "version": "1.0.0",
-   "score": 98.5,
+   "score": 98.6,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1105,
+   "active_users": 1118,
    "users_failing": 15,
-   "fail_rate": 0.0075,
+   "fail_rate": 0.0074,
    "trend": {
     "direction": "mejorando",
-    "delta": 37.5
+    "delta": 34.0
    },
    "top_failures": [
     {
@@ -193,22 +193,22 @@
      "users": 1
     }
    ],
-   "rank": 96.9
+   "rank": 97.0
   },
   {
    "id": "psxtv",
    "name": "PSXtv",
    "address": "efraynns-stack/Kinoiptv",
    "version": "0.2.1",
-   "score": 98.0,
+   "score": 97.9,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1216,
-   "users_failing": 13,
-   "fail_rate": 0.0125,
+   "active_users": 1235,
+   "users_failing": 14,
+   "fail_rate": 0.0131,
    "trend": {
     "direction": "mejorando",
-    "delta": 49.3
+    "delta": 49.2
    },
    "top_failures": [
     {
@@ -218,68 +218,68 @@
      "users": 29
     },
     {
+     "kind": "network",
+     "function": "liveChannels",
+     "events": 15,
+     "users": 3
+    },
+    {
      "kind": "runtime",
      "function": "home",
      "events": 3,
      "users": 3
-    },
-    {
-     "kind": "timeout",
-     "function": "liveChannels",
-     "events": 3,
-     "users": 3
     }
    ],
-   "rank": 96.6
+   "rank": 96.5
   },
   {
    "id": "nuvio-sports",
    "name": "Nuvio Sports",
    "address": "xuper-plugin/kino-plugin-nuvio-sports",
    "version": "1.1.2",
-   "score": 96.3,
+   "score": 96.2,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 3556,
-   "users_failing": 92,
-   "fail_rate": 0.0307,
+   "active_users": 3597,
+   "users_failing": 96,
+   "fail_rate": 0.0316,
    "trend": {
     "direction": "mejorando",
-    "delta": 19.1
+    "delta": 17.7
    },
    "top_failures": [
     {
      "kind": "network",
      "function": "resolve",
-     "events": 157,
-     "users": 145
+     "events": 160,
+     "users": 148
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 72,
-     "users": 63
+     "events": 74,
+     "users": 65
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 20,
-     "users": 19
+     "events": 22,
+     "users": 21
     }
    ],
-   "rank": 95.8
+   "rank": 95.7
   },
   {
    "id": "mega-catalogo",
    "name": "Mega Catálogo",
    "address": "kinotvapp/kino-plugin-mega-catalogo",
    "version": "0.2.3",
-   "score": 95.6,
+   "score": 95.7,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1036,
-   "users_failing": 26,
-   "fail_rate": 0.0312,
+   "active_users": 1060,
+   "users_failing": 25,
+   "fail_rate": 0.0304,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -288,8 +288,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 77,
-     "users": 57
+     "events": 79,
+     "users": 59
     },
     {
      "kind": "load",
@@ -300,23 +300,23 @@
     {
      "kind": "runtime",
      "function": "home",
-     "events": 10,
-     "users": 10
+     "events": 11,
+     "users": 11
     }
    ],
-   "rank": 94.1
+   "rank": 94.3
   },
   {
    "id": "deportv",
    "name": "DeporTV",
    "address": "xuper-plugin/kino-plugin-deportv",
    "version": "0.1.2",
-   "score": 94.0,
+   "score": 93.9,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1584,
-   "users_failing": 128,
-   "fail_rate": 0.0484,
+   "active_users": 1610,
+   "users_failing": 134,
+   "fail_rate": 0.0497,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -325,14 +325,14 @@
     {
      "kind": "network",
      "function": "liveCategories",
-     "events": 310,
-     "users": 108
+     "events": 320,
+     "users": 110
     },
     {
      "kind": "timeout",
      "function": "liveCategories",
-     "events": 55,
-     "users": 33
+     "events": 58,
+     "users": 35
     },
     {
      "kind": "load",
@@ -341,29 +341,29 @@
      "users": 14
     }
    ],
-   "rank": 93.1
+   "rank": 93.0
   },
   {
    "id": "pluto-tv",
    "name": "Pluto TV",
    "address": null,
    "version": null,
-   "score": 92.5,
+   "score": 92.4,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1957,
-   "users_failing": 121,
-   "fail_rate": 0.0637,
+   "active_users": 1982,
+   "users_failing": 123,
+   "fail_rate": 0.0639,
    "trend": {
     "direction": "mejorando",
-    "delta": 22.4
+    "delta": 22.3
    },
    "top_failures": [
     {
      "kind": "invalid_output",
      "function": "home",
-     "events": 213,
-     "users": 121
+     "events": 216,
+     "users": 123
     },
     {
      "kind": "load",
@@ -385,12 +385,12 @@
    "name": "BRICS TV (Otro mundo)",
    "address": "stanpx/brics-tv",
    "version": "0.1.5",
-   "score": 94.7,
+   "score": 94.8,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 360,
+   "active_users": 366,
    "users_failing": 10,
-   "fail_rate": 0.0298,
+   "fail_rate": 0.0293,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -399,7 +399,7 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 15,
+     "events": 16,
      "users": 12
     },
     {
@@ -409,19 +409,19 @@
      "users": 6
     }
    ],
-   "rank": 91.3
+   "rank": 91.4
   },
   {
    "id": "nickelodeon-pluto",
    "name": "Pluto TV: Nick y Reality",
    "address": "cobrolegalgca-droid/nickelodeon-pluto",
    "version": "2.0.0",
-   "score": 92.2,
+   "score": 92.3,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 819,
+   "active_users": 831,
    "users_failing": 41,
-   "fail_rate": 0.0596,
+   "fail_rate": 0.0588,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -430,23 +430,23 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 49,
-     "users": 42
+     "events": 52,
+     "users": 43
+    },
+    {
+     "kind": "timeout",
+     "function": "episodes",
+     "events": 28,
+     "users": 20
     },
     {
      "kind": "network",
      "function": "episodes",
      "events": 24,
      "users": 20
-    },
-    {
-     "kind": "timeout",
-     "function": "episodes",
-     "events": 27,
-     "users": 19
     }
    ],
-   "rank": 90.8
+   "rank": 90.9
   },
   {
    "id": "framextv",
@@ -456,9 +456,9 @@
    "score": 90.1,
    "grade": "A",
    "confidence": "alta",
-   "active_users": 1251,
-   "users_failing": 78,
-   "fail_rate": 0.082,
+   "active_users": 1277,
+   "users_failing": 81,
+   "fail_rate": 0.0825,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -467,72 +467,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 116,
-     "users": 110
+     "events": 125,
+     "users": 119
     },
     {
      "kind": "timeout",
      "function": "resolve",
-     "events": 41,
+     "events": 42,
      "users": 40
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 33,
-     "users": 28
+     "events": 36,
+     "users": 30
     }
    ],
    "rank": 89.3
-  },
-  {
-   "id": "seriesflix",
-   "name": "Seriesflix",
-   "address": "xuper-plugin/kino-plugin-seriesflix",
-   "version": "1.0.3",
-   "score": 89.4,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1759,
-   "users_failing": 95,
-   "fail_rate": 0.0913,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 245,
-     "users": 190
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 42,
-     "users": 41
-    },
-    {
-     "kind": "timeout",
-     "function": "episodes",
-     "events": 34,
-     "users": 27
-    }
-   ],
-   "rank": 88.8
   },
   {
    "id": "tdbn-play",
    "name": "TDBN Play",
    "address": "stanpx/tdbn-play",
    "version": "0.1.2",
-   "score": 89.7,
+   "score": 89.8,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 919,
-   "users_failing": 53,
-   "fail_rate": 0.0829,
+   "active_users": 946,
+   "users_failing": 54,
+   "fail_rate": 0.0827,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -541,20 +504,57 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 434,
-     "users": 280
+     "events": 462,
+     "users": 296
     },
     {
      "kind": "timeout",
      "function": "liveChannels",
-     "events": 106,
-     "users": 83
+     "events": 113,
+     "users": 87
     },
     {
      "kind": "load",
      "function": "home",
      "events": 15,
      "users": 15
+    }
+   ],
+   "rank": 88.8
+  },
+  {
+   "id": "seriesflix",
+   "name": "Seriesflix",
+   "address": "xuper-plugin/kino-plugin-seriesflix",
+   "version": "1.0.3",
+   "score": 89.2,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1795,
+   "users_failing": 99,
+   "fail_rate": 0.0932,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 252,
+     "users": 196
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 43,
+     "users": 42
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 30,
+     "users": 29
     }
    ],
    "rank": 88.7
@@ -567,9 +567,9 @@
    "score": 88.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1345,
-   "users_failing": 100,
-   "fail_rate": 0.0999,
+   "active_users": 1361,
+   "users_failing": 103,
+   "fail_rate": 0.1002,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -578,8 +578,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 649,
-     "users": 387
+     "events": 676,
+     "users": 395
     },
     {
      "kind": "runtime",
@@ -590,7 +590,7 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 22,
+     "events": 23,
      "users": 20
     }
    ],
@@ -601,22 +601,22 @@
    "name": "Internet Archive Audio",
    "address": "kinotvapp/kino-plugin-archive-audio",
    "version": "1.0.0",
-   "score": 88.0,
+   "score": 88.1,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1483,
-   "users_failing": 108,
-   "fail_rate": 0.103,
+   "active_users": 1513,
+   "users_failing": 109,
+   "fail_rate": 0.1027,
    "trend": {
-    "direction": "sin_datos",
-    "delta": null
+    "direction": "mejorando",
+    "delta": 72.3
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 751,
-     "users": 462
+     "events": 788,
+     "users": 481
     },
     {
      "kind": "runtime",
@@ -631,19 +631,19 @@
      "users": 28
     }
    ],
-   "rank": 87.4
+   "rank": 87.5
   },
   {
    "id": "pelis-juanita",
    "name": "Premiere",
    "address": "ice-dev-x/pelis-juanita",
    "version": "0.2.4",
-   "score": 87.5,
+   "score": 87.6,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1588,
-   "users_failing": 110,
-   "fail_rate": 0.1083,
+   "active_users": 1636,
+   "users_failing": 111,
+   "fail_rate": 0.108,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -652,13 +652,13 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 664,
-     "users": 472
+     "events": 692,
+     "users": 491
     },
     {
      "kind": "timeout",
      "function": "episodes",
-     "events": 66,
+     "events": 65,
      "users": 45
     },
     {
@@ -668,19 +668,19 @@
      "users": 42
     }
    ],
-   "rank": 87.0
+   "rank": 87.1
   },
   {
    "id": "poster-pro",
    "name": "Poster Pro",
    "address": "kinotvapp/kino-plugin-poster-pro",
    "version": "1.0.0",
-   "score": 93.7,
+   "score": 93.9,
    "grade": "A",
    "confidence": "media",
-   "active_users": 107,
+   "active_users": 110,
    "users_failing": 3,
-   "fail_rate": 0.0168,
+   "fail_rate": 0.0164,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -693,19 +693,19 @@
      "users": 3
     }
    ],
-   "rank": 86.6
+   "rank": 86.8
   },
   {
    "id": "megaplay",
    "name": "Megaplay",
    "address": "xuper-plugin/kino-plugin-megaplay",
    "version": "1.1.1",
-   "score": 89.8,
+   "score": 89.9,
    "grade": "B",
    "confidence": "media",
-   "active_users": 185,
+   "active_users": 188,
    "users_failing": 7,
-   "fail_rate": 0.0585,
+   "fail_rate": 0.0575,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -730,93 +730,93 @@
      "users": 4
     }
    ],
-   "rank": 86.0
+   "rank": 86.1
   },
   {
    "id": "cuevana-plus",
    "name": "Cuevana+",
    "address": "ice-dev-x/c_plus",
    "version": "1.2.9",
-   "score": 86.0,
+   "score": 85.8,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 5487,
-   "users_failing": 510,
-   "fail_rate": 0.1306,
+   "active_users": 5566,
+   "users_failing": 529,
+   "fail_rate": 0.1325,
    "trend": {
     "direction": "mejorando",
-    "delta": 27.2
+    "delta": 27.1
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2436,
-     "users": 1565
+     "events": 2550,
+     "users": 1615
     },
     {
      "kind": "network",
      "function": "search",
-     "events": 446,
-     "users": 305
+     "events": 462,
+     "users": 313
     },
     {
      "kind": "network",
      "function": "episodes",
-     "events": 271,
-     "users": 171
+     "events": 282,
+     "users": 175
     }
    ],
-   "rank": 85.9
+   "rank": 85.7
   },
   {
    "id": "futbol-libre",
    "name": "Fútbol Libre",
    "address": "xuper-plugin/kino-plugin-futbol-libre",
    "version": "0.1.6",
-   "score": 85.8,
+   "score": 85.6,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 4657,
-   "users_failing": 351,
-   "fail_rate": 0.1323,
+   "active_users": 4728,
+   "users_failing": 360,
+   "fail_rate": 0.1337,
    "trend": {
     "direction": "mejorando",
-    "delta": 39.7
+    "delta": 38.9
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2096,
-     "users": 1270
+     "events": 2169,
+     "users": 1299
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 215,
-     "users": 207
+     "events": 220,
+     "users": 212
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 71,
-     "users": 64
+     "events": 77,
+     "users": 70
     }
    ],
-   "rank": 85.7
+   "rank": 85.5
   },
   {
    "id": "biblia",
    "name": "Biblia en audio",
    "address": "xuper-plugin/kino-plugin-biblia",
    "version": "1.1.0",
-   "score": 94.3,
+   "score": 94.4,
    "grade": "A",
    "confidence": "media",
-   "active_users": 74,
+   "active_users": 75,
    "users_failing": 0,
-   "fail_rate": 0.0041,
+   "fail_rate": 0.004,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -835,19 +835,19 @@
      "users": 1
     }
    ],
-   "rank": 85.6
+   "rank": 85.5
   },
   {
-   "id": "fanpelis",
-   "name": "FanPelis",
-   "address": "ghosti-vc/Kimera",
-   "version": "0.1.4",
+   "id": "missav",
+   "name": "MissAV",
+   "address": "protaxiogenao-oss/kino-plugin-missaavicco-main",
+   "version": "1.4.0",
    "score": null,
    "grade": "sin_datos",
    "active_users": 4,
-   "rank": 85.6,
+   "rank": 85.5,
    "new": true,
-   "newUntil": 1796364829394
+   "newUntil": 1796353959890
   },
   {
    "id": "cinemitas",
@@ -856,8 +856,8 @@
    "version": "0.0.3",
    "score": null,
    "grade": "sin_datos",
-   "active_users": 2,
-   "rank": 85.6,
+   "active_users": 3,
+   "rank": 85.5,
    "new": true,
    "newUntil": 1796353959890
   },
@@ -869,7 +869,7 @@
    "score": null,
    "grade": "sin_datos",
    "active_users": 2,
-   "rank": 85.6,
+   "rank": 85.5,
    "new": true,
    "newUntil": 1796364829394
   },
@@ -877,99 +877,25 @@
    "id": "kino-resolver",
    "name": "Kino Resolver",
    "address": "xuper-plugin/kino-plugin-kino-resolver",
-   "version": "0.0.9",
+   "version": "0.0.16",
    "score": null,
    "grade": "sin_datos",
    "active_users": 2,
-   "rank": 85.6,
+   "rank": 85.5,
    "new": true,
    "newUntil": 1796332229588
   },
   {
-   "id": "missav",
-   "name": "MissAV",
-   "address": "protaxiogenao-oss/kino-plugin-missaavicco-main",
-   "version": "1.4.0",
+   "id": "webtoon",
+   "name": "WEBTOON",
+   "address": "JuanDEVYT/Webtoon_plugin",
+   "version": "1.1.0",
    "score": null,
    "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 85.6,
+   "active_users": 0,
+   "rank": 85.5,
    "new": true,
-   "newUntil": 1796353959890
-  },
-  {
-   "id": "deepflix",
-   "name": "DeepFlix",
-   "address": "xuper-plugin/kino-plugin-deepflix",
-   "version": "1.1.2",
-   "score": 85.7,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 2476,
-   "users_failing": 229,
-   "fail_rate": 0.129,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 364,
-     "users": 273
-    },
-    {
-     "kind": "playback",
-     "function": "play_vod",
-     "events": 90,
-     "users": 79
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 51,
-     "users": 50
-    }
-   ],
-   "rank": 85.4
-  },
-  {
-   "id": "doramasyt",
-   "name": "DoramasYT",
-   "address": "xuper-plugin/kino-plugin-doramasyt",
-   "version": "0.2.4",
-   "score": 85.8,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1439,
-   "users_failing": 124,
-   "fail_rate": 0.1235,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 783,
-     "users": 508
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 44,
-     "users": 44
-    },
-    {
-     "kind": "timeout",
-     "function": "search",
-     "events": 49,
-     "users": 39
-    }
-   ],
-   "rank": 85.4
+   "newUntil": 1796397454577
   },
   {
    "id": "torcino-hd",
@@ -979,9 +905,9 @@
    "score": 86.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 742,
-   "users_failing": 52,
-   "fail_rate": 0.1122,
+   "active_users": 759,
+   "users_failing": 53,
+   "fail_rate": 0.1125,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -990,8 +916,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 74,
-     "users": 64
+     "events": 76,
+     "users": 66
     },
     {
      "kind": "playback",
@@ -1002,33 +928,107 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 15,
-     "users": 15
+     "events": 16,
+     "users": 16
     }
    ],
    "rank": 85.4
+  },
+  {
+   "id": "deepflix",
+   "name": "DeepFlix",
+   "address": "xuper-plugin/kino-plugin-deepflix",
+   "version": "1.1.2",
+   "score": 85.5,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 2526,
+   "users_failing": 233,
+   "fail_rate": 0.131,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 379,
+     "users": 282
+    },
+    {
+     "kind": "playback",
+     "function": "play_vod",
+     "events": 94,
+     "users": 83
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 51,
+     "users": 50
+    }
+   ],
+   "rank": 85.2
+  },
+  {
+   "id": "doramasyt",
+   "name": "DoramasYT",
+   "address": "xuper-plugin/kino-plugin-doramasyt",
+   "version": "0.2.4",
+   "score": 85.6,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1471,
+   "users_failing": 131,
+   "fail_rate": 0.126,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 808,
+     "users": 521
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 48,
+     "users": 48
+    },
+    {
+     "kind": "timeout",
+     "function": "search",
+     "events": 49,
+     "users": 39
+    }
+   ],
+   "rank": 85.2
   },
   {
    "id": "maraton",
    "name": "PelisYSeries",
    "address": "xuper-plugin/maraton",
    "version": "0.6.6",
-   "score": 85.2,
+   "score": 85.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 3510,
-   "users_failing": 360,
-   "fail_rate": 0.1363,
+   "active_users": 3596,
+   "users_failing": 361,
+   "fail_rate": 0.1358,
    "trend": {
     "direction": "mejorando",
-    "delta": 16.3
+    "delta": 19.4
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2212,
-     "users": 1265
+     "events": 2315,
+     "users": 1304
     },
     {
      "kind": "runtime",
@@ -1039,39 +1039,39 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 88,
-     "users": 59
+     "events": 92,
+     "users": 63
     }
    ],
-   "rank": 85.0
+   "rank": 85.1
   },
   {
    "id": "tvenvivo",
    "name": "TV en Vivo",
    "address": "xuper-plugin/kino-plugin-tvenvivo",
    "version": "0.1.1",
-   "score": 85.3,
+   "score": 85.2,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2112,
-   "users_failing": 111,
-   "fail_rate": 0.1317,
+   "active_users": 2138,
+   "users_failing": 114,
+   "fail_rate": 0.1332,
    "trend": {
     "direction": "mejorando",
-    "delta": 26.0
+    "delta": 19.6
    },
    "top_failures": [
     {
      "kind": "network",
      "function": "resolve",
-     "events": 77,
-     "users": 72
+     "events": 81,
+     "users": 75
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 23,
-     "users": 20
+     "events": 24,
+     "users": 21
     },
     {
      "kind": "runtime",
@@ -1080,13 +1080,31 @@
      "users": 13
     }
    ],
-   "rank": 85.0
+   "rank": 84.9
   },
   {
    "id": "reloj-kino",
    "name": "Reloj",
    "address": "ghosti-vc/Reloj-kino",
    "version": "0.9.142",
+   "score": 94.3,
+   "grade": "A",
+   "confidence": "media",
+   "active_users": 64,
+   "users_failing": 0,
+   "fail_rate": 0.0,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [],
+   "rank": 84.9
+  },
+  {
+   "id": "news",
+   "name": "Solo noticias",
+   "address": "kinotvapp/kino-plugin-news",
+   "version": "1.0.4",
    "score": 94.3,
    "grade": "A",
    "confidence": "media",
@@ -1098,17 +1116,17 @@
     "delta": null
    },
    "top_failures": [],
-   "rank": 85.0
+   "rank": 84.9
   },
   {
    "id": "flixtrack",
    "name": "FlixTrack",
    "address": "Susejing/kino-flixtrack",
    "version": "0.2.3",
-   "score": 93.9,
+   "score": 94.0,
    "grade": "A",
    "confidence": "media",
-   "active_users": 64,
+   "active_users": 65,
    "users_failing": 0,
    "fail_rate": 0.0023,
    "trend": {
@@ -1123,37 +1141,19 @@
      "users": 1
     }
    ],
-   "rank": 84.9
-  },
-  {
-   "id": "news",
-   "name": "Solo noticias",
-   "address": "kinotvapp/kino-plugin-news",
-   "version": "1.0.4",
-   "score": 94.2,
-   "grade": "A",
-   "confidence": "media",
-   "active_users": 62,
-   "users_failing": 0,
-   "fail_rate": 0.0,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [],
-   "rank": 84.9
+   "rank": 84.8
   },
   {
    "id": "palaciohd",
    "name": "Palacio HD",
    "address": "xuper-plugin/kino-plugin-palaciohd",
    "version": "1.0.1",
-   "score": 85.2,
+   "score": 85.1,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1530,
-   "users_failing": 122,
-   "fail_rate": 0.1305,
+   "active_users": 1565,
+   "users_failing": 124,
+   "fail_rate": 0.1309,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1162,35 +1162,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 364,
-     "users": 269
+     "events": 382,
+     "users": 282
     },
     {
      "kind": "timeout",
      "function": "liveCategories",
-     "events": 226,
-     "users": 163
+     "events": 239,
+     "users": 170
     },
     {
      "kind": "playback",
      "function": "play_vod",
-     "events": 29,
-     "users": 27
+     "events": 30,
+     "users": 28
     }
    ],
-   "rank": 84.8
+   "rank": 84.7
   },
   {
    "id": "lacartoons",
    "name": "LA Cartoons Plus",
    "address": "xuper-plugin/kino-plugin-lacartoons",
    "version": "0.1.5",
-   "score": 85.1,
+   "score": 85.0,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1291,
-   "users_failing": 104,
-   "fail_rate": 0.1293,
+   "active_users": 1319,
+   "users_failing": 106,
+   "fail_rate": 0.1308,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1199,35 +1199,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 783,
-     "users": 507
+     "events": 824,
+     "users": 527
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 40,
-     "users": 39
+     "events": 41,
+     "users": 40
     },
     {
      "kind": "network",
      "function": "episodes",
-     "events": 38,
-     "users": 26
+     "events": 40,
+     "users": 27
     }
    ],
-   "rank": 84.7
+   "rank": 84.6
   },
   {
    "id": "rpdb-catalog",
    "name": "PosterX",
    "address": "gregortt1/kino-rpdb-catalog",
    "version": "1.36.0",
-   "score": 85.3,
+   "score": 85.1,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 674,
-   "users_failing": 50,
-   "fail_rate": 0.1204,
+   "active_users": 692,
+   "users_failing": 53,
+   "fail_rate": 0.1229,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1236,14 +1236,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 347,
-     "users": 227
+     "events": 368,
+     "users": 237
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 17,
-     "users": 14
+     "events": 18,
+     "users": 15
     },
     {
      "kind": "network",
@@ -1252,81 +1252,7 @@
      "users": 13
     }
    ],
-   "rank": 84.5
-  },
-  {
-   "id": "moviezone",
-   "name": "MovieZone",
-   "address": "sebasmc214-ship-it/kino_plugin_moviezone",
-   "version": "0.3.10",
-   "score": 84.6,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1802,
-   "users_failing": 183,
-   "fail_rate": 0.1377,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1303,
-     "users": 802
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 60,
-     "users": 60
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 39,
-     "users": 33
-    }
-   ],
    "rank": 84.3
-  },
-  {
-   "id": "cinehdplus",
-   "name": "CineHD Plus",
-   "address": "xuper-plugin/kino-plugin-cinehdplus",
-   "version": "0.1.5",
-   "score": 84.3,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 3607,
-   "users_failing": 357,
-   "fail_rate": 0.1453,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 56.5
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 2229,
-     "users": 1301
-    },
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 215,
-     "users": 122
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 116,
-     "users": 114
-    }
-   ],
-   "rank": 84.2
   },
   {
    "id": "flixlatam",
@@ -1336,9 +1262,9 @@
    "score": 84.5,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1492,
-   "users_failing": 83,
-   "fail_rate": 0.1366,
+   "active_users": 1537,
+   "users_failing": 84,
+   "fail_rate": 0.1373,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1347,14 +1273,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 696,
-     "users": 481
+     "events": 729,
+     "users": 498
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 36,
-     "users": 35
+     "events": 37,
+     "users": 36
     },
     {
      "kind": "timeout",
@@ -1366,53 +1292,16 @@
    "rank": 84.2
   },
   {
-   "id": "top-streaming-2",
-   "name": "Top Streaming 2.0",
-   "address": "ghosti-vc/Top-streaming2.0",
-   "version": "0.1.196",
-   "score": 85.1,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 545,
-   "users_failing": 52,
-   "fail_rate": 0.1191,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 409,
-     "users": 207
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 20,
-     "users": 20
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 16,
-     "users": 16
-    }
-   ],
-   "rank": 84.2
-  },
-  {
    "id": "cometa",
    "name": "Cometa",
    "address": "torcino/kino-plugin-cometa",
    "version": "1.2.0",
-   "score": 85.6,
+   "score": 85.7,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 358,
+   "active_users": 367,
    "users_failing": 23,
-   "fail_rate": 0.1075,
+   "fail_rate": 0.1068,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1421,14 +1310,14 @@
     {
      "kind": "timeout",
      "function": "resolve",
-     "events": 83,
-     "users": 74
+     "events": 87,
+     "users": 76
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 49,
-     "users": 37
+     "events": 51,
+     "users": 38
     },
     {
      "kind": "load",
@@ -1440,6 +1329,43 @@
    "rank": 84.2
   },
   {
+   "id": "moviezone",
+   "name": "MovieZone",
+   "address": "sebasmc214-ship-it/kino_plugin_moviezone",
+   "version": "0.3.10",
+   "score": 84.4,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1872,
+   "users_failing": 190,
+   "fail_rate": 0.14,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 55.9
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 1398,
+     "users": 859
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 59,
+     "users": 59
+    },
+    {
+     "kind": "network",
+     "function": "episodes",
+     "events": 51,
+     "users": 36
+    }
+   ],
+   "rank": 84.1
+  },
+  {
    "id": "torrentclaw",
    "name": "TorrentClaw",
    "address": "torcino/kino-plugin-torrentclaw",
@@ -1447,9 +1373,9 @@
    "score": 85.7,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 332,
+   "active_users": 336,
    "users_failing": 24,
-   "fail_rate": 0.1055,
+   "fail_rate": 0.1056,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1458,8 +1384,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 51,
-     "users": 40
+     "events": 52,
+     "users": 41
     },
     {
      "kind": "playback",
@@ -1474,56 +1400,19 @@
      "users": 5
     }
    ],
-   "rank": 84.2
+   "rank": 84.1
   },
   {
-   "id": "pelispanda",
-   "name": "Pelispanda",
-   "address": "baskettv23/Pelispanda",
-   "version": "1.0.2",
-   "score": 84.2,
+   "id": "top-streaming-2",
+   "name": "Top Streaming 2.0",
+   "address": "ghosti-vc/Top-streaming2.0",
+   "version": "0.1.196",
+   "score": 84.9,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2452,
-   "users_failing": 267,
-   "fail_rate": 0.1438,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 43.0
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1879,
-     "users": 1092
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 72,
-     "users": 70
-    },
-    {
-     "kind": "timeout",
-     "function": "search",
-     "events": 72,
-     "users": 61
-    }
-   ],
-   "rank": 84.0
-  },
-  {
-   "id": "area-documental",
-   "name": "Area Documental",
-   "address": "xuper-plugin/kino-plugin-areadocumental",
-   "version": "0.2.3",
-   "score": 84.1,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1428,
-   "users_failing": 154,
-   "fail_rate": 0.1403,
+   "active_users": 554,
+   "users_failing": 53,
+   "fail_rate": 0.121,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1532,14 +1421,236 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1180,
-     "users": 628
+     "events": 423,
+     "users": 211
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 47,
-     "users": 46
+     "events": 21,
+     "users": 21
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 16,
+     "users": 16
+    }
+   ],
+   "rank": 84.0
+  },
+  {
+   "id": "cinehdplus",
+   "name": "CineHD Plus",
+   "address": "xuper-plugin/kino-plugin-cinehdplus",
+   "version": "0.1.5",
+   "score": 83.9,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 3680,
+   "users_failing": 376,
+   "fail_rate": 0.1488,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 61.5
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 2344,
+     "users": 1344
+    },
+    {
+     "kind": "network",
+     "function": "search",
+     "events": 231,
+     "users": 130
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 122,
+     "users": 120
+    }
+   ],
+   "rank": 83.8
+  },
+  {
+   "id": "peerflix-es",
+   "name": "Peerflix ES",
+   "address": "torcino/kino-plugin-peerflix-es",
+   "version": "1.2.0",
+   "score": 85.3,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 341,
+   "users_failing": 26,
+   "fail_rate": 0.1097,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 48,
+     "users": 41
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 7,
+     "users": 7
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 7,
+     "users": 7
+    }
+   ],
+   "rank": 83.8
+  },
+  {
+   "id": "pelispanda",
+   "name": "Pelispanda",
+   "address": "baskettv23/Pelispanda",
+   "version": "1.0.2",
+   "score": 83.9,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 2532,
+   "users_failing": 278,
+   "fail_rate": 0.1463,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 42.7
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 2014,
+     "users": 1160
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 75,
+     "users": 73
+    },
+    {
+     "kind": "timeout",
+     "function": "search",
+     "events": 81,
+     "users": 70
+    }
+   ],
+   "rank": 83.7
+  },
+  {
+   "id": "addon-latam",
+   "name": "PelicuSeries",
+   "address": "xuper-plugin/kino-plugin-addon-latam",
+   "version": "1.3.3",
+   "score": 83.8,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 2850,
+   "users_failing": 276,
+   "fail_rate": 0.1482,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 47.9
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 1306,
+     "users": 930
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 104,
+     "users": 102
+    },
+    {
+     "kind": "network",
+     "function": "resolve",
+     "events": 103,
+     "users": 88
+    }
+   ],
+   "rank": 83.6
+  },
+  {
+   "id": "ultra-hd",
+   "name": "Ultra Hd",
+   "address": "xuper-plugin/kino-plugin-ultrahd",
+   "version": "0.8.7",
+   "score": 83.7,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 2189,
+   "users_failing": 191,
+   "fail_rate": 0.148,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 1567,
+     "users": 831
+    },
+    {
+     "kind": "timeout",
+     "function": "search",
+     "events": 149,
+     "users": 118
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 83,
+     "users": 70
+    }
+   ],
+   "rank": 83.5
+  },
+  {
+   "id": "area-documental",
+   "name": "Area Documental",
+   "address": "xuper-plugin/kino-plugin-areadocumental",
+   "version": "0.2.3",
+   "score": 83.8,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1452,
+   "users_failing": 160,
+   "fail_rate": 0.1427,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 1238,
+     "users": 648
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 50,
+     "users": 49
     },
     {
      "kind": "timeout",
@@ -1548,19 +1659,19 @@
      "users": 30
     }
    ],
-   "rank": 83.8
+   "rank": 83.5
   },
   {
    "id": "seriesmetro",
    "name": "SeriesMetro",
    "address": "xuper-plugin/kino-plugin-seriesmetro",
    "version": "1.0.2",
-   "score": 84.3,
+   "score": 84.0,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 919,
-   "users_failing": 85,
-   "fail_rate": 0.1335,
+   "active_users": 938,
+   "users_failing": 88,
+   "fail_rate": 0.1362,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1569,181 +1680,33 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 160,
-     "users": 123
+     "events": 165,
+     "users": 127
     },
     {
      "kind": "network",
      "function": "resolve",
-     "events": 37,
+     "events": 40,
+     "users": 29
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 30,
      "users": 28
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 28,
-     "users": 26
     }
    ],
-   "rank": 83.8
-  },
-  {
-   "id": "addon-latam",
-   "name": "PelicuSeries",
-   "address": "xuper-plugin/kino-plugin-addon-latam",
-   "version": "1.3.3",
-   "score": 83.9,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 2792,
-   "users_failing": 268,
-   "fail_rate": 0.1474,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 42.4
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1247,
-     "users": 899
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 103,
-     "users": 101
-    },
-    {
-     "kind": "network",
-     "function": "resolve",
-     "events": 95,
-     "users": 80
-    }
-   ],
-   "rank": 83.7
-  },
-  {
-   "id": "peerflix-es",
-   "name": "Peerflix ES",
-   "address": "torcino/kino-plugin-peerflix-es",
-   "version": "1.2.0",
-   "score": 85.1,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 331,
-   "users_failing": 26,
-   "fail_rate": 0.1108,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 45,
-     "users": 38
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 7,
-     "users": 7
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 7,
-     "users": 7
-    }
-   ],
-   "rank": 83.7
-  },
-  {
-   "id": "ultra-hd",
-   "name": "Ultra Hd",
-   "address": "xuper-plugin/kino-plugin-ultrahd",
-   "version": "0.8.7",
-   "score": 83.8,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 2137,
-   "users_failing": 187,
-   "fail_rate": 0.1465,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1499,
-     "users": 804
-    },
-    {
-     "kind": "timeout",
-     "function": "search",
-     "events": 146,
-     "users": 116
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 78,
-     "users": 67
-    }
-   ],
-   "rank": 83.6
-  },
-  {
-   "id": "cuevanapro",
-   "name": "Cuevana Pro",
-   "address": "xuper-plugin/kino-plugin-cuevanapro",
-   "version": "0.1.7",
-   "score": 83.5,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 4549,
-   "users_failing": 559,
-   "fail_rate": 0.1546,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 28.5
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 2150,
-     "users": 1387
-    },
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 371,
-     "users": 249
-    },
-    {
-     "kind": "network",
-     "function": "episodes",
-     "events": 270,
-     "users": 186
-    }
-   ],
-   "rank": 83.4
+   "rank": 83.5
   },
   {
    "id": "anitrack",
    "name": "AniTrack",
    "address": "Susejing/kino-anitrack",
    "version": "0.13.5",
-   "score": 92.3,
+   "score": 92.6,
    "grade": "A",
    "confidence": "media",
-   "active_users": 46,
+   "active_users": 48,
    "users_failing": 0,
    "fail_rate": 0.0,
    "trend": {
@@ -1754,90 +1717,127 @@
    "rank": 83.3
   },
   {
-   "id": "latino",
-   "name": "Latino",
-   "address": "xuper-plugin/kino-plugin-latino",
-   "version": "2.5.0",
-   "score": 83.3,
+   "id": "cuevanapro",
+   "name": "Cuevana Pro",
+   "address": "xuper-plugin/kino-plugin-cuevanapro",
+   "version": "0.1.7",
+   "score": 83.1,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 3786,
-   "users_failing": 452,
-   "fail_rate": 0.1553,
+   "active_users": 4633,
+   "users_failing": 586,
+   "fail_rate": 0.1581,
    "trend": {
     "direction": "mejorando",
-    "delta": 27.8
+    "delta": 22.6
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2381,
-     "users": 1228
+     "events": 2254,
+     "users": 1429
     },
     {
-     "kind": "timeout",
+     "kind": "network",
+     "function": "search",
+     "events": 386,
+     "users": 258
+    },
+    {
+     "kind": "network",
      "function": "episodes",
-     "events": 254,
-     "users": 168
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 148,
-     "users": 142
+     "events": 283,
+     "users": 190
     }
    ],
-   "rank": 83.2
+   "rank": 83.0
   },
   {
    "id": "pelispedia",
    "name": "Pelispedia",
    "address": "xuper-plugin/kino-plugin-pelispedia",
    "version": "0.1.4",
-   "score": 83.4,
+   "score": 83.2,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2038,
-   "users_failing": 195,
-   "fail_rate": 0.1496,
+   "active_users": 2071,
+   "users_failing": 202,
+   "fail_rate": 0.1516,
    "trend": {
-    "direction": "sin_datos",
-    "delta": null
+    "direction": "mejorando",
+    "delta": 58.5
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 953,
-     "users": 656
+     "events": 1004,
+     "users": 684
     },
     {
      "kind": "timeout",
      "function": "episodes",
-     "events": 95,
-     "users": 69
+     "events": 101,
+     "users": 72
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 68,
-     "users": 65
+     "events": 70,
+     "users": 67
     }
    ],
-   "rank": 83.2
+   "rank": 83.0
+  },
+  {
+   "id": "latino",
+   "name": "Latino",
+   "address": "xuper-plugin/kino-plugin-latino",
+   "version": "2.5.2",
+   "score": 83.0,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 3882,
+   "users_failing": 473,
+   "fail_rate": 0.1585,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 27.5
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 2502,
+     "users": 1268
+    },
+    {
+     "kind": "timeout",
+     "function": "episodes",
+     "events": 266,
+     "users": 176
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 158,
+     "users": 152
+    }
+   ],
+   "rank": 82.9
   },
   {
    "id": "zeno-fm",
    "name": "Zeno FM",
    "address": "xuper-plugin/kino-plugin-zeno",
    "version": "0.1.0",
-   "score": 84.8,
+   "score": 84.9,
    "grade": "B",
    "confidence": "media",
-   "active_users": 122,
+   "active_users": 125,
    "users_failing": 6,
-   "fail_rate": 0.088,
+   "fail_rate": 0.0883,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1846,8 +1846,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 59,
-     "users": 42
+     "events": 62,
+     "users": 43
     },
     {
      "kind": "runtime",
@@ -1869,12 +1869,12 @@
    "name": "FrameXTV +",
    "address": "syberia1/frametv",
    "version": "1.3.1",
-   "score": 82.6,
+   "score": 82.7,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 486,
-   "users_failing": 34,
-   "fail_rate": 0.1404,
+   "active_users": 500,
+   "users_failing": 35,
+   "fail_rate": 0.14,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1883,14 +1883,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 235,
-     "users": 155
+     "events": 250,
+     "users": 164
     },
     {
      "kind": "timeout",
      "function": "resolve",
-     "events": 57,
-     "users": 45
+     "events": 58,
+     "users": 46
     },
     {
      "kind": "timeout",
@@ -1899,56 +1899,19 @@
      "users": 16
     }
    ],
-   "rank": 82.0
-  },
-  {
-   "id": "lacartoons-source",
-   "name": "LACartoons",
-   "address": "YxhelZvl/plugin-lacartoons",
-   "version": "1.1.0",
-   "score": 81.8,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1716,
-   "users_failing": 194,
-   "fail_rate": 0.1638,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1613,
-     "users": 853
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 50,
-     "users": 49
-    },
-    {
-     "kind": "timeout",
-     "function": "search",
-     "events": 43,
-     "users": 35
-    }
-   ],
-   "rank": 81.7
+   "rank": 82.1
   },
   {
    "id": "rt-addon",
    "name": "RT Addon",
    "address": "stanpx/rt-addon",
    "version": "1.0.2",
-   "score": 81.9,
+   "score": 82.0,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 653,
-   "users_failing": 84,
-   "fail_rate": 0.151,
+   "active_users": 664,
+   "users_failing": 85,
+   "fail_rate": 0.1506,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -1957,8 +1920,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 569,
-     "users": 282
+     "events": 594,
+     "users": 288
     },
     {
      "kind": "runtime",
@@ -1969,60 +1932,60 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 17,
+     "events": 18,
      "users": 14
     }
    ],
-   "rank": 81.5
+   "rank": 81.6
   },
   {
-   "id": "mundodonghua",
-   "name": "MundoDonghua",
-   "address": "xuper-plugin/kino-plugin-mundodonghua",
-   "version": "0.1.7",
-   "score": 82.0,
+   "id": "lacartoons-source",
+   "name": "LACartoons",
+   "address": "YxhelZvl/plugin-lacartoons",
+   "version": "1.1.0",
+   "score": 81.6,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 402,
-   "users_failing": 40,
-   "fail_rate": 0.1423,
+   "active_users": 1747,
+   "users_failing": 199,
+   "fail_rate": 0.1655,
    "trend": {
-    "direction": "sin_datos",
-    "delta": null
+    "direction": "mejorando",
+    "delta": 37.2
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 271,
-     "users": 174
+     "events": 1665,
+     "users": 865
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 13,
-     "users": 13
+     "events": 53,
+     "users": 52
     },
     {
-     "kind": "load",
-     "function": "home",
-     "events": 9,
-     "users": 9
+     "kind": "timeout",
+     "function": "search",
+     "events": 44,
+     "users": 36
     }
    ],
-   "rank": 81.4
+   "rank": 81.5
   },
   {
    "id": "tioanime",
    "name": "TioAnime",
    "address": "syberia1/tioanime",
    "version": "1.8.3",
-   "score": 81.3,
+   "score": 81.2,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 1293,
-   "users_failing": 167,
-   "fail_rate": 0.166,
+   "active_users": 1318,
+   "users_failing": 171,
+   "fail_rate": 0.1673,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2031,35 +1994,72 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1258,
-     "users": 620
+     "events": 1314,
+     "users": 632
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 54,
-     "users": 52
+     "events": 56,
+     "users": 53
     },
     {
      "kind": "timeout",
      "function": "episodes",
-     "events": 41,
-     "users": 26
+     "events": 44,
+     "users": 28
     }
    ],
-   "rank": 81.1
+   "rank": 81.0
+  },
+  {
+   "id": "mundodonghua",
+   "name": "MundoDonghua",
+   "address": "xuper-plugin/kino-plugin-mundodonghua",
+   "version": "0.1.7",
+   "score": 81.4,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 412,
+   "users_failing": 44,
+   "fail_rate": 0.1489,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 290,
+     "users": 180
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 12,
+     "users": 12
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 10,
+     "users": 10
+    }
+   ],
+   "rank": 80.9
   },
   {
    "id": "donghuas-sub-es",
    "name": "Donghuas Sub ES",
    "address": "myne23/donghuas-sub-es",
    "version": "0.1.70",
-   "score": 81.5,
+   "score": 81.0,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 362,
-   "users_failing": 33,
-   "fail_rate": 0.1446,
+   "active_users": 373,
+   "users_failing": 36,
+   "fail_rate": 0.1498,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2068,23 +2068,23 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 218,
-     "users": 150
+     "events": 224,
+     "users": 154
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 27,
-     "users": 18
+     "events": 28,
+     "users": 19
     },
     {
-     "kind": "runtime",
-     "function": "home",
-     "events": 12,
+     "kind": "timeout",
+     "function": "search",
+     "events": 13,
      "users": 11
     }
    ],
-   "rank": 81.0
+   "rank": 80.6
   },
   {
    "id": "video-gram",
@@ -2115,19 +2115,19 @@
      "users": 1
     }
    ],
-   "rank": 80.5
+   "rank": 80.4
   },
   {
    "id": "peliculasflix",
    "name": "PeliculasFlix",
    "address": "xuper-plugin/kino-plugin-peliculasflix",
    "version": "0.3.2",
-   "score": 80.6,
+   "score": 80.4,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 647,
-   "users_failing": 74,
-   "fail_rate": 0.1638,
+   "active_users": 663,
+   "users_failing": 76,
+   "fail_rate": 0.1658,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2136,8 +2136,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 269,
-     "users": 176
+     "events": 287,
+     "users": 183
     },
     {
      "kind": "load",
@@ -2148,11 +2148,11 @@
     {
      "kind": "network",
      "function": "search",
-     "events": 16,
-     "users": 16
+     "events": 17,
+     "users": 17
     }
    ],
-   "rank": 80.4
+   "rank": 80.2
   },
   {
    "id": "iflix",
@@ -2162,31 +2162,31 @@
    "score": 80.1,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2307,
-   "users_failing": 344,
-   "fail_rate": 0.1825,
+   "active_users": 2355,
+   "users_failing": 353,
+   "fail_rate": 0.1829,
    "trend": {
-    "direction": "sin_datos",
-    "delta": null
+    "direction": "mejorando",
+    "delta": 57.7
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1087,
-     "users": 750
+     "events": 1143,
+     "users": 776
     },
     {
      "kind": "thrown",
      "function": "resolve",
-     "events": 295,
-     "users": 244
+     "events": 304,
+     "users": 251
     },
     {
      "kind": "network",
      "function": "search",
-     "events": 239,
-     "users": 157
+     "events": 247,
+     "users": 161
     }
    ],
    "rank": 80.1
@@ -2207,7 +2207,7 @@
     "delta": null
    },
    "top_failures": [],
-   "rank": 80.1
+   "rank": 80.0
   },
   {
    "id": "pelis-tv",
@@ -2217,9 +2217,9 @@
    "score": 80.0,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 562,
-   "users_failing": 65,
-   "fail_rate": 0.1667,
+   "active_users": 584,
+   "users_failing": 67,
+   "fail_rate": 0.1672,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2228,14 +2228,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 456,
-     "users": 234
+     "events": 489,
+     "users": 247
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 20,
-     "users": 20
+     "events": 21,
+     "users": 21
     },
     {
      "kind": "load",
@@ -2244,56 +2244,19 @@
      "users": 19
     }
    ],
-   "rank": 79.9
-  },
-  {
-   "id": "allcalidad",
-   "name": "AllCalidad",
-   "address": "JuanDEVYT/kino-plugin-allcalidad",
-   "version": "1.0.2",
-   "score": 80.1,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 348,
-   "users_failing": 46,
-   "fail_rate": 0.1571,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 119,
-     "users": 88
-    },
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 62,
-     "users": 38
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 11,
-     "users": 9
-    }
-   ],
-   "rank": 79.9
+   "rank": 79.8
   },
   {
    "id": "pelispro",
    "name": "PelisPro",
    "address": "baskettv23/Pelispro",
    "version": "1.0.1",
-   "score": 79.4,
+   "score": 79.5,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2474,
-   "users_failing": 387,
-   "fail_rate": 0.1898,
+   "active_users": 2520,
+   "users_failing": 393,
+   "fail_rate": 0.1896,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2302,14 +2265,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2820,
-     "users": 1380
+     "events": 2940,
+     "users": 1418
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 103,
-     "users": 101
+     "events": 104,
+     "users": 102
     },
     {
      "kind": "network",
@@ -2318,19 +2281,19 @@
      "users": 64
     }
    ],
-   "rank": 79.4
+   "rank": 79.5
   },
   {
    "id": "absolute-cinema",
    "name": "Absolute Cinema",
    "address": "xuper-plugin/kino-plugin-absolute-cinema",
    "version": "1.4.5",
-   "score": 79.4,
+   "score": 79.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 739,
-   "users_failing": 57,
-   "fail_rate": 0.1768,
+   "active_users": 754,
+   "users_failing": 60,
+   "fail_rate": 0.1779,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2339,8 +2302,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 278,
-     "users": 199
+     "events": 289,
+     "users": 205
     },
     {
      "kind": "playback",
@@ -2351,23 +2314,23 @@
     {
      "kind": "load",
      "function": "home",
-     "events": 17,
+     "events": 18,
      "users": 14
     }
    ],
-   "rank": 79.4
+   "rank": 79.3
   },
   {
    "id": "doramax",
    "name": "DoramaX",
    "address": "ghosti-vc/DoramaX",
    "version": "1.6.50",
-   "score": 79.5,
+   "score": 79.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 431,
-   "users_failing": 47,
-   "fail_rate": 0.1664,
+   "active_users": 440,
+   "users_failing": 48,
+   "fail_rate": 0.1688,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2376,13 +2339,13 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 310,
-     "users": 171
+     "events": 323,
+     "users": 176
     },
     {
      "kind": "timeout",
      "function": "episodes",
-     "events": 39,
+     "events": 40,
      "users": 27
     },
     {
@@ -2392,56 +2355,19 @@
      "users": 20
     }
    ],
-   "rank": 79.4
-  },
-  {
-   "id": "plaviohd",
-   "name": "PlavioHD",
-   "address": "xuper-plugin/kino-plugin-plaviohd",
-   "version": "1.2.3",
-   "score": 79.2,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1027,
-   "users_failing": 191,
-   "fail_rate": 0.183,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 27.5
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "liveCategories",
-     "events": 152,
-     "users": 106
-    },
-    {
-     "kind": "playback",
-     "function": "play_vod",
-     "events": 92,
-     "users": 76
-    },
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 67,
-     "users": 54
-    }
-   ],
    "rank": 79.2
   },
   {
-   "id": "crunchyroll-catalogo",
-   "name": "Crunchyroll Catálogo",
-   "address": "kinotvapp/kino-plugin-crunchyroll-catalogo",
-   "version": "0.1.5",
-   "score": 79.2,
+   "id": "allcalidad",
+   "name": "AllCalidad",
+   "address": "JuanDEVYT/kino-plugin-allcalidad",
+   "version": "1.0.2",
+   "score": 79.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 338,
-   "users_failing": 34,
-   "fail_rate": 0.1645,
+   "active_users": 358,
+   "users_failing": 50,
+   "fail_rate": 0.1651,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -2450,923 +2376,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 237,
-     "users": 151
+     "events": 123,
+     "users": 91
     },
     {
-     "kind": "runtime",
-     "function": "home",
-     "events": 8,
-     "users": 8
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 4,
-     "users": 4
-    }
-   ],
-   "rank": 79.2
-  },
-  {
-   "id": "dorama-flix",
-   "name": "Dorama-Flix",
-   "address": "ghosti-vc/Dorama-Flix",
-   "version": "1.0.20",
-   "score": 79.1,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 365,
-   "users_failing": 28,
-   "fail_rate": 0.1672,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 118,
-     "users": 85
-    },
-    {
-     "kind": "timeout",
-     "function": "episodes",
-     "events": 29,
-     "users": 21
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 20,
-     "users": 14
-    }
-   ],
-   "rank": 79.1
-  },
-  {
-   "id": "lectura18",
-   "name": "Lectura +18",
-   "address": "protaxiogenao-oss/Kino-plugin-manga-Lectura18",
-   "version": "2.4.3",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 4,
-   "rank": 79.1
-  },
-  {
-   "id": "seenr",
-   "name": "Seenr",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 4,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-justiciero-nocturno",
-   "name": "Batman",
-   "address": "kinotvapp/kino-theme-justiciero-nocturno",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 4,
-   "rank": 79.1
-  },
-  {
-   "id": "zonatm0",
-   "name": "ZonaTM0",
-   "address": "yumehotaru41-rgb/Kino-plugin-manga-ZonaTM0",
-   "version": "1.2.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 4,
-   "rank": 79.1
-  },
-  {
-   "id": "watch-party",
-   "name": "Party Chat",
-   "address": "kinotvapp/kino-plugin-watch-party",
-   "version": "1.1.3",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 3,
-   "rank": 79.1
-  },
-  {
-   "id": "yuri-online",
-   "name": "Yuri Online",
-   "address": "yumehotaru41-rgb/Kino-plugin-manga-Yuri-Online",
-   "version": "2.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 3,
-   "rank": 79.1
-  },
-  {
-   "id": "spider-theme",
-   "name": "Araña",
-   "address": "JuanDEVYT/kino-theme-spiderman",
-   "version": "1.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 2,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kino-christmas",
-   "name": "Navidad Kino",
-   "address": "D3STRUCTOR3024/kino-tema-navidad",
-   "version": "1.0.5",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 2,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kino-jp-neon",
-   "name": "Kino TV JP",
-   "address": "D3STRUCTOR3024/JP-TV",
-   "version": "1.0.2",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 2,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-lluvia-de-codigo",
-   "name": "Neo",
-   "address": "kinotvapp/kino-theme-lluvia-de-codigo",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 2,
-   "rank": 79.1
-  },
-  {
-   "id": "dmc-themes",
-   "name": "Devil May Cry",
-   "address": "MAIJESS/Devil-may-cry",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "glitch-theme",
-   "name": "Glitch",
-   "address": "MAIJESS/Glitch",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "loki-theme",
-   "name": "Loki",
-   "address": "JuanDEVYT/kino-theme-loki",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-aguijon-de-acero",
-   "name": "Spider-Man",
-   "address": "kinotvapp/kino-theme-aguijon-de-acero",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-freezer",
-   "name": "Freezer",
-   "address": "kinotvapp/kino-theme-freezer",
-   "version": "1.0.2",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-gohan-bestia",
-   "name": "Gohan Bestia",
-   "address": "MAIJESS/Gohan-Bestia",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-goku-ultra-instinto",
-   "name": "Goku Ultra Instinto",
-   "address": "MAIJESS/Goku-ultra-instinto",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-hechizo-boreal",
-   "name": "Elsa",
-   "address": "kinotvapp/kino-theme-hechizo-boreal",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kino-tv-liquid-glass",
-   "name": "Kino TV · Liquid Glass",
-   "address": "Juan2Carlos7/Liquid-Glass-2",
-   "version": "1.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-manga",
-   "name": "Manga",
-   "address": "MAIJESS/Manga",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 1,
-   "rank": 79.1
-  },
-  {
-   "id": "anime-catalogs",
-   "name": "Anime Catalogs",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "anime-kitsu",
-   "name": "Anime Kitsu",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "animes-season",
-   "name": "Animes' season",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "better-lyrics",
-   "name": "Better Lyrics",
-   "address": "JuanDEVYT/BetterLyrics_plugin",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "cine-trivia",
-   "name": "Cine Trivia",
-   "address": "kinotvapp/kino-plugin-cine-trivia",
-   "version": "1.0.2",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "cinema-time-machine",
-   "name": "Cinema Time Machine",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "cinemeta",
-   "name": "Cinemeta",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "dc-universe",
-   "name": "DC Universe",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "dragonball-es",
-   "name": "Dragon Ball ES - Cronología",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "film-festivals",
-   "name": "Film Festivals 2 | ElfHosted",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "ghosti-tema-dbs",
-   "name": "Ghosti DBS",
-   "address": "ghosti-vc/Ghosti-DBS",
-   "version": "1.0.82",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "godzilla-theme",
-   "name": "Godzilla",
-   "address": "MAIJESS/Godzilla",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "hive",
-   "name": "Hive",
-   "address": "stanpx/hive",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "imdb-catalogs",
-   "name": "IMDB Catalogs",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "internet-archive",
-   "name": "Internet Archive",
-   "address": "kinotvapp/kino-plugin-archive",
-   "version": "1.4.2",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "james-bond",
-   "name": "James Bond 007 Collection (Official)",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "lyrics-lrclib",
-   "name": "Letras de LRCLIB",
-   "address": "kinotvapp/kino-plugin-lyrics-lrclib",
-   "version": "1.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "lyrics-ytmusic",
-   "name": "Letras de YouTube Music",
-   "address": "kinotvapp/kino-plugin-lyrics-ytmusic",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "marvel",
-   "name": "Marvel",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "mi-iptv-personal",
-   "name": "Mi IPTV Personal",
-   "address": "skerrigan963-byte/kino-plugin-iptv",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "moonknight-theme",
-   "name": "Moon Knight",
-   "address": "MAIJESS/Moon-Knight",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "mubi",
-   "name": "Mubi Catalog",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "nba-by-niasua",
-   "name": "NBA by Niasua",
-   "address": "Niasua/nba-plugin-kino",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "opensubtitles-v3",
-   "name": "OpenSubtitles v3",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "radios",
-   "name": "Radios",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "rotten-tomatoes",
-   "name": "Rotten Tomatoes",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "star-wars",
-   "name": "Star Wars Universe",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "streaming-catalogs",
-   "name": "Streaming Catalogs",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "stremboxd",
-   "name": "Stremboxd",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "subsense",
-   "name": "SubSense",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "subtis",
-   "name": "Subtis - Beta Pública",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "subtitles-website",
-   "name": "Subtitle Search Engine",
-   "address": null,
-   "version": null,
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-cine-negro",
-   "name": "Joker",
-   "address": "kinotvapp/kino-theme-cine-negro",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-gala-vampirica",
-   "name": "Drácula",
-   "address": "kinotvapp/kino-theme-gala-vampirica",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-gran-tesoro",
-   "name": "Luffy",
-   "address": "kinotvapp/kino-theme-gran-tesoro",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-halloween",
-   "name": "Halloween Kino",
-   "address": "MAIJESS/Halloween",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-hatsune-miku",
-   "name": "Hatsune Miku",
-   "address": "yumehotaru41-rgb/Kino-plugin-Theme-Hatsune-Miku",
-   "version": "1.1.3",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-hueso",
-   "name": "Hueso",
-   "address": "kinotvapp/kino-theme-hueso",
-   "version": "1.1.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-jurassic-world",
-   "name": "Jurassic World: temas",
-   "address": "MAIJESS/Jurassic-world",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kaiju-no8",
-   "name": "Kaiju No. 8",
-   "address": "MAIJESS/Kaiju-no-8",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-ki-desatado",
-   "name": "Goku",
-   "address": "kinotvapp/kino-theme-ki-desatado",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kino-diademuertos",
-   "name": "Día de Muertos Kino",
-   "address": "D3STRUCTOR3024/kino-tema-muertos",
-   "version": "1.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kino-naruto",
-   "name": "Kino TV Naruto Shippuden",
-   "address": "Juan2Carlos7/kino-naruto-shippuden",
-   "version": "1.0.3",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-kino-tv-obsidiana",
-   "name": "Kino TV · Obsidiana",
-   "address": "MAIJESS/obsidiana",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-navidad",
-   "name": "Navidad",
-   "address": "kinotvapp/kino-theme-navidad",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-neon",
-   "name": "Terror Nocturno",
-   "address": "D3STRUCTOR3024/Kino-terror-tema",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-nublado",
-   "name": "Nublado",
-   "address": "MAIJESS/Niebla",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-pirates-caribbean",
-   "name": "Piratas del Caribe",
-   "address": "MAIJESS/Piratas-del-caribes",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-reactor-escarlata",
-   "name": "Iron Man",
-   "address": "kinotvapp/kino-theme-reactor-escarlata",
-   "version": "1.1.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-sasuke-uchiha",
-   "name": "Sasuke Uchiha",
-   "address": "Juan2Carlos7/kino-sasuke-theme",
-   "version": "1.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-sasuke-uchiha2",
-   "name": "Sasuke Uchiha 2",
-   "address": "Juan2Carlos7/SASUKE-UCHIHA-2",
-   "version": "1.0.1",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-sexy",
-   "name": "Sexy",
-   "address": "Juan2Carlos7/theme-sexy",
-   "version": "1.1.4",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-vegeta-ultra-ego",
-   "name": "Vegeta Ultra Ego",
-   "address": "MAIJESS/VEGETA-EGO",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "theme-vegito-gogeta",
-   "name": "Vegitto & Gogeta",
-   "address": "MAIJESS/vegitto-gogeta",
-   "version": "1.0.0",
-   "score": null,
-   "grade": "sin_datos",
-   "active_users": 0,
-   "rank": 79.1
-  },
-  {
-   "id": "ajplus",
-   "name": "AJ+",
-   "address": "stanpx/ajplus",
-   "version": "1.0.4",
-   "score": 79.0,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 579,
-   "users_failing": 84,
-   "fail_rate": 0.1769,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 728,
-     "users": 321
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 19,
-     "users": 19
-    },
-    {
-     "kind": "timeout",
+     "kind": "network",
      "function": "search",
-     "events": 19,
-     "users": 15
-    }
-   ],
-   "rank": 79.0
-  },
-  {
-   "id": "cncverse",
-   "name": "CNCVerse",
-   "address": "xuper-plugin/kino-plugin-cncverse",
-   "version": "2.2.0",
-   "score": 78.9,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1423,
-   "users_failing": 240,
-   "fail_rate": 0.1895,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 36.0
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1895,
-     "users": 736
-    },
-    {
-     "kind": "timeout",
-     "function": "search",
-     "events": 52,
-     "users": 42
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 33,
-     "users": 32
-    }
-   ],
-   "rank": 78.9
-  },
-  {
-   "id": "ultrapelishd",
-   "name": "UltraPelisHD",
-   "address": "JuanDEVYT/UltraPelisHD_plugin",
-   "version": "1.4.3",
-   "score": 78.9,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 684,
-   "users_failing": 81,
-   "fail_rate": 0.1801,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 328,
-     "users": 221
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 15,
-     "users": 15
+     "events": 65,
+     "users": 41
     },
     {
      "kind": "load",
      "function": "home",
      "events": 12,
-     "users": 12
+     "users": 9
     }
    ],
-   "rank": 78.9
+   "rank": 79.2
   },
   {
    "id": "pelispop",
    "name": "PelisPop",
    "address": "JuanDEVYT/kino-plugin-pelispop",
    "version": "2.1.1",
-   "score": 78.9,
+   "score": 79.1,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 383,
+   "active_users": 395,
    "users_failing": 6,
-   "fail_rate": 0.1706,
+   "fail_rate": 0.1692,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3375,7 +2413,7 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 23,
+     "events": 24,
      "users": 18
     },
     {
@@ -3391,7 +2429,858 @@
      "users": 3
     }
    ],
+   "rank": 79.1
+  },
+  {
+   "id": "dorama-flix",
+   "name": "Dorama-Flix",
+   "address": "ghosti-vc/Dorama-Flix",
+   "version": "1.0.20",
+   "score": 79.0,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 378,
+   "users_failing": 29,
+   "fail_rate": 0.1692,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 126,
+     "users": 90
+    },
+    {
+     "kind": "timeout",
+     "function": "episodes",
+     "events": 30,
+     "users": 22
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 21,
+     "users": 14
+    }
+   ],
+   "rank": 79.0
+  },
+  {
+   "id": "plaviohd",
+   "name": "PlavioHD",
+   "address": "xuper-plugin/kino-plugin-plaviohd",
+   "version": "1.2.3",
+   "score": 78.9,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1045,
+   "users_failing": 196,
+   "fail_rate": 0.1858,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 27.2
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "liveCategories",
+     "events": 157,
+     "users": 107
+    },
+    {
+     "kind": "playback",
+     "function": "play_vod",
+     "events": 95,
+     "users": 79
+    },
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 70,
+     "users": 56
+    }
+   ],
    "rank": 78.9
+  },
+  {
+   "id": "lectura18",
+   "name": "Lectura +18",
+   "address": "protaxiogenao-oss/Kino-plugin-manga-Lectura18",
+   "version": "2.4.3",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 4,
+   "rank": 78.9
+  },
+  {
+   "id": "seenr",
+   "name": "Seenr",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 4,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-justiciero-nocturno",
+   "name": "Batman",
+   "address": "kinotvapp/kino-theme-justiciero-nocturno",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 4,
+   "rank": 78.9
+  },
+  {
+   "id": "zonatm0",
+   "name": "ZonaTM0",
+   "address": "yumehotaru41-rgb/Kino-plugin-manga-ZonaTM0",
+   "version": "1.2.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 4,
+   "rank": 78.9
+  },
+  {
+   "id": "watch-party",
+   "name": "Party Chat",
+   "address": "kinotvapp/kino-plugin-watch-party",
+   "version": "1.1.3",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 3,
+   "rank": 78.9
+  },
+  {
+   "id": "yuri-online",
+   "name": "Yuri Online",
+   "address": "yumehotaru41-rgb/Kino-plugin-manga-Yuri-Online",
+   "version": "2.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 3,
+   "rank": 78.9
+  },
+  {
+   "id": "spider-theme",
+   "name": "Araña",
+   "address": "JuanDEVYT/kino-theme-spiderman",
+   "version": "1.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 2,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kino-christmas",
+   "name": "Navidad Kino",
+   "address": "D3STRUCTOR3024/kino-tema-navidad",
+   "version": "1.0.5",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 2,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kino-jp-neon",
+   "name": "Kino TV JP",
+   "address": "D3STRUCTOR3024/JP-TV",
+   "version": "1.0.2",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 2,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-lluvia-de-codigo",
+   "name": "Neo",
+   "address": "kinotvapp/kino-theme-lluvia-de-codigo",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 2,
+   "rank": 78.9
+  },
+  {
+   "id": "dmc-themes",
+   "name": "Devil May Cry",
+   "address": "MAIJESS/Devil-may-cry",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "glitch-theme",
+   "name": "Glitch",
+   "address": "MAIJESS/Glitch",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "loki-theme",
+   "name": "Loki",
+   "address": "JuanDEVYT/kino-theme-loki",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-aguijon-de-acero",
+   "name": "Spider-Man",
+   "address": "kinotvapp/kino-theme-aguijon-de-acero",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-freezer",
+   "name": "Freezer",
+   "address": "kinotvapp/kino-theme-freezer",
+   "version": "1.0.2",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-gohan-bestia",
+   "name": "Gohan Bestia",
+   "address": "MAIJESS/Gohan-Bestia",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-goku-ultra-instinto",
+   "name": "Goku Ultra Instinto",
+   "address": "MAIJESS/Goku-ultra-instinto",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-hechizo-boreal",
+   "name": "Elsa",
+   "address": "kinotvapp/kino-theme-hechizo-boreal",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kino-tv-liquid-glass",
+   "name": "Kino TV · Liquid Glass",
+   "address": "Juan2Carlos7/Liquid-Glass-2",
+   "version": "1.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-manga",
+   "name": "Manga",
+   "address": "MAIJESS/Manga",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 1,
+   "rank": 78.9
+  },
+  {
+   "id": "anime-catalogs",
+   "name": "Anime Catalogs",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "anime-kitsu",
+   "name": "Anime Kitsu",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "animes-season",
+   "name": "Animes' season",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "better-lyrics",
+   "name": "Better Lyrics",
+   "address": "JuanDEVYT/BetterLyrics_plugin",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "cine-trivia",
+   "name": "Cine Trivia",
+   "address": "kinotvapp/kino-plugin-cine-trivia",
+   "version": "1.0.2",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "cinema-time-machine",
+   "name": "Cinema Time Machine",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "cinemeta",
+   "name": "Cinemeta",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "dc-universe",
+   "name": "DC Universe",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "dragonball-es",
+   "name": "Dragon Ball ES - Cronología",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "film-festivals",
+   "name": "Film Festivals 2 | ElfHosted",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "ghosti-tema-dbs",
+   "name": "Ghosti DBS",
+   "address": "ghosti-vc/Ghosti-DBS",
+   "version": "1.0.82",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "godzilla-theme",
+   "name": "Godzilla",
+   "address": "MAIJESS/Godzilla",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "hive",
+   "name": "Hive",
+   "address": "stanpx/hive",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "imdb-catalogs",
+   "name": "IMDB Catalogs",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "internet-archive",
+   "name": "Internet Archive",
+   "address": "kinotvapp/kino-plugin-archive",
+   "version": "1.4.2",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "james-bond",
+   "name": "James Bond 007 Collection (Official)",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "lyrics-lrclib",
+   "name": "Letras de LRCLIB",
+   "address": "kinotvapp/kino-plugin-lyrics-lrclib",
+   "version": "1.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "lyrics-ytmusic",
+   "name": "Letras de YouTube Music",
+   "address": "kinotvapp/kino-plugin-lyrics-ytmusic",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "marvel",
+   "name": "Marvel",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "mi-iptv-personal",
+   "name": "Mi IPTV Personal",
+   "address": "skerrigan963-byte/kino-plugin-iptv",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "moonknight-theme",
+   "name": "Moon Knight",
+   "address": "MAIJESS/Moon-Knight",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "mubi",
+   "name": "Mubi Catalog",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "nba-by-niasua",
+   "name": "NBA by Niasua",
+   "address": "Niasua/nba-plugin-kino",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "opensubtitles-v3",
+   "name": "OpenSubtitles v3",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "radios",
+   "name": "Radios",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "rotten-tomatoes",
+   "name": "Rotten Tomatoes",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "star-wars",
+   "name": "Star Wars Universe",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "streaming-catalogs",
+   "name": "Streaming Catalogs",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "stremboxd",
+   "name": "Stremboxd",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "subsense",
+   "name": "SubSense",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "subtis",
+   "name": "Subtis - Beta Pública",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "subtitles-website",
+   "name": "Subtitle Search Engine",
+   "address": null,
+   "version": null,
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-cine-negro",
+   "name": "Joker",
+   "address": "kinotvapp/kino-theme-cine-negro",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-gala-vampirica",
+   "name": "Drácula",
+   "address": "kinotvapp/kino-theme-gala-vampirica",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-gran-tesoro",
+   "name": "Luffy",
+   "address": "kinotvapp/kino-theme-gran-tesoro",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-halloween",
+   "name": "Halloween Kino",
+   "address": "MAIJESS/Halloween",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-hatsune-miku",
+   "name": "Hatsune Miku",
+   "address": "yumehotaru41-rgb/Kino-plugin-Theme-Hatsune-Miku",
+   "version": "1.1.3",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-hueso",
+   "name": "Hueso",
+   "address": "kinotvapp/kino-theme-hueso",
+   "version": "1.1.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-jurassic-world",
+   "name": "Jurassic World: temas",
+   "address": "MAIJESS/Jurassic-world",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kaiju-no8",
+   "name": "Kaiju No. 8",
+   "address": "MAIJESS/Kaiju-no-8",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-ki-desatado",
+   "name": "Goku",
+   "address": "kinotvapp/kino-theme-ki-desatado",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kino-diademuertos",
+   "name": "Día de Muertos Kino",
+   "address": "D3STRUCTOR3024/kino-tema-muertos",
+   "version": "1.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kino-naruto",
+   "name": "Kino TV Naruto Shippuden",
+   "address": "Juan2Carlos7/kino-naruto-shippuden",
+   "version": "1.0.3",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-kino-tv-obsidiana",
+   "name": "Kino TV · Obsidiana",
+   "address": "MAIJESS/obsidiana",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-navidad",
+   "name": "Navidad",
+   "address": "kinotvapp/kino-theme-navidad",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-neon",
+   "name": "Terror Nocturno",
+   "address": "D3STRUCTOR3024/Kino-terror-tema",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-nublado",
+   "name": "Nublado",
+   "address": "MAIJESS/Niebla",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-pirates-caribbean",
+   "name": "Piratas del Caribe",
+   "address": "MAIJESS/Piratas-del-caribes",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-reactor-escarlata",
+   "name": "Iron Man",
+   "address": "kinotvapp/kino-theme-reactor-escarlata",
+   "version": "1.1.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-sasuke-uchiha",
+   "name": "Sasuke Uchiha",
+   "address": "Juan2Carlos7/kino-sasuke-theme",
+   "version": "1.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-sasuke-uchiha2",
+   "name": "Sasuke Uchiha 2",
+   "address": "Juan2Carlos7/SASUKE-UCHIHA-2",
+   "version": "1.0.1",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-sexy",
+   "name": "Sexy",
+   "address": "Juan2Carlos7/theme-sexy",
+   "version": "1.1.4",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-vegeta-ultra-ego",
+   "name": "Vegeta Ultra Ego",
+   "address": "MAIJESS/VEGETA-EGO",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "theme-vegito-gogeta",
+   "name": "Vegitto & Gogeta",
+   "address": "MAIJESS/vegitto-gogeta",
+   "version": "1.0.0",
+   "score": null,
+   "grade": "sin_datos",
+   "active_users": 0,
+   "rank": 78.9
+  },
+  {
+   "id": "ajplus",
+   "name": "AJ+",
+   "address": "stanpx/ajplus",
+   "version": "1.0.4",
+   "score": 78.8,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 591,
+   "users_failing": 88,
+   "fail_rate": 0.1792,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 749,
+     "users": 330
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 20,
+     "users": 20
+    },
+    {
+     "kind": "timeout",
+     "function": "search",
+     "events": 19,
+     "users": 15
+    }
+   ],
+   "rank": 78.8
   },
   {
    "id": "instant-audio",
@@ -3401,9 +3290,9 @@
    "score": 78.7,
    "grade": "B",
    "confidence": "media",
-   "active_users": 157,
+   "active_users": 159,
    "users_failing": 17,
-   "fail_rate": 0.1485,
+   "fail_rate": 0.1493,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3412,8 +3301,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 115,
-     "users": 65
+     "events": 117,
+     "users": 66
     },
     {
      "kind": "runtime",
@@ -3428,7 +3317,7 @@
      "users": 3
     }
    ],
-   "rank": 78.9
+   "rank": 78.8
   },
   {
    "id": "animes-es",
@@ -3438,9 +3327,9 @@
    "score": 78.7,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2280,
-   "users_failing": 218,
-   "fail_rate": 0.1958,
+   "active_users": 2311,
+   "users_failing": 221,
+   "fail_rate": 0.1963,
    "trend": {
     "direction": "mejorando",
     "delta": 21.8
@@ -3449,23 +3338,134 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 832,
-     "users": 574
+     "events": 870,
+     "users": 592
     },
     {
      "kind": "network",
      "function": "episodes",
-     "events": 271,
-     "users": 179
+     "events": 274,
+     "users": 182
     },
     {
      "kind": "timeout",
      "function": "episodes",
-     "events": 145,
-     "users": 106
+     "events": 149,
+     "users": 107
     }
    ],
    "rank": 78.7
+  },
+  {
+   "id": "ultrapelishd",
+   "name": "UltraPelisHD",
+   "address": "JuanDEVYT/UltraPelisHD_plugin",
+   "version": "1.4.3",
+   "score": 78.7,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 700,
+   "users_failing": 84,
+   "fail_rate": 0.1825,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 346,
+     "users": 232
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 15,
+     "users": 15
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 12,
+     "users": 12
+    }
+   ],
+   "rank": 78.7
+  },
+  {
+   "id": "crunchyroll-catalogo",
+   "name": "Crunchyroll Catálogo",
+   "address": "kinotvapp/kino-plugin-crunchyroll-catalogo",
+   "version": "0.1.5",
+   "score": 78.7,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 348,
+   "users_failing": 36,
+   "fail_rate": 0.1695,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 248,
+     "users": 157
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 9,
+     "users": 9
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 4,
+     "users": 4
+    }
+   ],
+   "rank": 78.7
+  },
+  {
+   "id": "cncverse",
+   "name": "CNCVerse",
+   "address": "xuper-plugin/kino-plugin-cncverse",
+   "version": "2.2.0",
+   "score": 78.6,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1457,
+   "users_failing": 253,
+   "fail_rate": 0.1929,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 35.7
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 1969,
+     "users": 754
+    },
+    {
+     "kind": "timeout",
+     "function": "search",
+     "events": 52,
+     "users": 42
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 34,
+     "users": 33
+    }
+   ],
+   "rank": 78.6
   },
   {
    "id": "megadede",
@@ -3475,9 +3475,9 @@
    "score": 78.6,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 742,
+   "active_users": 760,
    "users_failing": 111,
-   "fail_rate": 0.1849,
+   "fail_rate": 0.1845,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3486,14 +3486,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 392,
-     "users": 273
+     "events": 415,
+     "users": 287
     },
     {
      "kind": "network",
      "function": "search",
-     "events": 91,
-     "users": 59
+     "events": 95,
+     "users": 60
     },
     {
      "kind": "load",
@@ -3502,19 +3502,19 @@
      "users": 33
     }
    ],
-   "rank": 78.7
+   "rank": 78.6
   },
   {
    "id": "18eu",
    "name": "18eu.net",
    "address": "protaxiogenao-oss/Kino-plugin-18E",
    "version": "1.0.1",
-   "score": 78.1,
+   "score": 77.8,
    "grade": "B",
    "confidence": "media",
-   "active_users": 61,
+   "active_users": 62,
    "users_failing": 6,
-   "fail_rate": 0.1154,
+   "fail_rate": 0.1184,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3523,8 +3523,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 31,
-     "users": 24
+     "events": 33,
+     "users": 26
     },
     {
      "kind": "thrown",
@@ -3539,19 +3539,19 @@
      "users": 1
     }
    ],
-   "rank": 78.7
+   "rank": 78.5
   },
   {
-   "id": "cablevisionhd",
-   "name": "CablevisionHD",
-   "address": "xuper-plugin/kino-plugin-cablevisionhd",
-   "version": "0.3.3",
-   "score": 78.5,
+   "id": "kino-plugin-juanskip",
+   "name": "JuanSkip",
+   "address": "JuanDEVYT/kino-plugin-juanskip",
+   "version": "1.0.1",
+   "score": 76.3,
    "grade": "B",
-   "confidence": "alta",
-   "active_users": 5066,
-   "users_failing": 775,
-   "fail_rate": 0.204,
+   "confidence": "baja",
+   "active_users": 23,
+   "users_failing": 2,
+   "fail_rate": 0.063,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3559,24 +3559,12 @@
    "top_failures": [
     {
      "kind": "timeout",
-     "function": "home",
-     "events": 2732,
-     "users": 1541
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 262,
-     "users": 240
-    },
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 1809,
-     "users": 215
+     "function": "segments",
+     "events": 11,
+     "users": 4
     }
    ],
-   "rank": 78.5
+   "rank": 78.4
   },
   {
    "id": "piltraflix247",
@@ -3594,32 +3582,44 @@
     "delta": null
    },
    "top_failures": [],
-   "rank": 78.5
+   "rank": 78.3
   },
   {
-   "id": "kino-plugin-juanskip",
-   "name": "JuanSkip",
-   "address": "JuanDEVYT/kino-plugin-juanskip",
-   "version": "1.0.1",
-   "score": 75.4,
+   "id": "cablevisionhd",
+   "name": "CablevisionHD",
+   "address": "xuper-plugin/kino-plugin-cablevisionhd",
+   "version": "0.3.3",
+   "score": 78.0,
    "grade": "B",
-   "confidence": "baja",
-   "active_users": 22,
-   "users_failing": 2,
-   "fail_rate": 0.0659,
+   "confidence": "alta",
+   "active_users": 5161,
+   "users_failing": 813,
+   "fail_rate": 0.2091,
    "trend": {
-    "direction": "sin_datos",
-    "delta": null
+    "direction": "mejorando",
+    "delta": 51.6
    },
    "top_failures": [
     {
      "kind": "timeout",
-     "function": "segments",
-     "events": 11,
-     "users": 4
+     "function": "home",
+     "events": 2808,
+     "users": 1566
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 272,
+     "users": 247
+    },
+    {
+     "kind": "network",
+     "function": "home",
+     "events": 1889,
+     "users": 221
     }
    ],
-   "rank": 78.4
+   "rank": 78.0
   },
   {
    "id": "theme-crimson",
@@ -3637,19 +3637,19 @@
     "delta": null
    },
    "top_failures": [],
-   "rank": 78.2
+   "rank": 78.0
   },
   {
-   "id": "sync-gdrive",
-   "name": "Kino Sync",
-   "address": "kinotvapp/kino-plugin-sync-gdrive",
-   "version": "0.2.5",
-   "score": 73.9,
-   "grade": "C",
-   "confidence": "baja",
-   "active_users": 28,
-   "users_failing": 1,
-   "fail_rate": 0.0982,
+   "id": "latinomegahd",
+   "name": "LatinoMegaHD",
+   "address": "baskettv23/Latinomegahd",
+   "version": "0.1.0",
+   "score": 77.7,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1470,
+   "users_failing": 231,
+   "fail_rate": 0.2022,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3657,24 +3657,24 @@
    "top_failures": [
     {
      "kind": "timeout",
-     "function": "syncStatus",
-     "events": 15,
-     "users": 4
+     "function": "home",
+     "events": 1263,
+     "users": 699
     },
     {
-     "kind": "timeout",
-     "function": "syncPull",
-     "events": 1,
-     "users": 1
+     "kind": "network",
+     "function": "search",
+     "events": 77,
+     "users": 69
     },
     {
-     "kind": "timeout",
-     "function": "syncPush",
-     "events": 1,
-     "users": 1
+     "kind": "runtime",
+     "function": "home",
+     "events": 48,
+     "users": 47
     }
    ],
-   "rank": 78.0
+   "rank": 77.8
   },
   {
    "id": "juan-embeds",
@@ -3692,7 +3692,7 @@
     "delta": null
    },
    "top_failures": [],
-   "rank": 78.0
+   "rank": 77.8
   },
   {
    "id": "kino-monitor",
@@ -3710,56 +3710,19 @@
     "delta": null
    },
    "top_failures": [],
-   "rank": 78.0
+   "rank": 77.8
   },
   {
-   "id": "ytmusic",
-   "name": "YouTube Music",
-   "address": "JuanDEVYT/YTMusic_plugin",
-   "version": "0.5.21",
-   "score": 77.8,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 2497,
-   "users_failing": 431,
-   "fail_rate": 0.2056,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 25.3
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 897,
-     "users": 613
-    },
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 728,
-     "users": 425
-    },
-    {
-     "kind": "timeout",
-     "function": "episodes",
-     "events": 219,
-     "users": 145
-    }
-   ],
-   "rank": 77.9
-  },
-  {
-   "id": "hentaimama",
-   "name": "HentaiMama",
-   "address": "xuper-plugin/kino-plugin-hentaimama",
-   "version": "1.2.0",
-   "score": 76.0,
-   "grade": "B",
-   "confidence": "media",
-   "active_users": 75,
-   "users_failing": 7,
-   "fail_rate": 0.1433,
+   "id": "hentaijk",
+   "name": "HentaiJK",
+   "address": "protaxiogenao-oss/Kino-plug-hejk",
+   "version": "1.4.0",
+   "score": 73.2,
+   "grade": "C",
+   "confidence": "baja",
+   "active_users": 28,
+   "users_failing": 4,
+   "fail_rate": 0.1036,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3768,8 +3731,70 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 55,
-     "users": 33
+     "events": 49,
+     "users": 11
+    }
+   ],
+   "rank": 77.7
+  },
+  {
+   "id": "ytmusic",
+   "name": "YouTube Music",
+   "address": "JuanDEVYT/YTMusic_plugin",
+   "version": "0.5.21",
+   "score": 77.5,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 2533,
+   "users_failing": 445,
+   "fail_rate": 0.2086,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 28.1
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 940,
+     "users": 630
+    },
+    {
+     "kind": "network",
+     "function": "home",
+     "events": 761,
+     "users": 439
+    },
+    {
+     "kind": "timeout",
+     "function": "episodes",
+     "events": 228,
+     "users": 149
+    }
+   ],
+   "rank": 77.6
+  },
+  {
+   "id": "hentaimama",
+   "name": "HentaiMama",
+   "address": "xuper-plugin/kino-plugin-hentaimama",
+   "version": "1.2.0",
+   "score": 75.9,
+   "grade": "B",
+   "confidence": "media",
+   "active_users": 77,
+   "users_failing": 7,
+   "fail_rate": 0.1455,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 57,
+     "users": 34
     },
     {
      "kind": "timeout",
@@ -3784,19 +3809,19 @@
      "users": 3
     }
    ],
-   "rank": 77.8
+   "rank": 77.6
   },
   {
-   "id": "latinomegahd",
-   "name": "LatinoMegaHD",
-   "address": "baskettv23/Latinomegahd",
-   "version": "0.1.0",
-   "score": 77.6,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1439,
-   "users_failing": 223,
-   "fail_rate": 0.2024,
+   "id": "sync-gdrive",
+   "name": "Kino Sync",
+   "address": "kinotvapp/kino-plugin-sync-gdrive",
+   "version": "0.2.5",
+   "score": 72.6,
+   "grade": "C",
+   "confidence": "baja",
+   "active_users": 29,
+   "users_failing": 2,
+   "fail_rate": 0.1121,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3804,36 +3829,36 @@
    "top_failures": [
     {
      "kind": "timeout",
-     "function": "home",
-     "events": 1202,
-     "users": 678
+     "function": "syncStatus",
+     "events": 20,
+     "users": 4
     },
     {
-     "kind": "network",
-     "function": "search",
-     "events": 77,
-     "users": 69
+     "kind": "thrown",
+     "function": "syncPush",
+     "events": 1,
+     "users": 1
     },
     {
-     "kind": "runtime",
-     "function": "home",
-     "events": 49,
-     "users": 48
+     "kind": "timeout",
+     "function": "syncPull",
+     "events": 1,
+     "users": 1
     }
    ],
-   "rank": 77.7
+   "rank": 77.5
   },
   {
    "id": "super-tv",
    "name": "SuperTV",
    "address": "xuper-plugin/kino-plugin-supertv",
    "version": "0.4.2",
-   "score": 77.5,
+   "score": 77.3,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2811,
-   "users_failing": 435,
-   "fail_rate": 0.2098,
+   "active_users": 2888,
+   "users_failing": 446,
+   "fail_rate": 0.2115,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3842,14 +3867,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 3453,
-     "users": 1408
+     "events": 3573,
+     "users": 1434
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 294,
-     "users": 234
+     "events": 300,
+     "users": 239
     },
     {
      "kind": "timeout",
@@ -3858,19 +3883,19 @@
      "users": 52
     }
    ],
-   "rank": 77.6
+   "rank": 77.4
   },
   {
    "id": "onlineradiobox",
    "name": "Online Radio Box",
    "address": "xuper-plugin/kino-plugin-onlineradiobox",
    "version": "0.1.0",
-   "score": 76.1,
+   "score": 76.0,
    "grade": "B",
    "confidence": "media",
-   "active_users": 102,
-   "users_failing": 14,
-   "fail_rate": 0.156,
+   "active_users": 104,
+   "users_failing": 15,
+   "fail_rate": 0.1578,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3879,8 +3904,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 68,
-     "users": 48
+     "events": 73,
+     "users": 49
     },
     {
      "kind": "network",
@@ -3895,32 +3920,7 @@
      "users": 1
     }
    ],
-   "rank": 77.6
-  },
-  {
-   "id": "hentaijk",
-   "name": "HentaiJK",
-   "address": "protaxiogenao-oss/Kino-plug-hejk",
-   "version": "1.4.0",
-   "score": 71.5,
-   "grade": "C",
-   "confidence": "baja",
-   "active_users": 26,
-   "users_failing": 4,
-   "fail_rate": 0.1115,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 48,
-     "users": 11
-    }
-   ],
-   "rank": 77.5
+   "rank": 77.4
   },
   {
    "id": "mangatrack",
@@ -3951,19 +3951,19 @@
      "users": 1
     }
    ],
-   "rank": 77.4
+   "rank": 77.3
   },
   {
    "id": "lector-mobi",
    "name": "Lector de libros",
    "address": "xuper-plugin/kino-plugin-lector-mobi",
    "version": "1.4.0",
-   "score": 44.4,
+   "score": 47.5,
    "grade": "D",
    "confidence": "baja",
-   "active_users": 5,
+   "active_users": 6,
    "users_failing": 0,
-   "fail_rate": 0.12,
+   "fail_rate": 0.125,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -3972,48 +3972,11 @@
     {
      "kind": "timeout",
      "function": "screenEvent",
-     "events": 4,
-     "users": 4
+     "events": 5,
+     "users": 5
     }
    ],
-   "rank": 77.4
-  },
-  {
-   "id": "iwara-tv",
-   "name": "Iwara",
-   "address": "protaxiogenao-oss/Kino-plug-iwras",
-   "version": "1.5.3",
-   "score": 71.8,
-   "grade": "C",
-   "confidence": "media",
-   "active_users": 36,
-   "users_failing": 5,
-   "fail_rate": 0.1347,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 15,
-     "users": 12
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 2,
-     "users": 2
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 1,
-     "users": 1
-    }
-   ],
-   "rank": 77.2
+   "rank": 77.1
   },
   {
    "id": "vjav",
@@ -4050,19 +4013,19 @@
      "users": 2
     }
    ],
-   "rank": 77.0
+   "rank": 76.9
   },
   {
-   "id": "yetipelis",
-   "name": "YetiPelis",
-   "address": "protaxiogenao-oss/kino-plugin-yetipes",
-   "version": "1.0.1",
-   "score": 76.5,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 578,
-   "users_failing": 101,
-   "fail_rate": 0.2004,
+   "id": "iwara-tv",
+   "name": "Iwara",
+   "address": "protaxiogenao-oss/Kino-plug-iwras",
+   "version": "1.5.3",
+   "score": 71.4,
+   "grade": "C",
+   "confidence": "media",
+   "active_users": 37,
+   "users_failing": 6,
+   "fail_rate": 0.1405,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4071,8 +4034,45 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 816,
-     "users": 338
+     "events": 16,
+     "users": 12
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 2,
+     "users": 2
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 1,
+     "users": 1
+    }
+   ],
+   "rank": 76.9
+  },
+  {
+   "id": "yetipelis",
+   "name": "YetiPelis",
+   "address": "protaxiogenao-oss/kino-plugin-yetipes",
+   "version": "1.0.1",
+   "score": 76.3,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 594,
+   "users_failing": 106,
+   "fail_rate": 0.203,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 852,
+     "users": 348
     },
     {
      "kind": "timeout",
@@ -4087,19 +4087,19 @@
      "users": 20
     }
    ],
-   "rank": 76.9
+   "rank": 76.7
   },
   {
    "id": "animeav1-improved",
    "name": "AnimeAV1 Improved",
    "address": "LifReizei/K-Av1",
    "version": "2.4.0",
-   "score": 76.7,
+   "score": 76.5,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 2236,
-   "users_failing": 405,
-   "fail_rate": 0.2156,
+   "active_users": 2280,
+   "users_failing": 416,
+   "fail_rate": 0.2172,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4108,35 +4108,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 3309,
-     "users": 1281
+     "events": 3435,
+     "users": 1302
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 112,
-     "users": 107
+     "events": 115,
+     "users": 110
     },
     {
      "kind": "network",
      "function": "episodes",
-     "events": 82,
-     "users": 59
+     "events": 86,
+     "users": 63
     }
    ],
-   "rank": 76.8
+   "rank": 76.6
   },
   {
    "id": "unlimitedsubs",
    "name": "Toku Kino",
    "address": "efraynns-stack/TokuKino",
    "version": "0.3.5",
-   "score": 76.1,
+   "score": 75.9,
    "grade": "B",
    "confidence": "alta",
-   "active_users": 317,
-   "users_failing": 42,
-   "fail_rate": 0.1917,
+   "active_users": 321,
+   "users_failing": 44,
+   "fail_rate": 0.1938,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4145,8 +4145,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 275,
-     "users": 151
+     "events": 287,
+     "users": 154
     },
     {
      "kind": "load",
@@ -4161,7 +4161,44 @@
      "users": 10
     }
    ],
-   "rank": 76.8
+   "rank": 76.6
+  },
+  {
+   "id": "kisskh",
+   "name": "KissKH",
+   "address": "xuper-plugin/kino-plugin-kisskh",
+   "version": "0.1.0",
+   "score": 75.1,
+   "grade": "B",
+   "confidence": "media",
+   "active_users": 155,
+   "users_failing": 22,
+   "fail_rate": 0.181,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 65,
+     "users": 45
+    },
+    {
+     "kind": "network",
+     "function": "search",
+     "events": 15,
+     "users": 12
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 10,
+     "users": 8
+    }
+   ],
+   "rank": 76.6
   },
   {
    "id": "sync-gram-account",
@@ -4194,128 +4231,23 @@
     {
      "kind": "timeout",
      "function": "syncPush",
-     "events": 5,
+     "events": 6,
      "users": 2
     }
    ],
-   "rank": 76.8
+   "rank": 76.6
   },
   {
-   "id": "verhentai",
-   "name": "VerHentai",
-   "address": "protaxiogenao-oss/kino-plugin-VerdiHen",
-   "version": "1.0.7",
-   "score": 31.2,
-   "grade": "F",
-   "confidence": "baja",
-   "active_users": 6,
-   "users_failing": 1,
-   "fail_rate": 0.3167,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 1,
-     "users": 1
-    },
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 1,
-     "users": 1
-    }
-   ],
-   "rank": 76.4
-  },
-  {
-   "id": "lo-mas-visto",
-   "name": "Lo más visto",
-   "address": "Rayoapp5/cinema-plus",
-   "version": "0.1.0",
-   "score": 75.8,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 826,
-   "users_failing": 152,
-   "fail_rate": 0.2126,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 549,
-     "users": 346
-    },
-    {
-     "kind": "thrown",
-     "function": "resolve",
-     "events": 130,
-     "users": 97
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 32,
-     "users": 31
-    }
-   ],
-   "rank": 76.2
-  },
-  {
-   "id": "viki",
-   "name": "Viki Gratis",
-   "address": "xuper-plugin/kino-plugin-viki",
-   "version": "1.0.0",
-   "score": 75.4,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 380,
-   "users_failing": 66,
-   "fail_rate": 0.2029,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 211,
-     "users": 126
-    },
-    {
-     "kind": "playback",
-     "function": "play_vod",
-     "events": 36,
-     "users": 32
-    },
-    {
-     "kind": "network",
-     "function": "episodes",
-     "events": 14,
-     "users": 12
-    }
-   ],
-   "rank": 76.2
-  },
-  {
-   "id": "kisskh",
-   "name": "KissKH",
-   "address": "xuper-plugin/kino-plugin-kisskh",
-   "version": "0.1.0",
-   "score": 74.2,
+   "id": "ok-cine",
+   "name": "OK.ru Video",
+   "address": "protaxiogenao-oss/Kino-plugin-0kRu",
+   "version": "1.2.5",
+   "score": 72.4,
    "grade": "C",
    "confidence": "media",
-   "active_users": 147,
-   "users_failing": 22,
-   "fail_rate": 0.1868,
+   "active_users": 74,
+   "users_failing": 8,
+   "fail_rate": 0.1743,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4324,72 +4256,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 61,
-     "users": 41
+     "events": 72,
+     "users": 49
     },
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 15,
-     "users": 12
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 10,
-     "users": 8
-    }
-   ],
-   "rank": 76.2
-  },
-  {
-   "id": "sololatino",
-   "name": "SoloLatino",
-   "address": "xuper-plugin/kino-plugin-sololatino",
-   "version": "0.1.8",
-   "score": 75.9,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 1708,
-   "users_failing": 184,
-   "fail_rate": 0.2204,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
     {
      "kind": "timeout",
-     "function": "home",
-     "events": 902,
-     "users": 528
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 48,
-     "users": 47
+     "function": "search",
+     "events": 36,
+     "users": 29
     },
     {
      "kind": "network",
-     "function": "search",
-     "events": 74,
-     "users": 42
+     "function": "resolve",
+     "events": 2,
+     "users": 2
     }
    ],
    "rank": 76.1
   },
   {
-   "id": "anifeed",
-   "name": "AniFeed",
-   "address": "Susejing/kino-anifeed",
-   "version": "0.1.6",
-   "score": 74.9,
+   "id": "xvideos",
+   "name": "XVideos",
+   "address": "protaxiogenao-oss/kino-plugin-Xvpos",
+   "version": "1.6.1",
+   "score": 73.8,
    "grade": "C",
-   "confidence": "alta",
-   "active_users": 286,
-   "users_failing": 48,
-   "fail_rate": 0.2009,
+   "confidence": "media",
+   "active_users": 144,
+   "users_failing": 25,
+   "fail_rate": 0.1905,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4398,35 +4293,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 412,
-     "users": 186
-    },
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 8,
-     "users": 8
+     "events": 216,
+     "users": 81
     },
     {
      "kind": "load",
      "function": "home",
      "events": 7,
-     "users": 7
+     "users": 4
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 2,
+     "users": 2
     }
    ],
-   "rank": 76.0
+   "rank": 75.9
   },
   {
    "id": "veohentai",
    "name": "Veo Hentai",
    "address": "sonny-debug12/veohentai-kino",
    "version": "2.0.0",
-   "score": 72.1,
+   "score": 72.2,
    "grade": "C",
    "confidence": "media",
-   "active_users": 81,
+   "active_users": 82,
    "users_failing": 9,
-   "fail_rate": 0.1813,
+   "fail_rate": 0.1809,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4435,8 +4330,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 67,
-     "users": 30
+     "events": 68,
+     "users": 31
     },
     {
      "kind": "timeout",
@@ -4451,7 +4346,112 @@
      "users": 2
     }
    ],
-   "rank": 76.0
+   "rank": 75.9
+  },
+  {
+   "id": "verhentai",
+   "name": "VerHentai",
+   "address": "protaxiogenao-oss/kino-plugin-VerdiHen",
+   "version": "1.0.7",
+   "score": 33.6,
+   "grade": "F",
+   "confidence": "baja",
+   "active_users": 7,
+   "users_failing": 1,
+   "fail_rate": 0.3143,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "network",
+     "function": "home",
+     "events": 1,
+     "users": 1
+    },
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 1,
+     "users": 1
+    }
+   ],
+   "rank": 75.9
+  },
+  {
+   "id": "sololatino",
+   "name": "SoloLatino",
+   "address": "xuper-plugin/kino-plugin-sololatino",
+   "version": "0.1.8",
+   "score": 75.6,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 1754,
+   "users_failing": 195,
+   "fail_rate": 0.224,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 955,
+     "users": 551
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 51,
+     "users": 50
+    },
+    {
+     "kind": "network",
+     "function": "search",
+     "events": 76,
+     "users": 43
+    }
+   ],
+   "rank": 75.8
+  },
+  {
+   "id": "viki",
+   "name": "Viki Gratis",
+   "address": "xuper-plugin/kino-plugin-viki",
+   "version": "1.0.0",
+   "score": 75.0,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 389,
+   "users_failing": 71,
+   "fail_rate": 0.2072,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 220,
+     "users": 129
+    },
+    {
+     "kind": "playback",
+     "function": "play_vod",
+     "events": 38,
+     "users": 34
+    },
+    {
+     "kind": "network",
+     "function": "episodes",
+     "events": 15,
+     "users": 13
+    }
+   ],
+   "rank": 75.8
   },
   {
    "id": "subtitlecat",
@@ -4476,19 +4476,19 @@
      "users": 5
     }
    ],
-   "rank": 76.0
+   "rank": 75.8
   },
   {
-   "id": "xvideos",
-   "name": "XVideos",
-   "address": "protaxiogenao-oss/kino-plugin-Xvpos",
-   "version": "1.6.1",
-   "score": 73.6,
+   "id": "anifeed",
+   "name": "AniFeed",
+   "address": "Susejing/kino-anifeed",
+   "version": "0.1.6",
+   "score": 74.6,
    "grade": "C",
-   "confidence": "media",
-   "active_users": 141,
-   "users_failing": 25,
-   "fail_rate": 0.1913,
+   "confidence": "alta",
+   "active_users": 292,
+   "users_failing": 49,
+   "fail_rate": 0.2039,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4497,35 +4497,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 209,
-     "users": 80
+     "events": 437,
+     "users": 193
+    },
+    {
+     "kind": "network",
+     "function": "search",
+     "events": 8,
+     "users": 8
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 6,
-     "users": 4
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 2,
-     "users": 2
+     "events": 7,
+     "users": 7
     }
    ],
-   "rank": 75.9
+   "rank": 75.7
   },
   {
-   "id": "ok-cine",
-   "name": "OK.ru Video",
-   "address": "protaxiogenao-oss/Kino-plugin-0kRu",
-   "version": "1.2.5",
-   "score": 70.4,
-   "grade": "C",
-   "confidence": "media",
-   "active_users": 62,
-   "users_failing": 8,
-   "fail_rate": 0.1822,
+   "id": "lo-mas-visto",
+   "name": "Lo más visto",
+   "address": "Rayoapp5/cinema-plus",
+   "version": "0.1.0",
+   "score": 75.1,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 846,
+   "users_failing": 162,
+   "fail_rate": 0.2197,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4534,57 +4534,57 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 54,
-     "users": 40
+     "events": 568,
+     "users": 358
     },
     {
-     "kind": "timeout",
-     "function": "search",
-     "events": 32,
-     "users": 25
-    },
-    {
-     "kind": "network",
+     "kind": "thrown",
      "function": "resolve",
-     "events": 2,
-     "users": 2
+     "events": 136,
+     "users": 101
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 33,
+     "users": 32
     }
    ],
-   "rank": 75.8
+   "rank": 75.5
   },
   {
-   "id": "iptv-org",
-   "name": "TV+",
-   "address": "ice-dev-x/kino-iptv-org-clean",
-   "version": "1.7.0",
-   "score": 75.5,
-   "grade": "B",
-   "confidence": "alta",
-   "active_users": 7158,
-   "users_failing": 1562,
-   "fail_rate": 0.235,
+   "id": "fanpelis",
+   "name": "FanPelis",
+   "address": "ghosti-vc/Kimera",
+   "version": "0.1.4",
+   "score": 37.8,
+   "grade": "D",
+   "confidence": "baja",
+   "active_users": 9,
+   "users_failing": 1,
+   "fail_rate": 0.3056,
    "trend": {
-    "direction": "mejorando",
-    "delta": 49.3
+    "direction": "sin_datos",
+    "delta": null
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2946,
-     "users": 1912
+     "events": 5,
+     "users": 5
     },
     {
-     "kind": "thrown",
-     "function": "home",
-     "events": 3781,
-     "users": 1764
+     "kind": "network",
+     "function": "episodes",
+     "events": 1,
+     "users": 1
     },
     {
-     "kind": "runtime",
-     "function": "home",
-     "events": 250,
-     "users": 238
+     "kind": "network",
+     "function": "resolve",
+     "events": 1,
+     "users": 1
     }
    ],
    "rank": 75.5
@@ -4608,8 +4608,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 82,
-     "users": 38
+     "events": 85,
+     "users": 39
     },
     {
      "kind": "thrown",
@@ -4624,19 +4624,19 @@
      "users": 7
     }
    ],
-   "rank": 75.5
+   "rank": 75.4
   },
   {
-   "id": "rule34video",
-   "name": "Rule34Video",
-   "address": "protaxiogenao-oss/Kino-plug-Rul34",
-   "version": "1.6.3",
-   "score": 68.9,
+   "id": "monoschinos",
+   "name": "MonosChinos",
+   "address": "syberia1/MonosChinos",
+   "version": "4.0.0",
+   "score": 74.9,
    "grade": "C",
-   "confidence": "media",
-   "active_users": 56,
-   "users_failing": 9,
-   "fail_rate": 0.1902,
+   "confidence": "alta",
+   "active_users": 859,
+   "users_failing": 203,
+   "fail_rate": 0.2223,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4645,8 +4645,82 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 67,
-     "users": 29
+     "events": 1722,
+     "users": 511
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 28,
+     "users": 27
+    },
+    {
+     "kind": "timeout",
+     "function": "episodes",
+     "events": 29,
+     "users": 23
+    }
+   ],
+   "rank": 75.3
+  },
+  {
+   "id": "iptv-org",
+   "name": "TV+",
+   "address": "ice-dev-x/kino-iptv-org-clean",
+   "version": "1.7.0",
+   "score": 75.1,
+   "grade": "B",
+   "confidence": "alta",
+   "active_users": 7265,
+   "users_failing": 1610,
+   "fail_rate": 0.2388,
+   "trend": {
+    "direction": "mejorando",
+    "delta": 48.1
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 3091,
+     "users": 1967
+    },
+    {
+     "kind": "thrown",
+     "function": "home",
+     "events": 3936,
+     "users": 1822
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 257,
+     "users": 245
+    }
+   ],
+   "rank": 75.2
+  },
+  {
+   "id": "rule34video",
+   "name": "Rule34Video",
+   "address": "protaxiogenao-oss/Kino-plug-Rul34",
+   "version": "1.6.3",
+   "score": 67.2,
+   "grade": "C",
+   "confidence": "media",
+   "active_users": 59,
+   "users_failing": 11,
+   "fail_rate": 0.2085,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 70,
+     "users": 31
     },
     {
      "kind": "load",
@@ -4657,60 +4731,60 @@
     {
      "kind": "runtime",
      "function": "home",
-     "events": 1,
+     "events": 2,
      "users": 1
     }
    ],
-   "rank": 75.4
+   "rank": 74.6
   },
   {
-   "id": "monoschinos",
-   "name": "MonosChinos",
-   "address": "syberia1/MonosChinos",
-   "version": "4.0.0",
-   "score": 74.8,
+   "id": "youtube-player",
+   "name": "YouTube Player",
+   "address": "stanpx/youtube-kino-plugin",
+   "version": "1.3.0",
+   "score": 74.2,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 842,
-   "users_failing": 202,
-   "fail_rate": 0.223,
+   "active_users": 1312,
+   "users_failing": 327,
+   "fail_rate": 0.2344,
    "trend": {
-    "direction": "sin_datos",
-    "delta": null
+    "direction": "mejorando",
+    "delta": 49.5
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1669,
-     "users": 502
+     "events": 2830,
+     "users": 814
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 27,
-     "users": 26
+     "events": 56,
+     "users": 53
     },
     {
      "kind": "timeout",
-     "function": "episodes",
-     "events": 28,
-     "users": 23
+     "function": "search",
+     "events": 36,
+     "users": 30
     }
    ],
-   "rank": 75.3
+   "rank": 74.5
   },
   {
    "id": "hentaila",
    "name": "HentaiLa",
    "address": "protaxiogenao-oss/kino-plugin-HeemfntaiLA-main",
    "version": "1.1.4",
-   "score": 68.7,
+   "score": 66.8,
    "grade": "C",
    "confidence": "media",
-   "active_users": 63,
-   "users_failing": 11,
-   "fail_rate": 0.1988,
+   "active_users": 64,
+   "users_failing": 13,
+   "fail_rate": 0.2168,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4719,8 +4793,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 52,
-     "users": 28
+     "events": 55,
+     "users": 29
     },
     {
      "kind": "load",
@@ -4735,93 +4809,19 @@
      "users": 2
     }
    ],
-   "rank": 75.1
-  },
-  {
-   "id": "youtube-player",
-   "name": "YouTube Player",
-   "address": "stanpx/youtube-kino-plugin",
-   "version": "1.3.0",
-   "score": 74.3,
-   "grade": "C",
-   "confidence": "alta",
-   "active_users": 1285,
-   "users_failing": 316,
-   "fail_rate": 0.233,
-   "trend": {
-    "direction": "mejorando",
-    "delta": 49.6
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 2728,
-     "users": 799
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 55,
-     "users": 52
-    },
-    {
-     "kind": "timeout",
-     "function": "search",
-     "events": 34,
-     "users": 28
-    }
-   ],
-   "rank": 74.6
-  },
-  {
-   "id": "juansync",
-   "name": "JuanSync",
-   "address": "JuanDEVYT/JuanSync",
-   "version": "1.4.3",
-   "score": 70.5,
-   "grade": "C",
-   "confidence": "media",
-   "active_users": 129,
-   "users_failing": 39,
-   "fail_rate": 0.2163,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "thrown",
-     "function": "syncPush",
-     "events": 84,
-     "users": 27
-    },
-    {
-     "kind": "timeout",
-     "function": "syncStatus",
-     "events": 70,
-     "users": 26
-    },
-    {
-     "kind": "timeout",
-     "function": "syncPush",
-     "events": 16,
-     "users": 8
-    }
-   ],
-   "rank": 74.3
+   "rank": 74.2
   },
   {
    "id": "archivo-rta",
    "name": "Archivo RTA",
    "address": "stanpx/kino-plugin-archivo-rta",
    "version": "0.2.0",
-   "score": 73.3,
+   "score": 73.1,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 636,
-   "users_failing": 156,
-   "fail_rate": 0.2328,
+   "active_users": 646,
+   "users_failing": 161,
+   "fail_rate": 0.2349,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4830,14 +4830,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1042,
-     "users": 357
+     "events": 1087,
+     "users": 363
     },
     {
      "kind": "timeout",
      "function": "search",
-     "events": 141,
-     "users": 99
+     "events": 146,
+     "users": 104
     },
     {
      "kind": "runtime",
@@ -4846,7 +4846,44 @@
      "users": 21
     }
    ],
-   "rank": 74.1
+   "rank": 73.9
+  },
+  {
+   "id": "juansync",
+   "name": "JuanSync",
+   "address": "JuanDEVYT/JuanSync",
+   "version": "1.4.3",
+   "score": 69.9,
+   "grade": "C",
+   "confidence": "media",
+   "active_users": 129,
+   "users_failing": 41,
+   "fail_rate": 0.2217,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "thrown",
+     "function": "syncPush",
+     "events": 85,
+     "users": 28
+    },
+    {
+     "kind": "timeout",
+     "function": "syncStatus",
+     "events": 72,
+     "users": 27
+    },
+    {
+     "kind": "timeout",
+     "function": "syncPush",
+     "events": 17,
+     "users": 8
+    }
+   ],
+   "rank": 73.8
   },
   {
    "id": "verpelis",
@@ -4867,7 +4904,7 @@
     {
      "kind": "network",
      "function": "search",
-     "events": 7,
+     "events": 8,
      "users": 6
     },
     {
@@ -4877,19 +4914,19 @@
      "users": 2
     }
    ],
-   "rank": 73.6
+   "rank": 73.5
   },
   {
    "id": "sync-drive",
    "name": "Sync Drive",
    "address": "yumehotaru41-rgb/kino-plugin-sync-drive",
    "version": "1.2.0",
-   "score": 40.9,
+   "score": 43.2,
    "grade": "D",
    "confidence": "baja",
-   "active_users": 18,
+   "active_users": 19,
    "users_failing": 11,
-   "fail_rate": 0.3639,
+   "fail_rate": 0.3447,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4898,7 +4935,7 @@
     {
      "kind": "thrown",
      "function": "syncPush",
-     "events": 18,
+     "events": 19,
      "users": 7
     },
     {
@@ -4914,19 +4951,19 @@
      "users": 4
     }
    ],
-   "rank": 73.3
+   "rank": 73.2
   },
   {
    "id": "cosxplay",
    "name": "CosXplay",
    "address": "protaxiogenao-oss/Kino-plug-cosx",
    "version": "1.3.0",
-   "score": 65.7,
+   "score": 65.9,
    "grade": "C",
    "confidence": "media",
-   "active_users": 87,
+   "active_users": 88,
    "users_failing": 21,
-   "fail_rate": 0.2433,
+   "fail_rate": 0.2422,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4935,8 +4972,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 156,
-     "users": 52
+     "events": 162,
+     "users": 53
     },
     {
      "kind": "runtime",
@@ -4951,19 +4988,19 @@
      "users": 1
     }
    ],
-   "rank": 72.9
+   "rank": 72.8
   },
   {
    "id": "xhamster",
    "name": "Xhamster",
    "address": "protaxiogenao-oss/Kino-plug-xhamt",
    "version": "1.4.2",
-   "score": 64.0,
+   "score": 64.5,
    "grade": "C",
    "confidence": "media",
-   "active_users": 71,
+   "active_users": 73,
    "users_failing": 17,
-   "fail_rate": 0.2484,
+   "fail_rate": 0.2457,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -4972,8 +5009,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 112,
-     "users": 38
+     "events": 118,
+     "users": 39
     },
     {
      "kind": "runtime",
@@ -4989,43 +5026,6 @@
     }
    ],
    "rank": 72.8
-  },
-  {
-   "id": "frikiseries",
-   "name": "Frikiseries",
-   "address": "stanpx/kino-plugin-frikiseries",
-   "version": "0.1.2",
-   "score": 72.0,
-   "grade": "C",
-   "confidence": "alta",
-   "active_users": 1345,
-   "users_failing": 309,
-   "fail_rate": 0.2562,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 541,
-     "users": 375
-    },
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 523,
-     "users": 325
-    },
-    {
-     "kind": "runtime",
-     "function": "home",
-     "events": 31,
-     "users": 31
-    }
-   ],
-   "rank": 72.5
   },
   {
    "id": "sync-gram",
@@ -5062,96 +5062,56 @@
      "users": 5
     }
    ],
-   "rank": 72.4
-  },
-  {
-   "id": "jkanime",
-   "name": "JKAnime",
-   "address": "protaxiogenao-oss/Kino-plug-jkani",
-   "version": "1.5.6",
-   "score": 71.8,
-   "grade": "C",
-   "confidence": "alta",
-   "active_users": 1265,
-   "users_failing": 291,
-   "fail_rate": 0.2575,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 462,
-     "users": 326
-    },
-    {
-     "kind": "thrown",
-     "function": "home",
-     "events": 484,
-     "users": 285
-    },
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 103,
-     "users": 66
-    }
-   ],
    "rank": 72.3
   },
   {
-   "id": "caracol-tv",
-   "name": "Caracol TV",
-   "address": "xuper-plugin/kino-plugin-caracol-tv",
-   "version": "1.0.4",
-   "region_locked": [
-    "CO"
-   ],
-   "score": 35.3,
-   "grade": "D",
-   "confidence": "baja",
-   "active_users": 19,
-   "users_failing": 7,
-   "fail_rate": 0.4316,
+   "id": "frikiseries",
+   "name": "Frikiseries",
+   "address": "stanpx/kino-plugin-frikiseries",
+   "version": "0.1.2",
+   "score": 71.7,
+   "grade": "C",
+   "confidence": "alta",
+   "active_users": 1376,
+   "users_failing": 318,
+   "fail_rate": 0.2591,
    "trend": {
     "direction": "sin_datos",
     "delta": null
    },
    "top_failures": [
     {
-     "kind": "network",
-     "function": "home",
-     "events": 1143,
-     "users": 590
-    },
-    {
      "kind": "timeout",
      "function": "home",
-     "events": 824,
-     "users": 537
+     "events": 568,
+     "users": 393
     },
     {
      "kind": "network",
-     "function": "liveChannels",
-     "events": 575,
-     "users": 301
+     "function": "home",
+     "events": 548,
+     "users": 335
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 42,
+     "users": 30
     }
    ],
-   "rank": 72.1
+   "rank": 72.2
   },
   {
    "id": "latanime",
    "name": "Latanime",
    "address": "sonny-debug12/latanime-kino",
    "version": "1.0.0",
-   "score": 70.4,
+   "score": 70.5,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 434,
-   "users_failing": 71,
-   "fail_rate": 0.2529,
+   "active_users": 442,
+   "users_failing": 72,
+   "fail_rate": 0.2525,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5160,13 +5120,13 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 210,
-     "users": 140
+     "events": 219,
+     "users": 143
     },
     {
      "kind": "thrown",
      "function": "resolve",
-     "events": 59,
+     "events": 60,
      "users": 47
     },
     {
@@ -5179,16 +5139,16 @@
    "rank": 72.0
   },
   {
-   "id": "redtube",
-   "name": "RedTube",
-   "address": "xuper-plugin/kino-plugin-redtube",
-   "version": "1.1.1",
-   "score": 65.1,
+   "id": "jkanime",
+   "name": "JKAnime",
+   "address": "protaxiogenao-oss/Kino-plug-jkani",
+   "version": "1.5.6",
+   "score": 71.3,
    "grade": "C",
-   "confidence": "media",
-   "active_users": 106,
-   "users_failing": 21,
-   "fail_rate": 0.2583,
+   "confidence": "alta",
+   "active_users": 1286,
+   "users_failing": 302,
+   "fail_rate": 0.2625,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5197,7 +5157,44 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 98,
+     "events": 479,
+     "users": 336
+    },
+    {
+     "kind": "thrown",
+     "function": "home",
+     "events": 506,
+     "users": 289
+    },
+    {
+     "kind": "network",
+     "function": "home",
+     "events": 108,
+     "users": 67
+    }
+   ],
+   "rank": 71.8
+  },
+  {
+   "id": "redtube",
+   "name": "RedTube",
+   "address": "xuper-plugin/kino-plugin-redtube",
+   "version": "1.1.1",
+   "score": 64.9,
+   "grade": "C",
+   "confidence": "media",
+   "active_users": 109,
+   "users_failing": 22,
+   "fail_rate": 0.2613,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 106,
      "users": 39
     },
     {
@@ -5213,35 +5210,35 @@
      "users": 2
     }
    ],
-   "rank": 71.9
+   "rank": 71.6
   },
   {
    "id": "cinehax-plus",
    "name": "CineHax+",
    "address": "JuanDEVYT/cinehax-plus",
    "version": "0.3.7",
-   "score": 71.2,
+   "score": 71.0,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 5365,
-   "users_failing": 749,
-   "fail_rate": 0.276,
+   "active_users": 5451,
+   "users_failing": 769,
+   "fail_rate": 0.2778,
    "trend": {
     "direction": "mejorando",
-    "delta": 37.2
+    "delta": 33.2
    },
    "top_failures": [
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1549,
-     "users": 1076
+     "events": 1620,
+     "users": 1107
     },
     {
      "kind": "network",
      "function": "resolve",
-     "events": 343,
-     "users": 281
+     "events": 353,
+     "users": 289
     },
     {
      "kind": "timeout",
@@ -5250,19 +5247,19 @@
      "users": 149
     }
    ],
-   "rank": 71.3
+   "rank": 71.1
   },
   {
-   "id": "xxx1",
-   "name": "Xxx1",
-   "address": "bryan13913613-collab/kino-plugin-xxx1",
-   "version": "0.1.2",
-   "score": 61.4,
+   "id": "hdfull-local",
+   "name": "HDFull",
+   "address": "xuper-plugin/kino-plugin-hdfull",
+   "version": "0.5.9",
+   "score": 62.3,
    "grade": "C",
    "confidence": "media",
-   "active_users": 88,
-   "users_failing": 29,
-   "fail_rate": 0.284,
+   "active_users": 97,
+   "users_failing": 6,
+   "fail_rate": 0.2808,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5271,7 +5268,44 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 241,
+     "events": 4,
+     "users": 3
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 3,
+     "users": 3
+    },
+    {
+     "kind": "timeout",
+     "function": "search",
+     "events": 3,
+     "users": 3
+    }
+   ],
+   "rank": 70.7
+  },
+  {
+   "id": "xxx1",
+   "name": "Xxx1",
+   "address": "bryan13913613-collab/kino-plugin-xxx1",
+   "version": "0.1.2",
+   "score": 61.5,
+   "grade": "C",
+   "confidence": "media",
+   "active_users": 89,
+   "users_failing": 29,
+   "fail_rate": 0.2839,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 246,
      "users": 55
     },
     {
@@ -5287,118 +5321,84 @@
      "users": 2
     }
    ],
-   "rank": 70.8
+   "rank": 70.7
   },
   {
-   "id": "fuegocine",
-   "name": "FuegoCine",
-   "address": "JuanDEVYT/FuegoCine_plugin",
-   "version": "2.0.1",
-   "score": 70.3,
-   "grade": "C",
-   "confidence": "alta",
-   "active_users": 3236,
-   "users_failing": 813,
-   "fail_rate": 0.2809,
-   "trend": {
-    "direction": "estable",
-    "delta": 4.1
-   },
-   "top_failures": [
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 2375,
-     "users": 1205
-    },
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 2262,
-     "users": 1105
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 63,
-     "users": 54
-    }
+   "id": "caracol-tv",
+   "name": "Caracol TV",
+   "address": "xuper-plugin/kino-plugin-caracol-tv",
+   "version": "1.0.4",
+   "region_locked": [
+    "CO"
    ],
-   "rank": 70.6
-  },
-  {
-   "id": "hdfull-local",
-   "name": "HDFull",
-   "address": "xuper-plugin/kino-plugin-hdfull",
-   "version": "0.5.6",
-   "score": 60.4,
-   "grade": "C",
-   "confidence": "media",
-   "active_users": 88,
-   "users_failing": 6,
-   "fail_rate": 0.2941,
+   "score": 31.6,
+   "grade": "F",
+   "confidence": "baja",
+   "active_users": 21,
+   "users_failing": 9,
+   "fail_rate": 0.4857,
    "trend": {
     "direction": "sin_datos",
     "delta": null
    },
    "top_failures": [
     {
-     "kind": "load",
+     "kind": "network",
      "function": "home",
-     "events": 3,
-     "users": 3
+     "events": 1181,
+     "users": 604
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 3,
-     "users": 2
+     "events": 854,
+     "users": 551
     },
     {
-     "kind": "timeout",
-     "function": "search",
-     "events": 2,
-     "users": 2
+     "kind": "network",
+     "function": "liveChannels",
+     "events": 589,
+     "users": 308
     }
    ],
-   "rank": 70.3
+   "rank": 70.7
   },
   {
-   "id": "gnulahd",
-   "name": "GnulaHD",
-   "address": "JuanDEVYT/GnulaHD_plugin",
-   "version": "8.0.1",
-   "score": 69.8,
+   "id": "fuegocine",
+   "name": "FuegoCine",
+   "address": "JuanDEVYT/FuegoCine_plugin",
+   "version": "2.0.1",
+   "score": 69.9,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 6981,
-   "users_failing": 1762,
-   "fail_rate": 0.291,
+   "active_users": 3293,
+   "users_failing": 842,
+   "fail_rate": 0.2856,
    "trend": {
-    "direction": "mejorando",
-    "delta": 55.2
+    "direction": "estable",
+    "delta": 3.2
    },
    "top_failures": [
     {
      "kind": "network",
-     "function": "home",
-     "events": 7139,
-     "users": 2009
+     "function": "search",
+     "events": 2462,
+     "users": 1230
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 2362,
-     "users": 1535
+     "events": 2352,
+     "users": 1126
     },
     {
-     "kind": "runtime",
+     "kind": "load",
      "function": "home",
-     "events": 406,
-     "users": 379
+     "events": 65,
+     "users": 56
     }
    ],
-   "rank": 69.9
+   "rank": 70.2
   },
   {
    "id": "tubepornclassic",
@@ -5419,7 +5419,7 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 89,
+     "events": 92,
      "users": 34
     },
     {
@@ -5435,56 +5435,56 @@
      "users": 3
     }
    ],
-   "rank": 69.8
+   "rank": 69.7
   },
   {
-   "id": "xuper",
-   "name": "Xuper",
-   "address": "xuper-plugin/kino-plugin-xuper",
-   "version": "3.1.0",
-   "score": 69.6,
+   "id": "gnulahd",
+   "name": "GnulaHD",
+   "address": "JuanDEVYT/GnulaHD_plugin",
+   "version": "8.0.1",
+   "score": 69.5,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 18377,
-   "users_failing": 3898,
-   "fail_rate": 0.2976,
+   "active_users": 7085,
+   "users_failing": 1803,
+   "fail_rate": 0.2945,
    "trend": {
-    "direction": "estable",
-    "delta": 3.4
+    "direction": "mejorando",
+    "delta": 55.2
    },
    "top_failures": [
     {
+     "kind": "network",
+     "function": "home",
+     "events": 7431,
+     "users": 2050
+    },
+    {
      "kind": "timeout",
      "function": "home",
-     "events": 12872,
-     "users": 6509
+     "events": 2445,
+     "users": 1576
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 1428,
-     "users": 1339
-    },
-    {
-     "kind": "timeout",
-     "function": "episodes",
-     "events": 1209,
-     "users": 903
+     "events": 414,
+     "users": 387
     }
    ],
-   "rank": 69.7
+   "rank": 69.6
   },
   {
    "id": "porcore",
    "name": "Porcore",
    "address": "protaxiogenao-oss/Kino-plug-popcore",
    "version": "1.2.1",
-   "score": 46.6,
+   "score": 47.3,
    "grade": "D",
    "confidence": "media",
-   "active_users": 42,
+   "active_users": 43,
    "users_failing": 13,
-   "fail_rate": 0.383,
+   "fail_rate": 0.3776,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5493,13 +5493,13 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 35,
-     "users": 19
+     "events": 37,
+     "users": 21
     },
     {
      "kind": "thrown",
      "function": "home",
-     "events": 24,
+     "events": 25,
      "users": 10
     },
     {
@@ -5509,19 +5509,56 @@
      "users": 2
     }
    ],
-   "rank": 69.5
+   "rank": 69.4
+  },
+  {
+   "id": "xuper",
+   "name": "Xuper",
+   "address": "xuper-plugin/kino-plugin-xuper",
+   "version": "3.1.1",
+   "score": 69.2,
+   "grade": "C",
+   "confidence": "alta",
+   "active_users": 18600,
+   "users_failing": 4016,
+   "fail_rate": 0.3015,
+   "trend": {
+    "direction": "estable",
+    "delta": 2.2
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 13205,
+     "users": 6610
+    },
+    {
+     "kind": "runtime",
+     "function": "home",
+     "events": 1469,
+     "users": 1377
+    },
+    {
+     "kind": "timeout",
+     "function": "episodes",
+     "events": 1256,
+     "users": 933
+    }
+   ],
+   "rank": 69.3
   },
   {
    "id": "youporn",
    "name": "YouPorn",
    "address": "protaxiogenao-oss/Kino-Plugin-Youpn",
    "version": "1.0.2",
-   "score": 54.9,
+   "score": 54.5,
    "grade": "D",
    "confidence": "media",
    "active_users": 79,
-   "users_failing": 28,
-   "fail_rate": 0.3409,
+   "users_failing": 29,
+   "fail_rate": 0.3453,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5530,13 +5567,13 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 138,
+     "events": 141,
      "users": 40
     },
     {
      "kind": "thrown",
      "function": "search",
-     "events": 14,
+     "events": 15,
      "users": 13
     },
     {
@@ -5546,43 +5583,6 @@
      "users": 3
     }
    ],
-   "rank": 68.4
-  },
-  {
-   "id": "cinejoy",
-   "name": "CineJoy",
-   "address": "Lenoxlkz/CineJoy-Plugin-",
-   "version": "1.0.8",
-   "score": 65.8,
-   "grade": "C",
-   "confidence": "alta",
-   "active_users": 489,
-   "users_failing": 84,
-   "fail_rate": 0.3001,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 161,
-     "users": 112
-    },
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 128,
-     "users": 87
-    },
-    {
-     "kind": "network",
-     "function": "search",
-     "events": 9,
-     "users": 9
-    }
-   ],
    "rank": 68.1
   },
   {
@@ -5590,49 +5590,49 @@
    "name": "Catálogo Plataformas",
    "address": "mikiosh/kino-plataformas",
    "version": "0.1.0",
-   "score": 67.1,
+   "score": 67.0,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 1657,
-   "users_failing": 411,
-   "fail_rate": 0.3066,
+   "active_users": 1685,
+   "users_failing": 421,
+   "fail_rate": 0.3075,
    "trend": {
     "direction": "mejorando",
-    "delta": 49.3
+    "delta": 49.2
    },
    "top_failures": [
     {
      "kind": "network",
      "function": "home",
-     "events": 733,
-     "users": 397
+     "events": 756,
+     "users": 400
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 355,
-     "users": 256
+     "events": 373,
+     "users": 267
     },
     {
      "kind": "load",
      "function": "home",
-     "events": 38,
-     "users": 36
+     "events": 42,
+     "users": 39
     }
    ],
-   "rank": 67.8
+   "rank": 67.7
   },
   {
    "id": "anijing",
    "name": "AniJing",
    "address": "Susejing/AniJing",
    "version": "0.6.95",
-   "score": 65.8,
+   "score": 65.3,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 551,
-   "users_failing": 212,
-   "fail_rate": 0.3027,
+   "active_users": 564,
+   "users_failing": 225,
+   "fail_rate": 0.3079,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5641,14 +5641,14 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 1529,
-     "users": 344
+     "events": 1642,
+     "users": 352
     },
     {
      "kind": "timeout",
      "function": "search",
-     "events": 167,
-     "users": 112
+     "events": 178,
+     "users": 119
     },
     {
      "kind": "runtime",
@@ -5657,7 +5657,44 @@
      "users": 17
     }
    ],
-   "rank": 67.8
+   "rank": 67.3
+  },
+  {
+   "id": "cinejoy",
+   "name": "CineJoy",
+   "address": "Lenoxlkz/CineJoy-Plugin-",
+   "version": "1.0.9",
+   "score": 65.0,
+   "grade": "C",
+   "confidence": "alta",
+   "active_users": 505,
+   "users_failing": 92,
+   "fail_rate": 0.308,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 170,
+     "users": 119
+    },
+    {
+     "kind": "network",
+     "function": "home",
+     "events": 135,
+     "users": 92
+    },
+    {
+     "kind": "network",
+     "function": "search",
+     "events": 10,
+     "users": 10
+    }
+   ],
+   "rank": 67.3
   },
   {
    "id": "genteclic",
@@ -5688,7 +5725,7 @@
      "users": 6
     }
    ],
-   "rank": 66.5
+   "rank": 66.4
   },
   {
    "id": "twitter-x-media",
@@ -5713,19 +5750,19 @@
      "users": 5
     }
    ],
-   "rank": 65.3
+   "rank": 65.1
   },
   {
    "id": "mi-xtream",
    "name": "Mi Xtream",
    "address": "damiandaqsk-netizen/kino-mi-xtream",
    "version": "1.3.1",
-   "score": 46.2,
+   "score": 46.4,
    "grade": "D",
    "confidence": "media",
-   "active_users": 88,
+   "active_users": 89,
    "users_failing": 31,
-   "fail_rate": 0.4336,
+   "fail_rate": 0.4321,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5734,7 +5771,7 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 28,
+     "events": 29,
      "users": 15
     },
     {
@@ -5750,56 +5787,19 @@
      "users": 1
     }
    ],
-   "rank": 63.7
-  },
-  {
-   "id": "cine-lgbt-catalogo",
-   "name": "Cine LGBT",
-   "address": "mikiosh/kino-cine-lgbt",
-   "version": "0.1.0",
-   "score": 57.4,
-   "grade": "C",
-   "confidence": "alta",
-   "active_users": 307,
-   "users_failing": 94,
-   "fail_rate": 0.3704,
-   "trend": {
-    "direction": "sin_datos",
-    "delta": null
-   },
-   "top_failures": [
-    {
-     "kind": "network",
-     "function": "home",
-     "events": 167,
-     "users": 90
-    },
-    {
-     "kind": "timeout",
-     "function": "home",
-     "events": 23,
-     "users": 19
-    },
-    {
-     "kind": "load",
-     "function": "home",
-     "events": 4,
-     "users": 4
-    }
-   ],
-   "rank": 62.7
+   "rank": 63.6
   },
   {
    "id": "loop",
    "name": "Loop — TikTok",
    "address": "Susejing/Loop",
    "version": "0.4.0",
-   "score": 55.7,
+   "score": 55.9,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 235,
-   "users_failing": 67,
-   "fail_rate": 0.3791,
+   "active_users": 240,
+   "users_failing": 68,
+   "fail_rate": 0.3779,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5808,8 +5808,8 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 396,
-     "users": 134
+     "events": 403,
+     "users": 137
     },
     {
      "kind": "runtime",
@@ -5827,16 +5827,16 @@
    "rank": 62.7
   },
   {
-   "id": "pelisplus",
-   "name": "PelisPlus",
-   "address": "JuanDEVYT/PelisPlusAutos_plugin",
-   "version": "8.5.1",
-   "score": 59.4,
+   "id": "cine-lgbt-catalogo",
+   "name": "Cine LGBT",
+   "address": "mikiosh/kino-cine-lgbt",
+   "version": "0.1.0",
+   "score": 57.2,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 906,
-   "users_failing": 329,
-   "fail_rate": 0.3739,
+   "active_users": 310,
+   "users_failing": 96,
+   "fail_rate": 0.3731,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5845,14 +5845,51 @@
     {
      "kind": "network",
      "function": "home",
-     "events": 467,
-     "users": 294
+     "events": 174,
+     "users": 91
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 446,
-     "users": 289
+     "events": 24,
+     "users": 20
+    },
+    {
+     "kind": "load",
+     "function": "home",
+     "events": 5,
+     "users": 5
+    }
+   ],
+   "rank": 62.5
+  },
+  {
+   "id": "pelisplus",
+   "name": "PelisPlus",
+   "address": "JuanDEVYT/PelisPlusAutos_plugin",
+   "version": "8.5.1",
+   "score": 58.5,
+   "grade": "C",
+   "confidence": "alta",
+   "active_users": 924,
+   "users_failing": 345,
+   "fail_rate": 0.383,
+   "trend": {
+    "direction": "sin_datos",
+    "delta": null
+   },
+   "top_failures": [
+    {
+     "kind": "network",
+     "function": "home",
+     "events": 490,
+     "users": 308
+    },
+    {
+     "kind": "timeout",
+     "function": "home",
+     "events": 470,
+     "users": 303
     },
     {
      "kind": "network",
@@ -5861,19 +5898,19 @@
      "users": 89
     }
    ],
-   "rank": 61.4
+   "rank": 60.5
   },
   {
    "id": "own-server",
    "name": "Tu servidor",
    "address": "kinotvapp/kino-plugin-own-server",
    "version": "1.5.0",
-   "score": 24.1,
+   "score": 22.9,
    "grade": "F",
    "confidence": "media",
    "active_users": 51,
-   "users_failing": 39,
-   "fail_rate": 0.6416,
+   "users_failing": 40,
+   "fail_rate": 0.6553,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5888,29 +5925,29 @@
     {
      "kind": "network",
      "function": "home",
-     "events": 91,
+     "events": 93,
      "users": 11
     },
     {
      "kind": "network",
      "function": "liveCategories",
-     "events": 80,
+     "events": 81,
      "users": 11
     }
    ],
-   "rank": 60.5
+   "rank": 60.0
   },
   {
    "id": "zapptv",
    "name": "ZappTV",
    "address": "xuper-plugin/kino-plugin-zapptv",
    "version": "0.3.6",
-   "score": 58.1,
+   "score": 57.6,
    "grade": "C",
    "confidence": "alta",
-   "active_users": 1057,
-   "users_failing": 516,
-   "fail_rate": 0.3897,
+   "active_users": 1080,
+   "users_failing": 533,
+   "fail_rate": 0.3941,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5919,35 +5956,35 @@
     {
      "kind": "timeout",
      "function": "home",
-     "events": 4835,
-     "users": 720
+     "events": 5040,
+     "users": 735
     },
     {
      "kind": "invalid_output",
      "function": "resolve",
-     "events": 175,
-     "users": 134
+     "events": 176,
+     "users": 135
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 80,
-     "users": 77
+     "events": 85,
+     "users": 82
     }
    ],
-   "rank": 59.9
+   "rank": 59.4
   },
   {
    "id": "kino-deportes",
    "name": "Kino Deportes",
    "address": "b7vzq9my8w-source/kino-plugin-deportes",
    "version": "0.1.12",
-   "score": 31.3,
+   "score": 31.2,
    "grade": "F",
    "confidence": "alta",
-   "active_users": 1588,
-   "users_failing": 895,
-   "fail_rate": 0.6638,
+   "active_users": 1615,
+   "users_failing": 915,
+   "fail_rate": 0.6659,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -5956,72 +5993,72 @@
     {
      "kind": "network",
      "function": "home",
-     "events": 565,
-     "users": 279
+     "events": 595,
+     "users": 291
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 308,
-     "users": 203
+     "events": 318,
+     "users": 209
     },
     {
      "kind": "runtime",
      "function": "home",
-     "events": 55,
-     "users": 53
+     "events": 56,
+     "users": 54
     }
    ],
-   "rank": 34.1
+   "rank": 34.0
   },
   {
    "id": "events-from-alangulotv",
    "name": "Eventos de AlAnguloTV",
    "address": "gpibarra/events-from-alangulotv",
    "version": "0.8.3",
-   "score": 24.1,
+   "score": 24.2,
    "grade": "F",
    "confidence": "alta",
-   "active_users": 1498,
-   "users_failing": 993,
-   "fail_rate": 0.7373,
+   "active_users": 1518,
+   "users_failing": 1007,
+   "fail_rate": 0.736,
    "trend": {
     "direction": "mejorando",
-    "delta": 22.2
+    "delta": 22.8
    },
    "top_failures": [
     {
      "kind": "network",
      "function": "home",
-     "events": 1092,
-     "users": 393
+     "events": 1134,
+     "users": 401
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 353,
-     "users": 223
+     "events": 366,
+     "users": 231
     },
     {
      "kind": "network",
      "function": "liveCategories",
-     "events": 329,
-     "users": 149
+     "events": 340,
+     "users": 153
     }
    ],
-   "rank": 27.5
+   "rank": 27.6
   },
   {
    "id": "tvall",
    "name": "TVall",
    "address": "xuper-plugin/kino-plugin-tvall",
    "version": "0.6.0",
-   "score": 10.0,
+   "score": 10.4,
    "grade": "F",
    "confidence": "alta",
-   "active_users": 316,
-   "users_failing": 274,
-   "fail_rate": 0.8669,
+   "active_users": 344,
+   "users_failing": 297,
+   "fail_rate": 0.8632,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -6030,14 +6067,14 @@
     {
      "kind": "invalid_output",
      "function": "home",
-     "events": 830,
-     "users": 298
+     "events": 953,
+     "users": 325
     },
     {
      "kind": "timeout",
      "function": "home",
-     "events": 10,
-     "users": 9
+     "events": 13,
+     "users": 11
     },
     {
      "kind": "invalid_output",
@@ -6046,7 +6083,7 @@
      "users": 4
     }
    ],
-   "rank": 26.6
+   "rank": 25.8
   },
   {
    "id": "torcino-player",
@@ -6056,9 +6093,9 @@
    "score": 1.7,
    "grade": "F",
    "confidence": "alta",
-   "active_users": 302,
-   "users_failing": 301,
-   "fail_rate": 0.9678,
+   "active_users": 308,
+   "users_failing": 307,
+   "fail_rate": 0.968,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -6077,7 +6114,7 @@
      "users": 2
     }
    ],
-   "rank": 21.0
+   "rank": 20.6
   },
   {
    "id": "jkanime-net",
@@ -6087,9 +6124,9 @@
    "score": 0.1,
    "grade": "F",
    "confidence": "alta",
-   "active_users": 614,
-   "users_failing": 611,
-   "fail_rate": 0.9961,
+   "active_users": 634,
+   "users_failing": 631,
+   "fail_rate": 0.9962,
    "trend": {
     "direction": "sin_datos",
     "delta": null
@@ -6098,14 +6135,14 @@
     {
      "kind": "thrown",
      "function": "search",
-     "events": 1035,
-     "users": 516
+     "events": 1077,
+     "users": 527
     },
     {
      "kind": "network",
      "function": "search",
-     "events": 46,
-     "users": 39
+     "events": 48,
+     "users": 41
     },
     {
      "kind": "timeout",
@@ -6114,7 +6151,7 @@
      "users": 13
     }
    ],
-   "rank": 11.2
+   "rank": 10.8
   }
  ]
 }
