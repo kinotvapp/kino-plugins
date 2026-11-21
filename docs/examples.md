@@ -1,6 +1,6 @@
 # Plugins de ejemplo
 
-Tres plugins publicados, todos públicos, todos instalables en Kino y todos usables como plantilla.
+Cuatro plugins publicados, todos públicos, todos instalables en Kino y todos usables como plantilla.
 Arranca por **Internet Archive** si quieres la plantilla más simple posible; arranca por **Tu
 servidor**, el demo completo de la API, cuando tu fuente sea un servidor de la persona o cuando
 quieras ver funcionando de punta a punta cada función hasta apiVersion 7; arranca por **Internet
@@ -47,10 +47,24 @@ Archive Audio** para música y podcasts ([apiVersion 8](music.md), Kino 0.9.54).
     [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-archive-audio/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-archive-audio){ .md-button }
 
+-   ![](assets/vault-demo-icon.png){ .card-icon } **Vault demo** · `kinotvapp/kino-plugin-vault-demo`
+
+    ---
+
+    **El ejemplo de `kino.vault.get()`.** El secreto del plugin (una API base, llaves, un token) vive en
+    la [bóveda](vault.md) de Kino, no en el código: una llamada, `await kino.vault.get()`, y Kino resuelve
+    el secreto solo para ESTE plugin y solo para quien está en el grupo de Kino. [apiVersion 28](vault.md)
+    (Kino 0.9.90), capacidades `screen` + `identity` + `vault`, un `plugin.js` sin compilar y bien
+    comentado, con el manejo de cada estado (`not_member`, `not_found`…).
+
+    [:octicons-repo-template-16: Usar como plantilla](https://github.com/kinotvapp/kino-plugin-vault-demo/generate){ .md-button .md-button--primary }
+    [:octicons-mark-github-16: Ver en GitHub](https://github.com/kinotvapp/kino-plugin-vault-demo){ .md-button }
+
 </div>
 
 Para probar cualquiera en Kino, abre Ajustes > Plugins y escribe `kinotvapp/kino-plugin-archive`,
-`kinotvapp/kino-plugin-own-server` o `kinotvapp/kino-plugin-archive-audio`.
+`kinotvapp/kino-plugin-own-server`, `kinotvapp/kino-plugin-archive-audio` o
+`kinotvapp/kino-plugin-vault-demo` (este último necesita Kino 0.9.90 o más nuevo).
 
 **Usa la plantilla, no hagas fork.** "Usar como plantilla" crea un repositorio nuevo tuyo con los
 mismos archivos. Un fork también funcionaría como plugin, pero la búsqueda de la comunidad de Kino deja

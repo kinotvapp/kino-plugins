@@ -330,39 +330,35 @@ interface KinoStream {
    * window on every player playlist-refresh -- WITHOUT any plugin call while it plays and without ever fetching a
    * playlist from the CDN. Every specific (CDN template, channel code, duration lattice, clock, anchor, window) is
    * plugin-supplied data, so ANY plugin uses it with ITS own CDN; nothing is hardcoded. The player then downloads the
-   * segments the synthesized playlist lists straight from the CDN (each viewer from its own IP).
+   * segments the synthesized playlist lists straight from the CDN (deviceless, each viewer from its own IP).
    *
-   * When `clockLive` is present `url` is IGNORED (as with `external`), and so are `alternatives`, `audioTracks`,
-   * `durationMs`, `skip` and `expiresInSeconds` (a clock window has no single URL, fixed length or expiry); a `drm`,
-   * `signing` or `external` beside it refuses the stream. Valid ONLY on a `live` stream (resolve() of a `live` item, or an
-   * inline liveChannels[].stream); on any other stream Kino ignores the field, so an empty `url` is refused. `headers` and
-   * `subtitles` still apply to every synthesized request. Each concrete segment URL (after substitution) is checked exactly
-   * like `url` against the plugin's live host grant (`liveStreamHosts: "any"` -- which needs `channels` -- or
-   * `streamHosts: "any"`, or a declared host; never the LAN). Kino reads the field only when the plugin's FEATURE
-   * apiVersion is 27 or more (`kino.pluginApiVersion`): a plugin that keeps a lower base adds `"enhancements": { "27": {} }`.
-   * An older Kino ignores `clockLive` and, finding `url` empty, refuses the stream: send a real `url` beside it, or send
-   * `clockLive` only when `kino.pluginApiVersion >= 27`.
+   * When `clockLive` is present `url` is IGNORED (as with `external`), and `drm`, `signing`/`signContext`/
+   * `alternateHosts`, `external`, `alternatives`, `audioTracks`, `durationMs`, `skip` and `expiresInSeconds` are ignored
+   * next to it (a clock window has no single URL, fixed length or expiry). Valid ONLY on a `live` stream (resolve() of a
+   * `live` item, or an inline liveChannels[].stream); on a non-live stream it refuses. `headers` and `subtitles` still
+   * apply to every synthesized request. Each concrete segment URL (after substitution) is checked exactly like `url`
+   * against the plugin's live host grant (`liveStreamHosts: "any"` -- which needs `channels` -- or `streamHosts: "any"`,
+   * or a declared host; http is allowed for a live channel, never the LAN). An older Kino ignores `clockLive` and, finding
+   * `url` empty, refuses the stream: a plugin targeting older apps must also give a real `url` or gate on `kino.apiVersion`.
    */
   clockLive?: KinoClockLive;
 }
 
 /**
  * apiVersion 27: the parameters Kino needs to synthesize a clock-enumerated live HLS playlist (see `KinoStream.clockLive`).
- * Kino computes, for wall-clock `now`: `D(k) = Σ_{i<k} grid[(firstStep+i) mod grid.length]` (the media-ms from the anchor
- * segment to the k-th one after it; `k<0` walks the lattice backward); that segment's number (its `{seg}`) is
- * `anchor.s + D(k)` and it begins at wall time `anchor.t + D(k)·(1000/rate)`; the live segment is the last one begun by
- * `now`; the emitted window is the `count` segments ending `behind` segments before it, each line
+ * Kino computes, for wall-clock `now`: `D(k) = Σ grid[(firstStep+i) mod grid.length]` (media-ms from segment `s` to `s+k`,
+ * `k<0` walks the lattice backward); segment `s+k` begins at wall time `anchor.t + D(k)·(1000/rate)`; the live index is
+ * `anchor.s + max{k : that time ≤ now}`; the emitted window is the indices `[live−behind−count+1 … live−behind]`, each line
  * `#EXTINF:grid[phase]/1000`, `#EXT-X-MEDIA-SEQUENCE` a monotonic per-segment ordinal, `#EXT-X-TARGETDURATION =
- * ceil(max(grid)/1000)`, no `#EXT-X-ENDLIST`. Kino replaces the predicted edge with the one it probes (`reanchor`).
+ * ceil(max(grid)/1000)`, no `#EXT-X-ENDLIST`. With `reanchor`, Kino replaces the predicted edge with the one it probes.
  * Parts that could mislocate the window or fetch an unintended URL REFUSE the stream (bad `grid`, `template` without `{seg}`,
  * an unknown placeholder, a bad `anchor`, a host-rule failure); tuning knobs (`rate`, `reanchor`, `window`, `segWidth`,
- * `firstStep`) are clamped or defaulted silently, never refusing.
+ * `firstStep`) are clamped/defaulted and logged, never refusing.
  */
 interface KinoClockLive {
   /**
-   * The segment-URL template. `{seg}` (the integer segment number: its start on the media clock, in ms, so consecutive
-   * segments differ by their `grid` step) is REQUIRED and may repeat; `{mc}` (the `mediaCode`) is optional and may
-   * repeat. e.g. `"https://cdn.example.com/live/{mc}/{mc}_{seg}.ts"`. At most 2048 characters. No `{seg}`,
+   * The segment-URL template. `{seg}` (the integer segment number) is REQUIRED and may repeat; `{mc}` (the `mediaCode`)
+   * is optional and may repeat. e.g. `"http://cdn/live/{mc}/{mc}_cyx_cj_{seg}.ts"`. At most 2048 characters. No `{seg}`,
    * or any other `{…}` placeholder, REFUSES the stream (a typo must never be fetched literally).
    */
   template: string;
@@ -382,34 +378,32 @@ interface KinoClockLive {
   /**
    * Media-clock speed: ms of media advanced per 1000 ms of wall clock. Default 1000 (realtime); clamped to 500..2000.
    * Lets the window track real time when `Σ grid` is not an exact multiple of a second (e.g. the NTSC 1001/1000 drift that
-   * makes `[4004, 6006]` sum to 10010). A value that is not a whole number reads as the default.
+   * makes `[4004, 6006]` sum to 10010). A non-number is dropped to the default and logged.
    */
   rate?: number;
   /**
    * Pins the clock to the segment lattice: at wall-clock epoch `t` (ms, UTC) the segment numbered `s` begins, sitting at
    * lattice-phase `firstStep` (0-based index into `grid`, default 0). `t` and `s` are REQUIRED; a missing or bad anchor
-   * REFUSES the stream (the live edge cannot be located). `firstStep` out of range reads as 0.
+   * REFUSES the stream (the live edge cannot be located). `firstStep` out of range is dropped to 0 and logged.
    */
   anchor: { t: number; s: number; firstStep?: number };
   /**
-   * Robustness: instead of trusting the clock blindly, Kino pins the live edge on real segment URLs before the channel
-   * plays (no segment answering: the channel is not available) and again every `everySec` seconds, to absorb device↔CDN
-   * clock skew and keep latency honest. Each search starts at the predicted edge (two probes when the clock is right) and
-   * may reach `4 × probeSpan` segments each way, never fewer than 16. Without the object Kino uses the defaults. Both are
-   * clamped, never refusing: `everySec` 60..21600 (default 1200, every 20 minutes), `probeSpan` 0..12 (default 4; any
-   * value up to 4 reaches ±16 segments).
+   * Robustness: instead of trusting the clock blindly, Kino re-pins the live edge by probing real segment URLs around its
+   * predicted edge every `everySec` seconds, scanning up to `probeSpan` segments each way, to absorb device↔CDN clock skew
+   * and keep latency honest. Omit the whole object to trust the clock exactly. Both are clamped, never refusing:
+   * `everySec` 60..21600 (default 1200 — the reference backend re-pins every ~20 min), `probeSpan` 0..12 (default 4; 0
+   * keeps the periodic re-pin but probes only the estimated edge).
    */
   reanchor?: { everySec?: number; probeSpan?: number };
   /**
    * The sliding window Kino emits: `count` segments ending `behind` segments before the computed live edge (a latency
-   * cushion against half-written newest segments). `count` default 6 (clamped 2..20), `behind` default 3 (clamped 0..20),
-   * never refusing. Kino may list more than `count` (at most 20) so the player can start safely behind the edge, and
-   * while a probe confirmed the edge in the last 25 minutes the window ends at most 1 segment before it.
+   * cushion against half-written newest segments). `count` default 6 (clamped 2..20), `behind` default 3 (clamped 0..20).
+   * Clamped and logged, never refusing.
    */
   window?: { count?: number; behind?: number };
   /**
    * Optional zero-pad width for `{seg}` (0..12, default 0 = no padding) so `{seg}` renders e.g. `"000042"` when the CDN
-   * names segments with fixed-width indices. A value out of range is clamped; one that is not a whole number reads as 0.
+   * names segments with fixed-width indices. A bad value is dropped to 0 and logged.
    */
   segWidth?: number;
 }
@@ -2915,7 +2909,12 @@ interface KinoBrowserCaptureOptions {
   /**
    * Kino 0.9.54: a cookie name (an HTTP token, e.g. `"cf_clearance"`) the page must also hold for its current host.
    * Without `match` no request is needed: the page ends as soon as the cookie is there (a cookie-only page). Kino never
-   * autoplays or taps a page that waits for a cookie. With `captureAll` it needs a `match`.
+   * autoplays or taps a page that waits for a cookie. With `captureAll` it needs a `match`. A capture with
+   * `waitForCookie` WAITS THROUGH an auto-clearing challenge (Cloudflare's managed check) instead of ending at once on
+   * its human-check widget: it keeps polling for the cookie (and any matching media) until the cookie is there or the
+   * timeout runs out, so a challenge that clears by itself lets the stream through. A real captcha that needs a person
+   * never clears on its own, so the capture simply times out (a plain `kino.browser.capture` without `waitForCookie`
+   * still ends at once with `blocked` on a human check).
    */
   waitForCookie?: string;
   /** Kino 0.9.54: a page that runs out of time answers what it had, with `timedOut: true`, instead of throwing `timeout`. */
@@ -3256,7 +3255,7 @@ interface KinoIdentity {
    * The gate token Kino's bot signed for this device (`base64url(payload).base64url(Ed25519 signature)`). It still carries the
    * Telegram account, so your server can verify it with the bot's public key; a per-audience token from the bot is the
    * planned fix. A credential: never log or show it. Present only for a plugin signed with one of contract.json
-   * `kinoIdentity.tokenAuthors` (`07DA-B67F-2ACF-B4D3`, Kino's own; `E04E-EA25-1A34-290E`, a second author key Kino trusts like its own, from
+   * `kinoIdentity.tokenAuthors` (`07DA-B67F-2ACF-B4D3`, Kino's own; `E04E-EA25-1A34-290E`, the xuper-plugin author's, from
    * Kino 0.9.88); any other author gets the `id` and, with a challenge, the attestation, but never the token.
    */
   token?: string;
@@ -3561,7 +3560,7 @@ declare namespace kino {
    * Your plugin's FEATURE apiVersion on this Kino: your manifest's `apiVersion`, or the highest key of your
    * `enhancements` this Kino applied, whichever is higher. A feature gated on it (such as `clockLive`, apiVersion 27)
    * is on exactly when this is high enough, so you can keep a lower base for older Kino and still use it here.
-   * Kino 0.9.88, additive: `undefined` on Kino 0.9.87 and older (which have no `clockLive`).
+   * `undefined` on a Kino before this field: such a Kino reads those features from your base apiVersion only.
    */
   const pluginApiVersion: number | undefined;
   /**
@@ -3771,6 +3770,23 @@ declare namespace kino {
    */
   namespace identity {
     function telegram(options?: KinoIdentityOptions): Promise<KinoIdentity>;
+  }
+
+  /**
+   * apiVersion 28, capability "vault" (requires "identity", so it rides on identity's red consent line): read your plugin's OWN
+   * sealed secret from the Kino secrets vault with `kino.vault.get()`. Kino runs the whole exchange from inside — it mints a
+   * challenge, attests your plugin exactly as `kino.identity` does (a per-plugin pseudonym, a device-key signature, your author
+   * fingerprint and code hash, and the gate token for a trusted author so the vault can verify group membership live) and reads
+   * the secret the vault resolves for YOUR `(pluginId, author)`. You never see the vault's address, the challenge nor the scope
+   * the vault resolves by, so you can only ever read your own secret. The answer is whatever JSON you registered as the secret.
+   * Only inside a call the person started from `screen`, `screenEvent` or `panelAction` (never a timer tick, a job, Home or
+   * search), 6 a minute. Rejects with a KinoError whose `code` is `permission_denied`, `not_member` (not in the Kino group, or
+   * the plugin's scope does not match), `not_found` (no secret registered for this plugin), `rate_limited`, `unavailable` or
+   * `not_available` (this device has no Telegram validation, or the secrets service could not be reached). Present on every
+   * apiVersion 28 runtime: feature-detect with `typeof kino.vault === "object"`.
+   */
+  namespace vault {
+    function get(): Promise<any>;
   }
 
   /**

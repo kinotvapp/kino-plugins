@@ -1,6 +1,6 @@
 # Example plugins
 
-Three published plugins, all public, all installable in Kino, and all usable as a template. Start
+Four published plugins, all public, all installable in Kino, and all usable as a template. Start
 from **Internet Archive** for the simplest possible template; start from **Tu servidor**, the
 complete API demo, when your source is a server the person owns, or when you want to see every
 feature up to apiVersion 7 working end to end; start from **Internet Archive Audio** for music and
@@ -46,6 +46,19 @@ podcasts ([apiVersion 8](music.md), Kino 0.9.54).
 
     [:octicons-repo-template-16: Use as template](https://github.com/kinotvapp/kino-plugin-archive-audio/generate){ .md-button .md-button--primary }
     [:octicons-mark-github-16: View on GitHub](https://github.com/kinotvapp/kino-plugin-archive-audio){ .md-button }
+
+-   ![](assets/vault-demo-icon.png){ .card-icon } **Vault demo** · `kinotvapp/kino-plugin-vault-demo`
+
+    ---
+
+    **The `kino.vault.get()` example.** The plugin's secret (an API base, keys, a token) lives in the
+    Kino [vault](vault.en.md), not in the code: one call, `await kino.vault.get()`, and Kino resolves the
+    secret only for THIS plugin and only for a person in the Kino group. [apiVersion 28](vault.en.md)
+    (Kino 0.9.90), capabilities `screen` + `identity` + `vault`, a hand‑written, heavily commented
+    `plugin.js` that handles every state (`not_member`, `not_found`…).
+
+    [:octicons-repo-template-16: Use as template](https://github.com/kinotvapp/kino-plugin-vault-demo/generate){ .md-button .md-button--primary }
+    [:octicons-mark-github-16: View on GitHub](https://github.com/kinotvapp/kino-plugin-vault-demo){ .md-button }
 
 </div>
 

@@ -150,9 +150,12 @@ Before writing anything:
    (https://github.com/kinotvapp/kino-plugin-sync-gram-account, the person's own Telegram account over a
    WebSocket, apiVersion 13: sync.generateKey, a one-shot 2FA password in provision, settingsStatus hide) for
    an account of my own.
-7. If my plugin is a store (a source of plugins for Kino's store), or uses identity or notifications, read
-   https://kinotvapp.github.io/kino-plugins/en/plugin-stores/, /en/store-examples/, /en/identity/ and
-   /en/notifications/ first (apiVersion 15, Kino 0.9.77) and start from an example
+7. If my plugin is a store (a source of plugins for Kino's store), or uses identity, the vault or notifications, read
+   https://kinotvapp.github.io/kino-plugins/en/plugin-stores/, /en/store-examples/, /en/identity/, /en/vault/ and
+   /en/notifications/ first (identity, notifications and pluginStore: apiVersion 15, Kino 0.9.77). The vault is apiVersion 28,
+   Kino 0.9.90 and requires identity: one call, const secret = await kino.vault.get(), and Kino reads the plugin's own secret
+   (an API base, keys) that you registered in the vault — the plugin never sees the vault's URL and can only read ITS OWN
+   secret. Real-life example: https://github.com/kinotvapp/kino-plugin-vault-demo. For a store, start from an example
    store with node sdk/init.mjs my-store --host <host> --store local|live.
 8. If my plugin uses another plugin's data, or opens a door for other plugins, read
    https://kinotvapp.github.io/kino-plugins/en/protocol/ first (the plugin protocol: apiVersion 20, Kino

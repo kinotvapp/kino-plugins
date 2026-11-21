@@ -158,10 +158,13 @@ Antes de escribir nada:
    servidor mío, y Sync-Gram Cuenta (https://github.com/kinotvapp/kino-plugin-sync-gram-account, la propia
    cuenta de Telegram de la persona por un WebSocket, apiVersion 13: sync.generateKey, una contraseña 2FA de un
    solo uso en provision, hide en settingsStatus) para una cuenta mía.
-7. Si mi plugin es una tienda (una fuente de plugins para la tienda de Kino), o usa identidad o avisos, lee primero
-   https://kinotvapp.github.io/kino-plugins/plugin-stores/, /store-examples/, /identity/ y /notifications/
-   (apiVersion 15, Kino 0.9.77) y parte de una tienda de ejemplo con
-   node sdk/init.mjs mi-tienda --host <host> --store local|live.
+7. Si mi plugin es una tienda (una fuente de plugins para la tienda de Kino), o usa identidad, la bóveda o avisos, lee primero
+   https://kinotvapp.github.io/kino-plugins/plugin-stores/, /store-examples/, /identity/, /vault/ y /notifications/
+   (identity, notifications y pluginStore: apiVersion 15, Kino 0.9.77). La bóveda (vault) es apiVersion 28, Kino 0.9.90 y
+   requiere identity: una sola llamada, const secret = await kino.vault.get(), y Kino lee el secreto propio del plugin
+   (una API base, llaves) que registraste en la bóveda — el plugin nunca ve la URL de la bóveda y solo puede leer SU propio
+   secreto. Ejemplo de la vida real: https://github.com/kinotvapp/kino-plugin-vault-demo. Para una tienda, parte de un ejemplo
+   con node sdk/init.mjs mi-tienda --host <host> --store local|live.
 8. Si mi plugin usa los datos de otro plugin, o abre una puerta para otros plugins, lee primero
    https://kinotvapp.github.io/kino-plugins/protocol/ (el protocolo entre plugins: apiVersion 20, Kino 0.9.81)
    y copia los patrones de Cine Trivia (https://github.com/kinotvapp/kino-plugin-cine-trivia,
