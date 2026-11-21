@@ -1234,6 +1234,12 @@ through `enhancements`)**. Each has its own page, read it whole before using it:
   server cannot check the `id` against the bot, only the attestation, so a community plugin never relies on the token. Only inside a call the person started (`screen`, `screenEvent`, `panelAction`), 10 a minute. Red consent line
   ("Podrá saber tu usuario de Telegram y enviarlo a sus servicios"), switchable in Ajustes. Kit: `KINO_IDENTITY_TG`,
   `KINO_IDENTITY_TOKEN`, `KINO_IDENTITY_AUTHOR`, `KINO_IDENTITY_REVOKED=1`. <https://kinotvapp.github.io/kino-plugins/en/identity/>
+- **Secrets vault** (a hosted Kino service, not a `kino.*` capability; built on `identity`) → store one JSON secret
+  per repo from a web panel (<https://secrets.kinoverse.app>) and read it at runtime gated by Kino group membership, so a
+  value your plugin needs (an API key, a config recipe) never lives in the public repo. Read with a challenge, then `POST
+  secrets.kinoverse.app/secrets/<owner>/<repo>` with `id`/`deviceKey`/`signature`/`author`/`codeHash` and, for a trusted
+  author (so membership is checked live for any real member), `token: who.token`. Moderate secrets only; rotate instead
+  of trusting it like a critical key. <https://kinotvapp.github.io/kino-plugins/en/secrets-vault/>
 - `notifications` → declarative, never alone: `await kino.notifications.post({ id, title, titleEn?, text?, textEn?, go? })`
   and `clear(id?)` leave short notices in the Home bell. `id` is 1..64 of `A-Z a-z 0-9 . _ -` and replaces an earlier notice
   with the same id (group news under one id); `title` 1..80, `text` <= 160, plain one-line text; `go` is `{ screen: {
