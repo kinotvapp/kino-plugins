@@ -45,7 +45,12 @@ panel: the next read returns the new value (see [Rotation](#rotation)).
 
 The read is the same pattern as [Identity with a challenge](identity.md#challenge), but against the vault: your plugin asks for
 a challenge, lets Kino sign and attest who is asking, and the vault returns the secret **only if the person is in the group**.
-It does not use the `token`: the attestation is enough, so it works with any **signed** plugin.
+
+!!! tip "Send the `token` if your plugin is by a trusted author"
+    If your plugin is signed with a [`tokenAuthors`](identity.md) key (e.g. E04E), `kino.identity` gives you a bot-signed
+    `token`. **Include it in the body** (`token: who.token`): with it the vault reads your real Telegram id and checks your
+    membership **live**, so **any** group member can read. Without the token the vault falls back to a partial check (it only
+    recognises members it already knows), and a real member may get `403`.
 
 ```js
 const VAULT = "https://secrets.kinoverse.app";
@@ -69,6 +74,7 @@ async function getRecipe() {
     signature: who.signature,
     author: who.author || "",
     codeHash: who.codeHash || "",
+    token: who.token,          // recommended (trusted author): the vault then checks your membership live
   });
 
   kino.storage.set("recipe", secret, { ttlMs: 60 * 60 * 1000 });  // ~1 h
@@ -91,6 +97,7 @@ The body of `POST /secrets/<owner>/<repo>`:
 | `signature` | The signature over the challenge (`who.signature`). |
 | `author` | The fingerprint of the author key you signed the plugin with (`who.author`). It must match the one in the manifest you stored, and cannot be empty: an **unsigned** plugin cannot read. |
 | `codeHash` | The code hash (`who.codeHash`). Advisory in this version; sign over it anyway, but it is not required. |
+| `token` | **Recommended.** The `kino.identity` token (trusted authors, like E04E, get it). With it the vault reads your real Telegram id and checks your membership **live** → works for **any** group member. Without it, the vault only recognises members who already did a token login (partial coverage), and a real member may get `403`. |
 
 Response **`200`**: `{ "secret": <your JSON> }` —exactly what you stored in the panel.
 

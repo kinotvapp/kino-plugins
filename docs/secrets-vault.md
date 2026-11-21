@@ -44,7 +44,13 @@ la próxima lectura devuelve el valor nuevo (mira [Rotación](#rotation)).
 
 La lectura es el mismo patrón de [Identidad con desafío](identity.md#challenge), pero contra la bóveda: tu plugin pide un
 desafío, deja que Kino firme y atestigüe quién pregunta, y la bóveda devuelve el secreto **solo si la persona está en el
-grupo**. No usa el `token`: le basta la atestación, así que funciona con cualquier plugin **firmado**.
+grupo**.
+
+!!! tip "Mandá el `token` si tu plugin es de autor confiado"
+    Si tu plugin está firmado con una llave de [`tokenAuthors`](identity.md) (por ejemplo E04E), `kino.identity` te da un
+    `token` firmado por el bot. **Inclúyelo en el cuerpo** (`token: who.token`): con él la bóveda saca tu Telegram real y
+    chequea tu membresía **en vivo**, así **cualquier** miembro del grupo puede leer. Sin el token, la bóveda cae a un
+    chequeo parcial (solo reconoce a los miembros que ya conoce), y un miembro real podría recibir `403`.
 
 ```js
 const VAULT = "https://secrets.kinoverse.app";
@@ -68,6 +74,7 @@ async function getRecipe() {
     signature: who.signature,
     author: who.author || "",
     codeHash: who.codeHash || "",
+    token: who.token,          // recomendado (autor confiado): la bóveda verifica tu membresía en vivo
   });
 
   kino.storage.set("recipe", secret, { ttlMs: 60 * 60 * 1000 });  // ~1 h
@@ -89,6 +96,7 @@ El cuerpo del `POST /secrets/<owner>/<repo>`:
 | `signature` | La firma del desafío (`who.signature`). |
 | `author` | La huella de la llave de autor con la que firmaste el plugin (`who.author`). Debe coincidir con la del manifiesto que guardaste, y no puede ir vacía: un plugin **sin firmar** no puede leer. |
 | `codeHash` | El hash del código (`who.codeHash`). Informativo en esta versión; fírmalo igual pero no se exige. |
+| `token` | **Recomendado.** El token de `kino.identity` (lo reciben los autores confiados, como E04E). Con él la bóveda saca tu Telegram real y verifica tu membresía **en vivo** → funciona para **cualquier** miembro del grupo. Sin él, solo reconoce a los miembros que ya pasaron por un login con token (cobertura parcial), y un miembro real podría recibir `403`. |
 
 Respuesta **`200`**: `{ "secret": <tu JSON> }` —exactamente lo que guardaste en el panel.
 
