@@ -9,6 +9,9 @@ a new one), `kino-shim.mjs` (the `kino` API in Node), `contract.mjs` (the rules,
 install. It needs Node 18 or newer (checked on 18.20, 20.11 and 24.14); `node --test sdk/test/kit.test.mjs`
 runs its own tests.
 
+If you also want to **see the screen drawn** the way Kino draws it, with real events and one screenshot per step, the kit
+has a companion: [test it like the app (real render)](parity.md).
+
 ```
 node sdk/run.mjs ./plugin.js search "metropolis"
 node sdk/run.mjs ./plugin.js home

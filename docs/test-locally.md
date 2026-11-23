@@ -9,6 +9,9 @@ leídas de `contract.json`), `seal.mjs` (sella un [secreto](manifest.md#secrets)
 instalar. Necesita Node 18 o más nuevo (probado en 18.20, 20.11 y 24.14);
 `node --test sdk/test/kit.test.mjs` ejecuta sus propias pruebas.
 
+Si además quieres **ver la pantalla dibujada** como la dibuja Kino, con eventos de verdad y una captura por paso, el kit
+tiene un complemento: [probar como la app (render real)](parity.md).
+
 ```
 node sdk/run.mjs ./plugin.js search "metropolis"
 node sdk/run.mjs ./plugin.js home
